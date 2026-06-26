@@ -28,7 +28,6 @@ type CheckState =
 type ResultView = 'qualified' | 'unqualified' | null;
 
 const MINIMUM_CHECK_DURATION_MS = 820;
-const RETURN_HOME_DELAY_MS = 220;
 
 export function MerchEligibilityEntry() {
   const [session, setSession] = useState<RenaissSession>({
@@ -132,29 +131,27 @@ export function MerchEligibilityEntry() {
     }
   }
 
-  async function resetEligibilityCheck() {
+  function resetEligibilityCheck() {
     if (isReturningHome) {
       return;
     }
 
     setIsReturningHome(true);
-    const logoutPromise = signOutRenaiss();
-    await delay(RETURN_HOME_DELAY_MS);
-
     window.scrollTo({ top: 0, behavior: 'auto' });
     setSession({ authenticated: false });
     setPendingWalletAddress(null);
     setEligibilityResult(null);
     setResultView(null);
     setCheckState('idle');
-
-    try {
-      await logoutPromise;
-    } catch {
-      setCheckState('source-error');
-    } finally {
+    window.setTimeout(() => {
       setIsReturningHome(false);
-    }
+    }, 0);
+
+    void signOutRenaiss().catch(() => {
+      setCheckState((currentState) =>
+        currentState === 'idle' ? 'source-error' : currentState
+      );
+    });
   }
 
   async function runEligibilityCheck(shouldCancel = () => false) {
