@@ -1,11 +1,9 @@
 node_modules/
 dist/
-extracted/
-outputs/
 .data/
 .env
 .env.*
-.DS_Store
+.git/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

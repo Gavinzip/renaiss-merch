@@ -1,84 +1,231 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { QualifiedResult } from '../QualifiedResult/QualifiedResult';
 import Prism from '../Prism/Prism';
 import { UnqualifiedResult } from '../UnqualifiedResult/UnqualifiedResult';
 import {
-  MINIMUM_MERCH_SBT_BALANCE,
+  EligibilityPendingError,
+  checkMerchEligibility,
   type MerchEligibilityResult
 } from '../../lib/merchEligibility';
+import {
+  readRenaissSession,
+  signOutRenaiss,
+  startRenaissLogin,
+  type RenaissSession
+} from '../../lib/renaissAuth';
 import './MerchEligibilityEntry.css';
 
-const walletPattern = /^0x[a-fA-F0-9]{40}$/;
-const previewWalletAddress = '0x000000000000000000000000000000000000dEaD';
-
-type CheckState = 'idle' | 'invalid';
+type CheckState =
+  | 'loading-session'
+  | 'idle'
+  | 'signing-in'
+  | 'checking'
+  | 'authenticated'
+  | 'wallet-pending'
+  | 'eligibility-pending'
+  | 'source-error'
+  | 'auth-error';
 type ResultView = 'qualified' | 'unqualified' | null;
 
+const MINIMUM_CHECK_DURATION_MS = 820;
+const RETURN_HOME_DELAY_MS = 220;
+
 export function MerchEligibilityEntry() {
-  const [walletAddress, setWalletAddress] = useState('');
-  const [checkState, setCheckState] = useState<CheckState>('idle');
+  const [session, setSession] = useState<RenaissSession>({
+    authenticated: false
+  });
+  const [checkState, setCheckState] = useState<CheckState>('loading-session');
   const [eligibilityResult, setEligibilityResult] =
     useState<MerchEligibilityResult | null>(null);
+  const [pendingWalletAddress, setPendingWalletAddress] = useState<
+    string | null
+  >(null);
   const [resultView, setResultView] = useState<ResultView>(null);
+  const [isReturningHome, setIsReturningHome] = useState(false);
 
-  const normalizedWallet = useMemo(() => walletAddress.trim(), [walletAddress]);
+  const user = session.authenticated ? session.user : null;
+  const sessionWalletAddress =
+    pendingWalletAddress || user?.safeWalletAddress || null;
+  const sessionLabel =
+    user?.name || user?.email || formatTwitterUsername(user?.twitterUsername);
+  const walletLabel = sessionWalletAddress
+    ? shortenWallet(sessionWalletAddress)
+    : 'Safe wallet pending';
+  const isChecking = checkState === 'checking';
 
   const statusText = useMemo(() => {
-    if (checkState === 'invalid') {
-      return 'Enter a valid 0x wallet address to start the merch check.';
+    switch (checkState) {
+      case 'loading-session':
+        return 'Checking Renaiss session.';
+      case 'signing-in':
+        return 'Opening Renaiss sign in.';
+      case 'checking':
+        return 'Renaiss connected. Checking merch access.';
+      case 'authenticated':
+        return 'Renaiss session is connected.';
+      case 'wallet-pending':
+        return 'Renaiss connected. Safe wallet is not ready yet.';
+      case 'eligibility-pending':
+        return 'Renaiss connected. Eligibility rule is not configured yet.';
+      case 'source-error':
+        return 'Could not complete the merch check.';
+      case 'auth-error':
+        return 'Renaiss sign in could not be completed.';
+      default:
+        return 'Sign in with Renaiss to check merch access.';
     }
-
-    return 'Preview mode for the merch gate result.';
   }, [checkState]);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSession() {
+      const authState = consumeAuthQueryState();
+
+      try {
+        const nextSession = await readRenaissSession();
+
+        if (cancelled) {
+          return;
+        }
+
+        setSession(nextSession);
+
+        if (!nextSession.authenticated) {
+          setCheckState(authState === 'error' ? 'auth-error' : 'idle');
+          return;
+        }
+
+        setPendingWalletAddress(null);
+        setEligibilityResult(null);
+        setResultView(null);
+        setCheckState('authenticated');
+      } catch {
+        if (!cancelled) {
+          setCheckState('source-error');
+        }
+      }
+    }
+
+    void loadSession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function handleLogin() {
+    setCheckState('signing-in');
+    startRenaissLogin();
   }
 
-  function previewEligibility(status: MerchEligibilityResult['status']) {
-    const walletForPreview = normalizedWallet || previewWalletAddress;
-
-    if (!walletPattern.test(walletForPreview)) {
+  async function handleLogout() {
+    try {
+      await signOutRenaiss();
+      setSession({ authenticated: false });
+      setPendingWalletAddress(null);
       setEligibilityResult(null);
-      setCheckState('invalid');
+      setResultView(null);
+      setCheckState('idle');
+    } catch {
+      setCheckState('source-error');
+    }
+  }
+
+  async function resetEligibilityCheck() {
+    if (isReturningHome) {
       return;
     }
 
+    setIsReturningHome(true);
+    const logoutPromise = signOutRenaiss();
+    await delay(RETURN_HOME_DELAY_MS);
+
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    setSession({ authenticated: false });
+    setPendingWalletAddress(null);
+    setEligibilityResult(null);
+    setResultView(null);
     setCheckState('idle');
-    setEligibilityResult({
-      walletAddress: walletForPreview,
-      sbtBalance:
-        status === 'eligible' ? MINIMUM_MERCH_SBT_BALANCE : 0,
-      status
-    });
-    setResultView(status === 'eligible' ? 'qualified' : 'unqualified');
+
+    try {
+      await logoutPromise;
+    } catch {
+      setCheckState('source-error');
+    } finally {
+      setIsReturningHome(false);
+    }
   }
 
-  function resetEligibilityCheck() {
-    setResultView(null);
+  async function runEligibilityCheck(shouldCancel = () => false) {
+    if (shouldCancel()) {
+      return;
+    }
+
+    setPendingWalletAddress(null);
     setEligibilityResult(null);
-    setCheckState('idle');
+    setResultView(null);
+    setCheckState('checking');
+
+    const startedAt = performance.now();
+
+    try {
+      const result = await checkMerchEligibility();
+      await waitForCheckTempo(startedAt);
+
+      if (shouldCancel()) {
+        return;
+      }
+
+      setEligibilityResult(result);
+      setResultView(result.status === 'eligible' ? 'qualified' : 'unqualified');
+    } catch (error) {
+      await waitForCheckTempo(startedAt);
+
+      if (shouldCancel()) {
+        return;
+      }
+
+      if (error instanceof EligibilityPendingError) {
+        setPendingWalletAddress(error.walletAddress);
+        setCheckState(
+          error.code === 'safe_wallet_not_ready'
+            ? 'wallet-pending'
+            : 'eligibility-pending'
+        );
+        return;
+      }
+
+      setCheckState('source-error');
+    }
   }
 
   return (
     <main
-      className={`merch-entry ${resultView ? 'merch-entry--result' : ''}`}
+      className={[
+        'merch-entry',
+        resultView ? 'merch-entry--result' : '',
+        resultView === 'qualified' ? 'merch-entry--qualified' : '',
+        resultView === 'unqualified' ? 'merch-entry--unqualified' : ''
+      ]
+        .filter(Boolean)
+        .join(' ')}
       aria-labelledby="merch-entry-title"
     >
       <div className="merch-entry__background" aria-hidden="true">
         <Prism
           animationType="3drotate"
-          baseWidth={6.8}
-          bloom={1.45}
-          colorFrequency={1.25}
-          glow={1.35}
-          height={4.1}
-          hueShift={0.08}
-          noise={0.1}
-          offset={{ x: 0, y: -34 }}
-          scale={2.45}
+          baseWidth={8.4}
+          bloom={1.28}
+          colorFrequency={1.08}
+          glow={1.18}
+          height={5.1}
+          hueShift={0.06}
+          noise={0.08}
+          offset={{ x: 0, y: -20 }}
+          scale={3.05}
           suspendWhenOffscreen
-          timeScale={0.42}
+          timeScale={0.38}
           transparent
         />
       </div>
@@ -90,38 +237,51 @@ export function MerchEligibilityEntry() {
           Check whether your wallet is eligible to claim merch.
         </p>
 
-        <form className="merch-entry__form" onSubmit={handleSubmit}>
-          <label className="sr-only" htmlFor="wallet-address">
-            Wallet address
-          </label>
-          <input
-            id="wallet-address"
-            autoComplete="off"
-            inputMode="text"
-            onChange={(event) => {
-              setWalletAddress(event.target.value);
-              if (checkState !== 'idle') {
-                setCheckState('idle');
-              }
-            }}
-            placeholder="0x wallet address"
-            spellCheck={false}
-            type="text"
-            value={walletAddress}
-          />
-          <div className="merch-entry__choices">
-            <button type="button" onClick={() => previewEligibility('eligible')}>
-              Yes
-            </button>
+        <div
+          className="merch-entry__form merch-entry__form--auth"
+          aria-busy={isChecking}
+        >
+          <div className="merch-entry__login-panel">
+            {session.authenticated ? (
+              <>
+                <div className="merch-entry__identity">
+                  <span className="merch-entry__identity-label">
+                    {sessionLabel || 'Renaiss account'}
+                  </span>
+                  <span className="merch-entry__identity-value">
+                    {walletLabel}
+                  </span>
+                </div>
+                <button
+                  className="merch-entry__login-action"
+                  type="button"
+                  onClick={() => void handleLogout()}
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={handleLogin}
+                disabled={
+                  checkState === 'loading-session' || checkState === 'signing-in'
+                }
+              >
+                Login
+              </button>
+            )}
+          </div>
+          <div className="merch-entry__choices" aria-label="Merch check">
             <button
-              className="merch-entry__choice--no"
               type="button"
-              onClick={() => previewEligibility('unqualified')}
+              onClick={() => void runEligibilityCheck()}
+              disabled={!session.authenticated || isChecking}
             >
-              No
+              {isChecking ? 'Checking' : 'Check'}
             </button>
           </div>
-        </form>
+        </div>
 
         <p
           className={`merch-entry__status merch-entry__status--${checkState}`}
@@ -138,18 +298,55 @@ export function MerchEligibilityEntry() {
       </div>
 
       {resultView === 'qualified' && eligibilityResult ? (
-        <QualifiedResult
-          result={eligibilityResult}
-          onBack={resetEligibilityCheck}
-        />
-      ) : null}
+          <QualifiedResult
+            result={eligibilityResult}
+            isExiting={isReturningHome}
+            onBack={resetEligibilityCheck}
+          />
+        ) : null}
 
       {resultView === 'unqualified' && eligibilityResult ? (
-        <UnqualifiedResult
-          result={eligibilityResult}
-          onBack={resetEligibilityCheck}
-        />
-      ) : null}
+          <UnqualifiedResult
+            result={eligibilityResult}
+            isExiting={isReturningHome}
+            onBack={resetEligibilityCheck}
+          />
+        ) : null}
     </main>
   );
+}
+
+function consumeAuthQueryState() {
+  const url = new URL(window.location.href);
+  const authState = url.searchParams.get('auth');
+
+  if (authState) {
+    url.searchParams.delete('auth');
+    url.searchParams.delete('reason');
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  }
+
+  return authState;
+}
+
+async function waitForCheckTempo(startedAt: number) {
+  const remaining = MINIMUM_CHECK_DURATION_MS - (performance.now() - startedAt);
+
+  if (remaining > 0) {
+    await delay(remaining);
+  }
+}
+
+function delay(duration: number) {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, duration);
+  });
+}
+
+function shortenWallet(walletAddress: string) {
+  return `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+}
+
+function formatTwitterUsername(username: string | null | undefined) {
+  return username ? `@${username}` : null;
 }
