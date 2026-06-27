@@ -11,7 +11,6 @@ import {
   readRenaissSession,
   signOutRenaiss,
   startRenaissLogin,
-  startRenaissLogoutReturn,
   type RenaissSession
 } from '../../lib/renaissAuth';
 import './MerchEligibilityEntry.css';
@@ -41,7 +40,6 @@ export function MerchEligibilityEntry() {
     string | null
   >(null);
   const [resultView, setResultView] = useState<ResultView>(null);
-  const [isReturningHome, setIsReturningHome] = useState(false);
 
   const user = session.authenticated ? session.user : null;
   const sessionWalletAddress =
@@ -130,21 +128,6 @@ export function MerchEligibilityEntry() {
     } catch {
       setCheckState('source-error');
     }
-  }
-
-  function resetEligibilityCheck() {
-    if (isReturningHome) {
-      return;
-    }
-
-    setIsReturningHome(true);
-    window.scrollTo({ top: 0, behavior: 'auto' });
-    setSession({ authenticated: false });
-    setPendingWalletAddress(null);
-    setEligibilityResult(null);
-    setResultView(null);
-    setCheckState('idle');
-    startRenaissLogoutReturn('/');
   }
 
   async function runEligibilityCheck(shouldCancel = () => false) {
@@ -290,19 +273,11 @@ export function MerchEligibilityEntry() {
       </div>
 
       {resultView === 'qualified' && eligibilityResult ? (
-          <QualifiedResult
-            result={eligibilityResult}
-            isExiting={isReturningHome}
-            onBack={resetEligibilityCheck}
-          />
+          <QualifiedResult result={eligibilityResult} />
         ) : null}
 
       {resultView === 'unqualified' && eligibilityResult ? (
-          <UnqualifiedResult
-            result={eligibilityResult}
-            isExiting={isReturningHome}
-            onBack={resetEligibilityCheck}
-          />
+          <UnqualifiedResult result={eligibilityResult} />
         ) : null}
     </main>
   );

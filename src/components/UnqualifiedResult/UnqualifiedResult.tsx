@@ -1,4 +1,4 @@
-import { type CSSProperties, type PointerEvent } from 'react';
+import { type CSSProperties } from 'react';
 import {
   MINIMUM_MERCH_SBT_BALANCE,
   type MerchEligibilityResult
@@ -6,15 +6,11 @@ import {
 import './UnqualifiedResult.css';
 
 type UnqualifiedResultProps = {
-  isExiting?: boolean;
   result: MerchEligibilityResult;
-  onBack: () => void | Promise<void>;
 };
 
 export function UnqualifiedResult({
-  isExiting = false,
-  result,
-  onBack
+  result
 }: UnqualifiedResultProps) {
   const minimumSbtBalance =
     result.minimumSbtBalance ?? MINIMUM_MERCH_SBT_BALANCE;
@@ -27,20 +23,9 @@ export function UnqualifiedResult({
     Math.max(0, (result.sbtBalance / minimumSbtBalance) * 100)
   );
 
-  function handleBackPointerDown(event: PointerEvent<HTMLButtonElement>) {
-    if (isExiting || event.button !== 0) {
-      return;
-    }
-
-    event.preventDefault();
-    void onBack();
-  }
-
   return (
     <section
-      className={`unqualified-result ${
-        isExiting ? 'unqualified-result--exiting' : ''
-      }`}
+      className="unqualified-result"
       aria-labelledby="unqualified-title"
       aria-live="polite"
       style={{ '--sbt-progress': `${progress}%` } as CSSProperties}
@@ -95,14 +80,12 @@ export function UnqualifiedResult({
             SBT balance.
           </p>
 
-          <button
-            type="button"
-            onPointerDown={handleBackPointerDown}
-            onClick={() => void onBack()}
-            disabled={isExiting}
+          <a
+            className="unqualified-result__reset-link"
+            href="/api/auth/logout-return?returnTo=/"
           >
             Check another wallet
-          </button>
+          </a>
         </div>
       </div>
     </section>

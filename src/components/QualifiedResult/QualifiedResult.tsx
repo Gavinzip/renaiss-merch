@@ -1,6 +1,5 @@
 import {
-  FormEvent,
-  type PointerEvent,
+  type FormEvent,
   useEffect,
   useRef,
   useState
@@ -28,16 +27,10 @@ type RevealPhase = 'idle' | 'playing' | 'review' | 'closing';
 type ShippingSubmitState = 'idle' | 'saving' | 'saved' | 'error';
 
 type QualifiedResultProps = {
-  isExiting?: boolean;
   result: MerchEligibilityResult;
-  onBack: () => void | Promise<void>;
 };
 
-export function QualifiedResult({
-  isExiting = false,
-  result,
-  onBack
-}: QualifiedResultProps) {
+export function QualifiedResult({ result }: QualifiedResultProps) {
   const scrollerRef = useRef<HTMLElement | null>(null);
   const forwardVideoRef = useRef<HTMLVideoElement | null>(null);
   const reverseVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -405,20 +398,6 @@ export function QualifiedResult({
     };
   }, []);
 
-  function handleBack() {
-    window.scrollTo(0, 0);
-    void onBack();
-  }
-
-  function handleBackPointerDown(event: PointerEvent<HTMLButtonElement>) {
-    if (isExiting || event.button !== 0) {
-      return;
-    }
-
-    event.preventDefault();
-    handleBack();
-  }
-
   async function handleShippingSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -442,8 +421,6 @@ export function QualifiedResult({
         showShipping ? 'qualified-result--shipping' : ''
       } qualified-result--${revealPhase} ${
         mediaReady ? 'qualified-result--ready' : 'qualified-result--loading'
-      } ${
-        isExiting ? 'qualified-result--exiting' : ''
       }`}
       aria-labelledby="qualified-title"
       aria-live="polite"
@@ -633,14 +610,12 @@ export function QualifiedResult({
                   ? 'Saving'
                   : 'Save shipping details'}
               </button>
-              <button
-                type="button"
-                onPointerDown={handleBackPointerDown}
-                onClick={handleBack}
-                disabled={isExiting}
+              <a
+                className="qualified-result__reset-link"
+                href="/api/auth/logout-return?returnTo=/"
               >
                 Check another wallet
-              </button>
+              </a>
             </div>
             <p
               className={`qualified-result__submit-status qualified-result__submit-status--${shippingSubmitState}`}
