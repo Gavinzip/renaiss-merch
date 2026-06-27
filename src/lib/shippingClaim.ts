@@ -6,7 +6,6 @@ export type ShippingClaimPayload = {
   deliveryNotes: string;
   email: string;
   firstName: string;
-  gmail: string;
   lastName: string;
   phone: string;
   postalCode: string;

@@ -212,7 +212,7 @@ function toClaimRow(claim) {
     eligibilitySource: claim.eligibility.source,
     email: claim.shipping.email,
     firstName: claim.shipping.firstName,
-    gmail: claim.shipping.gmail,
+    gmail: null,
     id: claim.id,
     lastName: claim.shipping.lastName,
     minimumSbtBalance: claim.eligibility.minimumSbtBalance,
@@ -290,7 +290,6 @@ function normalizeShippingPayload(payload) {
     deliveryNotes: readOptionalText(payload.deliveryNotes, 600),
     email: readEmail(payload.email, 'email_invalid'),
     firstName: readRequiredText(payload.firstName, 'first_name_required', 80),
-    gmail: readOptionalEmail(payload.gmail, 'gmail_invalid'),
     lastName: readRequiredText(payload.lastName, 'last_name_required', 80),
     phone: readPhone(payload.phone),
     postalCode: readRequiredText(payload.postalCode, 'postal_code_required', 32),
@@ -343,16 +342,6 @@ function readEmail(value, code) {
   const email = readRequiredText(value, code, 160).toLowerCase();
 
   if (!emailPattern.test(email)) {
-    throw new HttpError(400, code);
-  }
-
-  return email;
-}
-
-function readOptionalEmail(value, code) {
-  const email = readOptionalText(value, 160).toLowerCase();
-
-  if (email && !emailPattern.test(email)) {
     throw new HttpError(400, code);
   }
 

@@ -518,7 +518,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
                   type="tel"
                 />
               </label>
-              <label className="qualified-result__field-half">
+              <label className="qualified-result__field-wide">
                 Country / region
                 <select
                   autoComplete="shipping country-name"
@@ -532,15 +532,6 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
                     </option>
                   ))}
                 </select>
-              </label>
-              <label className="qualified-result__field-half">
-                Gmail
-                <input
-                  autoComplete="email"
-                  name="gmail"
-                  placeholder="name@gmail.com"
-                  type="email"
-                />
               </label>
               <label className="qualified-result__field-wide">
                 Address line 1
@@ -645,7 +636,6 @@ function readShippingClaimPayload(form: HTMLFormElement): ShippingClaimPayload {
     deliveryNotes: readFormValue(formData, 'deliveryNotes'),
     email: readFormValue(formData, 'email'),
     firstName: readFormValue(formData, 'firstName'),
-    gmail: readFormValue(formData, 'gmail'),
     lastName: readFormValue(formData, 'lastName'),
     phone: readFormValue(formData, 'phone'),
     postalCode: readFormValue(formData, 'postalCode'),
