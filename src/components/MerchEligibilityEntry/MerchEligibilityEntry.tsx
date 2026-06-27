@@ -11,6 +11,7 @@ import {
   readRenaissSession,
   signOutRenaiss,
   startRenaissLogin,
+  startRenaissLogoutReturn,
   type RenaissSession
 } from '../../lib/renaissAuth';
 import './MerchEligibilityEntry.css';
@@ -143,15 +144,7 @@ export function MerchEligibilityEntry() {
     setEligibilityResult(null);
     setResultView(null);
     setCheckState('idle');
-    window.setTimeout(() => {
-      setIsReturningHome(false);
-    }, 0);
-
-    void signOutRenaiss().catch(() => {
-      setCheckState((currentState) =>
-        currentState === 'idle' ? 'source-error' : currentState
-      );
-    });
+    startRenaissLogoutReturn('/');
   }
 
   async function runEligibilityCheck(shouldCancel = () => false) {
@@ -209,23 +202,25 @@ export function MerchEligibilityEntry() {
         .join(' ')}
       aria-labelledby="merch-entry-title"
     >
-      <div className="merch-entry__background" aria-hidden="true">
-        <Prism
-          animationType="3drotate"
-          baseWidth={8.4}
-          bloom={1.28}
-          colorFrequency={1.08}
-          glow={1.18}
-          height={5.1}
-          hueShift={0.06}
-          noise={0.08}
-          offset={{ x: 0, y: -20 }}
-          scale={3.05}
-          suspendWhenOffscreen
-          timeScale={0.38}
-          transparent
-        />
-      </div>
+      {!resultView ? (
+        <div className="merch-entry__background" aria-hidden="true">
+          <Prism
+            animationType="3drotate"
+            baseWidth={8.4}
+            bloom={1.28}
+            colorFrequency={1.08}
+            glow={1.18}
+            height={5.1}
+            hueShift={0.06}
+            noise={0.08}
+            offset={{ x: 0, y: -20 }}
+            scale={3.05}
+            suspendWhenOffscreen
+            timeScale={0.38}
+            transparent
+          />
+        </div>
+      ) : null}
 
       <section className="merch-entry__content" aria-hidden={!!resultView}>
         <p className="merch-entry__mark">RENAISS</p>

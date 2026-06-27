@@ -103,6 +103,12 @@ async function handleRoute(req, res) {
     return true;
   }
 
+  if (url.pathname === '/api/auth/logout-return') {
+    requireMethod(req, 'GET');
+    logoutAndRedirect(req, res, url);
+    return true;
+  }
+
   if (url.pathname === '/api/merch-eligibility') {
     requireMethod(req, 'GET');
     await handleMerchEligibility(res, readSession(req));
@@ -195,10 +201,19 @@ function sendSession(req, res) {
 }
 
 function logout(req, res) {
+  clearSession(req, res);
+  sendNoContent(res);
+}
+
+function logoutAndRedirect(req, res, url) {
+  clearSession(req, res);
+  redirect(res, safeReturnTo(url.searchParams.get('returnTo')));
+}
+
+function clearSession(req, res) {
   const sessionId = parseCookies(req).get(SESSION_COOKIE);
   deleteSession(sessionId);
   clearCookie(req, res, SESSION_COOKIE);
-  sendNoContent(res);
 }
 
 function readSession(req) {
@@ -216,4 +231,12 @@ function authErrorLocation(error) {
   const reason = encodeURIComponent(httpError.code);
 
   return `/?auth=error&reason=${reason}`;
+}
+
+function safeReturnTo(returnTo) {
+  if (!returnTo || !returnTo.startsWith('/') || returnTo.startsWith('//')) {
+    return '/';
+  }
+
+  return returnTo;
 }

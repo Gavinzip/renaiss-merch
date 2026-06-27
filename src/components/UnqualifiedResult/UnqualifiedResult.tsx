@@ -1,4 +1,4 @@
-import { type CSSProperties } from 'react';
+import { type CSSProperties, type PointerEvent } from 'react';
 import {
   MINIMUM_MERCH_SBT_BALANCE,
   type MerchEligibilityResult
@@ -26,6 +26,15 @@ export function UnqualifiedResult({
     100,
     Math.max(0, (result.sbtBalance / minimumSbtBalance) * 100)
   );
+
+  function handleBackPointerDown(event: PointerEvent<HTMLButtonElement>) {
+    if (isExiting || event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    void onBack();
+  }
 
   return (
     <section
@@ -88,6 +97,7 @@ export function UnqualifiedResult({
 
           <button
             type="button"
+            onPointerDown={handleBackPointerDown}
             onClick={() => void onBack()}
             disabled={isExiting}
           >

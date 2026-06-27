@@ -35,6 +35,12 @@ export function startRenaissLogin() {
   window.location.assign('/api/auth/renaiss/start');
 }
 
+export function startRenaissLogoutReturn(returnTo = '/') {
+  const logoutUrl = new URL('/api/auth/logout-return', window.location.origin);
+  logoutUrl.searchParams.set('returnTo', returnTo);
+  window.location.replace(logoutUrl);
+}
+
 export async function signOutRenaiss() {
   const response = await fetch('/api/auth/logout', {
     method: 'POST'

@@ -1,4 +1,10 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import {
+  FormEvent,
+  type PointerEvent,
+  useEffect,
+  useRef,
+  useState
+} from 'react';
 import { type MerchEligibilityResult } from '../../lib/merchEligibility';
 import {
   saveShippingClaim,
@@ -404,6 +410,15 @@ export function QualifiedResult({
     void onBack();
   }
 
+  function handleBackPointerDown(event: PointerEvent<HTMLButtonElement>) {
+    if (isExiting || event.button !== 0) {
+      return;
+    }
+
+    event.preventDefault();
+    handleBack();
+  }
+
   async function handleShippingSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -618,7 +633,12 @@ export function QualifiedResult({
                   ? 'Saving'
                   : 'Save shipping details'}
               </button>
-              <button type="button" onClick={handleBack} disabled={isExiting}>
+              <button
+                type="button"
+                onPointerDown={handleBackPointerDown}
+                onClick={handleBack}
+                disabled={isExiting}
+              >
                 Check another wallet
               </button>
             </div>
