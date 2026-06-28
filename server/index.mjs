@@ -19,7 +19,10 @@ import {
   randomToken,
   resolveRenaissIdentity
 } from './oidc.mjs';
-import { handleMerchShippingClaim } from './shipping-claims.mjs';
+import {
+  handleMerchShippingClaim,
+  handleStoredMerchShippingClaim
+} from './shipping-claims.mjs';
 import {
   CHALLENGE_MAX_AGE_SECONDS,
   SESSION_MAX_AGE_SECONDS,
@@ -116,6 +119,11 @@ async function handleRoute(req, res) {
   }
 
   if (url.pathname === '/api/merch-shipping-claim') {
+    if (req.method === 'GET') {
+      handleStoredMerchShippingClaim(res, readSession(req));
+      return true;
+    }
+
     requireMethod(req, 'POST');
     await handleMerchShippingClaim(req, res, readSession(req));
     return true;

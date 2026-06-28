@@ -6,7 +6,9 @@ import {
 } from 'react';
 import { type MerchEligibilityResult } from '../../lib/merchEligibility';
 import {
+  readStoredShippingClaim,
   saveShippingClaim,
+  type ShippingClaimIntent,
   type ShippingClaimPayload
 } from '../../lib/shippingClaim';
 import { shippingCountries } from '../../lib/shippingCountries';
@@ -24,22 +26,88 @@ const REVIEW_CLOSE_WHEEL_DELTA_PX = 80;
 const REVIEW_CLOSE_WHEEL_WINDOW_MS = 320;
 const SHIPPING_REVEAL_VIDEO_PROGRESS = 0.86;
 type RevealPhase = 'idle' | 'playing' | 'review' | 'closing';
-type ShippingSubmitState = 'idle' | 'saving' | 'saved' | 'error';
+type ShippingActionState = 'idle' | 'saving' | 'submitting' | 'saved' | 'submitted' | 'error';
+type ShippingLoadState = 'loading' | 'loaded' | 'empty' | 'error';
+type ClaimDialog = 'size-chart' | 'submitted' | 'confirm-resubmit' | null;
 
 type QualifiedResultProps = {
   result: MerchEligibilityResult;
 };
 
+const merchSizes = [
+  {
+    size: 'S',
+    length: '71',
+    chest: '114',
+    shoulder: '54',
+    sleeve: '23',
+    height: '150-170',
+    weight: '80-125'
+  },
+  {
+    size: 'M',
+    length: '74',
+    chest: '120',
+    shoulder: '56',
+    sleeve: '24',
+    height: '170-185',
+    weight: '135-160'
+  },
+  {
+    size: 'L',
+    length: '77',
+    chest: '126',
+    shoulder: '58',
+    sleeve: '25',
+    height: '170-195',
+    weight: '160-200'
+  },
+  {
+    size: 'XL',
+    length: '80',
+    chest: '132',
+    shoulder: '60',
+    sleeve: '26',
+    height: '170-200',
+    weight: '200-240'
+  }
+];
+
+const shippingFieldNames: Array<keyof ShippingClaimPayload> = [
+  'addressLine1',
+  'addressLine2',
+  'city',
+  'country',
+  'deliveryNotes',
+  'email',
+  'firstName',
+  'lastName',
+  'phone',
+  'postalCode',
+  'region',
+  'size'
+];
+
 export function QualifiedResult({ result }: QualifiedResultProps) {
   const scrollerRef = useRef<HTMLElement | null>(null);
+  const shippingFormRef = useRef<HTMLFormElement | null>(null);
   const forwardVideoRef = useRef<HTMLVideoElement | null>(null);
   const reverseVideoRef = useRef<HTMLVideoElement | null>(null);
   const shippingVisibleRef = useRef(false);
   const [showShipping, setShowShipping] = useState(false);
   const [mediaReady, setMediaReady] = useState(false);
   const [revealPhase, setRevealPhase] = useState<RevealPhase>('idle');
-  const [shippingSubmitState, setShippingSubmitState] =
-    useState<ShippingSubmitState>('idle');
+  const [shippingActionState, setShippingActionState] =
+    useState<ShippingActionState>('idle');
+  const [shippingLoadState, setShippingLoadState] =
+    useState<ShippingLoadState>('loading');
+  const [storedClaimStatus, setStoredClaimStatus] = useState<
+    'draft' | 'submitted' | null
+  >(null);
+  const [hasSubmittedClaim, setHasSubmittedClaim] = useState(false);
+  const [activeDialog, setActiveDialog] = useState<ClaimDialog>(null);
+  const [pendingSubmitPayload, setPendingSubmitPayload] =
+    useState<ShippingClaimPayload | null>(null);
 
   useEffect(() => {
     const containerElement = scrollerRef.current;
@@ -398,22 +466,109 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadStoredClaim() {
+      try {
+        const storedClaim = await readStoredShippingClaim();
+
+        if (cancelled) {
+          return;
+        }
+
+        setHasSubmittedClaim(storedClaim.hasSubmitted);
+
+        if (!storedClaim.claim) {
+          setShippingLoadState('empty');
+          return;
+        }
+
+        setStoredClaimStatus(storedClaim.claim.status);
+        setShippingLoadState('loaded');
+        window.requestAnimationFrame(() => {
+          if (!cancelled && shippingFormRef.current) {
+            applyShippingFormValues(
+              shippingFormRef.current,
+              storedClaim.claim?.shipping || {}
+            );
+          }
+        });
+      } catch {
+        if (!cancelled) {
+          setShippingLoadState('error');
+        }
+      }
+    }
+
+    void loadStoredClaim();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   async function handleShippingSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (shippingSubmitState === 'saving') {
+    if (
+      shippingActionState === 'saving' ||
+      shippingActionState === 'submitting'
+    ) {
       return;
     }
 
-    setShippingSubmitState('saving');
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    const intent: ShippingClaimIntent =
+      submitter instanceof HTMLButtonElement && submitter.value === 'submit'
+        ? 'submit'
+        : 'save';
+    const payload = readShippingClaimPayload(event.currentTarget);
+
+    if (intent === 'submit' && hasSubmittedClaim) {
+      setPendingSubmitPayload(payload);
+      setActiveDialog('confirm-resubmit');
+      return;
+    }
+
+    await persistShippingClaim(payload, intent);
+  }
+
+  async function persistShippingClaim(
+    payload: ShippingClaimPayload,
+    intent: ShippingClaimIntent
+  ) {
+    setShippingActionState(intent === 'submit' ? 'submitting' : 'saving');
 
     try {
-      await saveShippingClaim(readShippingClaimPayload(event.currentTarget));
-      setShippingSubmitState('saved');
+      const claim = await saveShippingClaim(payload, intent);
+      setHasSubmittedClaim(claim.hasSubmitted);
+      setStoredClaimStatus(claim.status);
+      setShippingLoadState('loaded');
+      setShippingActionState(intent === 'submit' ? 'submitted' : 'saved');
+
+      if (intent === 'submit') {
+        setActiveDialog('submitted');
+      }
     } catch {
-      setShippingSubmitState('error');
+      setShippingActionState('error');
     }
   }
+
+  function handleConfirmResubmit() {
+    if (!pendingSubmitPayload) {
+      setActiveDialog(null);
+      return;
+    }
+
+    const payload = pendingSubmitPayload;
+    setPendingSubmitPayload(null);
+    setActiveDialog(null);
+    void persistShippingClaim(payload, 'submit');
+  }
+
+  const isPersisting =
+    shippingActionState === 'saving' || shippingActionState === 'submitting';
 
   return (
     <section
@@ -466,6 +621,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
           </div>
 
           <form
+            ref={shippingFormRef}
             className="qualified-result__shipping"
             onSubmit={handleShippingSubmit}
             aria-label="Shipping address"
@@ -518,7 +674,30 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
                   type="tel"
                 />
               </label>
-              <label className="qualified-result__field-wide">
+              <div className="qualified-result__field-half qualified-result__field-control">
+                <div className="qualified-result__field-label">
+                  <span>Size</span>
+                  <button
+                    aria-label="Open size chart"
+                    className="qualified-result__info-button"
+                    type="button"
+                    onClick={() => setActiveDialog('size-chart')}
+                  >
+                    !
+                  </button>
+                </div>
+                <select name="size" required defaultValue="">
+                  <option value="" disabled>
+                    Select size
+                  </option>
+                  {merchSizes.map((size) => (
+                    <option key={size.size} value={size.size}>
+                      {size.size}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <label className="qualified-result__field-half">
                 Country / region
                 <select
                   autoComplete="shipping country-name"
@@ -595,26 +774,153 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
             <div className="qualified-result__actions">
               <button
                 type="submit"
-                disabled={shippingSubmitState === 'saving'}
+                name="intent"
+                value="submit"
+                disabled={isPersisting}
               >
-                {shippingSubmitState === 'saving'
+                {shippingActionState === 'submitting'
+                  ? 'Submitting'
+                  : 'Submit claim'}
+              </button>
+              <button
+                className="qualified-result__save-button"
+                type="submit"
+                name="intent"
+                value="save"
+                disabled={isPersisting}
+              >
+                {shippingActionState === 'saving'
                   ? 'Saving'
                   : 'Save shipping details'}
               </button>
-              <a
-                className="qualified-result__reset-link"
-                href="/api/auth/logout-return?returnTo=/"
-              >
-                Check another wallet
-              </a>
             </div>
             <p
-              className={`qualified-result__submit-status qualified-result__submit-status--${shippingSubmitState}`}
+              className={`qualified-result__submit-status qualified-result__submit-status--${shippingActionState}`}
               role="status"
             >
-              {readShippingSubmitStatus(shippingSubmitState)}
+              {readShippingSubmitStatus(
+                shippingActionState,
+                shippingLoadState,
+                storedClaimStatus
+              )}
             </p>
           </form>
+
+          {activeDialog ? (
+            <div className="qualified-result__modal-backdrop" role="presentation">
+              {activeDialog === 'size-chart' ? (
+                <div
+                  aria-labelledby="qualified-size-chart-title"
+                  aria-modal="true"
+                  className="qualified-result__modal qualified-result__modal--chart"
+                  role="dialog"
+                >
+                  <div className="qualified-result__modal-header">
+                    <h3 id="qualified-size-chart-title">Size chart</h3>
+                    <button
+                      aria-label="Close size chart"
+                      className="qualified-result__modal-close"
+                      type="button"
+                      onClick={() => setActiveDialog(null)}
+                    >
+                      X
+                    </button>
+                  </div>
+                  <div className="qualified-result__size-chart-wrap">
+                    <table className="qualified-result__size-chart">
+                      <thead>
+                        <tr>
+                          <th>Size</th>
+                          <th>Length</th>
+                          <th>Chest</th>
+                          <th>Shoulder</th>
+                          <th>Sleeve</th>
+                          <th>Height</th>
+                          <th>Weight</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {merchSizes.map((size) => (
+                          <tr key={size.size}>
+                            <th scope="row">{size.size}</th>
+                            <td>{size.length}</td>
+                            <td>{size.chest}</td>
+                            <td>{size.shoulder}</td>
+                            <td>{size.sleeve}</td>
+                            <td>{size.height}</td>
+                            <td>{size.weight}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : null}
+
+              {activeDialog === 'submitted' ? (
+                <div
+                  aria-labelledby="qualified-submit-success-title"
+                  aria-modal="true"
+                  className="qualified-result__modal"
+                  role="dialog"
+                >
+                  <p className="qualified-result__modal-eyebrow">
+                    Claim submitted
+                  </p>
+                  <h3 id="qualified-submit-success-title">
+                    Shipping details received.
+                  </h3>
+                  <p>
+                    Your merch claim has been submitted. You can keep this
+                    wallet open or check another wallet.
+                  </p>
+                  <div className="qualified-result__modal-actions">
+                    <button type="button" onClick={() => setActiveDialog(null)}>
+                      Stay here
+                    </button>
+                    <a
+                      className="qualified-result__reset-link"
+                      href="/api/auth/logout-return?returnTo=/"
+                    >
+                      Check another wallet
+                    </a>
+                  </div>
+                </div>
+              ) : null}
+
+              {activeDialog === 'confirm-resubmit' ? (
+                <div
+                  aria-labelledby="qualified-resubmit-title"
+                  aria-modal="true"
+                  className="qualified-result__modal"
+                  role="dialog"
+                >
+                  <p className="qualified-result__modal-eyebrow">
+                    Already submitted
+                  </p>
+                  <h3 id="qualified-resubmit-title">Submit again?</h3>
+                  <p>
+                    This wallet already has a submitted claim. Submit again only
+                    if you want to replace the latest details.
+                  </p>
+                  <div className="qualified-result__modal-actions">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPendingSubmitPayload(null);
+                        setActiveDialog(null);
+                      }}
+                    >
+                      Keep editing
+                    </button>
+                    <button type="button" onClick={handleConfirmResubmit}>
+                      Submit again
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="qualified-result__loader" aria-hidden={mediaReady}>
             <span />
@@ -639,8 +945,27 @@ function readShippingClaimPayload(form: HTMLFormElement): ShippingClaimPayload {
     lastName: readFormValue(formData, 'lastName'),
     phone: readFormValue(formData, 'phone'),
     postalCode: readFormValue(formData, 'postalCode'),
-    region: readFormValue(formData, 'region')
+    region: readFormValue(formData, 'region'),
+    size: readFormValue(formData, 'size')
   };
+}
+
+function applyShippingFormValues(
+  form: HTMLFormElement,
+  shipping: Partial<ShippingClaimPayload>
+) {
+  for (const fieldName of shippingFieldNames) {
+    const field = form.elements.namedItem(fieldName);
+    const value = shipping[fieldName] || '';
+
+    if (
+      field instanceof HTMLInputElement ||
+      field instanceof HTMLSelectElement ||
+      field instanceof HTMLTextAreaElement
+    ) {
+      field.value = value;
+    }
+  }
 }
 
 function readFormValue(formData: FormData, name: string) {
@@ -649,14 +974,35 @@ function readFormValue(formData: FormData, name: string) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function readShippingSubmitStatus(state: ShippingSubmitState) {
-  switch (state) {
+function readShippingSubmitStatus(
+  actionState: ShippingActionState,
+  loadState: ShippingLoadState,
+  storedStatus: 'draft' | 'submitted' | null
+) {
+  switch (actionState) {
     case 'saving':
       return 'Saving shipping details.';
+    case 'submitting':
+      return 'Submitting claim.';
     case 'saved':
       return 'Shipping details saved.';
+    case 'submitted':
+      return 'Claim submitted.';
     case 'error':
       return 'Could not save shipping details.';
+    default:
+      break;
+  }
+
+  switch (loadState) {
+    case 'loading':
+      return 'Checking saved details.';
+    case 'loaded':
+      return storedStatus === 'submitted'
+        ? 'Submitted details loaded.'
+        : 'Saved details loaded.';
+    case 'error':
+      return 'Could not load saved details.';
     default:
       return '';
   }

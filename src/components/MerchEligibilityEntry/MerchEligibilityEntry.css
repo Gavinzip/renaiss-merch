@@ -239,7 +239,7 @@
   min-width: 8.6rem;
 }
 
-.merch-entry button {
+.merch-entry__content button {
   min-width: 8.6rem;
   min-height: 3.2rem;
   padding: 0 1.3rem;
@@ -289,7 +289,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.24);
 }
 
-.merch-entry button:hover {
+.merch-entry__content button:hover {
   background: #ffffff;
   transform: translateY(-1px);
   box-shadow:
@@ -302,13 +302,13 @@
   background: rgba(255, 255, 255, 0.26);
 }
 
-.merch-entry button:disabled {
+.merch-entry__content button:disabled {
   cursor: progress;
   opacity: 0.72;
   transform: none;
 }
 
-.merch-entry button:focus-visible {
+.merch-entry__content button:focus-visible {
   outline: 2px solid rgba(255, 255, 255, 0.9);
   outline-offset: 3px;
 }
@@ -416,7 +416,7 @@
     padding: 0.55rem 1rem;
   }
 
-  .merch-entry button {
+  .merch-entry__content button {
     width: 100%;
   }
 
@@ -430,7 +430,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .merch-entry button {
+  .merch-entry__content button {
     transition: none;
   }
 }

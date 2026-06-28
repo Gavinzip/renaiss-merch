@@ -12,7 +12,17 @@ const SQLITE_BUSY_RETRY_BASE_MS = 25;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const countryPattern = /^[A-Z]{2}$/;
 const phonePattern = /^[+()\d\s.-]{6,32}$/;
+const sizePattern = /^(S|M|L|XL)$/;
+const walletPattern = /^0x[a-fA-F0-9]{40}$/;
 const dbByPath = new Map();
+
+export function handleStoredMerchShippingClaim(res, session, options = {}) {
+  if (!session) {
+    throw new HttpError(401, 'unauthenticated');
+  }
+
+  sendJson(res, 200, readLatestShippingClaim(session, options.readOptions));
+}
 
 export async function handleMerchShippingClaim(req, res, session, options = {}) {
   if (!session) {
@@ -27,10 +37,13 @@ export async function handleMerchShippingClaim(req, res, session, options = {}) 
     throw new HttpError(403, 'wallet_not_eligible');
   }
 
-  const shipping = normalizeShippingPayload(await readJsonBody(req));
+  const payload = await readJsonBody(req);
+  const intent = readShippingIntent(payload.intent);
+  const shipping = normalizeShippingPayload(payload.shipping || payload);
   const claim = writeShippingClaim(
     {
       eligibility,
+      intent,
       shipping,
       user: sanitizeUser(session.user)
     },
@@ -38,19 +51,25 @@ export async function handleMerchShippingClaim(req, res, session, options = {}) 
   );
 
   sendJson(res, 201, {
+    hasSubmitted: hasSubmittedClaim(session, options.saveOptions),
     claimId: claim.id,
-    status: 'saved'
+    savedAt: claim.createdAt,
+    status: claim.status,
+    submittedAt: claim.submittedAt
   });
 }
 
 export function saveShippingClaim(claimInput, options = {}) {
   const db = getShippingClaimsDb(options.dbPath);
   const createdAt = new Date().toISOString();
+  const status = claimInput.intent === 'submit' ? 'submitted' : 'draft';
   const claim = {
     id: randomUUID(),
     createdAt,
     eligibility: claimInput.eligibility,
+    status,
     shipping: claimInput.shipping,
+    submittedAt: status === 'submitted' ? createdAt : null,
     user: claimInput.user
   };
   const writeClaim = db.transaction((nextClaim) => {
@@ -70,6 +89,7 @@ export function saveShippingClaim(claimInput, options = {}) {
         last_name,
         email,
         gmail,
+        size,
         phone,
         country,
         address_line_1,
@@ -78,6 +98,8 @@ export function saveShippingClaim(claimInput, options = {}) {
         region,
         postal_code,
         delivery_notes,
+        claim_status,
+        submitted_at,
         eligibility_json,
         shipping_json,
         user_json
@@ -96,6 +118,7 @@ export function saveShippingClaim(claimInput, options = {}) {
         @lastName,
         @email,
         @gmail,
+        @size,
         @phone,
         @country,
         @addressLine1,
@@ -104,6 +127,8 @@ export function saveShippingClaim(claimInput, options = {}) {
         @region,
         @postalCode,
         @deliveryNotes,
+        @status,
+        @submittedAt,
         @eligibilityJson,
         @shippingJson,
         @userJson
@@ -124,7 +149,7 @@ export function readStoredShippingClaims(options = {}) {
   const db = getShippingClaimsDb(options.dbPath);
   const rows = db
     .prepare(
-      'SELECT eligibility_json, shipping_json, user_json, id, created_at FROM shipping_claims ORDER BY created_at ASC, id ASC'
+      'SELECT eligibility_json, shipping_json, user_json, id, created_at, claim_status, submitted_at FROM shipping_claims ORDER BY created_at ASC, id ASC'
     )
     .all();
 
@@ -133,8 +158,56 @@ export function readStoredShippingClaims(options = {}) {
     createdAt: row.created_at,
     eligibility: JSON.parse(row.eligibility_json),
     shipping: JSON.parse(row.shipping_json),
+    status: row.claim_status,
+    submittedAt: row.submitted_at,
     user: JSON.parse(row.user_json)
   }));
+}
+
+export function readLatestShippingClaim(session, options = {}) {
+  const walletAddress = readSessionWalletAddress(session);
+  const db = getShippingClaimsDb(options.dbPath);
+  const row = db
+    .prepare(
+      `
+        SELECT created_at, shipping_json, claim_status, submitted_at
+        FROM shipping_claims
+        WHERE wallet_address = @walletAddress
+        ORDER BY created_at DESC, id DESC
+        LIMIT 1
+      `
+    )
+    .get({ walletAddress });
+
+  return {
+    claim: row
+      ? {
+          savedAt: row.created_at,
+          shipping: JSON.parse(row.shipping_json),
+          status: normalizeClaimStatus(row.claim_status),
+          submittedAt: row.submitted_at || null
+        }
+      : null,
+    hasSubmitted: hasSubmittedClaim(session, options)
+  };
+}
+
+export function hasSubmittedClaim(session, options = {}) {
+  const walletAddress = readSessionWalletAddress(session);
+  const db = getShippingClaimsDb(options.dbPath);
+  const row = db
+    .prepare(
+      `
+        SELECT 1
+        FROM shipping_claims
+        WHERE wallet_address = @walletAddress
+          AND claim_status = 'submitted'
+        LIMIT 1
+      `
+    )
+    .get({ walletAddress });
+
+  return !!row;
 }
 
 function getShippingClaimsDb(configuredPath) {
@@ -174,6 +247,7 @@ function getShippingClaimsDb(configuredPath) {
         last_name TEXT NOT NULL,
         email TEXT NOT NULL,
         gmail TEXT,
+        size TEXT,
         phone TEXT NOT NULL,
         country TEXT NOT NULL,
         address_line_1 TEXT NOT NULL,
@@ -182,6 +256,8 @@ function getShippingClaimsDb(configuredPath) {
         region TEXT NOT NULL,
         postal_code TEXT NOT NULL,
         delivery_notes TEXT,
+        claim_status TEXT NOT NULL DEFAULT 'draft',
+        submitted_at TEXT,
         eligibility_json TEXT NOT NULL,
         shipping_json TEXT NOT NULL,
         user_json TEXT NOT NULL
@@ -193,6 +269,15 @@ function getShippingClaimsDb(configuredPath) {
       CREATE INDEX IF NOT EXISTS idx_shipping_claims_created_at
         ON shipping_claims (created_at);
     `);
+
+    ensureColumn(db, 'shipping_claims', 'size', 'size TEXT');
+    ensureColumn(
+      db,
+      'shipping_claims',
+      'claim_status',
+      "claim_status TEXT NOT NULL DEFAULT 'draft'"
+    );
+    ensureColumn(db, 'shipping_claims', 'submitted_at', 'submitted_at TEXT');
   });
 
   dbByPath.set(dbPath, db);
@@ -222,7 +307,10 @@ function toClaimRow(claim) {
     sbtBadgeCount: claim.eligibility.sbtBadgeCount,
     sbtBalance: claim.eligibility.sbtBalance,
     sbtContract: claim.eligibility.sbtContract,
+    size: claim.shipping.size,
     shippingJson: JSON.stringify(claim.shipping),
+    status: claim.status,
+    submittedAt: claim.submittedAt,
     userEmail: claim.user.email,
     userJson: JSON.stringify(claim.user),
     userSub: claim.user.sub,
@@ -293,8 +381,50 @@ function normalizeShippingPayload(payload) {
     lastName: readRequiredText(payload.lastName, 'last_name_required', 80),
     phone: readPhone(payload.phone),
     postalCode: readRequiredText(payload.postalCode, 'postal_code_required', 32),
-    region: readRequiredText(payload.region, 'region_required', 80)
+    region: readRequiredText(payload.region, 'region_required', 80),
+    size: readSize(payload.size)
   };
+}
+
+function ensureColumn(db, tableName, columnName, columnDefinition) {
+  const columns = db
+    .prepare(`PRAGMA table_info(${tableName})`)
+    .all()
+    .map((column) => column.name);
+
+  if (columns.includes(columnName)) {
+    return;
+  }
+
+  db.exec(`ALTER TABLE ${tableName} ADD COLUMN ${columnDefinition}`);
+}
+
+function readShippingIntent(value) {
+  return value === 'submit' ? 'submit' : 'save';
+}
+
+function normalizeClaimStatus(value) {
+  return value === 'submitted' ? 'submitted' : 'draft';
+}
+
+function readSessionWalletAddress(session) {
+  const walletAddress = normalizeWalletAddress(session?.user?.safeWalletAddress);
+
+  if (!walletAddress) {
+    throw new HttpError(409, 'safe_wallet_not_ready');
+  }
+
+  return walletAddress;
+}
+
+function normalizeWalletAddress(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const walletAddress = value.trim().toLowerCase();
+
+  return walletPattern.test(walletAddress) ? walletAddress : null;
 }
 
 function sanitizeUser(user) {
@@ -366,6 +496,16 @@ function readCountry(value) {
   }
 
   return country;
+}
+
+function readSize(value) {
+  const size = readRequiredText(value, 'size_required', 2).toUpperCase();
+
+  if (!sizePattern.test(size)) {
+    throw new HttpError(400, 'size_invalid');
+  }
+
+  return size;
 }
 
 function readNullableString(value) {
