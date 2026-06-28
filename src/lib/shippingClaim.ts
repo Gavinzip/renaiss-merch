@@ -33,6 +33,18 @@ export type StoredShippingClaimResponse = {
   hasSubmitted: boolean;
 };
 
+export class ShippingClaimError extends Error {
+  code: string;
+  status: number;
+
+  constructor(status: number, code: string) {
+    super(`Shipping claim endpoint returned ${status}: ${code}.`);
+    this.name = 'ShippingClaimError';
+    this.code = code;
+    this.status = status;
+  }
+}
+
 const shippingClaimEndpoint =
   import.meta.env.VITE_MERCH_SHIPPING_CLAIM_ENDPOINT ||
   '/api/merch-shipping-claim';
@@ -51,7 +63,7 @@ export async function saveShippingClaim(
   });
 
   if (!response.ok) {
-    throw new Error(`Shipping claim endpoint returned ${response.status}.`);
+    throw new ShippingClaimError(response.status, await readErrorCode(response));
   }
 
   return (await response.json()) as ShippingClaimResponse;
@@ -63,8 +75,20 @@ export async function readStoredShippingClaim(): Promise<StoredShippingClaimResp
   });
 
   if (!response.ok) {
-    throw new Error(`Shipping claim endpoint returned ${response.status}.`);
+    throw new ShippingClaimError(response.status, await readErrorCode(response));
   }
 
   return (await response.json()) as StoredShippingClaimResponse;
+}
+
+async function readErrorCode(response: Response) {
+  try {
+    const body = (await response.json()) as { code?: unknown };
+
+    return typeof body.code === 'string' && body.code
+      ? body.code
+      : 'request_failed';
+  } catch {
+    return 'request_failed';
+  }
 }

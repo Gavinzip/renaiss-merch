@@ -8,6 +8,7 @@ import { type MerchEligibilityResult } from '../../lib/merchEligibility';
 import {
   readStoredShippingClaim,
   saveShippingClaim,
+  ShippingClaimError,
   type ShippingClaimIntent,
   type ShippingClaimPayload
 } from '../../lib/shippingClaim';
@@ -25,6 +26,8 @@ const REVIEW_CLOSE_COOLDOWN_MS = 900;
 const REVIEW_CLOSE_WHEEL_DELTA_PX = 80;
 const REVIEW_CLOSE_WHEEL_WINDOW_MS = 320;
 const SHIPPING_REVEAL_VIDEO_PROGRESS = 0.86;
+const emailInputPattern = '[^\\s@]+@[^\\s@]+\\.[^\\s@]+';
+const phoneInputPattern = '[+()0-9\\s.-]{6,32}';
 type RevealPhase = 'idle' | 'playing' | 'review' | 'closing';
 type ShippingActionState = 'idle' | 'saving' | 'submitting' | 'saved' | 'submitted' | 'error';
 type ShippingLoadState = 'loading' | 'loaded' | 'empty' | 'error';
@@ -108,6 +111,9 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
   const [activeDialog, setActiveDialog] = useState<ClaimDialog>(null);
   const [pendingSubmitPayload, setPendingSubmitPayload] =
     useState<ShippingClaimPayload | null>(null);
+  const [shippingActionError, setShippingActionError] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     const containerElement = scrollerRef.current;
@@ -538,6 +544,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
     payload: ShippingClaimPayload,
     intent: ShippingClaimIntent
   ) {
+    setShippingActionError(null);
     setShippingActionState(intent === 'submit' ? 'submitting' : 'saving');
 
     try {
@@ -550,7 +557,8 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       if (intent === 'submit') {
         setActiveDialog('submitted');
       }
-    } catch {
+    } catch (error) {
+      setShippingActionError(readShippingClaimErrorMessage(error, intent));
       setShippingActionState('error');
     }
   }
@@ -659,8 +667,10 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
                 <input
                   autoComplete="email"
                   name="email"
+                  pattern={emailInputPattern}
                   placeholder="name@example.com"
                   required
+                  title="Enter a complete email address, for example name@example.com."
                   type="email"
                 />
               </label>
@@ -669,8 +679,10 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
                 <input
                   autoComplete="shipping tel"
                   name="phone"
+                  pattern={phoneInputPattern}
                   placeholder="+1 555 000 0000"
                   required
+                  title="Enter a valid phone number using digits, spaces, +, -, ., or parentheses."
                   type="tel"
                 />
               </label>
@@ -801,7 +813,8 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
               {readShippingSubmitStatus(
                 shippingActionState,
                 shippingLoadState,
-                storedClaimStatus
+                storedClaimStatus,
+                shippingActionError
               )}
             </p>
           </form>
@@ -977,7 +990,8 @@ function readFormValue(formData: FormData, name: string) {
 function readShippingSubmitStatus(
   actionState: ShippingActionState,
   loadState: ShippingLoadState,
-  storedStatus: 'draft' | 'submitted' | null
+  storedStatus: 'draft' | 'submitted' | null,
+  actionError: string | null
 ) {
   switch (actionState) {
     case 'saving':
@@ -989,7 +1003,7 @@ function readShippingSubmitStatus(
     case 'submitted':
       return 'Claim submitted.';
     case 'error':
-      return 'Could not save shipping details.';
+      return actionError || 'Could not save shipping details.';
     default:
       break;
   }
@@ -1005,5 +1019,40 @@ function readShippingSubmitStatus(
       return 'Could not load saved details.';
     default:
       return '';
+  }
+}
+
+function readShippingClaimErrorMessage(
+  error: unknown,
+  intent: ShippingClaimIntent
+) {
+  if (!(error instanceof ShippingClaimError)) {
+    return intent === 'submit'
+      ? 'Could not submit claim.'
+      : 'Could not save shipping details.';
+  }
+
+  switch (error.code) {
+    case 'email_invalid':
+      return 'Enter a complete email address, for example name@example.com.';
+    case 'phone_invalid':
+    case 'phone_required':
+      return 'Enter a valid phone number using digits, spaces, +, -, ., or parentheses.';
+    case 'size_required':
+    case 'size_invalid':
+      return 'Select a merch size before saving.';
+    case 'country_invalid':
+    case 'country_required':
+      return 'Select a valid country or region.';
+    case 'unauthenticated':
+      return 'Session expired. Please sign in again.';
+    case 'wallet_not_eligible':
+      return 'This wallet is not eligible to submit a merch claim.';
+    default:
+      return error.status >= 400 && error.status < 500
+        ? 'Check the shipping details and try again.'
+        : intent === 'submit'
+          ? 'Could not submit claim.'
+          : 'Could not save shipping details.';
   }
 }
