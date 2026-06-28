@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Mesh, Program, Renderer, Triangle } from 'ogl';
 import './Prism.css';
 
@@ -20,7 +20,36 @@ type PrismProps = {
   timeScale?: number;
 };
 
-const Prism: React.FC<PrismProps> = ({
+const WEBGL_RETRY_AT_MS = [250, 500, 1000];
+
+type PrismErrorBoundaryProps = {
+  children: React.ReactNode;
+};
+
+type PrismErrorBoundaryState = {
+  disabled: boolean;
+};
+
+class PrismErrorBoundary extends React.Component<
+  PrismErrorBoundaryProps,
+  PrismErrorBoundaryState
+> {
+  state: PrismErrorBoundaryState = { disabled: false };
+
+  static getDerivedStateFromError() {
+    return { disabled: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.warn('Prism background disabled after a rendering error.', error);
+  }
+
+  render() {
+    return this.state.disabled ? null : this.props.children;
+  }
+}
+
+const PrismCanvas: React.FC<PrismProps> = ({
   height = 3.5,
   baseWidth = 5.5,
   animationType = 'rotate',
@@ -38,10 +67,32 @@ const Prism: React.FC<PrismProps> = ({
   timeScale = 0.5
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const webGlRetryStartedAtRef = useRef<number | null>(null);
+  const [webGlAttempt, setWebGlAttempt] = useState(0);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+
+    if (webGlRetryStartedAtRef.current === null) {
+      webGlRetryStartedAtRef.current = performance.now();
+    }
+
+    const scheduleWebGlRetry = () => {
+      const nextRetryAt = WEBGL_RETRY_AT_MS[webGlAttempt];
+
+      if (nextRetryAt === undefined) {
+        return undefined;
+      }
+
+      const elapsed = performance.now() - (webGlRetryStartedAtRef.current || 0);
+      const delay = Math.max(0, nextRetryAt - elapsed);
+      const timerId = window.setTimeout(() => {
+        setWebGlAttempt((attempt) => attempt + 1);
+      }, delay);
+
+      return () => window.clearTimeout(timerId);
+    };
 
     const H = Math.max(0.001, height);
     const BW = Math.max(0.001, baseWidth);
@@ -63,12 +114,31 @@ const Prism: React.FC<PrismProps> = ({
     const INERT = Math.max(0, Math.min(1, inertia || 0.12));
 
     const dpr = Math.min(2, window.devicePixelRatio || 1);
-    const renderer = new Renderer({
-      dpr,
-      alpha: transparent,
-      antialias: false
-    });
+    if (!canCreateWebGlContext()) {
+      return scheduleWebGlRetry();
+    }
+
+    let renderer: Renderer;
+    try {
+      renderer = new Renderer({
+        dpr,
+        alpha: transparent,
+        antialias: false
+      });
+    } catch (error) {
+      const retryCleanup = scheduleWebGlRetry();
+
+      if (retryCleanup) {
+        return retryCleanup;
+      }
+
+      console.warn('Prism background disabled because WebGL is unavailable.', error);
+      return undefined;
+    }
     const gl = renderer.gl;
+    if (!gl) {
+      return scheduleWebGlRetry();
+    }
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.CULL_FACE);
     gl.disable(gl.BLEND);
@@ -393,7 +463,17 @@ const Prism: React.FC<PrismProps> = ({
         if (TS < 1e-6) continueRAF = false;
       }
 
-      renderer.render({ scene: mesh });
+      try {
+        renderer.render({ scene: mesh });
+      } catch (error) {
+        console.warn('Prism background disabled after a render error.', error);
+        stopRAF();
+        if (gl.canvas.parentElement === container) {
+          container.removeChild(gl.canvas);
+        }
+        return;
+      }
+
       if (continueRAF) {
         raf = requestAnimationFrame(render);
       } else {
@@ -449,10 +529,41 @@ const Prism: React.FC<PrismProps> = ({
     hoverStrength,
     inertia,
     bloom,
-    suspendWhenOffscreen
+    suspendWhenOffscreen,
+    webGlAttempt
   ]);
 
   return <div className="prism-container" ref={containerRef} />;
 };
+
+function canCreateWebGlContext() {
+  if (typeof window === 'undefined' || !window.WebGLRenderingContext) {
+    return false;
+  }
+
+  const canvas = document.createElement('canvas');
+
+  try {
+    const gl = (
+      canvas.getContext('webgl2') ||
+      canvas.getContext('webgl') ||
+      canvas.getContext('experimental-webgl')
+    ) as WebGLRenderingContext | WebGL2RenderingContext | null;
+
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
+
+    return !!gl;
+  } catch {
+    return false;
+  }
+}
+
+function Prism(props: PrismProps) {
+  return (
+    <PrismErrorBoundary>
+      <PrismCanvas {...props} />
+    </PrismErrorBoundary>
+  );
+}
 
 export default Prism;
