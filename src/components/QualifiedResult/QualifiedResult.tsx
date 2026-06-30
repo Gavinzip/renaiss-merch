@@ -1,6 +1,7 @@
 import {
   type FormEvent,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState
 } from 'react';
@@ -115,7 +116,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
     null
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const containerElement = scrollerRef.current;
     const forwardVideoElement = forwardVideoRef.current;
     const reverseVideoElement = reverseVideoRef.current;
@@ -158,8 +159,18 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       targetVideo.setAttribute('webkit-playsinline', '');
     }
 
+    function resetVideoToStart(targetVideo: HTMLVideoElement) {
+      targetVideo.pause();
+
+      try {
+        targetVideo.currentTime = 0;
+      } catch {
+        // Metadata may not be ready yet; loadedmetadata will retry the reset.
+      }
+    }
+
     function markMediaReady() {
-      if (video.readyState >= 2) {
+      if (video.readyState >= 2 && video.currentTime <= 0.08) {
         setMediaReady(true);
       }
     }
@@ -261,13 +272,14 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       revealPhaseRef = 'idle';
       reverseVideo.pause();
       video.pause();
-      video.currentTime = 0;
+      resetVideoToStart(video);
       video.playbackRate = Math.min(
         3,
         Math.max(1, duration / AUTO_REVEAL_SECONDS)
       );
       shippingVisibleRef.current = false;
       setShowShipping(false);
+      setMediaReady(true);
       syncProgress(0);
 
       const { containerTop } = getScrollProgress();
@@ -287,6 +299,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       }
 
       revealPhaseRef = 'playing';
+      setMediaReady(true);
       setRevealPhase('playing');
       video.playbackRate = Math.min(
         3,
@@ -310,9 +323,9 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       shippingVisibleRef.current = false;
       setShowShipping(false);
       video.pause();
-      video.currentTime = 0;
+      resetVideoToStart(video);
       reverseVideo.pause();
-      reverseVideo.currentTime = 0;
+      resetVideoToStart(reverseVideo);
       reverseVideo.playbackRate = Math.min(
         3,
         Math.max(1, duration / AUTO_REVEAL_SECONDS)
@@ -385,14 +398,14 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
         Number.isFinite(video.duration) && video.duration > 0
           ? video.duration
           : duration;
-      video.pause();
-      video.currentTime = 0;
+      resetVideoToStart(video);
       video.playbackRate = Math.min(
         3,
         Math.max(1, duration / AUTO_REVEAL_SECONDS)
       );
       reverseVideo.playbackRate = video.playbackRate;
       syncProgress(0);
+      markMediaReady();
     }
 
     function handleEnded() {
@@ -429,11 +442,13 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
 
     prepareVideo(video);
     prepareVideo(reverseVideo);
-    video.pause();
-    reverseVideo.pause();
+    setMediaReady(false);
+    resetVideoToStart(video);
+    resetVideoToStart(reverseVideo);
     video.addEventListener('loadedmetadata', handleMetadata);
     video.addEventListener('loadeddata', markMediaReady);
     video.addEventListener('canplay', markMediaReady);
+    video.addEventListener('seeked', markMediaReady);
     video.addEventListener('timeupdate', requestProgressSync);
     video.addEventListener('ended', handleEnded);
     reverseVideo.addEventListener('timeupdate', requestReverseProgressSync);
@@ -462,6 +477,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       video.removeEventListener('loadedmetadata', handleMetadata);
       video.removeEventListener('loadeddata', markMediaReady);
       video.removeEventListener('canplay', markMediaReady);
+      video.removeEventListener('seeked', markMediaReady);
       video.removeEventListener('timeupdate', requestProgressSync);
       video.removeEventListener('ended', handleEnded);
       reverseVideo.removeEventListener('timeupdate', requestReverseProgressSync);

@@ -51,7 +51,7 @@
 }
 
 .qualified-result--loading .qualified-result__video {
-  opacity: 0.42;
+  opacity: 0;
 }
 
 .qualified-result__veil {
