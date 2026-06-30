@@ -323,7 +323,6 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       shippingVisibleRef.current = false;
       setShowShipping(false);
       video.pause();
-      resetVideoToStart(video);
       reverseVideo.pause();
       resetVideoToStart(reverseVideo);
       reverseVideo.playbackRate = Math.min(
@@ -337,10 +336,16 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
         AUTO_REVEAL_SECONDS * 1000 + REVEAL_WATCHDOG_BUFFER_MS
       );
 
-      void reverseVideo
-        .play()
-        .then(requestReverseProgressSync)
-        .catch(() => undefined);
+      window.requestAnimationFrame(() => {
+        if (revealPhaseRef !== 'closing') {
+          return;
+        }
+
+        void reverseVideo
+          .play()
+          .then(requestReverseProgressSync)
+          .catch(() => undefined);
+      });
     }
 
     function handleScroll() {
