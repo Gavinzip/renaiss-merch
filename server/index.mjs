@@ -1,5 +1,10 @@
 import { createServer } from 'node:http';
+import { timingSafeEqual } from 'node:crypto';
 import { createServer as createViteServer } from 'vite';
+import {
+  runDatabaseBackup,
+  runRepositoryCheck
+} from './backup/runner.mjs';
 import { loadLocalEnv } from './env-loader.mjs';
 import {
   OAUTH_CHALLENGE_COOKIE,
@@ -23,6 +28,7 @@ import {
   handleMerchShippingClaim,
   handleStoredMerchShippingClaim
 } from './shipping-claims.mjs';
+import { getRuntimeConfig } from './runtime-config.mjs';
 import {
   CHALLENGE_MAX_AGE_SECONDS,
   SESSION_MAX_AGE_SECONDS,
@@ -39,6 +45,7 @@ loadLocalEnv();
 const isProduction = process.env.NODE_ENV === 'production';
 const port = Number(process.env.PORT || 5173);
 const host = process.env.HOST || (process.env.PORT ? '0.0.0.0' : '127.0.0.1');
+const backupTriggerAttempts = [];
 const vite = isProduction
   ? null
   : await createViteServer({
@@ -63,7 +70,7 @@ const server = createServer(async (req, res) => {
 
     await serveStatic(req, res);
   } catch (error) {
-    if (req.url?.startsWith('/api/')) {
+    if (req.url?.startsWith('/api/') || req.url?.startsWith('/auth/')) {
       sendHttpError(res, error);
       return;
     }
@@ -83,6 +90,12 @@ server.listen(port, host, () => {
 
 async function handleRoute(req, res) {
   const url = new URL(req.url || '/', 'http://localhost');
+
+  if (url.pathname === '/healthz') {
+    requireMethod(req, 'GET');
+    sendHealthCheck(res);
+    return true;
+  }
 
   if (url.pathname === '/api/auth/renaiss/start') {
     await startRenaissLogin(req, res);
@@ -129,7 +142,70 @@ async function handleRoute(req, res) {
     return true;
   }
 
+  if (url.pathname === '/api/internal/backup') {
+    requireMethod(req, 'POST');
+    await triggerBackup(req, res);
+    return true;
+  }
+
+  if (url.pathname === '/api/internal/backup/check') {
+    requireMethod(req, 'POST');
+    await checkBackupRepository(req, res);
+    return true;
+  }
+
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
+    throw new HttpError(404, 'not_found');
+  }
+
   return false;
+}
+
+function sendHealthCheck(res) {
+  const config = getRuntimeConfig();
+
+  sendJson(res, 200, {
+    ok: true,
+    service: 'renaiss-merch',
+    database: {
+      path: config.databasePath,
+      state: config.databasePath.startsWith('/data/') ? 'persistent' : 'local'
+    },
+    backup: {
+      state: config.backup.state
+    },
+    checkedAt: new Date().toISOString()
+  });
+}
+
+async function triggerBackup(req, res) {
+  const config = getRuntimeConfig();
+  requireBackupTrigger(req, config);
+
+  try {
+    const result = await runDatabaseBackup(config);
+    sendJson(res, 200, {
+      ok: true,
+      ...result
+    });
+  } catch (error) {
+    throw backupHttpError(error, 'backup_failed');
+  }
+}
+
+async function checkBackupRepository(req, res) {
+  const config = getRuntimeConfig();
+  requireBackupTrigger(req, config);
+
+  try {
+    const result = await runRepositoryCheck(config);
+    sendJson(res, 200, {
+      ok: true,
+      ...result
+    });
+  } catch (error) {
+    throw backupHttpError(error, 'backup_check_failed');
+  }
 }
 
 async function startRenaissLogin(req, res) {
@@ -232,6 +308,59 @@ function requireMethod(req, method) {
   if (req.method !== method) {
     throw new HttpError(405, 'method_not_allowed');
   }
+}
+
+function requireBackupTrigger(req, config) {
+  if (!config.backup.configured) {
+    throw new HttpError(503, `backup_${config.backup.state}`);
+  }
+
+  const header = req.headers.authorization || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
+
+  if (!token || !constantTimeEqual(token, config.backup.triggerSecret)) {
+    throw new HttpError(401, 'backup_trigger_unauthorized');
+  }
+
+  recordBackupTriggerAttempt();
+}
+
+function recordBackupTriggerAttempt() {
+  const now = Date.now();
+  const windowMs = 10 * 60 * 1000;
+
+  while (backupTriggerAttempts.length && backupTriggerAttempts[0] < now - windowMs) {
+    backupTriggerAttempts.shift();
+  }
+
+  if (backupTriggerAttempts.length >= 6) {
+    throw new HttpError(429, 'backup_trigger_rate_limited');
+  }
+
+  backupTriggerAttempts.push(now);
+}
+
+function constantTimeEqual(actual, expected) {
+  const actualBuffer = Buffer.from(actual);
+  const expectedBuffer = Buffer.from(expected);
+
+  return (
+    actualBuffer.length === expectedBuffer.length &&
+    timingSafeEqual(actualBuffer, expectedBuffer)
+  );
+}
+
+function backupHttpError(error, fallbackCode) {
+  if (error?.code === 'backup_in_progress') {
+    return new HttpError(409, 'backup_in_progress');
+  }
+
+  console.error('Backup operation failed:', sanitizeLogMessage(error?.message));
+  return new HttpError(502, fallbackCode);
+}
+
+function sanitizeLogMessage(message) {
+  return String(message || 'unknown_error').replace(/[A-Za-z0-9_./+=:-]{24,}/g, '[redacted]');
 }
 
 function authErrorLocation(error) {

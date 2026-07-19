@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname } from 'node:path';
 import Database from 'better-sqlite3';
 import { readMerchEligibility } from './eligibility.mjs';
 import { HttpError, sendJson } from './http.mjs';
+import { getClaimDatabasePath } from './runtime-config.mjs';
 
-const DEFAULT_CLAIM_DB_PATH = '.data/merch-shipping-claims.sqlite';
 const MAX_REQUEST_BODY_BYTES = 16 * 1024;
 const SQLITE_BUSY_RETRY_LIMIT = 20;
 const SQLITE_BUSY_RETRY_BASE_MS = 25;
@@ -211,9 +211,7 @@ export function hasSubmittedClaim(session, options = {}) {
 }
 
 function getShippingClaimsDb(configuredPath) {
-  const dbPath = resolve(
-    configuredPath || process.env.MERCH_CLAIM_DB_PATH || DEFAULT_CLAIM_DB_PATH
-  );
+  const dbPath = getClaimDatabasePath(configuredPath);
   const cached = dbByPath.get(dbPath);
 
   if (cached) {

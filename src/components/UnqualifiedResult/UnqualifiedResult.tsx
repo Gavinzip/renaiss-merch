@@ -1,5 +1,6 @@
 import { type CSSProperties } from 'react';
 import {
+  getVerifiedSbtCount,
   MINIMUM_MERCH_SBT_BALANCE,
   type MerchEligibilityResult
 } from '../../lib/merchEligibility';
@@ -14,13 +15,14 @@ export function UnqualifiedResult({
 }: UnqualifiedResultProps) {
   const minimumSbtBalance =
     result.minimumSbtBalance ?? MINIMUM_MERCH_SBT_BALANCE;
+  const verifiedSbtCount = getVerifiedSbtCount(result);
   const missingSbt = Math.max(
     0,
-    minimumSbtBalance - result.sbtBalance
+    minimumSbtBalance - verifiedSbtCount
   );
   const progress = Math.min(
     100,
-    Math.max(0, (result.sbtBalance / minimumSbtBalance) * 100)
+    Math.max(0, (verifiedSbtCount / minimumSbtBalance) * 100)
   );
 
   return (
@@ -52,7 +54,7 @@ export function UnqualifiedResult({
             <div className="unqualified-result__meter-top">
               <span>Verified SBT</span>
               <strong>
-                {result.sbtBalance} / {minimumSbtBalance}
+                {verifiedSbtCount} / {minimumSbtBalance}
               </strong>
             </div>
             <div className="unqualified-result__meter-track" aria-hidden="true">
@@ -67,7 +69,7 @@ export function UnqualifiedResult({
             </div>
             <div>
               <dt>Current</dt>
-              <dd>{result.sbtBalance} SBT</dd>
+              <dd>{verifiedSbtCount} SBT</dd>
             </div>
             <div>
               <dt>Missing</dt>

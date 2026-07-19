@@ -98,13 +98,21 @@ export async function checkMerchEligibility(): Promise<MerchEligibilityResult> {
     );
   }
 
+  const sbtBadgeCount = readOptionalNumber(payload.sbtBadgeCount);
+
   return {
     minimumSbtBalance: readOptionalNumber(payload.minimumSbtBalance),
-    sbtBadgeCount: readOptionalNumber(payload.sbtBadgeCount),
+    sbtBadgeCount,
     walletAddress,
     sbtBalance,
-    status: readEligibilityStatus(payload.status, sbtBalance)
+    status: readEligibilityStatus(payload.status, sbtBalance, sbtBadgeCount)
   };
+}
+
+export function getVerifiedSbtCount(result: MerchEligibilityResult) {
+  return Number.isFinite(result.sbtBadgeCount)
+    ? Number(result.sbtBadgeCount)
+    : result.sbtBalance;
 }
 
 function readOptionalNumber(value: unknown) {
@@ -113,12 +121,16 @@ function readOptionalNumber(value: unknown) {
   return Number.isFinite(numberValue) ? numberValue : undefined;
 }
 
-function readEligibilityStatus(value: unknown, sbtBalance: number) {
+function readEligibilityStatus(
+  value: unknown,
+  sbtBalance: number,
+  sbtBadgeCount?: number
+) {
   if (typeof value === 'string' && eligibilityStatuses.has(value)) {
     return value as MerchEligibilityResult['status'];
   }
 
-  return sbtBalance >= MINIMUM_MERCH_SBT_BALANCE
+  return (sbtBadgeCount ?? sbtBalance) >= MINIMUM_MERCH_SBT_BALANCE
     ? 'eligible'
     : 'unqualified';
 }

@@ -1,0 +1,60 @@
+name: Offsite backup
+
+on:
+  schedule:
+    - cron: '20 * * * *'
+    - cron: '40 19 1 * *'
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Backup operation
+        required: true
+        default: backup
+        type: choice
+        options:
+          - backup
+          - check
+
+jobs:
+  trigger-backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Choose operation
+        id: operation
+        shell: bash
+        run: |
+          operation="${{ github.event.inputs.operation }}"
+          if [[ -z "$operation" ]]; then
+            operation="backup"
+          fi
+          if [[ "${{ github.event_name }}" == "schedule" && "${{ github.event.schedule }}" == "40 19 1 * *" ]]; then
+            operation="check"
+          fi
+          echo "name=$operation" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger production backup
+        if: steps.operation.outputs.name == 'backup'
+        shell: bash
+        env:
+          BACKUP_BASE_URL: ${{ secrets.ZEABUR_BACKUP_BASE_URL }}
+          BACKUP_TRIGGER_SECRET: ${{ secrets.ZEABUR_BACKUP_TRIGGER_SECRET }}
+        run: |
+          curl --fail-with-body --show-error --silent \
+            --max-time 1800 \
+            --request POST \
+            --header "Authorization: Bearer ${BACKUP_TRIGGER_SECRET}" \
+            "${BACKUP_BASE_URL%/}/api/internal/backup"
+
+      - name: Check production backup repository
+        if: steps.operation.outputs.name == 'check'
+        shell: bash
+        env:
+          BACKUP_BASE_URL: ${{ secrets.ZEABUR_BACKUP_BASE_URL }}
+          BACKUP_TRIGGER_SECRET: ${{ secrets.ZEABUR_BACKUP_TRIGGER_SECRET }}
+        run: |
+          curl --fail-with-body --show-error --silent \
+            --max-time 1800 \
+            --request POST \
+            --header "Authorization: Bearer ${BACKUP_TRIGGER_SECRET}" \
+            "${BACKUP_BASE_URL%/}/api/internal/backup/check"

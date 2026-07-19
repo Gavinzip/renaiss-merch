@@ -30,7 +30,7 @@ export async function readMerchEligibility(session) {
   const sbtBalance = sumBalances(balances);
   const sbtBadgeCount = Object.keys(balances).length;
   const status =
-    sbtBalance >= config.minimumSbtBalance ? 'eligible' : 'unqualified';
+    sbtBadgeCount >= config.minimumSbtBalance ? 'eligible' : 'unqualified';
 
   return {
     status,

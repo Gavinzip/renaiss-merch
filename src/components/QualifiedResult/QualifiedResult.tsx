@@ -5,7 +5,10 @@ import {
   useRef,
   useState
 } from 'react';
-import { type MerchEligibilityResult } from '../../lib/merchEligibility';
+import {
+  getVerifiedSbtCount,
+  type MerchEligibilityResult
+} from '../../lib/merchEligibility';
 import {
   readStoredShippingClaim,
   saveShippingClaim,
@@ -93,6 +96,7 @@ const shippingFieldNames: Array<keyof ShippingClaimPayload> = [
 ];
 
 export function QualifiedResult({ result }: QualifiedResultProps) {
+  const verifiedSbtCount = getVerifiedSbtCount(result);
   const scrollerRef = useRef<HTMLElement | null>(null);
   const shippingFormRef = useRef<HTMLFormElement | null>(null);
   const forwardVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -645,7 +649,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
             <p className="qualified-result__eyebrow">RENAISS MERCH</p>
             <h2 id="qualified-title">Qualified</h2>
             <p>
-              {result.sbtBalance} SBT verified.
+              {verifiedSbtCount} SBT verified.
             </p>
           </div>
 
@@ -658,7 +662,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
             <p className="qualified-result__eyebrow">Claim details</p>
             <h2>Shipping address</h2>
             <p>
-              {result.sbtBalance} SBT verified. Add the recipient details for
+              {verifiedSbtCount} SBT verified. Add the recipient details for
               this merch claim.
             </p>
 
