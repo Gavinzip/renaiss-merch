@@ -159,6 +159,15 @@
   gap: 0.5rem;
 }
 
+.merch-entry__fulfillment-launcher {
+  min-width: auto !important;
+  padding: 0 0.95rem !important;
+  color: var(--text-primary) !important;
+  background: rgba(9, 12, 16, 0.46) !important;
+  border-color: rgba(255, 255, 255, 0.34) !important;
+  text-shadow: var(--glass-button-text-shadow) !important;
+}
+
 .merch-entry__login-panel {
   display: flex;
   align-items: center;

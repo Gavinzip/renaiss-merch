@@ -5,6 +5,7 @@ outputs/
 .data/
 .env
 .env.*
+.secrets/
 .DS_Store
 npm-debug.log*
 yarn-debug.log*

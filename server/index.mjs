@@ -1,5 +1,7 @@
 import { createServer } from 'node:http';
 import { timingSafeEqual } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { createServer as createViteServer } from 'vite';
 import {
   runDatabaseBackup,
@@ -13,8 +15,16 @@ import {
   parseCookies,
   setCookie
 } from './cookies.mjs';
-import { getAuthConfig } from './config.mjs';
+import { getAuthConfig, getPublicOrigin } from './config.mjs';
 import { handleMerchEligibility } from './eligibility.mjs';
+import {
+  canManageFulfillment,
+  requireFulfillmentAdministrator
+} from './fulfillment-admin.mjs';
+import {
+  createFulfillmentExport,
+  readFulfillmentOverview
+} from './fulfillment.mjs';
 import { HttpError, redirect, sendHttpError, sendJson, sendNoContent } from './http.mjs';
 import {
   buildAuthorizationUrl,
@@ -64,6 +74,10 @@ const server = createServer(async (req, res) => {
     }
 
     if (vite) {
+      if (await serveViteHtml(req, res)) {
+        return;
+      }
+
       vite.middlewares(req, res);
       return;
     }
@@ -142,6 +156,18 @@ async function handleRoute(req, res) {
     return true;
   }
 
+  if (url.pathname === '/api/admin/fulfillment') {
+    requireMethod(req, 'GET');
+    sendFulfillmentOverview(req, res);
+    return true;
+  }
+
+  if (url.pathname === '/api/admin/fulfillment/export') {
+    requireMethod(req, 'POST');
+    exportFulfillmentRecipients(req, res);
+    return true;
+  }
+
   if (url.pathname === '/api/internal/backup') {
     requireMethod(req, 'POST');
     await triggerBackup(req, res);
@@ -159,6 +185,37 @@ async function handleRoute(req, res) {
   }
 
   return false;
+}
+
+async function serveViteHtml(req, res) {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    return false;
+  }
+
+  const url = new URL(req.url || '/', 'http://localhost');
+
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/') || /\.[^/]+$/.test(url.pathname)) {
+    return false;
+  }
+
+  const template = await readFile(
+    fileURLToPath(new URL('../index.html', import.meta.url)),
+    'utf8'
+  );
+  const html = await vite.transformIndexHtml(url.pathname, template);
+
+  res.writeHead(200, {
+    'Cache-Control': 'no-store',
+    'Content-Type': 'text/html; charset=utf-8'
+  });
+
+  if (req.method === 'HEAD') {
+    res.end();
+  } else {
+    res.end(html);
+  }
+
+  return true;
 }
 
 function sendHealthCheck(res) {
@@ -280,8 +337,36 @@ function sendSession(req, res) {
 
   sendJson(res, 200, {
     authenticated: true,
-    user: session.user
+    user: {
+      ...session.user,
+      canManageFulfillment: canManageFulfillment(session)
+    }
   });
+}
+
+function sendFulfillmentOverview(req, res) {
+  requireFulfillmentAdministrator(readSession(req));
+  sendJson(res, 200, readFulfillmentOverview());
+}
+
+function exportFulfillmentRecipients(req, res) {
+  const session = readSession(req);
+  requireFulfillmentAdministrator(session);
+  requireSameOrigin(req);
+
+  const { csv, exportRecord } = createFulfillmentExport();
+  const body = Buffer.from(csv, 'utf8');
+  const timestamp = exportRecord.createdAt.replace(/[:.]/g, '-');
+
+  res.writeHead(200, {
+    'Cache-Control': 'no-store, private',
+    'Content-Disposition': `attachment; filename="renaiss-merch-fulfillment-${timestamp}.csv"`,
+    'Content-Length': body.byteLength,
+    'Content-Type': 'text/csv; charset=utf-8',
+    'X-Fulfillment-Export-Count': String(exportRecord.recipientCount),
+    'X-Fulfillment-Exported-At': exportRecord.createdAt
+  });
+  res.end(body);
 }
 
 function logout(req, res) {
@@ -307,6 +392,14 @@ function readSession(req) {
 function requireMethod(req, method) {
   if (req.method !== method) {
     throw new HttpError(405, 'method_not_allowed');
+  }
+}
+
+function requireSameOrigin(req) {
+  const origin = req.headers.origin;
+
+  if (typeof origin !== 'string' || origin !== getPublicOrigin(req)) {
+    throw new HttpError(403, 'invalid_request_origin');
   }
 }
 

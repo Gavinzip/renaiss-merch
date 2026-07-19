@@ -8,6 +8,7 @@ export type RenaissUser = {
   legacyWalletAddress: string | null;
   chainId: string | null;
   twitterUsername: string | null;
+  canManageFulfillment: boolean;
 };
 
 export type RenaissSession =

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { QualifiedResult } from '../QualifiedResult/QualifiedResult';
+import { FulfillmentConsole } from '../FulfillmentConsole/FulfillmentConsole';
 import Prism from '../Prism/Prism';
 import { UnqualifiedResult } from '../UnqualifiedResult/UnqualifiedResult';
 import {
@@ -40,6 +41,9 @@ export function MerchEligibilityEntry() {
     string | null
   >(null);
   const [resultView, setResultView] = useState<ResultView>(null);
+  const [showFulfillment, setShowFulfillment] = useState(
+    () => window.location.hash === '#fulfillment'
+  );
 
   const user = session.authenticated ? session.user : null;
   const sessionWalletAddress =
@@ -112,6 +116,28 @@ export function MerchEligibilityEntry() {
     };
   }, []);
 
+  useEffect(() => {
+    function syncFulfillmentView() {
+      setShowFulfillment(window.location.hash === '#fulfillment');
+    }
+
+    window.addEventListener('hashchange', syncFulfillmentView);
+
+    return () => {
+      window.removeEventListener('hashchange', syncFulfillmentView);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (
+      showFulfillment &&
+      checkState !== 'loading-session' &&
+      (!session.authenticated || !session.user.canManageFulfillment)
+    ) {
+      closeFulfillment();
+    }
+  }, [checkState, session, showFulfillment]);
+
   function handleLogin() {
     setCheckState('signing-in');
     startRenaissLogin();
@@ -124,10 +150,23 @@ export function MerchEligibilityEntry() {
       setPendingWalletAddress(null);
       setEligibilityResult(null);
       setResultView(null);
+      closeFulfillment();
       setCheckState('idle');
     } catch {
       setCheckState('source-error');
     }
+  }
+
+  function openFulfillment() {
+    window.location.hash = 'fulfillment';
+  }
+
+  function closeFulfillment() {
+    if (window.location.hash === '#fulfillment') {
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+    }
+
+    setShowFulfillment(false);
   }
 
   async function runEligibilityCheck(shouldCancel = () => false) {
@@ -205,7 +244,7 @@ export function MerchEligibilityEntry() {
         </div>
       ) : null}
 
-      <section className="merch-entry__content" aria-hidden={!!resultView}>
+      <section className="merch-entry__content" aria-hidden={!!resultView || showFulfillment}>
         <p className="merch-entry__mark">RENAISS</p>
         <h1 id="merch-entry-title">RENAISS MERCH</h1>
         <p className="merch-entry__copy">
@@ -216,6 +255,16 @@ export function MerchEligibilityEntry() {
           className="merch-entry__form merch-entry__form--auth"
           aria-busy={isChecking}
         >
+          {session.authenticated && session.user.canManageFulfillment ? (
+            <button
+              className="merch-entry__fulfillment-launcher"
+              type="button"
+              onClick={openFulfillment}
+              title="Open fulfilment console"
+            >
+              Fulfilment
+            </button>
+          ) : null}
           <div className="merch-entry__login-panel">
             {session.authenticated ? (
               <>
@@ -279,6 +328,10 @@ export function MerchEligibilityEntry() {
       {resultView === 'unqualified' && eligibilityResult ? (
           <UnqualifiedResult result={eligibilityResult} />
         ) : null}
+
+      {showFulfillment && session.authenticated && session.user.canManageFulfillment ? (
+        <FulfillmentConsole onClose={closeFulfillment} />
+      ) : null}
     </main>
   );
 }
