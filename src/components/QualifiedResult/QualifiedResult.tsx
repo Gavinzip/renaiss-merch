@@ -35,7 +35,7 @@ const phoneInputPattern = '[+()0-9\\s.-]{6,32}';
 type RevealPhase = 'idle' | 'playing' | 'review' | 'closing';
 type ShippingActionState = 'idle' | 'saving' | 'submitting' | 'saved' | 'submitted' | 'error';
 type ShippingLoadState = 'loading' | 'loaded' | 'empty' | 'error';
-type ClaimDialog = 'size-chart' | 'submitted' | 'confirm-resubmit' | null;
+type ClaimDialog = 'size-chart' | 'submitted' | null;
 
 type QualifiedResultProps = {
   result: MerchEligibilityResult;
@@ -114,8 +114,6 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
   >(null);
   const [hasSubmittedClaim, setHasSubmittedClaim] = useState(false);
   const [activeDialog, setActiveDialog] = useState<ClaimDialog>(null);
-  const [pendingSubmitPayload, setPendingSubmitPayload] =
-    useState<ShippingClaimPayload | null>(null);
   const [shippingActionError, setShippingActionError] = useState<string | null>(
     null
   );
@@ -556,9 +554,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
         : 'save';
     const payload = readShippingClaimPayload(event.currentTarget);
 
-    if (intent === 'submit' && hasSubmittedClaim) {
-      setPendingSubmitPayload(payload);
-      setActiveDialog('confirm-resubmit');
+    if (hasSubmittedClaim) {
       return;
     }
 
@@ -586,18 +582,6 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       setShippingActionError(readShippingClaimErrorMessage(error, intent));
       setShippingActionState('error');
     }
-  }
-
-  function handleConfirmResubmit() {
-    if (!pendingSubmitPayload) {
-      setActiveDialog(null);
-      return;
-    }
-
-    const payload = pendingSubmitPayload;
-    setPendingSubmitPayload(null);
-    setActiveDialog(null);
-    void persistShippingClaim(payload, 'submit');
   }
 
   const isPersisting =
@@ -662,11 +646,15 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
             <p className="qualified-result__eyebrow">Claim details</p>
             <h2>Shipping address</h2>
             <p>
-              {verifiedSbtCount} SBT verified. Add the recipient details for
-              this merch claim.
+              {hasSubmittedClaim
+                ? 'Shipping details have been submitted and are locked.'
+                : `${verifiedSbtCount} SBT verified. Add the recipient details for this merch claim.`}
             </p>
 
-            <div className="qualified-result__fields">
+            <fieldset
+              className="qualified-result__fields"
+              disabled={hasSubmittedClaim || isPersisting}
+            >
               <label className="qualified-result__field-half">
                 First name
                 <input
@@ -806,42 +794,53 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
                   rows={3}
                 />
               </label>
-            </div>
+            </fieldset>
 
-            <div className="qualified-result__actions">
-              <button
-                type="submit"
-                name="intent"
-                value="submit"
-                disabled={isPersisting}
+            {hasSubmittedClaim ? (
+              <p
+                className="qualified-result__submit-status qualified-result__submit-status--locked"
+                role="status"
               >
-                {shippingActionState === 'submitting'
-                  ? 'Submitting'
-                  : 'Submit claim'}
-              </button>
-              <button
-                className="qualified-result__save-button"
-                type="submit"
-                name="intent"
-                value="save"
-                disabled={isPersisting}
-              >
-                {shippingActionState === 'saving'
-                  ? 'Saving'
-                  : 'Save shipping details'}
-              </button>
-            </div>
-            <p
-              className={`qualified-result__submit-status qualified-result__submit-status--${shippingActionState}`}
-              role="status"
-            >
-              {readShippingSubmitStatus(
-                shippingActionState,
-                shippingLoadState,
-                storedClaimStatus,
-                shippingActionError
-              )}
-            </p>
+                Claim submitted. Shipping details cannot be changed.
+              </p>
+            ) : (
+              <>
+                <div className="qualified-result__actions">
+                  <button
+                    type="submit"
+                    name="intent"
+                    value="submit"
+                    disabled={isPersisting}
+                  >
+                    {shippingActionState === 'submitting'
+                      ? 'Submitting'
+                      : 'Submit claim'}
+                  </button>
+                  <button
+                    className="qualified-result__save-button"
+                    type="submit"
+                    name="intent"
+                    value="save"
+                    disabled={isPersisting}
+                  >
+                    {shippingActionState === 'saving'
+                      ? 'Saving'
+                      : 'Save shipping details'}
+                  </button>
+                </div>
+                <p
+                  className={`qualified-result__submit-status qualified-result__submit-status--${shippingActionState}`}
+                  role="status"
+                >
+                  {readShippingSubmitStatus(
+                    shippingActionState,
+                    shippingLoadState,
+                    storedClaimStatus,
+                    shippingActionError
+                  )}
+                </p>
+              </>
+            )}
           </form>
 
           {activeDialog ? (
@@ -909,8 +908,8 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
                     Shipping details received.
                   </h3>
                   <p>
-                    Your merch claim has been submitted. You can keep this
-                    wallet open or check another wallet.
+                    Your merch claim has been submitted and the shipping details
+                    are now locked.
                   </p>
                   <div className="qualified-result__modal-actions">
                     <button type="button" onClick={() => setActiveDialog(null)}>
@@ -926,37 +925,6 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
                 </div>
               ) : null}
 
-              {activeDialog === 'confirm-resubmit' ? (
-                <div
-                  aria-labelledby="qualified-resubmit-title"
-                  aria-modal="true"
-                  className="qualified-result__modal"
-                  role="dialog"
-                >
-                  <p className="qualified-result__modal-eyebrow">
-                    Already submitted
-                  </p>
-                  <h3 id="qualified-resubmit-title">Submit again?</h3>
-                  <p>
-                    This wallet already has a submitted claim. Submit again only
-                    if you want to replace the latest details.
-                  </p>
-                  <div className="qualified-result__modal-actions">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPendingSubmitPayload(null);
-                        setActiveDialog(null);
-                      }}
-                    >
-                      Keep editing
-                    </button>
-                    <button type="button" onClick={handleConfirmResubmit}>
-                      Submit again
-                    </button>
-                  </div>
-                </div>
-              ) : null}
             </div>
           ) : null}
 
@@ -1073,6 +1041,8 @@ function readShippingClaimErrorMessage(
       return 'Session expired. Please sign in again.';
     case 'wallet_not_eligible':
       return 'This wallet is not eligible to submit a merch claim.';
+    case 'shipping_claim_already_submitted':
+      return 'Shipping details have already been submitted and are locked.';
     default:
       return error.status >= 400 && error.status < 500
         ? 'Check the shipping details and try again.'

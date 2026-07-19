@@ -196,6 +196,9 @@
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 0.58rem;
   margin-top: 0.82rem;
+  min-inline-size: 0;
+  padding: 0;
+  border: 0;
 }
 
 .qualified-result__field-half {
@@ -323,6 +326,19 @@
     0 12px 28px rgba(47, 39, 30, 0.08);
 }
 
+.qualified-result .qualified-result__fields:disabled input,
+.qualified-result .qualified-result__fields:disabled select,
+.qualified-result .qualified-result__fields:disabled textarea {
+  color: rgba(18, 18, 17, 0.7);
+  cursor: not-allowed;
+  background-color: rgba(238, 235, 229, 0.88);
+}
+
+.qualified-result .qualified-result__fields:disabled .qualified-result__info-button {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .qualified-result__actions {
   display: grid;
   grid-template-columns: 1fr;
@@ -340,6 +356,10 @@
 }
 
 .qualified-result__submit-status--saved {
+  color: rgba(18, 18, 17, 0.72);
+}
+
+.qualified-result__submit-status--locked {
   color: rgba(18, 18, 17, 0.72);
 }
 

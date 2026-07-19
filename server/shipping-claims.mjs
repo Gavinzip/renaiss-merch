@@ -63,16 +63,52 @@ export function saveShippingClaim(claimInput, options = {}) {
   const db = getShippingClaimsDb(options.dbPath);
   const createdAt = new Date().toISOString();
   const status = claimInput.intent === 'submit' ? 'submitted' : 'draft';
+  const walletAddress = normalizeWalletAddress(
+    claimInput.eligibility?.walletAddress
+  );
+
+  if (!walletAddress) {
+    throw new HttpError(409, 'safe_wallet_not_ready');
+  }
+
   const claim = {
     id: randomUUID(),
     createdAt,
-    eligibility: claimInput.eligibility,
+    eligibility: {
+      ...claimInput.eligibility,
+      walletAddress
+    },
     status,
     shipping: claimInput.shipping,
     submittedAt: status === 'submitted' ? createdAt : null,
     user: claimInput.user
   };
   const writeClaim = db.transaction((nextClaim) => {
+    const submittedClaim = db
+      .prepare(
+        `
+          SELECT 1
+          FROM shipping_claims
+          WHERE wallet_address = @walletAddress
+            AND claim_status = 'submitted'
+          LIMIT 1
+        `
+      )
+      .get({ walletAddress });
+
+    if (submittedClaim) {
+      throw new HttpError(409, 'shipping_claim_already_submitted');
+    }
+
+    // A wallet can revise its draft, but only one draft remains before submission.
+    db.prepare(
+      `
+        DELETE FROM shipping_claims
+        WHERE wallet_address = @walletAddress
+          AND claim_status = 'draft'
+      `
+    ).run({ walletAddress });
+
     db.prepare(`
       INSERT INTO shipping_claims (
         id,
@@ -139,6 +175,10 @@ export function saveShippingClaim(claimInput, options = {}) {
   try {
     runWithSqliteBusyRetry(() => writeClaim(claim));
   } catch (error) {
+    if (error instanceof HttpError) {
+      throw error;
+    }
+
     throw new HttpError(500, 'claim_write_failed', String(error));
   }
 
@@ -173,7 +213,10 @@ export function readLatestShippingClaim(session, options = {}) {
         SELECT created_at, shipping_json, claim_status, submitted_at
         FROM shipping_claims
         WHERE wallet_address = @walletAddress
-        ORDER BY created_at DESC, id DESC
+        ORDER BY
+          CASE claim_status WHEN 'submitted' THEN 0 ELSE 1 END,
+          created_at DESC,
+          id DESC
         LIMIT 1
       `
     )
