@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import renaissLogoMark from '../../assets/renaiss-logo-mark.png';
 import { QualifiedResult } from '../QualifiedResult/QualifiedResult';
 import { FulfillmentConsole } from '../FulfillmentConsole/FulfillmentConsole';
 import Prism from '../Prism/Prism';
@@ -245,7 +246,10 @@ export function MerchEligibilityEntry() {
       ) : null}
 
       <section className="merch-entry__content" aria-hidden={!!resultView || showFulfillment}>
-        <p className="merch-entry__mark">RENAISS</p>
+        <p className="merch-entry__mark">
+          <img src={renaissLogoMark} alt="" />
+          <span>RENAISS</span>
+        </p>
         <h1 id="merch-entry-title">RENAISS MERCH</h1>
         <p className="merch-entry__copy">
           Check whether your wallet is eligible to claim merch.
