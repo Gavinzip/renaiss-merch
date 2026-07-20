@@ -103,24 +103,14 @@
 }
 
 .merch-entry__mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.52rem;
   margin: 0 0 clamp(1.4rem, 4vw, 2rem);
-  color: var(--text-soft);
-  font-size: clamp(0.7rem, 1.5vw, 0.8rem);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.38em;
-  text-transform: uppercase;
-  text-shadow: var(--text-shadow-soft);
 }
 
 .merch-entry__mark img {
   display: block;
-  width: 1.375rem;
-  height: 1.375rem;
+  width: clamp(15rem, 22vw, 19rem);
+  height: auto;
+  margin: 0 auto;
   object-fit: contain;
 }
 

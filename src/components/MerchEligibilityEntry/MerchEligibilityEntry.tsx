@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import renaissLogoMark from '../../assets/renaiss-logo-mark.png';
+import renaissProtocolLogo from '../../assets/renaiss-protocol-logo.png';
 import { QualifiedResult } from '../QualifiedResult/QualifiedResult';
 import { FulfillmentConsole } from '../FulfillmentConsole/FulfillmentConsole';
 import Prism from '../Prism/Prism';
@@ -247,8 +247,7 @@ export function MerchEligibilityEntry() {
 
       <section className="merch-entry__content" aria-hidden={!!resultView || showFulfillment}>
         <p className="merch-entry__mark">
-          <img src={renaissLogoMark} alt="" />
-          <span>RENAISS</span>
+          <img src={renaissProtocolLogo} alt="Renaiss Protocol" />
         </p>
         <h1 id="merch-entry-title">RENAISS MERCH</h1>
         <p className="merch-entry__copy">
