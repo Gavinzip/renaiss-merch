@@ -3,7 +3,7 @@ import { HttpError, sendJson } from './http.mjs';
 const DEFAULT_BSCSCAN_API_URL = 'https://api.etherscan.io/v2/api';
 const DEFAULT_BSCSCAN_CHAIN_ID = '56';
 const DEFAULT_SBT_CONTRACT = '0x7d1b7db704d722295fbaa284008f526634673dbf';
-const DEFAULT_MINIMUM_SBT_BALANCE = 40;
+const DEFAULT_MINIMUM_SBT_BALANCE = 60;
 const DEFAULT_CACHE_TTL_SECONDS = 60;
 const PAGE_SIZE = 1000;
 

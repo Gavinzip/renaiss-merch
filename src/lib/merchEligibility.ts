@@ -1,4 +1,4 @@
-export const MINIMUM_MERCH_SBT_BALANCE = 40;
+export const MINIMUM_MERCH_SBT_BALANCE = 60;
 
 export type MerchEligibilityResult = {
   minimumSbtBalance?: number;
