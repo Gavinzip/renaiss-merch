@@ -1,5 +1,6 @@
 .qualified-result {
   --claim-progress: 0;
+  --claim-mobile-video-x: 50%;
   position: relative;
   z-index: 2;
   width: 100%;
@@ -653,7 +654,7 @@
 
 @media (max-width: 860px) {
   .qualified-result__video {
-    object-position: center center;
+    object-position: var(--claim-mobile-video-x) center;
   }
 
   .qualified-result__veil {

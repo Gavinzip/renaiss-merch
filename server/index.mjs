@@ -194,7 +194,12 @@ async function serveViteHtml(req, res) {
 
   const url = new URL(req.url || '/', 'http://localhost');
 
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/') || /\.[^/]+$/.test(url.pathname)) {
+  if (
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/auth/') ||
+    isViteDevRequestPath(url.pathname) ||
+    /\.[^/]+$/.test(url.pathname)
+  ) {
     return false;
   }
 
@@ -216,6 +221,14 @@ async function serveViteHtml(req, res) {
   }
 
   return true;
+}
+
+function isViteDevRequestPath(pathname) {
+  return (
+    pathname.startsWith('/@') ||
+    pathname.startsWith('/node_modules/') ||
+    pathname === '/__vite_ping'
+  );
 }
 
 function sendHealthCheck(res) {

@@ -29,6 +29,10 @@ const SCROLL_TRIGGER_PX = 36;
 const REVIEW_CLOSE_COOLDOWN_MS = 900;
 const REVIEW_CLOSE_WHEEL_DELTA_PX = 80;
 const REVIEW_CLOSE_WHEEL_WINDOW_MS = 320;
+const MOBILE_REVEAL_MEDIA_QUERY = '(max-width: 860px), (pointer: coarse)';
+const MOBILE_SHIPPING_REVEAL_DELAY_MS = 2000;
+const MOBILE_VIDEO_PAN_START_X = 50;
+const MOBILE_VIDEO_PAN_END_X = 18;
 const SHIPPING_REVEAL_VIDEO_PROGRESS = 0.86;
 const emailInputPattern = '[^\\s@]+@[^\\s@]+\\.[^\\s@]+';
 const phoneInputPattern = '[+()0-9\\s.-]{6,32}';
@@ -151,6 +155,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
     let reviewReadyAt = 0;
     let revealTimerId = 0;
     let closeTimerId = 0;
+    let mobileShippingRevealTimerId = 0;
     let upwardWheelDelta = 0;
     let lastWheelAt = 0;
 
@@ -184,13 +189,47 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       );
 
       container.style.setProperty('--claim-progress', progress.toFixed(3));
+      container.style.setProperty(
+        '--claim-mobile-video-x',
+        `${readMobileVideoPanX(progress).toFixed(2)}%`
+      );
 
       const nextShippingVisible =
-        allowShipping && progress >= SHIPPING_REVEAL_VIDEO_PROGRESS;
+        allowShipping &&
+        !isMobileRevealViewport() &&
+        progress >= SHIPPING_REVEAL_VIDEO_PROGRESS;
       if (shippingVisibleRef.current !== nextShippingVisible) {
         shippingVisibleRef.current = nextShippingVisible;
         setShowShipping(nextShippingVisible);
       }
+    }
+
+    function showShippingPanel() {
+      shippingVisibleRef.current = true;
+      setShowShipping(true);
+    }
+
+    function hideShippingPanel() {
+      shippingVisibleRef.current = false;
+      setShowShipping(false);
+    }
+
+    function scheduleMobileShippingReveal() {
+      clearMobileShippingRevealTimer();
+
+      if (!isMobileRevealViewport()) {
+        showShippingPanel();
+        return;
+      }
+
+      hideShippingPanel();
+      mobileShippingRevealTimerId = window.setTimeout(() => {
+        if (revealPhaseRef !== 'review') {
+          return;
+        }
+
+        showShippingPanel();
+      }, MOBILE_SHIPPING_REVEAL_DELAY_MS);
     }
 
     function getScrollProgress() {
@@ -252,9 +291,8 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       setRevealPhase('review');
       video.pause();
       video.currentTime = Math.max(0, duration - 0.02);
-      shippingVisibleRef.current = true;
-      setShowShipping(true);
       syncProgress(1);
+      scheduleMobileShippingReveal();
       reviewReadyAt = performance.now();
       upwardWheelDelta = 0;
 
@@ -271,6 +309,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       }
 
       clearCloseTimer();
+      clearMobileShippingRevealTimer();
       revealPhaseRef = 'idle';
       reverseVideo.pause();
       video.pause();
@@ -279,8 +318,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
         3,
         Math.max(1, duration / AUTO_REVEAL_SECONDS)
       );
-      shippingVisibleRef.current = false;
-      setShowShipping(false);
+      hideShippingPanel();
       setMediaReady(true);
       syncProgress(0);
 
@@ -322,8 +360,8 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       }
 
       revealPhaseRef = 'closing';
-      shippingVisibleRef.current = false;
-      setShowShipping(false);
+      clearMobileShippingRevealTimer();
+      hideShippingPanel();
       video.pause();
       reverseVideo.pause();
       resetVideoToStart(reverseVideo);
@@ -437,6 +475,13 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       }
     }
 
+    function clearMobileShippingRevealTimer() {
+      if (mobileShippingRevealTimerId) {
+        window.clearTimeout(mobileShippingRevealTimerId);
+        mobileShippingRevealTimerId = 0;
+      }
+    }
+
     function handleVisibilityChange() {
       if (document.visibilityState === 'hidden' && revealPhaseRef === 'playing') {
         video.pause();
@@ -481,6 +526,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
 
       clearRevealTimer();
       clearCloseTimer();
+      clearMobileShippingRevealTimer();
       video.removeEventListener('loadedmetadata', handleMetadata);
       video.removeEventListener('loadeddata', markMediaReady);
       video.removeEventListener('canplay', markMediaReady);
@@ -934,6 +980,27 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
         </div>
       </div>
     </section>
+  );
+}
+
+function readMobileVideoPanX(progress: number) {
+  const clampedProgress = Math.min(
+    1,
+    Math.max(0, Number.isFinite(progress) ? progress : 0)
+  );
+  const easedProgress =
+    clampedProgress * clampedProgress * (3 - 2 * clampedProgress);
+
+  return (
+    MOBILE_VIDEO_PAN_START_X +
+    (MOBILE_VIDEO_PAN_END_X - MOBILE_VIDEO_PAN_START_X) * easedProgress
+  );
+}
+
+function isMobileRevealViewport() {
+  return (
+    window.innerWidth <= 860 ||
+    window.matchMedia?.(MOBILE_REVEAL_MEDIA_QUERY).matches === true
   );
 }
 
