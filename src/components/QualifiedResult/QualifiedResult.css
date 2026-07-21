@@ -236,32 +236,26 @@
   justify-content: space-between;
 }
 
-.qualified-result__info-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.15rem;
-  height: 1.15rem;
+.qualified-result__size-chart-link {
   padding: 0;
-  color: rgba(18, 18, 17, 0.72);
+  color: rgba(18, 18, 17, 0.76);
   font: inherit;
-  font-size: 0.68rem;
-  font-weight: 900;
-  line-height: 1;
+  font-size: 0.72rem;
+  font-weight: 780;
+  letter-spacing: 0;
+  line-height: 1.2;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-transform: none;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(18, 18, 17, 0.22);
-  border-radius: 999px;
-  transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    transform 160ms ease;
+  background: transparent;
+  border: 0;
+  transition: color 160ms ease;
 }
 
-.qualified-result__info-button:hover {
-  background: rgba(255, 255, 255, 0.96);
-  border-color: rgba(18, 18, 17, 0.36);
-  transform: translateY(-1px);
+.qualified-result__size-chart-link:hover {
+  color: rgba(18, 18, 17, 1);
 }
 
 .qualified-result .qualified-result__fields input,
@@ -335,7 +329,7 @@
   background-color: rgba(238, 235, 229, 0.88);
 }
 
-.qualified-result .qualified-result__fields:disabled .qualified-result__info-button {
+.qualified-result .qualified-result__fields:disabled .qualified-result__size-chart-link {
   cursor: not-allowed;
   opacity: 0.45;
 }
@@ -429,7 +423,7 @@
 
 .qualified-result__actions button:focus-visible,
 .qualified-result__modal-actions button:focus-visible,
-.qualified-result__info-button:focus-visible,
+.qualified-result__size-chart-link:focus-visible,
 .qualified-result__modal-close:focus-visible,
 .qualified-result__reset-link:focus-visible {
   outline: 2px solid rgba(18, 18, 17, 0.34);
@@ -519,6 +513,13 @@
 
 .qualified-result__size-chart-wrap {
   overflow-x: auto;
+}
+
+.qualified-result__size-fit-note {
+  margin: 0.15rem 0 0.9rem !important;
+  color: #b42318 !important;
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
 }
 
 .qualified-result__size-chart {
@@ -749,7 +750,7 @@
 
   .qualified-result__actions button,
   .qualified-result__modal-actions button,
-  .qualified-result__info-button,
+  .qualified-result__size-chart-link,
   .qualified-result__modal-close,
   .qualified-result__reset-link {
     transition: none;

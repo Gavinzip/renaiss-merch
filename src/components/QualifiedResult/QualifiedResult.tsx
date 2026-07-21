@@ -750,11 +750,11 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
                   <span>Size</span>
                   <button
                     aria-label="Open size chart"
-                    className="qualified-result__info-button"
+                    className="qualified-result__size-chart-link"
                     type="button"
                     onClick={() => setActiveDialog('size-chart')}
                   >
-                    !
+                    Size chart
                   </button>
                 </div>
                 <select name="size" required defaultValue="">
@@ -909,6 +909,9 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
                       X
                     </button>
                   </div>
+                  <p className="qualified-result__size-fit-note">
+                    Oversized fit. Size down is recommended.
+                  </p>
                   <div className="qualified-result__size-chart-wrap">
                     <table className="qualified-result__size-chart">
                       <thead>
