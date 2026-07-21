@@ -1,18 +1,16 @@
 import { HttpError } from './http.mjs';
 
+const FULFILLMENT_ADMIN_WALLETS_ENV = 'FULFILLMENT_ADMIN_SAFE_WALLETS';
 const walletPattern = /^0x[a-fA-F0-9]{40}$/;
-
-export const FULFILLMENT_ADMIN_SAFE_WALLETS = new Set([
-  '0xf77fb7a401a04ca0d89d12603840a2e9fe3c834f',
-  '0x14f84ff15797fadb27a866c5f5afd831f3b43d8'
-]);
 
 export function canManageFulfillment(session) {
   const walletAddress = normalizeSafeWalletAddress(
     session?.user?.safeWalletAddress
   );
 
-  return walletAddress ? FULFILLMENT_ADMIN_SAFE_WALLETS.has(walletAddress) : false;
+  return walletAddress
+    ? readFulfillmentAdminSafeWallets().has(walletAddress)
+    : false;
 }
 
 export function requireFulfillmentAdministrator(session) {
@@ -33,4 +31,26 @@ function normalizeSafeWalletAddress(value) {
   const walletAddress = value.trim().toLowerCase();
 
   return walletPattern.test(walletAddress) ? walletAddress : null;
+}
+
+function readFulfillmentAdminSafeWallets() {
+  const configuredWallets = process.env[FULFILLMENT_ADMIN_WALLETS_ENV]?.trim();
+
+  if (!configuredWallets) {
+    return new Set();
+  }
+
+  const wallets = new Set();
+
+  for (const value of configuredWallets.split(',')) {
+    const walletAddress = normalizeSafeWalletAddress(value);
+
+    if (!walletAddress) {
+      throw new HttpError(500, 'fulfillment_admin_wallets_invalid');
+    }
+
+    wallets.add(walletAddress);
+  }
+
+  return wallets;
 }
