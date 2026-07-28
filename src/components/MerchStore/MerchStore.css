@@ -279,7 +279,7 @@
   z-index: 2;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 1rem;
   pointer-events: none;
 }
@@ -359,22 +359,6 @@
 
 .merch-product-card.is-eligible .merch-product-card__visual {
   background: #f5f4f2;
-}
-
-.merch-product-card.is-eligible .merch-product-card__header p,
-.merch-product-card.is-eligible .merch-product-card__header span,
-.merch-product-card.is-eligible .merch-product-card__lock-label {
-  color: rgba(18, 18, 17, 0.76);
-  background: rgba(255, 255, 255, 0.68);
-  border-color: rgba(18, 18, 17, 0.1);
-  text-shadow: none;
-}
-
-.merch-product-card.is-eligible .merch-product-card__header p {
-  padding: 0.52rem 0.68rem;
-  border: 1px solid rgba(18, 18, 17, 0.1);
-  border-radius: 999px;
-  backdrop-filter: blur(16px) saturate(150%);
 }
 
 .merch-product-card.is-unqualified .merch-product-card__header span,

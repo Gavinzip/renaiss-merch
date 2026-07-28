@@ -54,10 +54,11 @@ export function MerchProductCard({
         .join(' ')}
       aria-labelledby={titleId}
     >
-      <header className="merch-product-card__header">
-        <p>Drop {product.dropNumber}</p>
-        <span>{cardCopy.headerStatus}</span>
-      </header>
+      {cardCopy.headerStatus ? (
+        <header className="merch-product-card__header">
+          <span>{cardCopy.headerStatus}</span>
+        </header>
+      ) : null}
 
       <div
         className="merch-product-card__visual"
@@ -76,9 +77,11 @@ export function MerchProductCard({
               : undefined
           }
         />
-        <span className="merch-product-card__lock-label">
-          {cardCopy.visualStatus}
-        </span>
+        {cardCopy.visualStatus ? (
+          <span className="merch-product-card__lock-label">
+            {cardCopy.visualStatus}
+          </span>
+        ) : null}
       </div>
 
       <div className="merch-product-card__body">
@@ -127,9 +130,9 @@ function readCardCopy(
       buttonLabel: 'View item',
       category: accessState.reveal.category,
       description: `${accessState.reveal.description} ${minimumSbtBalance} SBT access requirement met.`,
-      headerStatus: 'Revealed',
+      headerStatus: null,
       title: accessState.reveal.claimName,
-      visualStatus: 'Access granted'
+      visualStatus: null
     };
   }
 
