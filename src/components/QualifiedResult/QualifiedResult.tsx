@@ -22,6 +22,7 @@ import {
   type BraceletColor
 } from '../../lib/merchVariants';
 import { readRenaissLogoutReturnUrl } from '../../lib/renaissAuth';
+import type { PreparedRevealMedia } from '../../lib/revealMediaPreload';
 import { shippingCountries } from '../../lib/shippingCountries';
 import { readStoredShippingProfile } from '../../lib/shippingProfile';
 import './QualifiedResult.css';
@@ -46,6 +47,10 @@ type ClaimDialog = 'size-chart' | 'submitted' | null;
 
 type QualifiedResultProps = {
   productId?: MerchProductId;
+  revealMedia?: Pick<
+    PreparedRevealMedia,
+    'forwardUrl' | 'reverseUrl'
+  >;
   result: EligibleMerchEligibilityResult;
 };
 
@@ -114,12 +119,14 @@ const shippingFieldNames: Array<keyof ShippingClaimPayload> = [
 
 export function QualifiedResult({
   productId = 'shirt',
+  revealMedia,
   result
 }: QualifiedResultProps) {
   const productConfig = result.reveal;
-  const revealVideoSrc = readRevealVideoUrl(productId, 'forward');
+  const revealVideoSrc =
+    revealMedia?.forwardUrl || readRevealVideoUrl(productId, 'forward');
   const reverseVideoSrc = productConfig.hasReverseVideo
-    ? readRevealVideoUrl(productId, 'reverse')
+    ? revealMedia?.reverseUrl || readRevealVideoUrl(productId, 'reverse')
     : undefined;
   const scrollerRef = useRef<HTMLElement | null>(null);
   const shippingFormRef = useRef<HTMLFormElement | null>(null);
@@ -201,7 +208,14 @@ export function QualifiedResult({
     }
 
     function markMediaReady() {
-      if (video.readyState >= 2 && video.currentTime <= 0.08) {
+      const reverseReady =
+        usesManualReverse || reverseVideo.readyState >= 2;
+
+      if (
+        video.readyState >= 2 &&
+        reverseReady &&
+        video.currentTime <= 0.08
+      ) {
         setMediaReady(true);
       }
     }
@@ -590,6 +604,8 @@ export function QualifiedResult({
     video.addEventListener('timeupdate', requestProgressSync);
     video.addEventListener('ended', handleEnded);
     if (!usesManualReverse) {
+      reverseVideo.addEventListener('loadeddata', markMediaReady);
+      reverseVideo.addEventListener('canplay', markMediaReady);
       reverseVideo.addEventListener('timeupdate', requestReverseProgressSync);
       reverseVideo.addEventListener('ended', handleReverseEnded);
     }
@@ -622,6 +638,8 @@ export function QualifiedResult({
       video.removeEventListener('timeupdate', requestProgressSync);
       video.removeEventListener('ended', handleEnded);
       if (!usesManualReverse) {
+        reverseVideo.removeEventListener('loadeddata', markMediaReady);
+        reverseVideo.removeEventListener('canplay', markMediaReady);
         reverseVideo.removeEventListener(
           'timeupdate',
           requestReverseProgressSync

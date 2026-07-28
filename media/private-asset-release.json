@@ -1,25 +1,12 @@
 {
-  "bucket": "renaiss-merch-media",
-  "contentHash": "147cd19adbc09d3da40886ba067b94e7a57720434150335071cbbe3173a80e46",
+  "access": "private",
+  "bucket": "renaiss-merch-private-media",
+  "contentHash": "4f8e3a3a6b99b2ea9d86b691f00381d4ae80aa4c5f422094b5b2a2c2e0e990b4",
   "fileCount": 8,
   "prefix": "merch/v1.2",
-  "release": "r147cd19adbc09d3da408",
-  "totalBytes": 50556044,
+  "release": "r4f8e3a3a6b99b2ea9d86",
+  "totalBytes": 29012254,
   "assets": {
-    "sealedDrop": {
-      "contentType": "image/avif",
-      "path": "store/sealed-drop.avif",
-      "source": "src/assets/merch/sealed-drop.jpg",
-      "sourceContentType": "image/jpeg",
-      "type": "image"
-    },
-    "storeBackground": {
-      "contentType": "image/avif",
-      "path": "store/store-background.avif",
-      "source": "src/assets/merch/store-static-background-v3-2k.png",
-      "sourceContentType": "image/png",
-      "type": "image"
-    },
     "shirtProduct": {
       "contentType": "image/avif",
       "path": "products/shirt.avif",
@@ -47,6 +34,20 @@
       "source": "private/merch/bracelet-store-cover.png",
       "sourceContentType": "image/png",
       "type": "image"
+    },
+    "shirtRevealForward": {
+      "contentType": "video/mp4",
+      "path": "reveal/shirt-forward.mp4",
+      "source": "private/merch/shirt-reveal.mp4",
+      "sourceContentType": "video/mp4",
+      "type": "binary"
+    },
+    "shirtRevealReverse": {
+      "contentType": "video/mp4",
+      "path": "reveal/shirt-reverse.mp4",
+      "source": "private/merch/shirt-reveal-reverse.mp4",
+      "sourceContentType": "video/mp4",
+      "type": "binary"
     },
     "braceletRevealForward": {
       "contentType": "video/mp4",

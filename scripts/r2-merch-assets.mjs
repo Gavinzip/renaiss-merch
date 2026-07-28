@@ -27,7 +27,10 @@ const CONTENT_MEDIA_EXTENSIONS = new Set([
 const command = process.argv[2] || 'audit';
 const options = parseOptions(process.argv.slice(3));
 const projectRoot = process.cwd();
-const catalogPath = resolve(projectRoot, 'media/asset-release.json');
+const catalogPath = resolve(
+  projectRoot,
+  options.catalog || 'media/public-asset-release.json'
+);
 const distPath = resolve(projectRoot, options.dist || 'dist');
 
 if (
@@ -336,6 +339,12 @@ async function writeCatalogRelease(catalog, inventory) {
 
 async function verifyRelease(catalog, inventory) {
   const base = normalizeBase(requiredOption('base'));
+  const authorization = String(
+    process.env.PRIVATE_MEDIA_PROXY_TOKEN || ''
+  ).trim();
+  const requestHeaders = authorization
+    ? { Authorization: `Bearer ${authorization}` }
+    : undefined;
 
   if (catalog.release !== inventory.release) {
     throw new Error(
@@ -349,17 +358,25 @@ async function verifyRelease(catalog, inventory) {
   for (const file of inventory.files) {
     const url = mediaUrl(base, catalog, file.path);
     const startedAt = performance.now();
-    const response = await fetch(url, { method: 'HEAD' });
+    const response = await fetchWithTransientRetry(url, {
+      headers: requestHeaders,
+      method: 'HEAD'
+    });
     const coldMs = performance.now() - startedAt;
     const cacheControl = response.headers.get('cache-control') || '';
     const contentType = response.headers.get('content-type') || '';
     const etag = response.headers.get('etag') || '';
 
+    const expectedCachePolicy =
+      catalog.access === 'private'
+        ? cacheControl.includes('private') && cacheControl.includes('no-store')
+        : cacheControl.includes('max-age=31536000') &&
+          cacheControl.includes('immutable');
+
     if (
       !response.ok ||
       contentType.split(';')[0] !== file.contentType ||
-      !cacheControl.includes('max-age=31536000') ||
-      !cacheControl.includes('immutable') ||
+      !expectedCachePolicy ||
       !etag
     ) {
       failures.push(
@@ -370,7 +387,10 @@ async function verifyRelease(catalog, inventory) {
     }
 
     const warmStartedAt = performance.now();
-    await fetch(url, { method: 'HEAD' });
+    await fetchWithTransientRetry(url, {
+      headers: requestHeaders,
+      method: 'HEAD'
+    });
     const warmMs = performance.now() - warmStartedAt;
     console.log(
       `Verified ${file.path}: ${response.status}, ${contentType}, ` +
@@ -378,8 +398,11 @@ async function verifyRelease(catalog, inventory) {
     );
 
     if (file.contentType === 'video/mp4') {
-      const rangeResponse = await fetch(url, {
-        headers: { Range: 'bytes=0-1023' }
+      const rangeResponse = await fetchWithTransientRetry(url, {
+        headers: {
+          ...requestHeaders,
+          Range: 'bytes=0-1023'
+        }
       });
 
       if (
@@ -402,6 +425,34 @@ async function verifyRelease(catalog, inventory) {
   console.log(
     `Verified release ${catalog.release} at ${base}/${catalog.prefix}/.`
   );
+}
+
+async function fetchWithTransientRetry(url, init, attempt = 1) {
+  try {
+    const response = await fetch(url, init);
+
+    if (
+      attempt < 3 &&
+      (response.status === 429 || response.status >= 500)
+    ) {
+      await response.body?.cancel();
+      await new Promise((resolvePromise) =>
+        setTimeout(resolvePromise, attempt * 500)
+      );
+      return fetchWithTransientRetry(url, init, attempt + 1);
+    }
+
+    return response;
+  } catch (error) {
+    if (attempt >= 3) {
+      throw error;
+    }
+
+    await new Promise((resolvePromise) =>
+      setTimeout(resolvePromise, attempt * 500)
+    );
+    return fetchWithTransientRetry(url, init, attempt + 1);
+  }
 }
 
 async function assertConfiguration() {

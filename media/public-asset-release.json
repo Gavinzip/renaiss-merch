@@ -1,0 +1,32 @@
+{
+  "access": "public",
+  "bucket": "renaiss-merch-media",
+  "contentHash": "a2f99ec7af4a4a297ed899efd589b46e2d8513267f219f2231e23819d62fb7d9",
+  "fileCount": 3,
+  "prefix": "merch/v1.2",
+  "release": "ra2f99ec7af4a4a297ed8",
+  "totalBytes": 277606,
+  "assets": {
+    "sealedDrop": {
+      "contentType": "image/avif",
+      "path": "store/sealed-drop.avif",
+      "source": "src/assets/merch/sealed-drop.jpg",
+      "sourceContentType": "image/jpeg",
+      "type": "image"
+    },
+    "sealedDropCatalog": {
+      "contentType": "image/avif",
+      "path": "store/sealed-drop-catalog.avif",
+      "source": "src/assets/merch/sealed-drop-square-v2-2k.png",
+      "sourceContentType": "image/png",
+      "type": "image"
+    },
+    "storeBackground": {
+      "contentType": "image/avif",
+      "path": "store/store-background.avif",
+      "source": "src/assets/merch/store-static-background-v3-2k.png",
+      "sourceContentType": "image/png",
+      "type": "image"
+    }
+  }
+}

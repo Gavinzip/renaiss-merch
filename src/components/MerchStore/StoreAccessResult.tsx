@@ -1,4 +1,5 @@
 import type { MerchEligibilityResult } from '../../lib/merchEligibility';
+import type { PreparedRevealMedia } from '../../lib/revealMediaPreload';
 import { QualifiedResult } from '../QualifiedResult/QualifiedResult';
 import { UnqualifiedResult } from '../UnqualifiedResult/UnqualifiedResult';
 import type { MerchProductId } from './merchCatalog';
@@ -6,12 +7,17 @@ import type { MerchProductId } from './merchCatalog';
 type StoreAccessResultProps = {
   onBack: () => void;
   productId: MerchProductId;
+  revealMedia?: Pick<
+    PreparedRevealMedia,
+    'forwardUrl' | 'reverseUrl'
+  >;
   result: MerchEligibilityResult;
 };
 
 export function StoreAccessResult({
   onBack,
   productId,
+  revealMedia,
   result
 }: StoreAccessResultProps) {
   return (
@@ -33,7 +39,11 @@ export function StoreAccessResult({
       {result.status === 'unqualified' ? (
         <UnqualifiedResult result={result} />
       ) : (
-        <QualifiedResult productId={productId} result={result} />
+        <QualifiedResult
+          productId={productId}
+          revealMedia={revealMedia}
+          result={result}
+        />
       )}
     </div>
   );

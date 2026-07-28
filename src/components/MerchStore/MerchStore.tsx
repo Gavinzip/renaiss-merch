@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties
+} from 'react';
 import renaissLogoMark from '../../assets/renaiss-logo-mark.png';
 import { staticMerchAssetCssUrl } from '../../lib/staticAssets';
 import {
@@ -18,16 +24,33 @@ import {
   startRenaissLogin,
   type RenaissSession
 } from '../../lib/renaissAuth';
+import {
+  type PreparedRevealMedia,
+  type RevealMediaAdmissionProgress
+} from '../../lib/revealMediaPreload';
+import {
+  StoreRevealMediaCancelledError,
+  type StoreRevealMediaController
+} from '../../lib/storeRevealMedia';
 import { FulfillmentConsole } from '../FulfillmentConsole/FulfillmentConsole';
 import { ShippingSettings } from '../ShippingSettings/ShippingSettings';
+import { CatalogProductTile } from './CatalogProductTile';
 import { MerchProductCard } from './MerchProductCard';
 import { merchCatalog, type MerchProductId } from './merchCatalog';
+import {
+  CATALOG_VIEW_ENABLED,
+  readStoredMerchStoreView,
+  saveMerchStoreView,
+  type MerchStoreView
+} from './merchStoreView';
 import { StoreAccessResult } from './StoreAccessResult';
+import { useScrolledHeader } from './useScrolledHeader';
 import '../MerchEligibilityEntry/MerchEligibilityEntry.css';
 import './MerchStore.css';
 
 type StoreState =
   | 'loading-session'
+  | 'preparing-store-media'
   | 'idle'
   | 'auth-required'
   | 'signing-in'
@@ -41,16 +64,19 @@ type StoreState =
 
 type AccessResult = {
   productId: MerchProductId;
+  revealMedia?: PreparedRevealMedia;
   result: MerchEligibilityResult;
 };
 
-const MINIMUM_CHECK_DURATION_MS = 820;
-
 type MerchStoreProps = {
   onExitStore?: () => void;
+  revealMediaController: StoreRevealMediaController;
 };
 
-export function MerchStore({ onExitStore }: MerchStoreProps) {
+export function MerchStore({
+  onExitStore,
+  revealMediaController
+}: MerchStoreProps) {
   const [session, setSession] = useState<RenaissSession>({
     authenticated: false
   });
@@ -66,6 +92,19 @@ export function MerchStore({ onExitStore }: MerchStoreProps) {
     () => window.location.hash === '#fulfillment'
   );
   const [showSettings, setShowSettings] = useState(false);
+  const [storeView, setStoreView] = useState<MerchStoreView>(
+    () =>
+      CATALOG_VIEW_ENABLED ? readStoredMerchStoreView() : 'cards'
+  );
+  const [revealLoadProgress, setRevealLoadProgress] =
+    useState<RevealMediaAdmissionProgress>({
+      loadedBytes: 0,
+      percent: 0,
+      stage: 'download',
+      totalBytes: 0
+    });
+  const accessResultRef = useRef<AccessResult | null>(null);
+  const isCatalogHeaderScrolled = useScrolledHeader(storeView === 'catalog');
 
   const user = session.authenticated ? session.user : null;
   const sessionLabel =
@@ -73,12 +112,15 @@ export function MerchStore({ onExitStore }: MerchStoreProps) {
   const walletLabel = user?.safeWalletAddress
     ? shortenWallet(user.safeWalletAddress)
     : 'Safe wallet pending';
-  const isChecking = storeState === 'checking';
+  const isChecking =
+    storeState === 'checking';
 
   const statusText = useMemo(() => {
     switch (storeState) {
       case 'loading-session':
         return 'Checking your Renaiss session.';
+      case 'preparing-store-media':
+        return 'Preparing eligible private releases before access opens.';
       case 'auth-required':
         return 'Login with Renaiss before checking this release.';
       case 'signing-in':
@@ -103,6 +145,16 @@ export function MerchStore({ onExitStore }: MerchStoreProps) {
   }, [storeState]);
 
   useEffect(() => {
+    if (CATALOG_VIEW_ENABLED) {
+      saveMerchStoreView(storeView);
+    }
+  }, [storeView]);
+
+  useEffect(() => {
+    accessResultRef.current = accessResult;
+  }, [accessResult]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function loadSession() {
@@ -120,13 +172,22 @@ export function MerchStore({ onExitStore }: MerchStoreProps) {
 
         setSession(nextSession);
         setProductAccess(toProductAccessMap(nextProductAccess));
-        setStoreState(
-          nextSession.authenticated
-            ? 'authenticated'
-            : authState === 'error'
-              ? 'auth-error'
-              : 'idle'
-        );
+
+        if (nextSession.authenticated) {
+          if (!revealMediaController.isAdmissionComplete()) {
+            setStoreState('preparing-store-media');
+            await revealMediaController.prepareAll(setRevealLoadProgress);
+          }
+
+          if (cancelled) {
+            return;
+          }
+
+          setStoreState('authenticated');
+          return;
+        }
+
+        setStoreState(authState === 'error' ? 'auth-error' : 'idle');
       } catch {
         if (!cancelled) {
           setStoreState('source-error');
@@ -176,6 +237,7 @@ export function MerchStore({ onExitStore }: MerchStoreProps) {
         demoAvailable: session.demoAvailable
       });
       setSelectedProductId(null);
+      revealMediaController.releaseAll();
       setAccessResult(null);
       setProductAccess({});
       setShowSettings(false);
@@ -201,11 +263,18 @@ export function MerchStore({ onExitStore }: MerchStoreProps) {
 
       setSession(demoSession);
       setSelectedProductId(null);
+      revealMediaController.releaseAll();
       setAccessResult(null);
       setProductAccess(toProductAccessMap(demoProductAccess));
-      setStoreState(
-        demoSession.authenticated ? 'authenticated' : 'source-error'
-      );
+
+      if (!demoSession.authenticated) {
+        setStoreState('source-error');
+        return;
+      }
+
+      setStoreState('preparing-store-media');
+      await revealMediaController.prepareAll(setRevealLoadProgress);
+      setStoreState('authenticated');
     } catch {
       setStoreState('source-error');
     }
@@ -231,11 +300,8 @@ export function MerchStore({ onExitStore }: MerchStoreProps) {
     setAccessResult(null);
     setStoreState('checking');
 
-    const startedAt = performance.now();
-
     try {
       const result = await checkMerchEligibility(productId);
-      await waitForCheckTempo(startedAt);
 
       setProductAccess((currentProductAccess) => ({
         ...currentProductAccess,
@@ -245,9 +311,25 @@ export function MerchStore({ onExitStore }: MerchStoreProps) {
           currentProductAccess[productId]?.claimStatus || null
         )
       }));
+
+      if (result.status === 'eligible') {
+        const revealMedia = revealMediaController.read(productId);
+
+        if (!revealMedia) {
+          throw new Error(
+            `Eligible reveal media was not admitted before check: ${productId}`
+          );
+        }
+
+        setAccessResult({ productId, result, revealMedia });
+        return;
+      }
+
       setAccessResult({ productId, result });
     } catch (error) {
-      await waitForCheckTempo(startedAt);
+      if (error instanceof StoreRevealMediaCancelledError) {
+        return;
+      }
 
       if (error instanceof EligibilityPendingError) {
         setStoreState(
@@ -300,6 +382,7 @@ export function MerchStore({ onExitStore }: MerchStoreProps) {
       <StoreAccessResult
         onBack={resetAccessResult}
         productId={accessResult.productId}
+        revealMedia={accessResult.revealMedia}
         result={accessResult.result}
       />
     );
@@ -307,7 +390,7 @@ export function MerchStore({ onExitStore }: MerchStoreProps) {
 
   return (
     <main
-      className="merch-entry merch-store"
+      className={`merch-entry merch-store merch-store--${storeView}`}
       aria-labelledby="merch-store-title"
       style={
         {
@@ -317,7 +400,12 @@ export function MerchStore({ onExitStore }: MerchStoreProps) {
       }
     >
       <header
-        className="merch-store__header"
+        className={[
+          'merch-store__header',
+          isCatalogHeaderScrolled ? 'is-scrolled' : ''
+        ]
+          .filter(Boolean)
+          .join(' ')}
         aria-hidden={showFulfillment || showSettings}
       >
         <button
@@ -407,27 +495,64 @@ export function MerchStore({ onExitStore }: MerchStoreProps) {
           </p>
         </div>
 
-        <div className="merch-store__products">
-          {merchCatalog.map((product) => (
-            <MerchProductCard
-              accessState={productAccess[product.id]}
-              disabled={
-                storeState === 'loading-session' ||
-                storeState === 'signing-in' ||
-                storeState === 'opening-demo' ||
-                (isChecking && selectedProductId !== product.id)
-              }
-              helperText={readProductHelperText(
-                product.id,
-                selectedProductId,
-                storeState
-              )}
-              isChecking={isChecking && selectedProductId === product.id}
-              key={product.id}
-              onCheck={(productId) => void handleProductCheck(productId)}
-              product={product}
-            />
-          ))}
+        {CATALOG_VIEW_ENABLED ? (
+          <div className="merch-store__view-bar">
+            <span>Display</span>
+            <div
+              className="merch-store__view-switch"
+              role="group"
+              aria-label="Product display"
+            >
+              <button
+                aria-pressed={storeView === 'cards'}
+                onClick={() => setStoreView('cards')}
+                type="button"
+              >
+                Cards
+              </button>
+              <button
+                aria-pressed={storeView === 'catalog'}
+                onClick={() => setStoreView('catalog')}
+                type="button"
+              >
+                Catalog
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        <div
+          className={`merch-store__products merch-store__products--${storeView}`}
+        >
+          {merchCatalog.map((product) => {
+            const accessState = productAccess[product.id];
+            const disabled =
+              storeState === 'loading-session' ||
+              storeState === 'preparing-store-media' ||
+              storeState === 'signing-in' ||
+              storeState === 'opening-demo' ||
+              (isChecking && selectedProductId !== product.id);
+            const helperText = readProductHelperText(
+              product.id,
+              selectedProductId,
+              storeState
+            );
+            const productProps = {
+              accessState,
+              disabled,
+              helperText,
+              isChecking: isChecking && selectedProductId === product.id,
+              onCheck: (productId: MerchProductId) =>
+                void handleProductCheck(productId),
+              product
+            };
+
+            return storeView === 'catalog' ? (
+              <CatalogProductTile key={product.id} {...productProps} />
+            ) : (
+              <MerchProductCard key={product.id} {...productProps} />
+            );
+          })}
         </div>
 
         <p
@@ -437,6 +562,13 @@ export function MerchStore({ onExitStore }: MerchStoreProps) {
           {statusText}
         </p>
       </section>
+
+      {storeState === 'preparing-store-media' ? (
+        <RevealMediaAdmission
+          label="Preparing your private releases"
+          progress={revealLoadProgress}
+        />
+      ) : null}
 
       <footer className="merch-store__footer" aria-hidden="true">
         <span>Private release</span>
@@ -523,25 +655,52 @@ function consumeAuthQueryState() {
   return authState;
 }
 
-async function waitForCheckTempo(startedAt: number) {
-  const remaining =
-    MINIMUM_CHECK_DURATION_MS - (performance.now() - startedAt);
-
-  if (remaining > 0) {
-    await delay(remaining);
-  }
-}
-
-function delay(duration: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, duration));
-}
-
 function shortenWallet(walletAddress: string) {
   if (walletAddress.length <= 14) {
     return walletAddress;
   }
 
   return `${walletAddress.slice(0, 7)}...${walletAddress.slice(-5)}`;
+}
+
+function RevealMediaAdmission({
+  label = 'Access verified',
+  progress
+}: {
+  label?: string;
+  progress: RevealMediaAdmissionProgress;
+}) {
+  const stageLabel =
+    progress.stage === 'download'
+      ? 'Downloading private release'
+      : progress.stage === 'decode'
+        ? 'Decoding video'
+        : 'Rendering first frames';
+
+  return (
+    <div
+      aria-busy="true"
+      aria-live="polite"
+      className="merch-store__reveal-admission"
+      role="status"
+    >
+      <div className="merch-store__reveal-admission-panel">
+        <p>{label}</p>
+        <h2>{stageLabel}</h2>
+        <div
+          aria-label="Private release loading progress"
+          aria-valuemax={100}
+          aria-valuemin={0}
+          aria-valuenow={progress.percent}
+          className="merch-store__reveal-progress"
+          role="progressbar"
+        >
+          <span style={{ width: `${progress.percent}%` }} />
+        </div>
+        <strong>{String(progress.percent).padStart(2, '0')}%</strong>
+      </div>
+    </div>
+  );
 }
 
 function formatTwitterUsername(username: string | null | undefined) {

@@ -53,7 +53,10 @@ async function streamLocalMedia(req, res, source, options) {
 }
 
 async function proxyRemoteMedia(req, res, source, options) {
-  const headers = { Accept: source.contentType };
+  const headers = {
+    ...source.requestHeaders,
+    Accept: source.contentType
+  };
 
   if (options.acceptRanges && req.headers.range) {
     headers.Range = req.headers.range;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MerchLanding } from './components/MerchLanding/MerchLanding';
 import { MerchStore } from './components/MerchStore/MerchStore';
 import { StoreAccessResult } from './components/MerchStore/StoreAccessResult';
@@ -7,6 +7,8 @@ import type {
   EligibleMerchEligibilityResult,
   MerchEligibilityResult
 } from './lib/merchEligibility';
+import { readRenaissSession } from './lib/renaissAuth';
+import { createStoreRevealMediaController } from './lib/storeRevealMedia';
 import { preloadStoreAssets } from './lib/storePreload';
 
 const previewQualifiedResult: EligibleMerchEligibilityResult = {
@@ -47,6 +49,15 @@ export default function App() {
   const [storeLoadState, setStoreLoadState] = useState<
     'idle' | 'loading' | 'error'
   >('idle');
+  const revealMediaControllerRef = useRef<ReturnType<
+    typeof createStoreRevealMediaController
+  > | null>(null);
+
+  if (!revealMediaControllerRef.current) {
+    revealMediaControllerRef.current = createStoreRevealMediaController();
+  }
+
+  const revealMediaController = revealMediaControllerRef.current;
 
   useEffect(() => {
     function syncView() {
@@ -61,6 +72,10 @@ export default function App() {
       window.removeEventListener('popstate', syncView);
     };
   }, []);
+
+  useEffect(() => () => revealMediaController.dispose(), [
+    revealMediaController
+  ]);
 
   if (
     import.meta.env.DEV &&
@@ -84,7 +99,12 @@ export default function App() {
   }
 
   if (view === 'store') {
-    return <MerchStore onExitStore={() => navigateToView('landing', setView)} />;
+    return (
+      <MerchStore
+        onExitStore={() => navigateToView('landing', setView)}
+        revealMediaController={revealMediaController}
+      />
+    );
   }
 
   async function enterStore() {
@@ -96,7 +116,19 @@ export default function App() {
     setStoreLoadState('loading');
 
     try {
-      await preloadStoreAssets(setStoreLoadProgress);
+      await preloadStoreAssets((progress) => {
+        setStoreLoadProgress(Math.round(progress * 0.2));
+      });
+      const session = await readRenaissSession();
+
+      if (session.authenticated) {
+        await revealMediaController.prepareAll((progress) => {
+          setStoreLoadProgress(20 + Math.round(progress.percent * 0.8));
+        });
+      } else {
+        setStoreLoadProgress(100);
+      }
+
       navigateToView('store', setView);
       setStoreLoadState('idle');
     } catch {

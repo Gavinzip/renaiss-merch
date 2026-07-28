@@ -1,6 +1,9 @@
-import assetRelease from '../../media/asset-release.json';
+import assetRelease from '../../media/public-asset-release.json';
 
-export type StaticMerchAsset = 'sealedDrop' | 'storeBackground';
+export type StaticMerchAsset =
+  | 'sealedDrop'
+  | 'sealedDropCatalog'
+  | 'storeBackground';
 
 const configuredCdnBase = String(
   import.meta.env.VITE_STATIC_ASSET_CDN_BASE_URL || ''
@@ -10,6 +13,7 @@ const configuredCdnBase = String(
 
 const developmentPaths: Record<StaticMerchAsset, string> = {
   sealedDrop: '/src/assets/merch/sealed-drop.jpg',
+  sealedDropCatalog: '/src/assets/merch/sealed-drop-square-v2-2k.png',
   storeBackground: '/src/assets/merch/store-static-background-v3-2k.png'
 };
 

@@ -1,14 +1,24 @@
-import { staticMerchAssetUrl } from '../../lib/staticAssets';
+import {
+  staticMerchAssetUrl,
+  type StaticMerchAsset
+} from '../../lib/staticAssets';
 import type { MerchProductId } from './merchCatalog';
 
 type LockedProductVisualProps = {
+  className?: string;
   productId: MerchProductId;
   revealedName?: string;
+  sealedAsset?: Extract<
+    StaticMerchAsset,
+    'sealedDrop' | 'sealedDropCatalog'
+  >;
 };
 
 export function LockedProductVisual({
+  className,
   productId,
-  revealedName
+  revealedName,
+  sealedAsset = 'sealedDrop'
 }: LockedProductVisualProps) {
   const isRevealed = !!revealedName;
   const revealedImageUrl =
@@ -24,6 +34,7 @@ export function LockedProductVisual({
         'merch-product-card__locked-media',
         isRevealed ? 'is-revealed' : '',
         isRevealed ? `is-${productId}` : '',
+        className || '',
         'is-ready'
       ]
         .filter(Boolean)
@@ -33,7 +44,7 @@ export function LockedProductVisual({
       src={
         isRevealed
           ? revealedImageUrl
-          : staticMerchAssetUrl('sealedDrop')
+          : staticMerchAssetUrl(sealedAsset)
       }
     />
   );

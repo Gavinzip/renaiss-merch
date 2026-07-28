@@ -5,55 +5,45 @@ import {
 
 const STORE_ENTRY_ASSETS: readonly StaticMerchAsset[] = [
   'storeBackground',
-  'sealedDrop'
+  'sealedDrop',
+  'sealedDropCatalog'
 ];
-const MINIMUM_LOADING_DURATION_MS = 720;
-const COMPLETION_HOLD_MS = 160;
 
 export async function preloadStoreAssets(
   onProgress: (progress: number) => void
 ) {
-  const startedAt = performance.now();
   let loadedAssets = 0;
 
-  onProgress(8);
+  onProgress(0);
 
   await Promise.all(
     STORE_ENTRY_ASSETS.map(async (assetKey) => {
       await preloadImage(staticMerchAssetUrl(assetKey));
       loadedAssets += 1;
-      onProgress(8 + Math.round((loadedAssets / STORE_ENTRY_ASSETS.length) * 80));
+      onProgress(
+        loadedAssets === STORE_ENTRY_ASSETS.length
+          ? 100
+          : Math.round((loadedAssets / STORE_ENTRY_ASSETS.length) * 99)
+      );
     })
   );
-
-  const remainingDuration = Math.max(
-    0,
-    MINIMUM_LOADING_DURATION_MS - (performance.now() - startedAt)
-  );
-  await wait(remainingDuration);
-  onProgress(100);
-  await wait(COMPLETION_HOLD_MS);
 }
 
 function preloadImage(source: string) {
-  return new Promise<void>((resolvePromise, rejectPromise) => {
+  return new Promise<HTMLImageElement>((resolvePromise, rejectPromise) => {
     const image = new Image();
 
     image.decoding = 'async';
-    image.onload = () => resolvePromise();
+    image.onload = () => resolvePromise(image);
     image.onerror = () => {
       rejectPromise(new Error(`Store asset could not be loaded: ${source}`));
     };
     image.src = source;
 
     if (image.complete && image.naturalWidth > 0) {
-      resolvePromise();
+      resolvePromise(image);
     }
-  });
-}
-
-function wait(durationMs: number) {
-  return new Promise<void>((resolvePromise) => {
-    window.setTimeout(resolvePromise, durationMs);
+  }).then(async (image) => {
+    await image.decode();
   });
 }
