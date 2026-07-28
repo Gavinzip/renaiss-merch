@@ -1,10 +1,10 @@
 {
   "bucket": "renaiss-merch-media",
-  "contentHash": "0ff3339664b461cf8ca4c4c1fcfc2aaff5a87a1a92afd7c09a06c31019322de3",
+  "contentHash": "147cd19adbc09d3da40886ba067b94e7a57720434150335071cbbe3173a80e46",
   "fileCount": 8,
   "prefix": "merch/v1.2",
-  "release": "r0ff3339664b461cf8ca4",
-  "totalBytes": 34644313,
+  "release": "r147cd19adbc09d3da408",
+  "totalBytes": 50556044,
   "assets": {
     "sealedDrop": {
       "contentType": "image/avif",

@@ -346,6 +346,9 @@ export function QualifiedResult({
       setRevealPhase('review');
       video.pause();
       video.currentTime = Math.max(0, duration - 0.02);
+      if (!usesManualReverse) {
+        resetVideoToStart(reverseVideo);
+      }
       syncProgress(1);
       scheduleMobileShippingReveal();
       reviewReadyAt = performance.now();
@@ -370,6 +373,7 @@ export function QualifiedResult({
       video.pause();
       manualReverseStartedAt = 0;
       resetVideoToStart(video);
+      resetVideoToStart(reverseVideo);
       video.playbackRate = Math.min(
         3,
         Math.max(1, duration / AUTO_REVEAL_SECONDS)
@@ -422,10 +426,6 @@ export function QualifiedResult({
       reverseVideo.pause();
       setRevealPhase('closing');
       clearCloseTimer();
-      closeTimerId = window.setTimeout(
-        completeClose,
-        AUTO_REVEAL_SECONDS * 1000 + REVEAL_WATCHDOG_BUFFER_MS
-      );
 
       window.requestAnimationFrame(() => {
         if (revealPhaseRef !== 'closing') {
@@ -433,6 +433,10 @@ export function QualifiedResult({
         }
 
         if (usesManualReverse) {
+          closeTimerId = window.setTimeout(
+            completeClose,
+            AUTO_REVEAL_SECONDS * 1000 + REVEAL_WATCHDOG_BUFFER_MS
+          );
           manualReverseStartedAt = 0;
           reverseVideo.currentTime = Math.max(0, duration - 0.02);
           frameId = window.requestAnimationFrame(
@@ -441,14 +445,19 @@ export function QualifiedResult({
           return;
         }
 
-        resetVideoToStart(reverseVideo);
         reverseVideo.playbackRate = Math.min(
           3,
           Math.max(1, duration / AUTO_REVEAL_SECONDS)
         );
         void reverseVideo
           .play()
-          .then(requestReverseProgressSync)
+          .then(() => {
+            closeTimerId = window.setTimeout(
+              completeClose,
+              AUTO_REVEAL_SECONDS * 1000 + REVEAL_WATCHDOG_BUFFER_MS
+            );
+            requestReverseProgressSync();
+          })
           .catch(() => undefined);
       });
     }
@@ -766,7 +775,7 @@ export function QualifiedResult({
             className="qualified-result__video qualified-result__video--reverse"
             muted
             playsInline
-            preload={reverseVideoSrc ? 'metadata' : 'auto'}
+            preload="auto"
             disablePictureInPicture
             src={
               reverseVideoSrc || revealVideoSrc
