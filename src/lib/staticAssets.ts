@@ -10,7 +10,7 @@ const configuredCdnBase = String(
 
 const developmentPaths: Record<StaticMerchAsset, string> = {
   sealedDrop: '/src/assets/merch/sealed-drop.jpg',
-  storeBackground: '/src/assets/merch/store-static-background-v2.jpg'
+  storeBackground: '/src/assets/merch/store-static-background-v3-2k.png'
 };
 
 export function staticMerchAssetUrl(assetKey: StaticMerchAsset) {

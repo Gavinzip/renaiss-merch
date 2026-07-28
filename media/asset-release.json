@@ -1,10 +1,10 @@
 {
   "bucket": "renaiss-merch-media",
-  "contentHash": "446c18fa4a637161a044dec71b02419715ec922316ff0a292fdfb5495c83d945",
+  "contentHash": "0ff3339664b461cf8ca4c4c1fcfc2aaff5a87a1a92afd7c09a06c31019322de3",
   "fileCount": 8,
   "prefix": "merch/v1.2",
-  "release": "r446c18fa4a637161a044",
-  "totalBytes": 34881054,
+  "release": "r0ff3339664b461cf8ca4",
+  "totalBytes": 34644313,
   "assets": {
     "sealedDrop": {
       "contentType": "image/avif",
@@ -16,8 +16,8 @@
     "storeBackground": {
       "contentType": "image/avif",
       "path": "store/store-background.avif",
-      "source": "src/assets/merch/store-static-background-v2.jpg",
-      "sourceContentType": "image/jpeg",
+      "source": "src/assets/merch/store-static-background-v3-2k.png",
+      "sourceContentType": "image/png",
       "type": "image"
     },
     "shirtProduct": {

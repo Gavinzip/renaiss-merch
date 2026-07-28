@@ -4,12 +4,33 @@ import '../MerchEligibilityEntry/MerchEligibilityEntry.css';
 import './MerchLanding.css';
 
 type MerchLandingProps = {
+  loadProgress: number;
+  loadState: 'idle' | 'loading' | 'error';
   onEnterStore: () => void;
+  onRetry: () => void;
 };
 
-export function MerchLanding({ onEnterStore }: MerchLandingProps) {
+export function MerchLanding({
+  loadProgress,
+  loadState,
+  onEnterStore,
+  onRetry
+}: MerchLandingProps) {
+  const isLoading = loadState === 'loading';
+
   return (
-    <main className="merch-entry merch-landing" aria-labelledby="merch-entry-title">
+    <main
+      aria-busy={isLoading}
+      aria-labelledby="merch-entry-title"
+      className={[
+        'merch-entry',
+        'merch-landing',
+        isLoading ? 'is-loading' : '',
+        loadState === 'error' ? 'has-load-error' : ''
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       <div className="merch-entry__background" aria-hidden="true">
         <Prism
           animationType="3drotate"
@@ -29,19 +50,59 @@ export function MerchLanding({ onEnterStore }: MerchLandingProps) {
       </div>
 
       <section className="merch-entry__content">
-        <p className="merch-entry__mark">
-          <img src={renaissProtocolLogo} alt="Renaiss Protocol" />
-        </p>
-        <h1 id="merch-entry-title">RENAISS MERCH</h1>
-        <p className="merch-entry__copy">
-          Enter the private Renaiss merch store.
-        </p>
+        {loadState === 'idle' ? (
+          <>
+            <p className="merch-entry__mark">
+              <img src={renaissProtocolLogo} alt="Renaiss Protocol" />
+            </p>
+            <h1 id="merch-entry-title">RENAISS MERCH</h1>
+            <p className="merch-entry__copy">
+              Enter the private Renaiss merch store.
+            </p>
 
-        <div className="merch-entry__form merch-landing__action">
-          <button type="button" onClick={onEnterStore}>
-            Enter store
-          </button>
-        </div>
+            <div className="merch-entry__form merch-landing__action">
+              <button type="button" onClick={onEnterStore}>
+                Enter store
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="merch-landing__loading">
+            <p className="merch-landing__loading-kicker">Renaiss merch</p>
+            <h1 id="merch-entry-title">
+              {isLoading ? 'LOADING STORE' : 'LOAD INTERRUPTED'}
+            </h1>
+
+            {isLoading ? (
+              <>
+                <div
+                  aria-label="Store loading progress"
+                  aria-valuemax={100}
+                  aria-valuemin={0}
+                  aria-valuenow={loadProgress}
+                  className="merch-landing__progress"
+                  role="progressbar"
+                >
+                  <span style={{ width: `${loadProgress}%` }} />
+                </div>
+                <p className="merch-landing__progress-value">
+                  {String(loadProgress).padStart(2, '0')}%
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="merch-entry__copy">
+                  The store assets could not be loaded.
+                </p>
+                <div className="merch-entry__form merch-landing__action">
+                  <button type="button" onClick={onRetry}>
+                    Try again
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </section>
 
       <div className="merch-entry__footer" aria-hidden="true">

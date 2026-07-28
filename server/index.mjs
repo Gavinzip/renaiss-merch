@@ -16,10 +16,12 @@ import {
 } from './cookies.mjs';
 import { getAuthConfig, getPublicOrigin } from './config.mjs';
 import {
-  createLocalDemoUser,
+  canUseDemoSession,
+  createDemoUser,
   getSessionDatabaseOptions,
-  isLocalDemoAvailable,
-  requireLocalDemoAccess
+  isDemoAvailable,
+  isDemoSession,
+  requireDemoAccess
 } from './demo-session.mjs';
 import { handleMerchEligibility } from './eligibility.mjs';
 import {
@@ -146,12 +148,12 @@ async function handleRoute(req, res) {
 
   if (url.pathname === '/api/auth/session') {
     requireMethod(req, 'GET');
-    sendSession(req, res);
+    sendSession(req, res, url);
     return true;
   }
 
   if (url.pathname === '/api/auth/demo') {
-    startLocalDemoSession(req, res, url);
+    startDemoSession(req, res, url);
     return true;
   }
 
@@ -450,23 +452,32 @@ async function finishRenaissLogin(req, res, url) {
   }
 }
 
-function sendSession(req, res) {
+function sendSession(req, res, url) {
   const session = readSession(req);
+  const demoAvailable = isDemoAvailable(
+    req,
+    isProduction,
+    url.searchParams.get('surface')
+  );
 
   if (!session) {
     sendJson(res, 200, {
       authenticated: false,
-      demoAvailable: isLocalDemoAvailable(req, isProduction)
+      demoAvailable
     });
     return;
   }
 
-  sendAuthenticatedSession(res, session, req);
+  sendAuthenticatedSession(res, session, demoAvailable);
 }
 
-function startLocalDemoSession(req, res, url) {
+function startDemoSession(req, res, url) {
   requireMethod(req, 'POST');
-  requireLocalDemoAccess(req, isProduction);
+  requireDemoAccess(
+    req,
+    isProduction,
+    url.searchParams.get('surface')
+  );
   requireSameOrigin(req);
   deleteCurrentSession(req);
 
@@ -474,19 +485,19 @@ function startLocalDemoSession(req, res, url) {
     url.searchParams.get('mode') === 'unqualified'
       ? 'unqualified'
       : 'eligible';
-  const { id, session } = createSession(createLocalDemoUser(mode));
+  const { id, session } = createSession(createDemoUser(mode));
   setCookie(req, res, SESSION_COOKIE, id, {
     maxAge: SESSION_MAX_AGE_SECONDS
   });
-  sendAuthenticatedSession(res, session, req);
+  sendAuthenticatedSession(res, session, true);
 }
 
-function sendAuthenticatedSession(res, session, req) {
+function sendAuthenticatedSession(res, session, demoAvailable) {
   const { demoSbtBalance: _demoSbtBalance, ...publicUser } = session.user;
 
   sendJson(res, 200, {
     authenticated: true,
-    demoAvailable: isLocalDemoAvailable(req, isProduction),
+    demoAvailable,
     user: {
       ...publicUser,
       canManageFulfillment: canManageFulfillment(session)
@@ -539,7 +550,16 @@ function deleteCurrentSession(req) {
 }
 
 function readSession(req) {
-  return getSession(parseCookies(req).get(SESSION_COOKIE));
+  const session = getSession(parseCookies(req).get(SESSION_COOKIE));
+
+  if (
+    isDemoSession(session) &&
+    !canUseDemoSession(req, isProduction)
+  ) {
+    return null;
+  }
+
+  return session;
 }
 
 function requireMethod(req, method) {

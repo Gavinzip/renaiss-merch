@@ -1,5 +1,5 @@
 import { HttpError, sendJson } from './http.mjs';
-import { isLocalDemoSession } from './demo-session.mjs';
+import { isDemoSession } from './demo-session.mjs';
 
 const DEFAULT_BSCSCAN_API_URL = 'https://api.etherscan.io/v2/api';
 const DEFAULT_BSCSCAN_CHAIN_ID = '56';
@@ -61,7 +61,7 @@ export async function readMerchEligibility(session, options = {}) {
 
   const productId = readMerchProductId(options.productId);
 
-  if (isLocalDemoSession(session)) {
+  if (isDemoSession(session)) {
     return readLocalDemoEligibility(session, productId, walletAddress);
   }
 

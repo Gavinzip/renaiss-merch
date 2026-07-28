@@ -7,6 +7,7 @@ import type {
   EligibleMerchEligibilityResult,
   MerchEligibilityResult
 } from './lib/merchEligibility';
+import { preloadStoreAssets } from './lib/storePreload';
 
 const previewQualifiedResult: EligibleMerchEligibilityResult = {
   minimumSbtBalance: 60,
@@ -42,6 +43,10 @@ const previewBraceletResult: MerchEligibilityResult = {
 
 export default function App() {
   const [view, setView] = useState(readViewFromLocation);
+  const [storeLoadProgress, setStoreLoadProgress] = useState(0);
+  const [storeLoadState, setStoreLoadState] = useState<
+    'idle' | 'loading' | 'error'
+  >('idle');
 
   useEffect(() => {
     function syncView() {
@@ -82,7 +87,31 @@ export default function App() {
     return <MerchStore onExitStore={() => navigateToView('landing', setView)} />;
   }
 
-  return <MerchLanding onEnterStore={() => navigateToView('store', setView)} />;
+  async function enterStore() {
+    if (storeLoadState === 'loading') {
+      return;
+    }
+
+    setStoreLoadProgress(0);
+    setStoreLoadState('loading');
+
+    try {
+      await preloadStoreAssets(setStoreLoadProgress);
+      navigateToView('store', setView);
+      setStoreLoadState('idle');
+    } catch {
+      setStoreLoadState('error');
+    }
+  }
+
+  return (
+    <MerchLanding
+      loadProgress={storeLoadProgress}
+      loadState={storeLoadState}
+      onEnterStore={() => void enterStore()}
+      onRetry={() => void enterStore()}
+    />
+  );
 }
 
 type AppView = 'landing' | 'store';

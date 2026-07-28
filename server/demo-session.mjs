@@ -1,9 +1,12 @@
 import { randomBytes } from 'node:crypto';
+import { getPublicOrigin } from './config.mjs';
 import { HttpError } from './http.mjs';
 
 export const DEMO_DATABASE_PATH = '.data/merch-demo.sqlite';
+const TEMPORARY_DEMO_ENV = 'MERCH_V12_DEMO_ENABLED';
+const VERSIONED_DEMO_SURFACE = 'v1.2';
 
-export function createLocalDemoUser(mode = 'eligible') {
+export function createDemoUser(mode = 'eligible') {
   const isUnqualified = mode === 'unqualified';
 
   return {
@@ -22,22 +25,61 @@ export function createLocalDemoUser(mode = 'eligible') {
 }
 
 export function getSessionDatabaseOptions(session) {
-  return isLocalDemoSession(session)
+  return isDemoSession(session)
     ? { dbPath: DEMO_DATABASE_PATH }
     : {};
 }
 
-export function isLocalDemoAvailable(req, isProduction) {
-  return !isProduction && isLoopbackRequest(req) && isLocalHost(req);
+export function isDemoAvailable(req, isProduction, surface) {
+  if (!isProduction) {
+    return isLoopbackRequest(req) && isLocalHost(req);
+  }
+
+  return (
+    isTemporaryDemoEnabled() &&
+    surface === VERSIONED_DEMO_SURFACE &&
+    isVersionedDemoRequest(req)
+  );
 }
 
-export function isLocalDemoSession(session) {
+export function isDemoSession(session) {
   return session?.user?.isDemo === true;
 }
 
-export function requireLocalDemoAccess(req, isProduction) {
-  if (!isLocalDemoAvailable(req, isProduction)) {
+export function canUseDemoSession(req, isProduction) {
+  if (!isProduction) {
+    return isLoopbackRequest(req) && isLocalHost(req);
+  }
+
+  return isTemporaryDemoEnabled() && isVersionedDemoRequest(req);
+}
+
+export function requireDemoAccess(req, isProduction, surface) {
+  if (!isDemoAvailable(req, isProduction, surface)) {
     throw new HttpError(404, 'not_found');
+  }
+}
+
+function isTemporaryDemoEnabled() {
+  return process.env[TEMPORARY_DEMO_ENV]?.trim().toLowerCase() === 'true';
+}
+
+function isVersionedDemoRequest(req) {
+  const referer = req.headers.referer;
+
+  if (typeof referer !== 'string' || !referer.trim()) {
+    return false;
+  }
+
+  try {
+    const refererUrl = new URL(referer);
+    return (
+      refererUrl.origin === getPublicOrigin(req) &&
+      (refererUrl.pathname === '/v1.2' ||
+        refererUrl.pathname.startsWith('/v1.2/'))
+    );
+  } catch {
+    return false;
   }
 }
 

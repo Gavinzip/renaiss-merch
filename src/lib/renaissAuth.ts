@@ -24,7 +24,9 @@ export type RenaissSession =
     };
 
 export async function readRenaissSession(): Promise<RenaissSession> {
-  const response = await fetch('/api/auth/session', {
+  const endpoint = new URL('/api/auth/session', window.location.origin);
+  endpoint.searchParams.set('surface', 'v1.2');
+  const response = await fetch(`${endpoint.pathname}${endpoint.search}`, {
     headers: { Accept: 'application/json' }
   });
 
@@ -64,6 +66,7 @@ export async function startDemoRenaissSession(
   mode: 'eligible' | 'unqualified' = 'eligible'
 ): Promise<RenaissSession> {
   const endpoint = new URL('/api/auth/demo', window.location.origin);
+  endpoint.searchParams.set('surface', 'v1.2');
 
   if (mode === 'unqualified') {
     endpoint.searchParams.set('mode', mode);

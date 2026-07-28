@@ -84,7 +84,7 @@ export function MerchStore({ onExitStore }: MerchStoreProps) {
       case 'signing-in':
         return 'Opening Renaiss sign in.';
       case 'opening-demo':
-        return 'Opening a local Demo Member session.';
+        return 'Opening a Demo Member session.';
       case 'authenticated':
         return 'Renaiss connected. Choose a release to verify.';
       case 'checking':
