@@ -847,21 +847,25 @@
 
 .merch-product-card__access button {
   width: 100%;
-  min-height: 3.2rem;
-  color: #f8f5ef;
-  background: #121211;
-  border-color: rgba(18, 18, 17, 0.92);
-  box-shadow:
-    0 14px 30px rgba(18, 18, 17, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  min-height: 2.75rem;
+  padding: 0 1.35rem;
+  color: #121211;
+  letter-spacing: 0.08em;
+  background: transparent;
+  border-color: rgba(18, 18, 17, 0.74);
+  border-radius: 0.25rem;
+  box-shadow: none;
 }
 
 .merch-product-card__access button:hover {
   color: #ffffff;
-  background: #000000;
-  box-shadow:
-    0 18px 38px rgba(18, 18, 17, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  background: #121211;
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+.merch-product-card__access button:focus-visible {
+  outline-color: rgba(18, 18, 17, 0.88);
 }
 
 .merch-product-card__access p {
@@ -870,7 +874,7 @@
   font-size: 0.68rem;
   font-weight: 650;
   line-height: 1.4;
-  text-align: center;
+  text-align: left;
   text-shadow: none;
 }
 
