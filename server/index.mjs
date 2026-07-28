@@ -410,6 +410,7 @@ async function startRenaissLogin(req, res, url) {
     });
     redirect(res, authorizationUrl);
   } catch (error) {
+    logRenaissAuthFailure('start', error);
     redirect(res, authErrorLocation(error, returnTo));
   }
 }
@@ -448,6 +449,7 @@ async function finishRenaissLogin(req, res, url) {
     redirect(res, authReturnLocation(returnTo, 'success'));
   } catch (error) {
     clearCookie(req, res, OAUTH_CHALLENGE_COOKIE);
+    logRenaissAuthFailure('callback', error);
     redirect(res, authErrorLocation(error, returnTo));
   }
 }
@@ -633,6 +635,12 @@ function authErrorLocation(error, returnTo = '/') {
   const httpError = error instanceof HttpError ? error : new HttpError(500, 'server_error');
 
   return authReturnLocation(returnTo, 'error', httpError.code);
+}
+
+function logRenaissAuthFailure(stage, error) {
+  const code = error instanceof HttpError ? error.code : 'server_error';
+
+  console.warn('Renaiss SSO failed:', { stage, code });
 }
 
 function authReturnLocation(returnTo, authState, reason) {

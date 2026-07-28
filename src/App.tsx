@@ -52,9 +52,12 @@ export default function App() {
   const [entryContext] = useState(consumeStoreEntryContext);
   const [view, setView] = useState<AppView>('landing');
   const [storeLoadProgress, setStoreLoadProgress] = useState(0);
-  const [storeLoadState, setStoreLoadState] = useState<StoreLoadState>(
-    entryContext.authFailed ? 'auth-error' : 'idle'
+  const [storeLoadState, setStoreLoadState] =
+    useState<StoreLoadState>('idle');
+  const [storeAuthFailed, setStoreAuthFailed] = useState(
+    entryContext.authFailed
   );
+  const storeEntryAdmittedRef = useRef(false);
   const storeAdmissionInFlightRef = useRef(false);
   const revealMediaControllerRef = useRef<ReturnType<
     typeof createStoreRevealMediaController
@@ -72,24 +75,29 @@ export default function App() {
     }
 
     storeAdmissionInFlightRef.current = true;
+    forceLandingLocation();
+    setView('landing');
     setStoreLoadProgress(0);
     setStoreLoadState('loading');
 
     try {
+      const sessionRequest = readRenaissSession();
+
       await preloadStoreAssets((progress) => {
         setStoreLoadProgress(Math.round(progress * 0.2));
       });
-      const session = await readRenaissSession();
+      const session = await sessionRequest;
 
-      if (!session.authenticated) {
-        startRenaissLogin(buildStoreAdmissionReturnTo());
-        return;
+      if (session.authenticated) {
+        revealMediaController.releaseAll();
+        await revealMediaController.prepareAll((progress) => {
+          setStoreLoadProgress(20 + Math.round(progress.percent * 0.8));
+        });
+      } else {
+        setStoreLoadProgress(100);
       }
 
-      await revealMediaController.prepareAll((progress) => {
-        setStoreLoadProgress(20 + Math.round(progress.percent * 0.8));
-      });
-
+      storeEntryAdmittedRef.current = true;
       navigateToView('store', setView);
       setStoreLoadState('idle');
     } catch {
@@ -100,6 +108,7 @@ export default function App() {
   }, [revealMediaController]);
 
   const invalidateStoreAdmission = useCallback(() => {
+    storeEntryAdmittedRef.current = false;
     revealMediaController.releaseAll();
     forceLandingLocation();
     setView('landing');
@@ -113,7 +122,7 @@ export default function App() {
 
       if (
         requestedView === 'store' &&
-        !revealMediaController.isAdmissionComplete()
+        !storeEntryAdmittedRef.current
       ) {
         forceLandingLocation();
         setView('landing');
@@ -134,9 +143,14 @@ export default function App() {
 
   useEffect(() => {
     if (entryContext.shouldResumeStore) {
+      setStoreAuthFailed(entryContext.authFailed);
       void enterStore();
     }
-  }, [enterStore, entryContext.shouldResumeStore]);
+  }, [
+    enterStore,
+    entryContext.authFailed,
+    entryContext.shouldResumeStore
+  ]);
 
   useEffect(() => () => revealMediaController.dispose(), [
     revealMediaController
@@ -166,8 +180,10 @@ export default function App() {
   if (view === 'store') {
     return (
       <MerchStore
-        onAdmissionInvalid={invalidateStoreAdmission}
-        onExitStore={() => navigateToView('landing', setView)}
+        initialAuthFailed={storeAuthFailed}
+        onAuthenticatedSession={enterStore}
+        onExitStore={invalidateStoreAdmission}
+        onLogin={() => startRenaissLogin(buildStoreAdmissionReturnTo())}
         revealMediaController={revealMediaController}
       />
     );
@@ -177,14 +193,17 @@ export default function App() {
     <MerchLanding
       loadProgress={storeLoadProgress}
       loadState={storeLoadState}
-      onEnterStore={() => void enterStore()}
+      onEnterStore={() => {
+        setStoreAuthFailed(false);
+        void enterStore();
+      }}
       onRetry={() => void enterStore()}
     />
   );
 }
 
 type AppView = 'landing' | 'store';
-type StoreLoadState = 'idle' | 'loading' | 'error' | 'auth-error';
+type StoreLoadState = 'idle' | 'loading' | 'error';
 
 type StoreEntryContext = {
   authFailed: boolean;
@@ -205,8 +224,7 @@ function consumeStoreEntryContext(): StoreEntryContext {
     url.searchParams.get(STORE_ADMISSION_QUERY) === '1';
   const protectedViewRequested = readViewFromLocation() === 'store';
   const authFailed = hasAdmissionIntent && authState === 'error';
-  const shouldResumeStore =
-    hasAdmissionIntent && authState !== 'error';
+  const shouldResumeStore = hasAdmissionIntent;
 
   url.searchParams.delete(STORE_ADMISSION_QUERY);
   url.searchParams.delete('auth');

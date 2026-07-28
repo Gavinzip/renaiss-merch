@@ -19,6 +19,7 @@ import {
 import {
   readRenaissSession,
   signOutRenaiss,
+  startDemoRenaissSession,
   type RenaissSession
 } from '../../lib/renaissAuth';
 import { type PreparedRevealMedia } from '../../lib/revealMediaPreload';
@@ -44,11 +45,16 @@ import './MerchStore.css';
 
 type StoreState =
   | 'loading-session'
+  | 'idle'
+  | 'auth-required'
+  | 'signing-in'
+  | 'opening-demo'
   | 'authenticated'
   | 'checking'
   | 'wallet-pending'
   | 'eligibility-pending'
-  | 'source-error';
+  | 'source-error'
+  | 'auth-error';
 
 type AccessResult = {
   productId: MerchProductId;
@@ -57,14 +63,18 @@ type AccessResult = {
 };
 
 type MerchStoreProps = {
-  onAdmissionInvalid: () => void;
+  initialAuthFailed: boolean;
+  onAuthenticatedSession: () => Promise<void>;
   onExitStore?: () => void;
+  onLogin: () => void;
   revealMediaController: StoreRevealMediaController;
 };
 
 export function MerchStore({
-  onAdmissionInvalid,
+  initialAuthFailed,
+  onAuthenticatedSession,
   onExitStore,
+  onLogin,
   revealMediaController
 }: MerchStoreProps) {
   const [session, setSession] = useState<RenaissSession>({
@@ -101,6 +111,14 @@ export function MerchStore({
     switch (storeState) {
       case 'loading-session':
         return 'Checking your Renaiss session.';
+      case 'idle':
+        return 'Explore the releases, then sign in when you are ready.';
+      case 'auth-required':
+        return 'Sign in with Renaiss before checking this release.';
+      case 'signing-in':
+        return 'Opening Renaiss sign in.';
+      case 'opening-demo':
+        return 'Opening a Demo Member session.';
       case 'authenticated':
         return 'Renaiss connected. Choose a release to verify.';
       case 'checking':
@@ -111,8 +129,10 @@ export function MerchStore({
         return 'The eligibility rule is not configured yet.';
       case 'source-error':
         return 'The access check could not be completed.';
+      case 'auth-error':
+        return 'Renaiss sign in did not complete. You can retry here.';
       default:
-        return 'Renaiss connected. Choose a release to verify.';
+        return 'Explore the releases, then sign in when you are ready.';
     }
   }, [storeState]);
 
@@ -134,7 +154,14 @@ export function MerchStore({
         }
 
         if (!nextSession.authenticated) {
-          onAdmissionInvalid();
+          setSession(nextSession);
+          setProductAccess({});
+          setStoreState(initialAuthFailed ? 'auth-error' : 'idle');
+          return;
+        }
+
+        if (!revealMediaController.isAdmissionComplete()) {
+          await onAuthenticatedSession();
           return;
         }
 
@@ -159,7 +186,11 @@ export function MerchStore({
     return () => {
       cancelled = true;
     };
-  }, [onAdmissionInvalid]);
+  }, [
+    initialAuthFailed,
+    onAuthenticatedSession,
+    revealMediaController
+  ]);
 
   useEffect(() => {
     function syncFulfillmentView() {
@@ -183,24 +214,65 @@ export function MerchStore({
     }
   }, [session, showFulfillment, storeState]);
 
+  function handleLogin() {
+    setStoreState('signing-in');
+    onLogin();
+  }
+
   async function handleLogout() {
     try {
       await signOutRenaiss();
-      onAdmissionInvalid();
+      setSession({
+        authenticated: false,
+        demoAvailable: session.demoAvailable
+      });
+      setSelectedProductId(null);
+      revealMediaController.releaseAll();
+      setAccessResult(null);
+      setProductAccess({});
+      setShowSettings(false);
+      closeFulfillment();
+      setStoreState('idle');
+    } catch {
+      setStoreState('source-error');
+    }
+  }
+
+  async function handleDemoAccess() {
+    if (storeState === 'loading-session' || storeState === 'opening-demo') {
+      return;
+    }
+
+    setStoreState('opening-demo');
+
+    try {
+      const demoSession = await startDemoRenaissSession(readLocalDemoMode());
+
+      if (!demoSession.authenticated) {
+        setStoreState('source-error');
+        return;
+      }
+
+      await onAuthenticatedSession();
     } catch {
       setStoreState('source-error');
     }
   }
 
   async function handleProductCheck(productId: MerchProductId) {
-    if (storeState === 'loading-session' || isChecking) {
+    if (
+      storeState === 'loading-session' ||
+      storeState === 'signing-in' ||
+      storeState === 'opening-demo' ||
+      isChecking
+    ) {
       return;
     }
 
     setSelectedProductId(productId);
 
     if (!session.authenticated) {
-      onAdmissionInvalid();
+      setStoreState('auth-required');
       return;
     }
 
@@ -258,7 +330,6 @@ export function MerchStore({
     window.scrollTo({ top: 0, behavior: 'auto' });
 
     if (!session.authenticated) {
-      onAdmissionInvalid();
       return;
     }
 
@@ -356,7 +427,36 @@ export function MerchStore({
                 Sign out
               </button>
             </>
-          ) : null}
+          ) : (
+            <>
+              {session.demoAvailable ? (
+                <button
+                  className="merch-store__demo-action"
+                  disabled={
+                    storeState === 'loading-session' ||
+                    storeState === 'signing-in' ||
+                    storeState === 'opening-demo'
+                  }
+                  onClick={() => void handleDemoAccess()}
+                  type="button"
+                >
+                  {storeState === 'opening-demo' ? 'Opening' : 'Demo access'}
+                </button>
+              ) : null}
+              <button
+                className="merch-store__login-action"
+                disabled={
+                  storeState === 'loading-session' ||
+                  storeState === 'signing-in' ||
+                  storeState === 'opening-demo'
+                }
+                onClick={handleLogin}
+                type="button"
+              >
+                {storeState === 'signing-in' ? 'Opening' : 'Login'}
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -407,6 +507,8 @@ export function MerchStore({
             const accessState = productAccess[product.id];
             const disabled =
               storeState === 'loading-session' ||
+              storeState === 'signing-in' ||
+              storeState === 'opening-demo' ||
               (isChecking && selectedProductId !== product.id);
             const helperText = readProductHelperText(
               product.id,
@@ -468,6 +570,8 @@ function readProductHelperText(
 ) {
   if (selectedProductId === productId) {
     switch (storeState) {
+      case 'auth-required':
+        return 'Sign in with Renaiss, then check this release.';
       case 'checking':
         return 'Reading verified SBT access.';
       case 'wallet-pending':
@@ -482,6 +586,13 @@ function readProductHelperText(
   }
 
   return undefined;
+}
+
+function readLocalDemoMode(): 'eligible' | 'unqualified' {
+  return new URLSearchParams(window.location.search).get('demo') ===
+    'unqualified'
+    ? 'unqualified'
+    : 'eligible';
 }
 
 function toProductAccessMap(
