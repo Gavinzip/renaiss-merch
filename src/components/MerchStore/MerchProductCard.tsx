@@ -75,7 +75,6 @@ export function MerchProductCard({
 
       <div className="merch-product-card__body">
         <div>
-          <p className="merch-product-card__category">{cardCopy.category}</p>
           <h2 id={titleId}>{cardCopy.title}</h2>
           <p className="merch-product-card__description">
             {cardCopy.description}

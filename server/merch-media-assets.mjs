@@ -49,11 +49,9 @@ export function getMerchMediaAsset(assetKey) {
 
   return {
     contentType: asset.contentType,
-    requestHeaders: {
-      Authorization: `Bearer ${privateMediaToken}`
-    },
     remoteUrl: `${privateMediaOrigin}/${releasePath}`,
-    type: 'remote'
+    signingSecret: privateMediaToken,
+    type: 'signed-remote'
   };
 }
 

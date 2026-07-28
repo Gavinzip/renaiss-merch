@@ -5,6 +5,10 @@
   "compatibility_date": "2026-07-28",
   "workers_dev": true,
   "preview_urls": false,
+  "vars": {
+    "ALLOWED_ORIGINS": "https://merch.renaisscltb.com",
+    "SIGNED_URL_MAX_TTL_SECONDS": "300"
+  },
   "r2_buckets": [
     {
       "binding": "PRIVATE_MEDIA",

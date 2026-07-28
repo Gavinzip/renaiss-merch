@@ -37,8 +37,9 @@ export async function readRenaissSession(): Promise<RenaissSession> {
   return (await response.json()) as RenaissSession;
 }
 
-export function startRenaissLogin() {
-  const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+export function startRenaissLogin(
+  returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`
+) {
   const loginUrl = new URL('/api/auth/renaiss/start', window.location.origin);
   loginUrl.searchParams.set('returnTo', returnTo);
   window.location.assign(`${loginUrl.pathname}${loginUrl.search}`);

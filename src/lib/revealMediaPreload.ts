@@ -41,18 +41,32 @@ export async function prepareRevealMedia(
       readRevealMediaUrl(productId, direction)
     ])
   ) as Record<RevealDirection, string>;
-  const sizes = Object.fromEntries(
-    await Promise.all(
-      REVEAL_DIRECTIONS.map(async (direction) => [
-        direction,
-        await readMediaSize(sources[direction])
-      ])
-    )
-  ) as Record<RevealDirection, number>;
+  const sizes: Record<RevealDirection, number> = {
+    forward: 0,
+    reverse: 0
+  };
   const loadedBytes: Record<RevealDirection, number> = {
     forward: 0,
     reverse: 0
   };
+
+  onProgress({
+    loadedBytes: 0,
+    percent: 0,
+    stage: 'download',
+    totalBytes: 0
+  });
+
+  const downloads = Object.fromEntries(
+    await Promise.all(
+      REVEAL_DIRECTIONS.map(async (direction) => {
+        const download = await openMediaDownload(sources[direction]);
+
+        sizes[direction] = download.expectedSize;
+        return [direction, download];
+      })
+    )
+  ) as Record<RevealDirection, OpenMediaDownload>;
   const totalBytes = sizes.forward + sizes.reverse;
 
   onProgress({
@@ -67,19 +81,19 @@ export async function prepareRevealMedia(
       REVEAL_DIRECTIONS.map(async (direction) => [
         direction,
         await downloadMedia(
-          sources[direction],
-          sizes[direction],
+          downloads[direction],
           (loaded) => {
             loadedBytes[direction] = loaded;
+            const loadedTotal = loadedBytes.forward + loadedBytes.reverse;
+
             onProgress({
-              loadedBytes: loadedBytes.forward + loadedBytes.reverse,
+              loadedBytes: loadedTotal,
               percent: Math.min(
                 DOWNLOAD_PROGRESS_MAX,
                 Math.max(
                   1,
                   Math.round(
-                    ((loadedBytes.forward + loadedBytes.reverse) / totalBytes) *
-                      DOWNLOAD_PROGRESS_MAX
+                    (loadedTotal / totalBytes) * DOWNLOAD_PROGRESS_MAX
                   )
                 )
               ),
@@ -124,35 +138,13 @@ export async function prepareRevealMedia(
   }
 }
 
-async function readMediaSize(source: string) {
-  const response = await fetch(source, {
-    cache: 'no-store',
-    credentials: 'same-origin',
-    method: 'HEAD'
-  });
+type OpenMediaDownload = {
+  body: ReadableStream<Uint8Array>;
+  contentType: string;
+  expectedSize: number;
+};
 
-  if (!response.ok) {
-    if (isAccessResponse(response.status)) {
-      throw new RevealMediaAccessError(response.status);
-    }
-
-    throw new Error(`Reveal media metadata request failed: ${response.status}`);
-  }
-
-  const contentLength = Number(response.headers.get('content-length'));
-
-  if (!Number.isSafeInteger(contentLength) || contentLength <= 0) {
-    throw new Error('Reveal media is missing a valid content length.');
-  }
-
-  return contentLength;
-}
-
-async function downloadMedia(
-  source: string,
-  expectedSize: number,
-  onProgress: (loadedBytes: number) => void
-) {
+async function openMediaDownload(source: string): Promise<OpenMediaDownload> {
   const response = await fetch(source, {
     cache: 'no-store',
     credentials: 'same-origin'
@@ -166,9 +158,29 @@ async function downloadMedia(
     throw new Error(`Reveal media download failed: ${response.status}`);
   }
 
-  const reader = response.body.getReader();
+  const expectedSize = Number(response.headers.get('content-length'));
+
+  if (!Number.isSafeInteger(expectedSize) || expectedSize <= 0) {
+    throw new Error('Reveal media is missing a valid content length.');
+  }
+
+  return {
+    body: response.body,
+    contentType: response.headers.get('content-type') || 'video/mp4',
+    expectedSize
+  };
+}
+
+async function downloadMedia(
+  download: OpenMediaDownload,
+  onProgress: (loadedBytes: number, totalBytes: number) => void
+) {
+  const { body, contentType, expectedSize } = download;
+  const reader = body.getReader();
   const chunks: BlobPart[] = [];
   let loadedBytes = 0;
+
+  onProgress(0, expectedSize);
 
   while (true) {
     const { done, value } = await reader.read();
@@ -181,7 +193,7 @@ async function downloadMedia(
     chunk.set(value);
     chunks.push(chunk);
     loadedBytes += value.byteLength;
-    onProgress(Math.min(loadedBytes, expectedSize));
+    onProgress(Math.min(loadedBytes, expectedSize), expectedSize);
   }
 
   if (loadedBytes !== expectedSize) {
@@ -191,7 +203,7 @@ async function downloadMedia(
   }
 
   return new Blob(chunks, {
-    type: response.headers.get('content-type') || 'video/mp4'
+    type: contentType
   });
 }
 

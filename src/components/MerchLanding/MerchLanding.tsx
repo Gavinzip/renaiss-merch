@@ -5,7 +5,7 @@ import './MerchLanding.css';
 
 type MerchLandingProps = {
   loadProgress: number;
-  loadState: 'idle' | 'loading' | 'error';
+  loadState: 'idle' | 'loading' | 'error' | 'auth-error';
   onEnterStore: () => void;
   onRetry: () => void;
 };
@@ -17,6 +17,7 @@ export function MerchLanding({
   onRetry
 }: MerchLandingProps) {
   const isLoading = loadState === 'loading';
+  const authFailed = loadState === 'auth-error';
 
   return (
     <main
@@ -26,7 +27,7 @@ export function MerchLanding({
         'merch-entry',
         'merch-landing',
         isLoading ? 'is-loading' : '',
-        loadState === 'error' ? 'has-load-error' : ''
+        loadState === 'error' || authFailed ? 'has-load-error' : ''
       ]
         .filter(Boolean)
         .join(' ')}
@@ -70,7 +71,11 @@ export function MerchLanding({
           <div className="merch-landing__loading">
             <p className="merch-landing__loading-kicker">Renaiss merch</p>
             <h1 id="merch-entry-title">
-              {isLoading ? 'LOADING STORE' : 'LOAD INTERRUPTED'}
+              {isLoading
+                ? 'LOADING STORE'
+                : authFailed
+                  ? 'SIGN IN INTERRUPTED'
+                  : 'LOAD INTERRUPTED'}
             </h1>
 
             {isLoading ? (
@@ -92,11 +97,13 @@ export function MerchLanding({
             ) : (
               <>
                 <p className="merch-entry__copy">
-                  The store assets could not be loaded.
+                  {authFailed
+                    ? 'Renaiss sign in must finish before the store can open.'
+                    : 'The store assets could not be loaded.'}
                 </p>
                 <div className="merch-entry__form merch-landing__action">
                   <button type="button" onClick={onRetry}>
-                    Try again
+                    {authFailed ? 'Sign in again' : 'Try again'}
                   </button>
                 </div>
               </>

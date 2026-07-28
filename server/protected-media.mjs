@@ -1,7 +1,7 @@
 import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
-import { Readable } from 'node:stream';
 import { HttpError } from './http.mjs';
+import { createPrivateMediaSignedUrl } from './private-media-signed-url.mjs';
 
 export async function deliverProtectedMedia(req, res, source, options = {}) {
   if (source.type === 'local') {
@@ -9,7 +9,11 @@ export async function deliverProtectedMedia(req, res, source, options = {}) {
     return;
   }
 
-  await proxyRemoteMedia(req, res, source, options);
+  if (source.type !== 'signed-remote') {
+    throw new HttpError(503, options.unavailableCode || 'media_unavailable');
+  }
+
+  redirectToSignedMedia(res, source);
 }
 
 async function streamLocalMedia(req, res, source, options) {
@@ -52,60 +56,13 @@ async function streamLocalMedia(req, res, source, options) {
   createReadStream(source.filePath, { start, end }).pipe(res);
 }
 
-async function proxyRemoteMedia(req, res, source, options) {
-  const headers = {
-    ...source.requestHeaders,
-    Accept: source.contentType
-  };
-
-  if (options.acceptRanges && req.headers.range) {
-    headers.Range = req.headers.range;
-  }
-
-  let response;
-
-  try {
-    response = await fetch(source.remoteUrl, {
-      headers,
-      method: req.method
-    });
-  } catch {
-    throw new HttpError(
-      502,
-      options.requestFailedCode || 'media_request_failed'
-    );
-  }
-
-  if (!response.ok && response.status !== 206) {
-    throw new HttpError(502, options.unavailableCode || 'media_unavailable');
-  }
-
-  const responseHeaders = {
+function redirectToSignedMedia(res, source) {
+  res.writeHead(307, {
     'Cache-Control': 'private, no-store',
-    'Content-Type': response.headers.get('content-type') || source.contentType,
+    Location: createPrivateMediaSignedUrl(source),
     Vary: 'Cookie'
-  };
-
-  for (const headerName of [
-    'accept-ranges',
-    'content-length',
-    'content-range'
-  ]) {
-    const value = response.headers.get(headerName);
-
-    if (value) {
-      responseHeaders[headerName] = value;
-    }
-  }
-
-  res.writeHead(response.status, responseHeaders);
-
-  if (req.method === 'HEAD' || !response.body) {
-    res.end();
-    return;
-  }
-
-  Readable.fromWeb(response.body).pipe(res);
+  });
+  res.end();
 }
 
 function readByteRange(value, fileSize) {

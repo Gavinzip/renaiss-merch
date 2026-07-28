@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { MerchLanding } from './components/MerchLanding/MerchLanding';
 import { MerchStore } from './components/MerchStore/MerchStore';
 import { StoreAccessResult } from './components/MerchStore/StoreAccessResult';
@@ -7,9 +7,14 @@ import type {
   EligibleMerchEligibilityResult,
   MerchEligibilityResult
 } from './lib/merchEligibility';
-import { readRenaissSession } from './lib/renaissAuth';
+import {
+  readRenaissSession,
+  startRenaissLogin
+} from './lib/renaissAuth';
 import { createStoreRevealMediaController } from './lib/storeRevealMedia';
 import { preloadStoreAssets } from './lib/storePreload';
+
+const STORE_ADMISSION_QUERY = 'storeAdmission';
 
 const previewQualifiedResult: EligibleMerchEligibilityResult = {
   minimumSbtBalance: 60,
@@ -44,11 +49,13 @@ const previewBraceletResult: MerchEligibilityResult = {
 };
 
 export default function App() {
-  const [view, setView] = useState(readViewFromLocation);
+  const [entryContext] = useState(consumeStoreEntryContext);
+  const [view, setView] = useState<AppView>('landing');
   const [storeLoadProgress, setStoreLoadProgress] = useState(0);
-  const [storeLoadState, setStoreLoadState] = useState<
-    'idle' | 'loading' | 'error'
-  >('idle');
+  const [storeLoadState, setStoreLoadState] = useState<StoreLoadState>(
+    entryContext.authFailed ? 'auth-error' : 'idle'
+  );
+  const storeAdmissionInFlightRef = useRef(false);
   const revealMediaControllerRef = useRef<ReturnType<
     typeof createStoreRevealMediaController
   > | null>(null);
@@ -59,9 +66,61 @@ export default function App() {
 
   const revealMediaController = revealMediaControllerRef.current;
 
+  const enterStore = useCallback(async () => {
+    if (storeAdmissionInFlightRef.current) {
+      return;
+    }
+
+    storeAdmissionInFlightRef.current = true;
+    setStoreLoadProgress(0);
+    setStoreLoadState('loading');
+
+    try {
+      await preloadStoreAssets((progress) => {
+        setStoreLoadProgress(Math.round(progress * 0.2));
+      });
+      const session = await readRenaissSession();
+
+      if (!session.authenticated) {
+        startRenaissLogin(buildStoreAdmissionReturnTo());
+        return;
+      }
+
+      await revealMediaController.prepareAll((progress) => {
+        setStoreLoadProgress(20 + Math.round(progress.percent * 0.8));
+      });
+
+      navigateToView('store', setView);
+      setStoreLoadState('idle');
+    } catch {
+      setStoreLoadState('error');
+    } finally {
+      storeAdmissionInFlightRef.current = false;
+    }
+  }, [revealMediaController]);
+
+  const invalidateStoreAdmission = useCallback(() => {
+    revealMediaController.releaseAll();
+    forceLandingLocation();
+    setView('landing');
+    setStoreLoadProgress(0);
+    setStoreLoadState('idle');
+  }, [revealMediaController]);
+
   useEffect(() => {
     function syncView() {
-      setView(readViewFromLocation());
+      const requestedView = readViewFromLocation();
+
+      if (
+        requestedView === 'store' &&
+        !revealMediaController.isAdmissionComplete()
+      ) {
+        forceLandingLocation();
+        setView('landing');
+        return;
+      }
+
+      setView(requestedView);
     }
 
     window.addEventListener('hashchange', syncView);
@@ -71,7 +130,13 @@ export default function App() {
       window.removeEventListener('hashchange', syncView);
       window.removeEventListener('popstate', syncView);
     };
-  }, []);
+  }, [revealMediaController]);
+
+  useEffect(() => {
+    if (entryContext.shouldResumeStore) {
+      void enterStore();
+    }
+  }, [enterStore, entryContext.shouldResumeStore]);
 
   useEffect(() => () => revealMediaController.dispose(), [
     revealMediaController
@@ -101,39 +166,11 @@ export default function App() {
   if (view === 'store') {
     return (
       <MerchStore
+        onAdmissionInvalid={invalidateStoreAdmission}
         onExitStore={() => navigateToView('landing', setView)}
         revealMediaController={revealMediaController}
       />
     );
-  }
-
-  async function enterStore() {
-    if (storeLoadState === 'loading') {
-      return;
-    }
-
-    setStoreLoadProgress(0);
-    setStoreLoadState('loading');
-
-    try {
-      await preloadStoreAssets((progress) => {
-        setStoreLoadProgress(Math.round(progress * 0.2));
-      });
-      const session = await readRenaissSession();
-
-      if (session.authenticated) {
-        await revealMediaController.prepareAll((progress) => {
-          setStoreLoadProgress(20 + Math.round(progress.percent * 0.8));
-        });
-      } else {
-        setStoreLoadProgress(100);
-      }
-
-      navigateToView('store', setView);
-      setStoreLoadState('idle');
-    } catch {
-      setStoreLoadState('error');
-    }
   }
 
   return (
@@ -147,12 +184,75 @@ export default function App() {
 }
 
 type AppView = 'landing' | 'store';
+type StoreLoadState = 'idle' | 'loading' | 'error' | 'auth-error';
+
+type StoreEntryContext = {
+  authFailed: boolean;
+  shouldResumeStore: boolean;
+};
 
 function readViewFromLocation(): AppView {
   return window.location.hash === '#store' ||
     window.location.hash === '#fulfillment'
     ? 'store'
     : 'landing';
+}
+
+function consumeStoreEntryContext(): StoreEntryContext {
+  const url = new URL(window.location.href);
+  const authState = url.searchParams.get('auth');
+  const hasAdmissionIntent =
+    url.searchParams.get(STORE_ADMISSION_QUERY) === '1';
+  const protectedViewRequested = readViewFromLocation() === 'store';
+  const authFailed = hasAdmissionIntent && authState === 'error';
+  const shouldResumeStore =
+    hasAdmissionIntent && authState !== 'error';
+
+  url.searchParams.delete(STORE_ADMISSION_QUERY);
+  url.searchParams.delete('auth');
+  url.searchParams.delete('reason');
+
+  if (protectedViewRequested) {
+    url.hash = '';
+  }
+
+  window.history.replaceState(
+    null,
+    '',
+    `${url.pathname}${url.search}${url.hash}`
+  );
+
+  return {
+    authFailed,
+    shouldResumeStore
+  };
+}
+
+function buildStoreAdmissionReturnTo() {
+  const url = new URL(window.location.href);
+
+  url.hash = '';
+  url.searchParams.delete('auth');
+  url.searchParams.delete('reason');
+  url.searchParams.set(STORE_ADMISSION_QUERY, '1');
+
+  return `${url.pathname}${url.search}`;
+}
+
+function forceLandingLocation() {
+  const url = new URL(window.location.href);
+
+  if (!url.hash) {
+    return;
+  }
+
+  url.hash = '';
+  window.history.replaceState(
+    null,
+    '',
+    `${url.pathname}${url.search}`
+  );
+  window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
 function navigateToView(

@@ -211,8 +211,7 @@
   margin-bottom: clamp(1rem, 2vw, 1.5rem);
 }
 
-.merch-store .merch-store__eyebrow,
-.merch-product-card__category {
+.merch-store .merch-store__eyebrow {
   margin: 0;
   color: var(--store-muted);
   font-size: 0.68rem;
@@ -789,13 +788,8 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
 }
 
-.merch-product-card__category {
-  color: rgba(18, 18, 17, 0.48);
-  text-shadow: none;
-}
-
 .merch-product-card__body h2 {
-  margin: 0.42rem 0 0;
+  margin: 0;
   color: #121211;
   font-size: clamp(1.55rem, 2.6vw, 2.35rem);
   font-weight: 870;
@@ -909,77 +903,6 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   text-shadow: none;
-}
-
-.merch-store__reveal-admission {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  display: grid;
-  padding: 1rem;
-  place-items: center;
-  background: rgba(13, 14, 16, 0.48);
-  backdrop-filter: blur(24px) saturate(135%);
-}
-
-.merch-store__reveal-admission-panel {
-  width: min(100%, 34rem);
-  padding: clamp(1.35rem, 4vw, 2.25rem);
-  color: #121211;
-  background: rgba(248, 246, 241, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.78);
-  border-radius: 1.15rem;
-  box-shadow:
-    0 28px 90px rgba(6, 7, 9, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.96);
-}
-
-.merch-store__reveal-admission-panel p,
-.merch-store__reveal-admission-panel h2,
-.merch-store__reveal-admission-panel strong {
-  margin: 0;
-  text-shadow: none;
-}
-
-.merch-store__reveal-admission-panel p {
-  color: rgba(18, 18, 17, 0.5);
-  font-size: 0.65rem;
-  font-weight: 850;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.merch-store__reveal-admission-panel h2 {
-  margin-top: 0.55rem;
-  font-size: clamp(1.5rem, 5vw, 2.4rem);
-  line-height: 1;
-  letter-spacing: -0.04em;
-}
-
-.merch-store__reveal-progress {
-  height: 0.42rem;
-  margin-top: 1.5rem;
-  overflow: hidden;
-  background: rgba(18, 18, 17, 0.11);
-  border-radius: 999px;
-}
-
-.merch-store__reveal-progress span {
-  display: block;
-  width: 0;
-  height: 100%;
-  background: #121211;
-  border-radius: inherit;
-  transition: width 120ms linear;
-}
-
-.merch-store__reveal-admission-panel strong {
-  display: block;
-  margin-top: 0.65rem;
-  color: rgba(18, 18, 17, 0.64);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-align: right;
 }
 
 .store-access-result {
