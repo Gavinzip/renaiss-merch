@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { getPublicOrigin } from './config.mjs';
 import { HttpError } from './http.mjs';
+import { isProductionStorefrontMode } from './storefront-mode.mjs';
 
 export const DEMO_DATABASE_PATH = '.data/merch-demo.sqlite';
 const TEMPORARY_DEMO_ENV = 'MERCH_V12_DEMO_ENABLED';
@@ -31,6 +32,10 @@ export function getSessionDatabaseOptions(session) {
 }
 
 export function isDemoAvailable(req, isProduction, surface) {
+  if (isProductionStorefrontMode()) {
+    return false;
+  }
+
   if (!isProduction) {
     return isLoopbackRequest(req) && isLocalHost(req);
   }
@@ -47,6 +52,10 @@ export function isDemoSession(session) {
 }
 
 export function canUseDemoSession(req, isProduction) {
+  if (isProductionStorefrontMode()) {
+    return false;
+  }
+
   if (!isProduction) {
     return isLoopbackRequest(req) && isLocalHost(req);
   }

@@ -9,6 +9,7 @@ import {
   constants as zlibConstants
 } from 'node:zlib';
 import { HttpError } from './http.mjs';
+import { isProductionStorefrontMode } from './storefront-mode.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const mimeTypes = new Map([
@@ -34,13 +35,21 @@ export function getDistDir() {
   return path.join(rootDir, 'dist');
 }
 
-export async function serveStatic(req, res, distDir = getDistDir()) {
+export async function serveStatic(
+  req,
+  res,
+  { distDir = getDistDir(), storefrontMode } = {}
+) {
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     throw new HttpError(405, 'method_not_allowed');
   }
 
   const url = new URL(req.url || '/', 'http://localhost');
-  const filePath = await resolveFilePath(url.pathname, distDir);
+  const filePath = await resolveFilePath(
+    url.pathname,
+    distDir,
+    storefrontMode
+  );
   const fileStat = await stat(filePath);
   const contentType = mimeTypes.get(path.extname(filePath)) || 'application/octet-stream';
   const contentEncoding = pickContentEncoding(req, contentType, fileStat.size);
@@ -66,9 +75,17 @@ export async function serveStatic(req, res, distDir = getDistDir()) {
   await streamFile(filePath, res, contentEncoding);
 }
 
-async function resolveFilePath(pathname, distDir) {
+async function resolveFilePath(pathname, distDir, storefrontMode) {
   const resolvedDistDir = path.resolve(distDir);
   const safePathname = decodeURIComponent(pathname);
+
+  if (
+    isProductionStorefrontMode(storefrontMode) &&
+    isAppDocumentRoute(safePathname)
+  ) {
+    return path.join(resolvedDistDir, 'v1.2', 'index.html');
+  }
+
   const requestedPath = path.resolve(
     resolvedDistDir,
     safePathname === '/' ? 'index.html' : `.${safePathname}`
@@ -107,6 +124,14 @@ async function isFile(filePath) {
 
 function isHtmlRoute(pathname) {
   return !path.extname(pathname);
+}
+
+function isAppDocumentRoute(pathname) {
+  return (
+    pathname === '/' ||
+    pathname === '/index.html' ||
+    isHtmlRoute(pathname)
+  );
 }
 
 function isVersionedAppRoute(pathname) {

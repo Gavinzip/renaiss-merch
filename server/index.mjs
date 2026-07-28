@@ -67,10 +67,17 @@ import {
   takeChallenge
 } from './session-store.mjs';
 import { serveStatic } from './static.mjs';
+import {
+  getStorefrontMode,
+  isProductionStorefrontMode,
+  isVersionedStorefrontPath,
+  productionStorefrontLocation
+} from './storefront-mode.mjs';
 
 loadLocalEnv();
 
 const isProduction = process.env.NODE_ENV === 'production';
+const storefrontMode = getStorefrontMode();
 const port = Number(process.env.PORT || 5173);
 const host = process.env.HOST || (process.env.PORT ? '0.0.0.0' : '127.0.0.1');
 const backupTriggerAttempts = [];
@@ -96,7 +103,7 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    await serveStatic(req, res);
+    await serveStatic(req, res, { storefrontMode });
   } catch (error) {
     if (req.url?.startsWith('/api/') || req.url?.startsWith('/auth/')) {
       sendHttpError(res, error);
@@ -133,6 +140,15 @@ async function handleRoute(req, res) {
   if (url.pathname === '/healthz') {
     requireMethod(req, 'GET');
     sendHealthCheck(res);
+    return true;
+  }
+
+  if (
+    isProductionStorefrontMode(storefrontMode) &&
+    isVersionedStorefrontPath(url.pathname)
+  ) {
+    requirePageMethod(req);
+    redirect(res, productionStorefrontLocation(url), 308);
     return true;
   }
 
@@ -304,7 +320,8 @@ async function serveViteHtml(req, res) {
   const templatePath =
     previewName === 'tshirt-physics' || previewName === 'bracelets'
       ? '../dev-preview.html'
-      : isVersionedAppRoute(url.pathname)
+      : isProductionStorefrontMode(storefrontMode) ||
+          isVersionedAppRoute(url.pathname)
         ? '../v1.2/index.html'
         : '../index.html';
   const template = await readFile(
@@ -566,6 +583,12 @@ function readSession(req) {
 
 function requireMethod(req, method) {
   if (req.method !== method) {
+    throw new HttpError(405, 'method_not_allowed');
+  }
+}
+
+function requirePageMethod(req) {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
     throw new HttpError(405, 'method_not_allowed');
   }
 }
