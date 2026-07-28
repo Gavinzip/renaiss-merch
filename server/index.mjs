@@ -2,7 +2,6 @@ import { createServer } from 'node:http';
 import { timingSafeEqual } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { createServer as createViteServer } from 'vite';
 import {
   runDatabaseBackup,
   runRepositoryCheck
@@ -76,12 +75,7 @@ const backupTriggerAttempts = [];
 getMerchDatabase(getRuntimeConfig().databasePath);
 const vite = isProduction
   ? null
-  : await createViteServer({
-      appType: 'custom',
-      server: {
-        middlewareMode: true
-      }
-    });
+  : await createDevelopmentViteServer();
 
 const server = createServer(async (req, res) => {
   try {
@@ -119,6 +113,17 @@ const server = createServer(async (req, res) => {
 server.listen(port, host, () => {
   console.log(`renaiss-merch server listening on http://${host}:${port}`);
 });
+
+async function createDevelopmentViteServer() {
+  const { createServer: createViteServer } = await import('vite');
+
+  return createViteServer({
+    appType: 'custom',
+    server: {
+      middlewareMode: true
+    }
+  });
+}
 
 async function handleRoute(req, res) {
   const url = new URL(req.url || '/', 'http://localhost');
