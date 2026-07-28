@@ -69,6 +69,8 @@ export async function runDatabaseBackup(config) {
           '--prune',
           '--tag',
           BACKUP_TAG,
+          '--group-by',
+          'host,tags',
           '--keep-hourly',
           String(config.backup.retention.hourly),
           '--keep-daily',

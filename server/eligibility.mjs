@@ -1,20 +1,54 @@
 import { HttpError, sendJson } from './http.mjs';
+import { isLocalDemoSession } from './demo-session.mjs';
 
 const DEFAULT_BSCSCAN_API_URL = 'https://api.etherscan.io/v2/api';
 const DEFAULT_BSCSCAN_CHAIN_ID = '56';
 const DEFAULT_SBT_CONTRACT = '0x7d1b7db704d722295fbaa284008f526634673dbf';
-const DEFAULT_MINIMUM_SBT_BALANCE = 60;
 const DEFAULT_CACHE_TTL_SECONDS = 60;
 const PAGE_SIZE = 1000;
+const PRODUCT_ELIGIBILITY_RULES = {
+  shirt: {
+    minimumSbtBalance: 60,
+    reveal: {
+      category: 'Apparel',
+      claimName: 'Renaiss Tee',
+      description: 'A private Renaiss edition with worldwide fulfilment.',
+      hasReverseVideo: true,
+      requiresSize: true,
+      statusEyebrow: 'RENAISS MERCH'
+    }
+  },
+  bracelet: {
+    minimumSbtBalance: 100,
+    reveal: {
+      category: 'Object',
+      claimName: 'RENAISS Bracelet',
+      description: 'A private Renaiss object edition with a polished finish.',
+      hasReverseVideo: true,
+      requiresSize: false,
+      statusEyebrow: 'RENAISS OBJECT / DROP 02'
+    }
+  }
+};
 
 const walletPattern = /^0x[a-fA-F0-9]{40}$/;
 const eligibilityCache = new Map();
 
-export async function handleMerchEligibility(res, session) {
-  return sendJson(res, 200, await readMerchEligibility(session));
+export async function handleMerchEligibility(
+  res,
+  session,
+  requestedProductId,
+  options = {}
+) {
+  const result = await readMerchEligibility(session, {
+    productId: requestedProductId
+  });
+
+  options.onChecked?.(session, result);
+  return sendJson(res, 200, result);
 }
 
-export async function readMerchEligibility(session) {
+export async function readMerchEligibility(session, options = {}) {
   if (!session) {
     throw new HttpError(401, 'unauthenticated');
   }
@@ -25,25 +59,79 @@ export async function readMerchEligibility(session) {
     throw new HttpError(409, 'safe_wallet_not_ready');
   }
 
-  const config = getEligibilityConfig();
+  const productId = readMerchProductId(options.productId);
+
+  if (isLocalDemoSession(session)) {
+    return readLocalDemoEligibility(session, productId, walletAddress);
+  }
+
+  const config = getEligibilityConfig(productId);
   const balances = await readSbtBalances(walletAddress, config);
   const sbtBalance = sumBalances(balances);
   const sbtBadgeCount = Object.keys(balances).length;
-  const status =
-    sbtBadgeCount >= config.minimumSbtBalance ? 'eligible' : 'unqualified';
 
-  return {
-    status,
+  return applyCurrentMerchEligibilityRule(productId, {
+    productId,
     walletAddress,
     sbtBalance,
     sbtBadgeCount,
     minimumSbtBalance: config.minimumSbtBalance,
     sbtContract: config.sbtContract,
     source: 'bscscan_token1155tx'
+  });
+}
+
+function readLocalDemoEligibility(session, productId, walletAddress) {
+  const productRule = PRODUCT_ELIGIBILITY_RULES[productId];
+  const minimumSbtBalance = productRule.minimumSbtBalance;
+  const configuredDemoBalance = Number(session.user?.demoSbtBalance);
+  const verifiedSbtCount =
+    Number.isSafeInteger(configuredDemoBalance) && configuredDemoBalance >= 0
+      ? configuredDemoBalance
+      : Math.max(120, minimumSbtBalance);
+
+  return applyCurrentMerchEligibilityRule(productId, {
+    productId,
+    walletAddress,
+    sbtBalance: verifiedSbtCount,
+    sbtBadgeCount: verifiedSbtCount,
+    minimumSbtBalance,
+    sbtContract: DEFAULT_SBT_CONTRACT,
+    source: 'local_demo'
+  });
+}
+
+export function applyCurrentMerchEligibilityRule(productId, result) {
+  const normalizedProductId = readMerchProductId(productId);
+  const productRule = PRODUCT_ELIGIBILITY_RULES[normalizedProductId];
+  const sbtBalance = Number(result?.sbtBalance);
+  const sbtBadgeCount = Number(result?.sbtBadgeCount);
+  const verifiedSbtCount = Number.isFinite(sbtBadgeCount)
+    ? sbtBadgeCount
+    : sbtBalance;
+  const status =
+    verifiedSbtCount >= productRule.minimumSbtBalance
+      ? 'eligible'
+      : 'unqualified';
+  const normalizedResult = {
+    ...result,
+    minimumSbtBalance: productRule.minimumSbtBalance,
+    productId: normalizedProductId,
+    status
+  };
+
+  if (status !== 'eligible') {
+    const { reveal: _reveal, ...unqualifiedResult } = normalizedResult;
+    return unqualifiedResult;
+  }
+
+  return {
+    ...normalizedResult,
+    reveal: { ...productRule.reveal }
   };
 }
 
-function getEligibilityConfig() {
+function getEligibilityConfig(productId) {
   const apiKey = readOptionalEnv('BSCSCAN_API_KEY');
 
   if (!apiKey) {
@@ -58,14 +146,13 @@ function getEligibilityConfig() {
     throw new HttpError(500, 'sbt_contract_invalid');
   }
 
+  const productRule = PRODUCT_ELIGIBILITY_RULES[productId];
+
   return {
     apiKey,
     apiUrl: readOptionalEnv('BSCSCAN_API_URL') || DEFAULT_BSCSCAN_API_URL,
     chainId: readOptionalEnv('BSCSCAN_CHAIN_ID') || DEFAULT_BSCSCAN_CHAIN_ID,
-    minimumSbtBalance: readPositiveIntegerEnv(
-      'MERCH_MINIMUM_SBT_BALANCE',
-      DEFAULT_MINIMUM_SBT_BALANCE
-    ),
+    minimumSbtBalance: productRule.minimumSbtBalance,
     sbtCacheTtlMs:
       readPositiveIntegerEnv(
         'MERCH_SBT_CACHE_TTL_SECONDS',
@@ -73,6 +160,17 @@ function getEligibilityConfig() {
       ) * 1000,
     sbtContract
   };
+}
+
+export function readMerchProductId(value) {
+  const productId =
+    typeof value === 'string' && value.trim() ? value.trim() : 'shirt';
+
+  if (!Object.hasOwn(PRODUCT_ELIGIBILITY_RULES, productId)) {
+    throw new HttpError(400, 'merch_product_invalid');
+  }
+
+  return productId;
 }
 
 async function readSbtBalances(walletAddress, config) {

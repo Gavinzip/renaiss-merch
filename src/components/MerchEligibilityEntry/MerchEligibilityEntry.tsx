@@ -324,7 +324,8 @@ export function MerchEligibilityEntry() {
         <span>Merch gate</span>
       </div>
 
-      {resultView === 'qualified' && eligibilityResult ? (
+      {resultView === 'qualified' &&
+      eligibilityResult?.status === 'eligible' ? (
           <QualifiedResult result={eligibilityResult} />
         ) : null}
 

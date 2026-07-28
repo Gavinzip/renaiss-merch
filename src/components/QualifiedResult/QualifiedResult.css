@@ -260,7 +260,8 @@
 
 .qualified-result .qualified-result__fields input,
 .qualified-result .qualified-result__fields select,
-.qualified-result .qualified-result__fields textarea {
+.qualified-result .qualified-result__fields textarea,
+.qualified-result__edition-value {
   width: 100%;
   min-width: 0;
   min-height: 2.48rem;
@@ -285,6 +286,68 @@
     box-shadow 160ms ease;
 }
 
+.qualified-result__edition-value {
+  display: flex;
+  align-items: center;
+}
+
+.qualified-result__color-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.34rem;
+  min-height: 2.48rem;
+  padding: 0.24rem;
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(18, 18, 17, 0.2);
+  border-radius: 6px;
+}
+
+.qualified-result__color-options button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.48rem;
+  min-width: 0;
+  min-height: 1.92rem;
+  padding: 0 0.55rem;
+  color: rgba(18, 18, 17, 0.58);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 760;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.qualified-result__color-options button.is-active {
+  color: #121211;
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(18, 18, 17, 0.12);
+  box-shadow: 0 4px 14px rgba(47, 39, 30, 0.08);
+}
+
+.qualified-result__color-swatch {
+  width: 0.68rem;
+  height: 0.68rem;
+  flex: 0 0 auto;
+  border: 1px solid rgba(18, 18, 17, 0.18);
+  border-radius: 50%;
+}
+
+.qualified-result__color-swatch--gold {
+  background: #c69a35;
+}
+
+.qualified-result__color-swatch--silver {
+  background: #c8cdd1;
+}
+
 .qualified-result .qualified-result__fields select {
   appearance: none;
   padding-right: 2.35rem;
@@ -307,8 +370,9 @@
 
 .qualified-result .qualified-result__fields input::placeholder,
 .qualified-result .qualified-result__fields textarea::placeholder {
-  color: rgba(18, 18, 17, 0.36);
+  color: rgba(18, 18, 17, 0.5);
   font-weight: 560;
+  opacity: 1;
 }
 
 .qualified-result .qualified-result__fields input:focus-visible,
@@ -706,7 +770,7 @@
   }
 
   .qualified-result__shipping {
-    padding: 1rem;
+    padding: 3.75rem 1rem 1rem;
   }
 
   .qualified-result__shipping h2 {
@@ -750,6 +814,7 @@
 
   .qualified-result__actions button,
   .qualified-result__modal-actions button,
+  .qualified-result__color-options button,
   .qualified-result__size-chart-link,
   .qualified-result__modal-close,
   .qualified-result__reset-link {

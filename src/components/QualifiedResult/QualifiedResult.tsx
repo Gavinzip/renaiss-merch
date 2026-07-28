@@ -6,9 +6,9 @@ import {
   useState
 } from 'react';
 import {
-  getVerifiedSbtCount,
-  type MerchEligibilityResult
+  type EligibleMerchEligibilityResult
 } from '../../lib/merchEligibility';
+import type { MerchProductId } from '../../lib/merchProducts';
 import {
   readStoredShippingClaim,
   saveShippingClaim,
@@ -16,13 +16,16 @@ import {
   type ShippingClaimIntent,
   type ShippingClaimPayload
 } from '../../lib/shippingClaim';
+import {
+  braceletColors,
+  readBraceletColor,
+  type BraceletColor
+} from '../../lib/merchVariants';
+import { readRenaissLogoutReturnUrl } from '../../lib/renaissAuth';
 import { shippingCountries } from '../../lib/shippingCountries';
+import { readStoredShippingProfile } from '../../lib/shippingProfile';
 import './QualifiedResult.css';
 
-const MERCH_MEDIA_BASE_URL =
-  'https://pub-152183cd35ab428096bc92f48b651a94.r2.dev/merch/reveal';
-const revealVideoSrc = `${MERCH_MEDIA_BASE_URL}/merch-claim-reveal.mp4?v=20260627`;
-const reverseRevealVideoSrc = `${MERCH_MEDIA_BASE_URL}/merch-claim-reveal-reverse.mp4?v=20260627`;
 const AUTO_REVEAL_SECONDS = 2.45;
 const REVEAL_WATCHDOG_BUFFER_MS = 900;
 const SCROLL_TRIGGER_PX = 36;
@@ -42,8 +45,18 @@ type ShippingLoadState = 'loading' | 'loaded' | 'empty' | 'error';
 type ClaimDialog = 'size-chart' | 'submitted' | null;
 
 type QualifiedResultProps = {
-  result: MerchEligibilityResult;
+  productId?: MerchProductId;
+  result: EligibleMerchEligibilityResult;
 };
+
+function readRevealVideoUrl(
+  productId: MerchProductId,
+  direction: 'forward' | 'reverse'
+) {
+  const parameters = new URLSearchParams({ direction, productId });
+
+  return `/api/merch-reveal-media?${parameters.toString()}`;
+}
 
 const merchSizes = [
   {
@@ -99,8 +112,15 @@ const shippingFieldNames: Array<keyof ShippingClaimPayload> = [
   'size'
 ];
 
-export function QualifiedResult({ result }: QualifiedResultProps) {
-  const verifiedSbtCount = getVerifiedSbtCount(result);
+export function QualifiedResult({
+  productId = 'shirt',
+  result
+}: QualifiedResultProps) {
+  const productConfig = result.reveal;
+  const revealVideoSrc = readRevealVideoUrl(productId, 'forward');
+  const reverseVideoSrc = productConfig.hasReverseVideo
+    ? readRevealVideoUrl(productId, 'reverse')
+    : undefined;
   const scrollerRef = useRef<HTMLElement | null>(null);
   const shippingFormRef = useRef<HTMLFormElement | null>(null);
   const forwardVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -118,6 +138,8 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
   >(null);
   const [hasSubmittedClaim, setHasSubmittedClaim] = useState(false);
   const [activeDialog, setActiveDialog] = useState<ClaimDialog>(null);
+  const [braceletColor, setBraceletColor] =
+    useState<BraceletColor>('GOLD');
   const [shippingActionError, setShippingActionError] = useState<string | null>(
     null
   );
@@ -134,6 +156,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
     const container = containerElement;
     const video = forwardVideoElement;
     const reverseVideo = reverseVideoElement;
+    const usesManualReverse = !reverseVideoSrc;
 
     const reduceMotionQuery = window.matchMedia?.(
       '(prefers-reduced-motion: reduce)'
@@ -158,6 +181,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
     let mobileShippingRevealTimerId = 0;
     let upwardWheelDelta = 0;
     let lastWheelAt = 0;
+    let manualReverseStartedAt = 0;
 
     function prepareVideo(targetVideo: HTMLVideoElement) {
       targetVideo.muted = true;
@@ -281,6 +305,37 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       frameId = window.requestAnimationFrame(syncProgressToReverseVideo);
     }
 
+    function syncProgressToManualReverse(timestamp: number) {
+      frameId = 0;
+
+      if (revealPhaseRef !== 'closing') {
+        return;
+      }
+
+      if (!manualReverseStartedAt) {
+        manualReverseStartedAt = timestamp;
+      }
+
+      const elapsed = timestamp - manualReverseStartedAt;
+      const progress = Math.max(
+        0,
+        1 - elapsed / (AUTO_REVEAL_SECONDS * 1000)
+      );
+
+      reverseVideo.currentTime = Math.max(
+        0,
+        Math.min(duration, duration * progress)
+      );
+      syncProgress(progress, false);
+
+      if (progress <= 0) {
+        completeClose();
+        return;
+      }
+
+      frameId = window.requestAnimationFrame(syncProgressToManualReverse);
+    }
+
     function completeReveal() {
       if (revealPhaseRef === 'review') {
         return;
@@ -313,6 +368,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       revealPhaseRef = 'idle';
       reverseVideo.pause();
       video.pause();
+      manualReverseStartedAt = 0;
       resetVideoToStart(video);
       video.playbackRate = Math.min(
         3,
@@ -364,11 +420,6 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       hideShippingPanel();
       video.pause();
       reverseVideo.pause();
-      resetVideoToStart(reverseVideo);
-      reverseVideo.playbackRate = Math.min(
-        3,
-        Math.max(1, duration / AUTO_REVEAL_SECONDS)
-      );
       setRevealPhase('closing');
       clearCloseTimer();
       closeTimerId = window.setTimeout(
@@ -381,6 +432,20 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
           return;
         }
 
+        if (usesManualReverse) {
+          manualReverseStartedAt = 0;
+          reverseVideo.currentTime = Math.max(0, duration - 0.02);
+          frameId = window.requestAnimationFrame(
+            syncProgressToManualReverse
+          );
+          return;
+        }
+
+        resetVideoToStart(reverseVideo);
+        reverseVideo.playbackRate = Math.min(
+          3,
+          Math.max(1, duration / AUTO_REVEAL_SECONDS)
+        );
         void reverseVideo
           .play()
           .then(requestReverseProgressSync)
@@ -390,6 +455,16 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
 
     function handleScroll() {
       if (revealPhaseRef === 'review') {
+        const { containerTop, travel } = getScrollProgress();
+        const reviewScrollTop = containerTop + travel;
+
+        if (
+          performance.now() - reviewReadyAt >= REVIEW_CLOSE_COOLDOWN_MS &&
+          window.scrollY <= reviewScrollTop - SCROLL_TRIGGER_PX
+        ) {
+          startClose();
+        }
+
         return;
       }
 
@@ -448,7 +523,9 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
         3,
         Math.max(1, duration / AUTO_REVEAL_SECONDS)
       );
-      reverseVideo.playbackRate = video.playbackRate;
+      if (!usesManualReverse) {
+        reverseVideo.playbackRate = video.playbackRate;
+      }
       syncProgress(0);
       markMediaReady();
     }
@@ -503,8 +580,10 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
     video.addEventListener('seeked', markMediaReady);
     video.addEventListener('timeupdate', requestProgressSync);
     video.addEventListener('ended', handleEnded);
-    reverseVideo.addEventListener('timeupdate', requestReverseProgressSync);
-    reverseVideo.addEventListener('ended', handleReverseEnded);
+    if (!usesManualReverse) {
+      reverseVideo.addEventListener('timeupdate', requestReverseProgressSync);
+      reverseVideo.addEventListener('ended', handleReverseEnded);
+    }
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('wheel', handleWheel, { passive: false });
     window.addEventListener('visibilitychange', handleVisibilityChange);
@@ -533,40 +612,67 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
       video.removeEventListener('seeked', markMediaReady);
       video.removeEventListener('timeupdate', requestProgressSync);
       video.removeEventListener('ended', handleEnded);
-      reverseVideo.removeEventListener('timeupdate', requestReverseProgressSync);
-      reverseVideo.removeEventListener('ended', handleReverseEnded);
+      if (!usesManualReverse) {
+        reverseVideo.removeEventListener(
+          'timeupdate',
+          requestReverseProgressSync
+        );
+        reverseVideo.removeEventListener('ended', handleReverseEnded);
+      }
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [reverseVideoSrc]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadStoredClaim() {
       try {
-        const storedClaim = await readStoredShippingClaim();
+        const storedClaim = await readStoredShippingClaim(productId);
 
         if (cancelled) {
           return;
         }
 
         setHasSubmittedClaim(storedClaim.hasSubmitted);
+        setStoredClaimStatus(storedClaim.claim?.status || null);
 
-        if (!storedClaim.claim) {
+        if (storedClaim.claim) {
+          if (productId === 'bracelet') {
+            setBraceletColor(
+              readBraceletColor(storedClaim.claim.shipping.color)
+            );
+          }
+
+          setShippingLoadState('loaded');
+          window.requestAnimationFrame(() => {
+            if (!cancelled && shippingFormRef.current) {
+              applyShippingFormValues(
+                shippingFormRef.current,
+                storedClaim.claim?.shipping || {}
+              );
+            }
+          });
+          return;
+        }
+
+        const storedProfile = await readStoredShippingProfile();
+
+        if (cancelled) {
+          return;
+        }
+
+        if (!storedProfile.profile) {
           setShippingLoadState('empty');
           return;
         }
 
-        setStoredClaimStatus(storedClaim.claim.status);
         setShippingLoadState('loaded');
         window.requestAnimationFrame(() => {
           if (!cancelled && shippingFormRef.current) {
-            applyShippingFormValues(
-              shippingFormRef.current,
-              storedClaim.claim?.shipping || {}
-            );
+            applyShippingFormValues(shippingFormRef.current, storedProfile.profile || {});
           }
         });
       } catch {
@@ -581,7 +687,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [productId]);
 
   async function handleShippingSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -615,7 +721,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
     setShippingActionState(intent === 'submit' ? 'submitting' : 'saving');
 
     try {
-      const claim = await saveShippingClaim(payload, intent);
+      const claim = await saveShippingClaim(payload, intent, productId);
       setHasSubmittedClaim(claim.hasSubmitted);
       setStoredClaimStatus(claim.status);
       setShippingLoadState('loaded');
@@ -639,7 +745,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
         showShipping ? 'qualified-result--shipping' : ''
       } qualified-result--${revealPhase} ${
         mediaReady ? 'qualified-result--ready' : 'qualified-result--loading'
-      }`}
+      } qualified-result--${productId}`}
       aria-labelledby="qualified-title"
       aria-live="polite"
       ref={scrollerRef}
@@ -660,9 +766,11 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
             className="qualified-result__video qualified-result__video--reverse"
             muted
             playsInline
-            preload="metadata"
+            preload={reverseVideoSrc ? 'metadata' : 'auto'}
             disablePictureInPicture
-            src={reverseRevealVideoSrc}
+            src={
+              reverseVideoSrc || revealVideoSrc
+            }
             aria-hidden="true"
           />
 
@@ -676,10 +784,12 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
           </div>
 
           <div className="qualified-result__status" aria-hidden={showShipping}>
-            <p className="qualified-result__eyebrow">RENAISS MERCH</p>
+            <p className="qualified-result__eyebrow">
+              {productConfig.statusEyebrow}
+            </p>
             <h2 id="qualified-title">Qualified</h2>
             <p>
-              {verifiedSbtCount} SBT verified.
+              {result.minimumSbtBalance} SBT access requirement met.
             </p>
           </div>
 
@@ -687,14 +797,14 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
             ref={shippingFormRef}
             className="qualified-result__shipping"
             onSubmit={handleShippingSubmit}
-            aria-label="Shipping address"
+            aria-label={`Shipping address for ${productConfig.claimName}`}
           >
             <p className="qualified-result__eyebrow">Claim details</p>
             <h2>Shipping address</h2>
             <p>
               {hasSubmittedClaim
                 ? 'Shipping details have been submitted and are locked.'
-                : `${verifiedSbtCount} SBT verified. Add the recipient details for this merch claim.`}
+                : `${result.minimumSbtBalance} SBT access requirement met. Add the recipient details for this ${productConfig.claimName} claim.`}
             </p>
 
             <fieldset
@@ -745,29 +855,63 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
                   type="tel"
                 />
               </label>
-              <div className="qualified-result__field-half qualified-result__field-control">
-                <div className="qualified-result__field-label">
-                  <span>Size</span>
-                  <button
-                    aria-label="Open size chart"
-                    className="qualified-result__size-chart-link"
-                    type="button"
-                    onClick={() => setActiveDialog('size-chart')}
+              {productConfig.requiresSize ? (
+                <>
+                  <div className="qualified-result__field-half qualified-result__field-control">
+                    <div className="qualified-result__field-label">
+                      <span>Size</span>
+                      <button
+                        aria-label="Open size chart"
+                        className="qualified-result__size-chart-link"
+                        type="button"
+                        onClick={() => setActiveDialog('size-chart')}
+                      >
+                        Size chart
+                      </button>
+                    </div>
+                    <select name="size" required defaultValue="">
+                      <option value="" disabled>
+                        Select size
+                      </option>
+                      {merchSizes.map((size) => (
+                        <option key={size.size} value={size.size}>
+                          {size.size}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <input name="color" type="hidden" value="BLACK" />
+                </>
+              ) : (
+                <div className="qualified-result__field-half qualified-result__field-control">
+                  <span className="qualified-result__field-label">Color</span>
+                  <div
+                    aria-label="Bracelet color"
+                    className="qualified-result__color-options"
+                    role="group"
                   >
-                    Size chart
-                  </button>
+                    {braceletColors.map((color) => (
+                      <button
+                        aria-pressed={braceletColor === color.id}
+                        className={
+                          braceletColor === color.id ? 'is-active' : ''
+                        }
+                        key={color.id}
+                        onClick={() => setBraceletColor(color.id)}
+                        type="button"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className={`qualified-result__color-swatch qualified-result__color-swatch--${color.id.toLowerCase()}`}
+                        />
+                        {color.label}
+                      </button>
+                    ))}
+                  </div>
+                  <input name="size" type="hidden" value="ONE_SIZE" />
+                  <input name="color" type="hidden" value={braceletColor} />
                 </div>
-                <select name="size" required defaultValue="">
-                  <option value="" disabled>
-                    Select size
-                  </option>
-                  {merchSizes.map((size) => (
-                    <option key={size.size} value={size.size}>
-                      {size.size}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              )}
               <label className="qualified-result__field-half">
                 Country / region
                 <select
@@ -957,8 +1101,8 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
                     Shipping details received.
                   </h3>
                   <p>
-                    Your merch claim has been submitted and the shipping details
-                    are now locked.
+                    Your {productConfig.claimName} claim has been submitted and
+                    the shipping details are now locked.
                   </p>
                   <div className="qualified-result__modal-actions">
                     <button type="button" onClick={() => setActiveDialog(null)}>
@@ -966,7 +1110,7 @@ export function QualifiedResult({ result }: QualifiedResultProps) {
                     </button>
                     <a
                       className="qualified-result__reset-link"
-                      href="/api/auth/logout-return?returnTo=/"
+                      href={readRenaissLogoutReturnUrl()}
                     >
                       Check another wallet
                     </a>
@@ -1014,6 +1158,7 @@ function readShippingClaimPayload(form: HTMLFormElement): ShippingClaimPayload {
     addressLine1: readFormValue(formData, 'addressLine1'),
     addressLine2: readFormValue(formData, 'addressLine2'),
     city: readFormValue(formData, 'city'),
+    color: readFormValue(formData, 'color'),
     country: readFormValue(formData, 'country'),
     deliveryNotes: readFormValue(formData, 'deliveryNotes'),
     email: readFormValue(formData, 'email'),
@@ -1032,12 +1177,13 @@ function applyShippingFormValues(
 ) {
   for (const fieldName of shippingFieldNames) {
     const field = form.elements.namedItem(fieldName);
-    const value = shipping[fieldName] || '';
+    const value = shipping[fieldName];
 
     if (
-      field instanceof HTMLInputElement ||
-      field instanceof HTMLSelectElement ||
-      field instanceof HTMLTextAreaElement
+      typeof value === 'string' &&
+      (field instanceof HTMLInputElement ||
+        field instanceof HTMLSelectElement ||
+        field instanceof HTMLTextAreaElement)
     ) {
       field.value = value;
     }
@@ -1104,6 +1250,9 @@ function readShippingClaimErrorMessage(
     case 'size_required':
     case 'size_invalid':
       return 'Select a merch size before saving.';
+    case 'color_required':
+    case 'color_invalid':
+      return 'Select Gold or Silver before saving.';
     case 'country_invalid':
     case 'country_required':
       return 'Select a valid country or region.';

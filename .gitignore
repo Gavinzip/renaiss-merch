@@ -11,3 +11,18 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# Local design workbench and source/reference media.
+private/
+tmp/
+blender/
+RENAISS-bracelet-assets-final/
+RENAISS-shirt-assets/
+design-qa.md
+dev-preview.html
+src/dev-preview-main.tsx
+src/components/BraceletViewer/
+src/components/TShirtPhysicsLab/
+src/three/
+src/assets/merch/*.glb
+.media-assets/

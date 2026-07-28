@@ -1,0 +1,14 @@
+.merch-landing__action {
+  display: block;
+  width: min(100%, 18rem);
+}
+
+.merch-landing__action button {
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  .merch-landing__action {
+    width: min(100%, 18rem);
+  }
+}

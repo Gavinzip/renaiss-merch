@@ -1,0 +1,1123 @@
+import {
+  type FormEvent,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState
+} from 'react';
+import {
+  getVerifiedSbtCount,
+  type MerchEligibilityResult
+} from '../../lib/merchEligibility';
+import {
+  readStoredShippingClaim,
+  saveShippingClaim,
+  ShippingClaimError,
+  type ShippingClaimIntent,
+  type ShippingClaimPayload
+} from '../../lib/shippingClaim';
+import { shippingCountries } from '../../lib/shippingCountries';
+import './QualifiedResult.css';
+
+const MERCH_MEDIA_BASE_URL =
+  'https://pub-152183cd35ab428096bc92f48b651a94.r2.dev/merch/reveal';
+const revealVideoSrc = `${MERCH_MEDIA_BASE_URL}/merch-claim-reveal.mp4?v=20260627`;
+const reverseRevealVideoSrc = `${MERCH_MEDIA_BASE_URL}/merch-claim-reveal-reverse.mp4?v=20260627`;
+const AUTO_REVEAL_SECONDS = 2.45;
+const REVEAL_WATCHDOG_BUFFER_MS = 900;
+const SCROLL_TRIGGER_PX = 36;
+const REVIEW_CLOSE_COOLDOWN_MS = 900;
+const REVIEW_CLOSE_WHEEL_DELTA_PX = 80;
+const REVIEW_CLOSE_WHEEL_WINDOW_MS = 320;
+const MOBILE_REVEAL_MEDIA_QUERY = '(max-width: 860px), (pointer: coarse)';
+const MOBILE_SHIPPING_REVEAL_DELAY_MS = 2000;
+const MOBILE_VIDEO_PAN_START_X = 50;
+const MOBILE_VIDEO_PAN_END_X = 18;
+const SHIPPING_REVEAL_VIDEO_PROGRESS = 0.86;
+const emailInputPattern = '[^\\s@]+@[^\\s@]+\\.[^\\s@]+';
+const phoneInputPattern = '[+()0-9\\s.-]{6,32}';
+type RevealPhase = 'idle' | 'playing' | 'review' | 'closing';
+type ShippingActionState = 'idle' | 'saving' | 'submitting' | 'saved' | 'submitted' | 'error';
+type ShippingLoadState = 'loading' | 'loaded' | 'empty' | 'error';
+type ClaimDialog = 'size-chart' | 'submitted' | null;
+
+type QualifiedResultProps = {
+  result: MerchEligibilityResult;
+};
+
+const merchSizes = [
+  {
+    size: 'S',
+    length: '71',
+    chest: '114',
+    shoulder: '54',
+    sleeve: '23',
+    height: '150-170',
+    weight: '80-125'
+  },
+  {
+    size: 'M',
+    length: '74',
+    chest: '120',
+    shoulder: '56',
+    sleeve: '24',
+    height: '170-185',
+    weight: '135-160'
+  },
+  {
+    size: 'L',
+    length: '77',
+    chest: '126',
+    shoulder: '58',
+    sleeve: '25',
+    height: '170-195',
+    weight: '160-200'
+  },
+  {
+    size: 'XL',
+    length: '80',
+    chest: '132',
+    shoulder: '60',
+    sleeve: '26',
+    height: '170-200',
+    weight: '200-240'
+  }
+];
+
+const shippingFieldNames: Array<keyof ShippingClaimPayload> = [
+  'addressLine1',
+  'addressLine2',
+  'city',
+  'country',
+  'deliveryNotes',
+  'email',
+  'firstName',
+  'lastName',
+  'phone',
+  'postalCode',
+  'region',
+  'size'
+];
+
+export function QualifiedResult({ result }: QualifiedResultProps) {
+  const verifiedSbtCount = getVerifiedSbtCount(result);
+  const scrollerRef = useRef<HTMLElement | null>(null);
+  const shippingFormRef = useRef<HTMLFormElement | null>(null);
+  const forwardVideoRef = useRef<HTMLVideoElement | null>(null);
+  const reverseVideoRef = useRef<HTMLVideoElement | null>(null);
+  const shippingVisibleRef = useRef(false);
+  const [showShipping, setShowShipping] = useState(false);
+  const [mediaReady, setMediaReady] = useState(false);
+  const [revealPhase, setRevealPhase] = useState<RevealPhase>('idle');
+  const [shippingActionState, setShippingActionState] =
+    useState<ShippingActionState>('idle');
+  const [shippingLoadState, setShippingLoadState] =
+    useState<ShippingLoadState>('loading');
+  const [storedClaimStatus, setStoredClaimStatus] = useState<
+    'draft' | 'submitted' | null
+  >(null);
+  const [hasSubmittedClaim, setHasSubmittedClaim] = useState(false);
+  const [activeDialog, setActiveDialog] = useState<ClaimDialog>(null);
+  const [shippingActionError, setShippingActionError] = useState<string | null>(
+    null
+  );
+
+  useLayoutEffect(() => {
+    const containerElement = scrollerRef.current;
+    const forwardVideoElement = forwardVideoRef.current;
+    const reverseVideoElement = reverseVideoRef.current;
+
+    if (!containerElement || !forwardVideoElement || !reverseVideoElement) {
+      return undefined;
+    }
+
+    const container = containerElement;
+    const video = forwardVideoElement;
+    const reverseVideo = reverseVideoElement;
+
+    const reduceMotionQuery = window.matchMedia?.(
+      '(prefers-reduced-motion: reduce)'
+    );
+
+    if (reduceMotionQuery?.matches) {
+      video.pause();
+      reverseVideo.pause();
+      shippingVisibleRef.current = true;
+      setShowShipping(true);
+      container.style.setProperty('--claim-progress', '1');
+      return undefined;
+    }
+
+    let frameId = 0;
+    let duration =
+      Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 6;
+    let revealPhaseRef: RevealPhase = 'idle';
+    let reviewReadyAt = 0;
+    let revealTimerId = 0;
+    let closeTimerId = 0;
+    let mobileShippingRevealTimerId = 0;
+    let upwardWheelDelta = 0;
+    let lastWheelAt = 0;
+
+    function prepareVideo(targetVideo: HTMLVideoElement) {
+      targetVideo.muted = true;
+      targetVideo.playsInline = true;
+      targetVideo.setAttribute('playsinline', '');
+      targetVideo.setAttribute('webkit-playsinline', '');
+    }
+
+    function resetVideoToStart(targetVideo: HTMLVideoElement) {
+      targetVideo.pause();
+
+      try {
+        targetVideo.currentTime = 0;
+      } catch {
+        // Metadata may not be ready yet; loadedmetadata will retry the reset.
+      }
+    }
+
+    function markMediaReady() {
+      if (video.readyState >= 2 && video.currentTime <= 0.08) {
+        setMediaReady(true);
+      }
+    }
+
+    function syncProgress(nextProgress: number, allowShipping = true) {
+      const progress = Math.min(
+        1,
+        Math.max(0, Number.isFinite(nextProgress) ? nextProgress : 0)
+      );
+
+      container.style.setProperty('--claim-progress', progress.toFixed(3));
+      container.style.setProperty(
+        '--claim-mobile-video-x',
+        `${readMobileVideoPanX(progress).toFixed(2)}%`
+      );
+
+      const nextShippingVisible =
+        allowShipping &&
+        !isMobileRevealViewport() &&
+        progress >= SHIPPING_REVEAL_VIDEO_PROGRESS;
+      if (shippingVisibleRef.current !== nextShippingVisible) {
+        shippingVisibleRef.current = nextShippingVisible;
+        setShowShipping(nextShippingVisible);
+      }
+    }
+
+    function showShippingPanel() {
+      shippingVisibleRef.current = true;
+      setShowShipping(true);
+    }
+
+    function hideShippingPanel() {
+      shippingVisibleRef.current = false;
+      setShowShipping(false);
+    }
+
+    function scheduleMobileShippingReveal() {
+      clearMobileShippingRevealTimer();
+
+      if (!isMobileRevealViewport()) {
+        showShippingPanel();
+        return;
+      }
+
+      hideShippingPanel();
+      mobileShippingRevealTimerId = window.setTimeout(() => {
+        if (revealPhaseRef !== 'review') {
+          return;
+        }
+
+        showShippingPanel();
+      }, MOBILE_SHIPPING_REVEAL_DELAY_MS);
+    }
+
+    function getScrollProgress() {
+      const viewportHeight =
+        window.innerHeight || document.documentElement.clientHeight || 1;
+      const containerTop = container.getBoundingClientRect().top + window.scrollY;
+      const travel = Math.max(1, container.offsetHeight - viewportHeight);
+      const progress = Math.min(
+        1,
+        Math.max(0, (window.scrollY - containerTop) / travel)
+      );
+
+      return { containerTop, progress, travel };
+    }
+
+    function syncProgressToVideo() {
+      frameId = 0;
+      syncProgress(duration > 0 ? video.currentTime / duration : 0);
+
+      if (!video.paused && !video.ended) {
+        frameId = window.requestAnimationFrame(syncProgressToVideo);
+      }
+    }
+
+    function syncProgressToReverseVideo() {
+      frameId = 0;
+      const reverseProgress =
+        duration > 0 ? 1 - reverseVideo.currentTime / duration : 1;
+      syncProgress(reverseProgress, false);
+
+      if (!reverseVideo.paused && !reverseVideo.ended) {
+        frameId = window.requestAnimationFrame(syncProgressToReverseVideo);
+      }
+    }
+
+    function requestProgressSync() {
+      if (frameId) {
+        return;
+      }
+
+      frameId = window.requestAnimationFrame(syncProgressToVideo);
+    }
+
+    function requestReverseProgressSync() {
+      if (frameId) {
+        return;
+      }
+
+      frameId = window.requestAnimationFrame(syncProgressToReverseVideo);
+    }
+
+    function completeReveal() {
+      if (revealPhaseRef === 'review') {
+        return;
+      }
+
+      clearRevealTimer();
+      revealPhaseRef = 'review';
+      setRevealPhase('review');
+      video.pause();
+      video.currentTime = Math.max(0, duration - 0.02);
+      syncProgress(1);
+      scheduleMobileShippingReveal();
+      reviewReadyAt = performance.now();
+      upwardWheelDelta = 0;
+
+      const { containerTop, travel } = getScrollProgress();
+      window.scrollTo({
+        top: Math.round(containerTop + travel),
+        behavior: 'auto'
+      });
+    }
+
+    function completeClose() {
+      if (revealPhaseRef === 'idle') {
+        return;
+      }
+
+      clearCloseTimer();
+      clearMobileShippingRevealTimer();
+      revealPhaseRef = 'idle';
+      reverseVideo.pause();
+      video.pause();
+      resetVideoToStart(video);
+      video.playbackRate = Math.min(
+        3,
+        Math.max(1, duration / AUTO_REVEAL_SECONDS)
+      );
+      hideShippingPanel();
+      setMediaReady(true);
+      syncProgress(0);
+
+      const { containerTop } = getScrollProgress();
+      window.scrollTo({
+        top: Math.round(containerTop),
+        behavior: 'auto'
+      });
+
+      window.requestAnimationFrame(() => {
+        setRevealPhase('idle');
+      });
+    }
+
+    function startReveal() {
+      if (revealPhaseRef !== 'idle' || document.visibilityState === 'hidden') {
+        return;
+      }
+
+      revealPhaseRef = 'playing';
+      setMediaReady(true);
+      setRevealPhase('playing');
+      video.playbackRate = Math.min(
+        3,
+        Math.max(1, duration / AUTO_REVEAL_SECONDS)
+      );
+      clearRevealTimer();
+      revealTimerId = window.setTimeout(
+        completeReveal,
+        AUTO_REVEAL_SECONDS * 1000 + REVEAL_WATCHDOG_BUFFER_MS
+      );
+
+      void video.play().then(requestProgressSync).catch(() => undefined);
+    }
+
+    function startClose() {
+      if (revealPhaseRef !== 'review' || document.visibilityState === 'hidden') {
+        return;
+      }
+
+      revealPhaseRef = 'closing';
+      clearMobileShippingRevealTimer();
+      hideShippingPanel();
+      video.pause();
+      reverseVideo.pause();
+      resetVideoToStart(reverseVideo);
+      reverseVideo.playbackRate = Math.min(
+        3,
+        Math.max(1, duration / AUTO_REVEAL_SECONDS)
+      );
+      setRevealPhase('closing');
+      clearCloseTimer();
+      closeTimerId = window.setTimeout(
+        completeClose,
+        AUTO_REVEAL_SECONDS * 1000 + REVEAL_WATCHDOG_BUFFER_MS
+      );
+
+      window.requestAnimationFrame(() => {
+        if (revealPhaseRef !== 'closing') {
+          return;
+        }
+
+        void reverseVideo
+          .play()
+          .then(requestReverseProgressSync)
+          .catch(() => undefined);
+      });
+    }
+
+    function handleScroll() {
+      if (revealPhaseRef === 'review') {
+        return;
+      }
+
+      if (revealPhaseRef !== 'idle') {
+        return;
+      }
+
+      const { containerTop } = getScrollProgress();
+      const scrollDelta = window.scrollY - containerTop;
+
+      if (scrollDelta >= SCROLL_TRIGGER_PX) {
+        startReveal();
+      }
+    }
+
+    function handleWheel(event: WheelEvent) {
+      if (revealPhaseRef !== 'review' || event.deltaY >= 0) {
+        return;
+      }
+
+      if (performance.now() - reviewReadyAt < REVIEW_CLOSE_COOLDOWN_MS) {
+        return;
+      }
+
+      const target = event.target instanceof Element ? event.target : null;
+      const shippingPanel = target?.closest('.qualified-result__shipping');
+      if (
+        shippingPanel instanceof HTMLElement &&
+        shippingPanel.scrollTop > 0
+      ) {
+        return;
+      }
+
+      const now = performance.now();
+      upwardWheelDelta =
+        now - lastWheelAt > REVIEW_CLOSE_WHEEL_WINDOW_MS
+          ? Math.abs(event.deltaY)
+          : upwardWheelDelta + Math.abs(event.deltaY);
+      lastWheelAt = now;
+
+      if (upwardWheelDelta < REVIEW_CLOSE_WHEEL_DELTA_PX) {
+        return;
+      }
+
+      event.preventDefault();
+      startClose();
+    }
+
+    function handleMetadata() {
+      duration =
+        Number.isFinite(video.duration) && video.duration > 0
+          ? video.duration
+          : duration;
+      resetVideoToStart(video);
+      video.playbackRate = Math.min(
+        3,
+        Math.max(1, duration / AUTO_REVEAL_SECONDS)
+      );
+      reverseVideo.playbackRate = video.playbackRate;
+      syncProgress(0);
+      markMediaReady();
+    }
+
+    function handleEnded() {
+      completeReveal();
+    }
+
+    function handleReverseEnded() {
+      completeClose();
+    }
+
+    function clearRevealTimer() {
+      if (revealTimerId) {
+        window.clearTimeout(revealTimerId);
+        revealTimerId = 0;
+      }
+    }
+
+    function clearCloseTimer() {
+      if (closeTimerId) {
+        window.clearTimeout(closeTimerId);
+        closeTimerId = 0;
+      }
+    }
+
+    function clearMobileShippingRevealTimer() {
+      if (mobileShippingRevealTimerId) {
+        window.clearTimeout(mobileShippingRevealTimerId);
+        mobileShippingRevealTimerId = 0;
+      }
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'hidden' && revealPhaseRef === 'playing') {
+        video.pause();
+      }
+
+      if (document.visibilityState === 'hidden' && revealPhaseRef === 'closing') {
+        reverseVideo.pause();
+      }
+    }
+
+    prepareVideo(video);
+    prepareVideo(reverseVideo);
+    setMediaReady(false);
+    resetVideoToStart(video);
+    resetVideoToStart(reverseVideo);
+    video.addEventListener('loadedmetadata', handleMetadata);
+    video.addEventListener('loadeddata', markMediaReady);
+    video.addEventListener('canplay', markMediaReady);
+    video.addEventListener('seeked', markMediaReady);
+    video.addEventListener('timeupdate', requestProgressSync);
+    video.addEventListener('ended', handleEnded);
+    reverseVideo.addEventListener('timeupdate', requestReverseProgressSync);
+    reverseVideo.addEventListener('ended', handleReverseEnded);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+
+    if (video.readyState >= 1) {
+      handleMetadata();
+    }
+
+    if (video.readyState >= 2) {
+      markMediaReady();
+    }
+
+    syncProgress(0);
+
+    return () => {
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+
+      clearRevealTimer();
+      clearCloseTimer();
+      clearMobileShippingRevealTimer();
+      video.removeEventListener('loadedmetadata', handleMetadata);
+      video.removeEventListener('loadeddata', markMediaReady);
+      video.removeEventListener('canplay', markMediaReady);
+      video.removeEventListener('seeked', markMediaReady);
+      video.removeEventListener('timeupdate', requestProgressSync);
+      video.removeEventListener('ended', handleEnded);
+      reverseVideo.removeEventListener('timeupdate', requestReverseProgressSync);
+      reverseVideo.removeEventListener('ended', handleReverseEnded);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadStoredClaim() {
+      try {
+        const storedClaim = await readStoredShippingClaim();
+
+        if (cancelled) {
+          return;
+        }
+
+        setHasSubmittedClaim(storedClaim.hasSubmitted);
+
+        if (!storedClaim.claim) {
+          setShippingLoadState('empty');
+          return;
+        }
+
+        setStoredClaimStatus(storedClaim.claim.status);
+        setShippingLoadState('loaded');
+        window.requestAnimationFrame(() => {
+          if (!cancelled && shippingFormRef.current) {
+            applyShippingFormValues(
+              shippingFormRef.current,
+              storedClaim.claim?.shipping || {}
+            );
+          }
+        });
+      } catch {
+        if (!cancelled) {
+          setShippingLoadState('error');
+        }
+      }
+    }
+
+    void loadStoredClaim();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleShippingSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (
+      shippingActionState === 'saving' ||
+      shippingActionState === 'submitting'
+    ) {
+      return;
+    }
+
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    const intent: ShippingClaimIntent =
+      submitter instanceof HTMLButtonElement && submitter.value === 'submit'
+        ? 'submit'
+        : 'save';
+    const payload = readShippingClaimPayload(event.currentTarget);
+
+    if (hasSubmittedClaim) {
+      return;
+    }
+
+    await persistShippingClaim(payload, intent);
+  }
+
+  async function persistShippingClaim(
+    payload: ShippingClaimPayload,
+    intent: ShippingClaimIntent
+  ) {
+    setShippingActionError(null);
+    setShippingActionState(intent === 'submit' ? 'submitting' : 'saving');
+
+    try {
+      const claim = await saveShippingClaim(payload, intent);
+      setHasSubmittedClaim(claim.hasSubmitted);
+      setStoredClaimStatus(claim.status);
+      setShippingLoadState('loaded');
+      setShippingActionState(intent === 'submit' ? 'submitted' : 'saved');
+
+      if (intent === 'submit') {
+        setActiveDialog('submitted');
+      }
+    } catch (error) {
+      setShippingActionError(readShippingClaimErrorMessage(error, intent));
+      setShippingActionState('error');
+    }
+  }
+
+  const isPersisting =
+    shippingActionState === 'saving' || shippingActionState === 'submitting';
+
+  return (
+    <section
+      className={`qualified-result ${
+        showShipping ? 'qualified-result--shipping' : ''
+      } qualified-result--${revealPhase} ${
+        mediaReady ? 'qualified-result--ready' : 'qualified-result--loading'
+      }`}
+      aria-labelledby="qualified-title"
+      aria-live="polite"
+      ref={scrollerRef}
+    >
+      <div className="qualified-result__scroll">
+        <div className="qualified-result__stage">
+          <video
+            ref={forwardVideoRef}
+            className="qualified-result__video qualified-result__video--forward"
+            muted
+            playsInline
+            preload="auto"
+            disablePictureInPicture
+            src={revealVideoSrc}
+          />
+          <video
+            ref={reverseVideoRef}
+            className="qualified-result__video qualified-result__video--reverse"
+            muted
+            playsInline
+            preload="metadata"
+            disablePictureInPicture
+            src={reverseRevealVideoSrc}
+            aria-hidden="true"
+          />
+
+          <div className="qualified-result__veil" aria-hidden="true" />
+
+          <div
+            className="qualified-result__scroll-hint"
+            aria-hidden={revealPhase !== 'idle'}
+          >
+            <span />
+          </div>
+
+          <div className="qualified-result__status" aria-hidden={showShipping}>
+            <p className="qualified-result__eyebrow">RENAISS MERCH</p>
+            <h2 id="qualified-title">Qualified</h2>
+            <p>
+              {verifiedSbtCount} SBT verified.
+            </p>
+          </div>
+
+          <form
+            ref={shippingFormRef}
+            className="qualified-result__shipping"
+            onSubmit={handleShippingSubmit}
+            aria-label="Shipping address"
+          >
+            <p className="qualified-result__eyebrow">Claim details</p>
+            <h2>Shipping address</h2>
+            <p>
+              {hasSubmittedClaim
+                ? 'Shipping details have been submitted and are locked.'
+                : `${verifiedSbtCount} SBT verified. Add the recipient details for this merch claim.`}
+            </p>
+
+            <fieldset
+              className="qualified-result__fields"
+              disabled={hasSubmittedClaim || isPersisting}
+            >
+              <label className="qualified-result__field-half">
+                First name
+                <input
+                  autoComplete="shipping given-name"
+                  name="firstName"
+                  placeholder="First name"
+                  required
+                  type="text"
+                />
+              </label>
+              <label className="qualified-result__field-half">
+                Last name
+                <input
+                  autoComplete="shipping family-name"
+                  name="lastName"
+                  placeholder="Last name"
+                  required
+                  type="text"
+                />
+              </label>
+              <label className="qualified-result__field-half">
+                Email
+                <input
+                  autoComplete="email"
+                  name="email"
+                  pattern={emailInputPattern}
+                  placeholder="name@example.com"
+                  required
+                  title="Enter a complete email address, for example name@example.com."
+                  type="email"
+                />
+              </label>
+              <label className="qualified-result__field-half">
+                Phone
+                <input
+                  autoComplete="shipping tel"
+                  name="phone"
+                  pattern={phoneInputPattern}
+                  placeholder="+1 555 000 0000"
+                  required
+                  title="Enter a valid phone number using digits, spaces, +, -, ., or parentheses."
+                  type="tel"
+                />
+              </label>
+              <div className="qualified-result__field-half qualified-result__field-control">
+                <div className="qualified-result__field-label">
+                  <span>Size</span>
+                  <button
+                    aria-label="Open size chart"
+                    className="qualified-result__size-chart-link"
+                    type="button"
+                    onClick={() => setActiveDialog('size-chart')}
+                  >
+                    Size chart
+                  </button>
+                </div>
+                <select name="size" required defaultValue="">
+                  <option value="" disabled>
+                    Select size
+                  </option>
+                  {merchSizes.map((size) => (
+                    <option key={size.size} value={size.size}>
+                      {size.size}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <label className="qualified-result__field-half">
+                Country / region
+                <select
+                  autoComplete="shipping country-name"
+                  name="country"
+                  required
+                  defaultValue="US"
+                >
+                  {shippingCountries.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="qualified-result__field-wide">
+                Address line 1
+                <input
+                  autoComplete="shipping address-line1"
+                  name="addressLine1"
+                  placeholder="Street address or PO box"
+                  required
+                  type="text"
+                />
+              </label>
+              <label className="qualified-result__field-wide">
+                Address line 2
+                <input
+                  autoComplete="shipping address-line2"
+                  name="addressLine2"
+                  placeholder="Apartment, suite, unit, building (optional)"
+                  type="text"
+                />
+              </label>
+              <label className="qualified-result__field-third">
+                City
+                <input
+                  autoComplete="shipping address-level2"
+                  name="city"
+                  placeholder="City"
+                  required
+                  type="text"
+                />
+              </label>
+              <label className="qualified-result__field-third">
+                State / province
+                <input
+                  autoComplete="shipping address-level1"
+                  name="region"
+                  placeholder="State"
+                  required
+                  type="text"
+                />
+              </label>
+              <label className="qualified-result__field-third">
+                ZIP / postal code
+                <input
+                  autoComplete="shipping postal-code"
+                  name="postalCode"
+                  placeholder="Postal code"
+                  required
+                  type="text"
+                />
+              </label>
+              <label className="qualified-result__field-wide">
+                Delivery notes
+                <textarea
+                  name="deliveryNotes"
+                  placeholder="Gate code, preferred delivery detail, or local instructions (optional)"
+                  rows={3}
+                />
+              </label>
+            </fieldset>
+
+            {hasSubmittedClaim ? (
+              <p
+                className="qualified-result__submit-status qualified-result__submit-status--locked"
+                role="status"
+              >
+                Claim submitted. Shipping details cannot be changed.
+              </p>
+            ) : (
+              <>
+                <div className="qualified-result__actions">
+                  <button
+                    type="submit"
+                    name="intent"
+                    value="submit"
+                    disabled={isPersisting}
+                  >
+                    {shippingActionState === 'submitting'
+                      ? 'Submitting'
+                      : 'Submit claim'}
+                  </button>
+                  <button
+                    className="qualified-result__save-button"
+                    type="submit"
+                    name="intent"
+                    value="save"
+                    disabled={isPersisting}
+                  >
+                    {shippingActionState === 'saving'
+                      ? 'Saving'
+                      : 'Save shipping details'}
+                  </button>
+                </div>
+                <p
+                  className={`qualified-result__submit-status qualified-result__submit-status--${shippingActionState}`}
+                  role="status"
+                >
+                  {readShippingSubmitStatus(
+                    shippingActionState,
+                    shippingLoadState,
+                    storedClaimStatus,
+                    shippingActionError
+                  )}
+                </p>
+              </>
+            )}
+          </form>
+
+          {activeDialog ? (
+            <div className="qualified-result__modal-backdrop" role="presentation">
+              {activeDialog === 'size-chart' ? (
+                <div
+                  aria-labelledby="qualified-size-chart-title"
+                  aria-modal="true"
+                  className="qualified-result__modal qualified-result__modal--chart"
+                  role="dialog"
+                >
+                  <div className="qualified-result__modal-header">
+                    <h3 id="qualified-size-chart-title">Size chart</h3>
+                    <button
+                      aria-label="Close size chart"
+                      className="qualified-result__modal-close"
+                      type="button"
+                      onClick={() => setActiveDialog(null)}
+                    >
+                      X
+                    </button>
+                  </div>
+                  <p className="qualified-result__size-fit-note">
+                    Oversized fit. Size down is recommended.
+                  </p>
+                  <div className="qualified-result__size-chart-wrap">
+                    <table className="qualified-result__size-chart">
+                      <thead>
+                        <tr>
+                          <th>Size</th>
+                          <th>Length</th>
+                          <th>Chest</th>
+                          <th>Shoulder</th>
+                          <th>Sleeve</th>
+                          <th>Height</th>
+                          <th>Weight</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {merchSizes.map((size) => (
+                          <tr key={size.size}>
+                            <th scope="row">{size.size}</th>
+                            <td>{size.length}</td>
+                            <td>{size.chest}</td>
+                            <td>{size.shoulder}</td>
+                            <td>{size.sleeve}</td>
+                            <td>{size.height}</td>
+                            <td>{size.weight}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : null}
+
+              {activeDialog === 'submitted' ? (
+                <div
+                  aria-labelledby="qualified-submit-success-title"
+                  aria-modal="true"
+                  className="qualified-result__modal"
+                  role="dialog"
+                >
+                  <p className="qualified-result__modal-eyebrow">
+                    Claim submitted
+                  </p>
+                  <h3 id="qualified-submit-success-title">
+                    Shipping details received.
+                  </h3>
+                  <p>
+                    Your merch claim has been submitted and the shipping details
+                    are now locked.
+                  </p>
+                  <div className="qualified-result__modal-actions">
+                    <button type="button" onClick={() => setActiveDialog(null)}>
+                      Stay here
+                    </button>
+                    <a
+                      className="qualified-result__reset-link"
+                      href="/api/auth/logout-return?returnTo=/"
+                    >
+                      Check another wallet
+                    </a>
+                  </div>
+                </div>
+              ) : null}
+
+            </div>
+          ) : null}
+
+          <div className="qualified-result__loader" aria-hidden={mediaReady}>
+            <span />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function readMobileVideoPanX(progress: number) {
+  const clampedProgress = Math.min(
+    1,
+    Math.max(0, Number.isFinite(progress) ? progress : 0)
+  );
+  const easedProgress =
+    clampedProgress * clampedProgress * (3 - 2 * clampedProgress);
+
+  return (
+    MOBILE_VIDEO_PAN_START_X +
+    (MOBILE_VIDEO_PAN_END_X - MOBILE_VIDEO_PAN_START_X) * easedProgress
+  );
+}
+
+function isMobileRevealViewport() {
+  return (
+    window.innerWidth <= 860 ||
+    window.matchMedia?.(MOBILE_REVEAL_MEDIA_QUERY).matches === true
+  );
+}
+
+function readShippingClaimPayload(form: HTMLFormElement): ShippingClaimPayload {
+  const formData = new FormData(form);
+
+  return {
+    addressLine1: readFormValue(formData, 'addressLine1'),
+    addressLine2: readFormValue(formData, 'addressLine2'),
+    city: readFormValue(formData, 'city'),
+    country: readFormValue(formData, 'country'),
+    deliveryNotes: readFormValue(formData, 'deliveryNotes'),
+    email: readFormValue(formData, 'email'),
+    firstName: readFormValue(formData, 'firstName'),
+    lastName: readFormValue(formData, 'lastName'),
+    phone: readFormValue(formData, 'phone'),
+    postalCode: readFormValue(formData, 'postalCode'),
+    region: readFormValue(formData, 'region'),
+    size: readFormValue(formData, 'size')
+  };
+}
+
+function applyShippingFormValues(
+  form: HTMLFormElement,
+  shipping: Partial<ShippingClaimPayload>
+) {
+  for (const fieldName of shippingFieldNames) {
+    const field = form.elements.namedItem(fieldName);
+    const value = shipping[fieldName] || '';
+
+    if (
+      field instanceof HTMLInputElement ||
+      field instanceof HTMLSelectElement ||
+      field instanceof HTMLTextAreaElement
+    ) {
+      field.value = value;
+    }
+  }
+}
+
+function readFormValue(formData: FormData, name: string) {
+  const value = formData.get(name);
+
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function readShippingSubmitStatus(
+  actionState: ShippingActionState,
+  loadState: ShippingLoadState,
+  storedStatus: 'draft' | 'submitted' | null,
+  actionError: string | null
+) {
+  switch (actionState) {
+    case 'saving':
+      return 'Saving shipping details.';
+    case 'submitting':
+      return 'Submitting claim.';
+    case 'saved':
+      return 'Shipping details saved.';
+    case 'submitted':
+      return 'Claim submitted.';
+    case 'error':
+      return actionError || 'Could not save shipping details.';
+    default:
+      break;
+  }
+
+  switch (loadState) {
+    case 'loading':
+      return 'Checking saved details.';
+    case 'loaded':
+      return storedStatus === 'submitted'
+        ? 'Submitted details loaded.'
+        : 'Saved details loaded.';
+    case 'error':
+      return 'Could not load saved details.';
+    default:
+      return '';
+  }
+}
+
+function readShippingClaimErrorMessage(
+  error: unknown,
+  intent: ShippingClaimIntent
+) {
+  if (!(error instanceof ShippingClaimError)) {
+    return intent === 'submit'
+      ? 'Could not submit claim.'
+      : 'Could not save shipping details.';
+  }
+
+  switch (error.code) {
+    case 'email_invalid':
+      return 'Enter a complete email address, for example name@example.com.';
+    case 'phone_invalid':
+    case 'phone_required':
+      return 'Enter a valid phone number using digits, spaces, +, -, ., or parentheses.';
+    case 'size_required':
+    case 'size_invalid':
+      return 'Select a merch size before saving.';
+    case 'country_invalid':
+    case 'country_required':
+      return 'Select a valid country or region.';
+    case 'unauthenticated':
+      return 'Session expired. Please sign in again.';
+    case 'wallet_not_eligible':
+      return 'This wallet is not eligible to submit a merch claim.';
+    case 'shipping_claim_already_submitted':
+      return 'Shipping details have already been submitted and are locked.';
+    default:
+      return error.status >= 400 && error.status < 500
+        ? 'Check the shipping details and try again.'
+        : intent === 'submit'
+          ? 'Could not submit claim.'
+          : 'Could not save shipping details.';
+  }
+}

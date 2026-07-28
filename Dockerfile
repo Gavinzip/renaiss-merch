@@ -7,7 +7,9 @@ RUN npm ci --include=dev
 
 FROM node:22-alpine AS build
 WORKDIR /app
+ARG VITE_STATIC_ASSET_CDN_BASE_URL
 ENV NODE_ENV=production
+ENV VITE_STATIC_ASSET_CDN_BASE_URL=${VITE_STATIC_ASSET_CDN_BASE_URL}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
@@ -29,6 +31,7 @@ RUN apk add --no-cache ca-certificates libstdc++ rclone restic sqlite && mkdir -
 COPY package*.json ./
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/media ./media
 COPY --from=build /app/server ./server
 EXPOSE 8080
 CMD ["npm", "run", "start"]

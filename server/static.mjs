@@ -85,6 +85,10 @@ async function resolveFilePath(pathname, distDir) {
     return requestedPath;
   }
 
+  if (isVersionedAppRoute(safePathname)) {
+    return path.join(resolvedDistDir, 'v1.2', 'index.html');
+  }
+
   if (safePathname === '/' || isHtmlRoute(safePathname)) {
     return path.join(resolvedDistDir, 'index.html');
   }
@@ -103,6 +107,10 @@ async function isFile(filePath) {
 
 function isHtmlRoute(pathname) {
   return !path.extname(pathname);
+}
+
+function isVersionedAppRoute(pathname) {
+  return pathname === '/v1.2' || pathname.startsWith('/v1.2/');
 }
 
 function cacheControlFor(filePath) {

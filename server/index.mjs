@@ -16,7 +16,18 @@ import {
   setCookie
 } from './cookies.mjs';
 import { getAuthConfig, getPublicOrigin } from './config.mjs';
+import {
+  createLocalDemoUser,
+  getSessionDatabaseOptions,
+  isLocalDemoAvailable,
+  requireLocalDemoAccess
+} from './demo-session.mjs';
 import { handleMerchEligibility } from './eligibility.mjs';
+import {
+  handleMerchAccessState,
+  saveMerchAccessCheck
+} from './merch-access-state.mjs';
+import { getMerchDatabase } from './merch-database.mjs';
 import {
   canManageFulfillment,
   requireFulfillmentAdministrator
@@ -38,6 +49,12 @@ import {
   handleMerchShippingClaim,
   handleStoredMerchShippingClaim
 } from './shipping-claims.mjs';
+import {
+  handleMerchShippingProfile,
+  handleStoredMerchShippingProfile
+} from './shipping-profile.mjs';
+import { handleMerchRevealMedia } from './reveal-media.mjs';
+import { handleMerchRevealThumbnail } from './reveal-thumbnail.mjs';
 import { getRuntimeConfig } from './runtime-config.mjs';
 import {
   CHALLENGE_MAX_AGE_SECONDS,
@@ -56,6 +73,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 const port = Number(process.env.PORT || 5173);
 const host = process.env.HOST || (process.env.PORT ? '0.0.0.0' : '127.0.0.1');
 const backupTriggerAttempts = [];
+getMerchDatabase(getRuntimeConfig().databasePath);
 const vite = isProduction
   ? null
   : await createViteServer({
@@ -112,7 +130,7 @@ async function handleRoute(req, res) {
   }
 
   if (url.pathname === '/api/auth/renaiss/start') {
-    await startRenaissLogin(req, res);
+    await startRenaissLogin(req, res, url);
     return true;
   }
 
@@ -124,6 +142,11 @@ async function handleRoute(req, res) {
   if (url.pathname === '/api/auth/session') {
     requireMethod(req, 'GET');
     sendSession(req, res);
+    return true;
+  }
+
+  if (url.pathname === '/api/auth/demo') {
+    startLocalDemoSession(req, res, url);
     return true;
   }
 
@@ -141,18 +164,85 @@ async function handleRoute(req, res) {
 
   if (url.pathname === '/api/merch-eligibility') {
     requireMethod(req, 'GET');
-    await handleMerchEligibility(res, readSession(req));
+    const session = readSession(req);
+    const databaseOptions = getSessionDatabaseOptions(session);
+
+    await handleMerchEligibility(
+      res,
+      session,
+      url.searchParams.get('productId'),
+      {
+        onChecked: (checkedSession, result) =>
+          saveMerchAccessCheck(checkedSession, result, databaseOptions)
+      }
+    );
+    return true;
+  }
+
+  if (url.pathname === '/api/merch-access-state') {
+    requireMethod(req, 'GET');
+    const session = readSession(req);
+
+    handleMerchAccessState(
+      res,
+      session,
+      getSessionDatabaseOptions(session)
+    );
+    return true;
+  }
+
+  if (url.pathname === '/api/merch-reveal-media') {
+    await handleMerchRevealMedia(
+      req,
+      res,
+      readSession(req),
+      url.searchParams.get('productId'),
+      url.searchParams.get('direction')
+    );
+    return true;
+  }
+
+  if (url.pathname === '/api/merch-reveal-thumbnail') {
+    await handleMerchRevealThumbnail(
+      req,
+      res,
+      readSession(req),
+      url.searchParams.get('productId'),
+      url.searchParams.get('variant')
+    );
     return true;
   }
 
   if (url.pathname === '/api/merch-shipping-claim') {
+    const session = readSession(req);
+    const databaseOptions = getSessionDatabaseOptions(session);
+
     if (req.method === 'GET') {
-      handleStoredMerchShippingClaim(res, readSession(req));
+      handleStoredMerchShippingClaim(res, session, {
+        productId: url.searchParams.get('productId'),
+        readOptions: databaseOptions
+      });
       return true;
     }
 
     requireMethod(req, 'POST');
-    await handleMerchShippingClaim(req, res, readSession(req));
+    await handleMerchShippingClaim(req, res, session, {
+      saveOptions: databaseOptions
+    });
+    return true;
+  }
+
+  if (url.pathname === '/api/merch-shipping-profile') {
+    const session = readSession(req);
+    const databaseOptions = getSessionDatabaseOptions(session);
+
+    if (req.method === 'GET') {
+      handleStoredMerchShippingProfile(res, session, databaseOptions);
+      return true;
+    }
+
+    requireMethod(req, 'PUT');
+    await handleMerchShippingProfile(req, res, session, databaseOptions);
     return true;
   }
 
@@ -198,13 +288,20 @@ async function serveViteHtml(req, res) {
     url.pathname.startsWith('/api/') ||
     url.pathname.startsWith('/auth/') ||
     isViteDevRequestPath(url.pathname) ||
-    /\.[^/]+$/.test(url.pathname)
+    (!isVersionedAppRoute(url.pathname) && /\.[^/]+$/.test(url.pathname))
   ) {
     return false;
   }
 
+  const previewName = url.searchParams.get('preview');
+  const templatePath =
+    previewName === 'tshirt-physics' || previewName === 'bracelets'
+      ? '../dev-preview.html'
+      : isVersionedAppRoute(url.pathname)
+        ? '../v1.2/index.html'
+        : '../index.html';
   const template = await readFile(
-    fileURLToPath(new URL('../index.html', import.meta.url)),
+    fileURLToPath(new URL(templatePath, import.meta.url)),
     'utf8'
   );
   const html = await vite.transformIndexHtml(url.pathname, template);
@@ -229,6 +326,10 @@ function isViteDevRequestPath(pathname) {
     pathname.startsWith('/node_modules/') ||
     pathname === '/__vite_ping'
   );
+}
+
+function isVersionedAppRoute(pathname) {
+  return pathname === '/v1.2' || pathname.startsWith('/v1.2/');
 }
 
 function sendHealthCheck(res) {
@@ -278,7 +379,9 @@ async function checkBackupRepository(req, res) {
   }
 }
 
-async function startRenaissLogin(req, res) {
+async function startRenaissLogin(req, res, url) {
+  const returnTo = safeReturnTo(url.searchParams.get('returnTo'));
+
   try {
     requireMethod(req, 'GET');
 
@@ -289,6 +392,7 @@ async function startRenaissLogin(req, res) {
       ...pkce,
       nonce: randomToken(),
       redirectUri: config.redirectUri,
+      returnTo,
       state: randomToken()
     };
     const challengeId = saveChallenge(challenge);
@@ -299,11 +403,13 @@ async function startRenaissLogin(req, res) {
     });
     redirect(res, authorizationUrl);
   } catch (error) {
-    redirect(res, authErrorLocation(error));
+    redirect(res, authErrorLocation(error, returnTo));
   }
 }
 
 async function finishRenaissLogin(req, res, url) {
+  let returnTo = '/';
+
   try {
     requireMethod(req, 'GET');
 
@@ -315,6 +421,7 @@ async function finishRenaissLogin(req, res, url) {
     const state = url.searchParams.get('state');
     const challengeId = parseCookies(req).get(OAUTH_CHALLENGE_COOKIE);
     const challenge = takeChallenge(challengeId);
+    returnTo = safeReturnTo(challenge?.returnTo);
 
     clearCookie(req, res, OAUTH_CHALLENGE_COOKIE);
 
@@ -331,10 +438,10 @@ async function finishRenaissLogin(req, res, url) {
     setCookie(req, res, SESSION_COOKIE, id, {
       maxAge: SESSION_MAX_AGE_SECONDS
     });
-    redirect(res, '/?auth=success');
+    redirect(res, authReturnLocation(returnTo, 'success'));
   } catch (error) {
     clearCookie(req, res, OAUTH_CHALLENGE_COOKIE);
-    redirect(res, authErrorLocation(error));
+    redirect(res, authErrorLocation(error, returnTo));
   }
 }
 
@@ -343,15 +450,40 @@ function sendSession(req, res) {
 
   if (!session) {
     sendJson(res, 200, {
-      authenticated: false
+      authenticated: false,
+      demoAvailable: isLocalDemoAvailable(req, isProduction)
     });
     return;
   }
 
+  sendAuthenticatedSession(res, session, req);
+}
+
+function startLocalDemoSession(req, res, url) {
+  requireMethod(req, 'POST');
+  requireLocalDemoAccess(req, isProduction);
+  requireSameOrigin(req);
+  deleteCurrentSession(req);
+
+  const mode =
+    url.searchParams.get('mode') === 'unqualified'
+      ? 'unqualified'
+      : 'eligible';
+  const { id, session } = createSession(createLocalDemoUser(mode));
+  setCookie(req, res, SESSION_COOKIE, id, {
+    maxAge: SESSION_MAX_AGE_SECONDS
+  });
+  sendAuthenticatedSession(res, session, req);
+}
+
+function sendAuthenticatedSession(res, session, req) {
+  const { demoSbtBalance: _demoSbtBalance, ...publicUser } = session.user;
+
   sendJson(res, 200, {
     authenticated: true,
+    demoAvailable: isLocalDemoAvailable(req, isProduction),
     user: {
-      ...session.user,
+      ...publicUser,
       canManageFulfillment: canManageFulfillment(session)
     }
   });
@@ -393,9 +525,12 @@ function logoutAndRedirect(req, res, url) {
 }
 
 function clearSession(req, res) {
-  const sessionId = parseCookies(req).get(SESSION_COOKIE);
-  deleteSession(sessionId);
+  deleteCurrentSession(req);
   clearCookie(req, res, SESSION_COOKIE);
+}
+
+function deleteCurrentSession(req) {
+  deleteSession(parseCookies(req).get(SESSION_COOKIE));
 }
 
 function readSession(req) {
@@ -469,11 +604,21 @@ function sanitizeLogMessage(message) {
   return String(message || 'unknown_error').replace(/[A-Za-z0-9_./+=:-]{24,}/g, '[redacted]');
 }
 
-function authErrorLocation(error) {
+function authErrorLocation(error, returnTo = '/') {
   const httpError = error instanceof HttpError ? error : new HttpError(500, 'server_error');
-  const reason = encodeURIComponent(httpError.code);
 
-  return `/?auth=error&reason=${reason}`;
+  return authReturnLocation(returnTo, 'error', httpError.code);
+}
+
+function authReturnLocation(returnTo, authState, reason) {
+  const target = new URL(safeReturnTo(returnTo), 'http://localhost');
+  target.searchParams.set('auth', authState);
+
+  if (reason) {
+    target.searchParams.set('reason', reason);
+  }
+
+  return `${target.pathname}${target.search}${target.hash}`;
 }
 
 function safeReturnTo(returnTo) {

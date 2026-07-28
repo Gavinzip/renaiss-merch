@@ -1,0 +1,66 @@
+{
+  "bucket": "renaiss-merch-media",
+  "contentHash": "446c18fa4a637161a044dec71b02419715ec922316ff0a292fdfb5495c83d945",
+  "fileCount": 8,
+  "prefix": "merch/v1.2",
+  "release": "r446c18fa4a637161a044",
+  "totalBytes": 34881054,
+  "assets": {
+    "sealedDrop": {
+      "contentType": "image/avif",
+      "path": "store/sealed-drop.avif",
+      "source": "src/assets/merch/sealed-drop.jpg",
+      "sourceContentType": "image/jpeg",
+      "type": "image"
+    },
+    "storeBackground": {
+      "contentType": "image/avif",
+      "path": "store/store-background.avif",
+      "source": "src/assets/merch/store-static-background-v2.jpg",
+      "sourceContentType": "image/jpeg",
+      "type": "image"
+    },
+    "shirtProduct": {
+      "contentType": "image/avif",
+      "path": "products/shirt.avif",
+      "source": "private/merch/shirt-product.png",
+      "sourceContentType": "image/png",
+      "type": "image"
+    },
+    "braceletProductGold": {
+      "contentType": "image/avif",
+      "path": "products/bracelet-gold.avif",
+      "source": "private/merch/bracelet-product.png",
+      "sourceContentType": "image/png",
+      "type": "image"
+    },
+    "braceletProductSilver": {
+      "contentType": "image/avif",
+      "path": "products/bracelet-silver.avif",
+      "source": "private/merch/bracelet-product-silver.png",
+      "sourceContentType": "image/png",
+      "type": "image"
+    },
+    "braceletStoreCover": {
+      "contentType": "image/avif",
+      "path": "products/bracelet-store-cover.avif",
+      "source": "private/merch/bracelet-store-cover.png",
+      "sourceContentType": "image/png",
+      "type": "image"
+    },
+    "braceletRevealForward": {
+      "contentType": "video/mp4",
+      "path": "reveal/bracelet-forward.mp4",
+      "source": "private/merch/bracelet-reveal.mp4",
+      "sourceContentType": "video/mp4",
+      "type": "binary"
+    },
+    "braceletRevealReverse": {
+      "contentType": "video/mp4",
+      "path": "reveal/bracelet-reverse.mp4",
+      "source": "private/merch/bracelet-reveal-reverse.mp4",
+      "sourceContentType": "video/mp4",
+      "type": "binary"
+    }
+  }
+}

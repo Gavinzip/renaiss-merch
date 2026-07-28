@@ -1,7 +1,10 @@
+import type { MerchProductId } from './merchProducts';
+
 export type ShippingClaimPayload = {
   addressLine1: string;
   addressLine2: string;
   city: string;
+  color: string;
   country: string;
   deliveryNotes: string;
   email: string;
@@ -18,6 +21,7 @@ export type ShippingClaimIntent = 'save' | 'submit';
 export type ShippingClaimResponse = {
   claimId: string;
   hasSubmitted: boolean;
+  productId: MerchProductId;
   savedAt: string;
   status: 'draft' | 'submitted';
   submittedAt: string | null;
@@ -25,6 +29,7 @@ export type ShippingClaimResponse = {
 
 export type StoredShippingClaimResponse = {
   claim: {
+    productId: MerchProductId;
     savedAt: string;
     shipping: Partial<ShippingClaimPayload>;
     status: 'draft' | 'submitted';
@@ -51,7 +56,8 @@ const shippingClaimEndpoint =
 
 export async function saveShippingClaim(
   payload: ShippingClaimPayload,
-  intent: ShippingClaimIntent
+  intent: ShippingClaimIntent,
+  productId: MerchProductId = 'shirt'
 ): Promise<ShippingClaimResponse> {
   const response = await fetch(shippingClaimEndpoint, {
     method: 'POST',
@@ -59,7 +65,7 @@ export async function saveShippingClaim(
       Accept: 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ intent, shipping: payload })
+    body: JSON.stringify({ intent, productId, shipping: payload })
   });
 
   if (!response.ok) {
@@ -69,8 +75,12 @@ export async function saveShippingClaim(
   return (await response.json()) as ShippingClaimResponse;
 }
 
-export async function readStoredShippingClaim(): Promise<StoredShippingClaimResponse> {
-  const response = await fetch(shippingClaimEndpoint, {
+export async function readStoredShippingClaim(
+  productId: MerchProductId = 'shirt'
+): Promise<StoredShippingClaimResponse> {
+  const endpoint = new URL(shippingClaimEndpoint, window.location.origin);
+  endpoint.searchParams.set('productId', productId);
+  const response = await fetch(endpoint, {
     headers: { Accept: 'application/json' }
   });
 

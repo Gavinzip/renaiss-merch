@@ -47,7 +47,7 @@ export function createFulfillmentExport(options = {}) {
 }
 
 function readFulfillmentRecipients(options) {
-  const latestSubmittedByWallet = new Map();
+  const latestSubmittedByWalletAndProduct = new Map();
 
   for (const claim of readStoredShippingClaims(options)) {
     if (claim.status !== 'submitted') {
@@ -57,11 +57,15 @@ function readFulfillmentRecipients(options) {
     const walletAddress = normalizeWalletAddress(claim.eligibility?.walletAddress);
 
     if (walletAddress) {
-      latestSubmittedByWallet.set(walletAddress, claim);
+      const productId = claim.productId || 'shirt';
+      latestSubmittedByWalletAndProduct.set(
+        `${walletAddress}:${productId}`,
+        claim
+      );
     }
   }
 
-  return [...latestSubmittedByWallet.values()].sort((left, right) => {
+  return [...latestSubmittedByWalletAndProduct.values()].sort((left, right) => {
     return String(left.submittedAt || left.createdAt).localeCompare(
       String(right.submittedAt || right.createdAt)
     );
@@ -124,6 +128,7 @@ function getFulfillmentDb(configuredPath) {
 
 function buildFulfillmentCsv(recipients) {
   const columns = [
+    ['productId', 'Product'],
     ['walletAddress', 'Wallet address'],
     ['submittedAt', 'Submitted at'],
     ['firstName', 'First name'],
@@ -131,6 +136,7 @@ function buildFulfillmentCsv(recipients) {
     ['email', 'Email'],
     ['phone', 'Phone'],
     ['size', 'Size'],
+    ['color', 'Color'],
     ['country', 'Country'],
     ['region', 'State / region'],
     ['city', 'City'],
@@ -145,6 +151,7 @@ function buildFulfillmentCsv(recipients) {
     const shipping = claim.shipping || {};
     const values = {
       ...shipping,
+      productId: claim.productId || 'shirt',
       submittedAt: claim.submittedAt || claim.createdAt,
       walletAddress: claim.eligibility?.walletAddress || ''
     };

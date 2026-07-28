@@ -1,9 +1,9 @@
 import { type CSSProperties } from 'react';
 import {
   getVerifiedSbtCount,
-  MINIMUM_MERCH_SBT_BALANCE,
   type MerchEligibilityResult
 } from '../../lib/merchEligibility';
+import { readRenaissLogoutReturnUrl } from '../../lib/renaissAuth';
 import './UnqualifiedResult.css';
 
 type UnqualifiedResultProps = {
@@ -13,8 +13,7 @@ type UnqualifiedResultProps = {
 export function UnqualifiedResult({
   result
 }: UnqualifiedResultProps) {
-  const minimumSbtBalance =
-    result.minimumSbtBalance ?? MINIMUM_MERCH_SBT_BALANCE;
+  const minimumSbtBalance = result.minimumSbtBalance;
   const verifiedSbtCount = getVerifiedSbtCount(result);
   const missingSbt = Math.max(
     0,
@@ -84,7 +83,7 @@ export function UnqualifiedResult({
 
           <a
             className="unqualified-result__reset-link"
-            href="/api/auth/logout-return?returnTo=/"
+            href={readRenaissLogoutReturnUrl()}
           >
             Check another wallet
           </a>
