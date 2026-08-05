@@ -1,6 +1,5 @@
 node_modules/
 dist/
-extracted/
 outputs/
 .data/
 .env
@@ -16,12 +15,9 @@ pnpm-debug.log*
 private/
 tmp/
 blender/
-RENAISS-bracelet-assets-final/
-RENAISS-shirt-assets/
 design-qa.md
 dev-preview.html
 src/dev-preview-main.tsx
-src/components/BraceletViewer/
 src/components/TShirtPhysicsLab/
 src/three/
 src/assets/merch/*.glb

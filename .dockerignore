@@ -3,9 +3,15 @@ dist/
 .data/
 .env
 .env.*
+.secrets/
 .git/
-extracted/
 outputs/
+private/
+tmp/
+.media-assets/
+src/components/TShirtPhysicsLab/
+src/three/
+src/assets/merch/*.glb
 coverage/
 *.log
 npm-debug.log*

@@ -9,6 +9,11 @@ import {
   runWithSqliteBusyRetry
 } from './merch-database.mjs';
 import {
+  MERCH_PRODUCT_ENTITLEMENT_SOURCES,
+  grantMerchProductEntitlement,
+  readMerchProductEntitlements
+} from './merch-product-entitlements.mjs';
+import {
   normalizeShippingPayload,
   readJsonBody
 } from './shipping-details.mjs';
@@ -102,20 +107,19 @@ export function saveShippingClaim(claimInput, options = {}) {
     user: claimInput.user
   };
   const writeClaim = db.transaction((nextClaim) => {
-    const submittedClaim = db
+    const existingEntitlement = db
       .prepare(
         `
           SELECT 1
-          FROM shipping_claims
+          FROM merch_product_entitlements
           WHERE wallet_address = @walletAddress
             AND product_id = @productId
-            AND claim_status = 'submitted'
           LIMIT 1
         `
       )
       .get({ productId, walletAddress });
 
-    if (submittedClaim) {
+    if (existingEntitlement) {
       throw new HttpError(409, 'shipping_claim_already_submitted');
     }
 
@@ -128,6 +132,8 @@ export function saveShippingClaim(claimInput, options = {}) {
           AND claim_status = 'draft'
       `
     ).run({ productId, walletAddress });
+
+    const claimRow = toClaimRow(nextClaim);
 
     db.prepare(`
       INSERT INTO shipping_claims (
@@ -193,7 +199,18 @@ export function saveShippingClaim(claimInput, options = {}) {
         @shippingJson,
         @userJson
       )
-    `).run(toClaimRow(nextClaim));
+    `).run(claimRow);
+
+    if (nextClaim.status === 'submitted') {
+      grantMerchProductEntitlement(db, {
+        eligibilityJson: claimRow.eligibilityJson,
+        grantedAt: nextClaim.submittedAt,
+        productId,
+        source: MERCH_PRODUCT_ENTITLEMENT_SOURCES.submittedClaim,
+        sourceClaimId: nextClaim.id,
+        walletAddress
+      });
+    }
   });
 
   try {
@@ -233,21 +250,54 @@ export function readLatestShippingClaim(session, options = {}) {
   const walletAddress = readSessionWalletAddress(session);
   const productId = readMerchProductId(options.productId);
   const db = getMerchDatabase(options.dbPath);
-  const row = db
-    .prepare(
-      `
-        SELECT created_at, product_id, shipping_json, claim_status, submitted_at
-        FROM shipping_claims
-        WHERE wallet_address = @walletAddress
-          AND product_id = @productId
-        ORDER BY
-          CASE claim_status WHEN 'submitted' THEN 0 ELSE 1 END,
-          created_at DESC,
-          id DESC
-        LIMIT 1
-      `
-    )
-    .get({ productId, walletAddress });
+  const entitlement = readClaimEntitlements(session, {
+    ...options,
+    productId
+  })[0];
+  const hasSubmitted = !!entitlement;
+  const row = entitlement
+    ? db
+        .prepare(
+          `
+            SELECT
+              created_at,
+              product_id,
+              shipping_json,
+              claim_status,
+              submitted_at
+            FROM shipping_claims
+            WHERE id = @sourceClaimId
+              AND wallet_address = @walletAddress
+              AND product_id = @productId
+            LIMIT 1
+          `
+        )
+        .get({
+          productId,
+          sourceClaimId: entitlement.sourceClaimId,
+          walletAddress
+        })
+    : db
+        .prepare(
+          `
+            SELECT
+              created_at,
+              product_id,
+              shipping_json,
+              claim_status,
+              submitted_at
+            FROM shipping_claims
+            WHERE wallet_address = @walletAddress
+              AND product_id = @productId
+            ORDER BY created_at DESC, id DESC
+            LIMIT 1
+          `
+        )
+        .get({ productId, walletAddress });
+
+  if (entitlement && !row) {
+    throw new HttpError(500, 'merch_claim_entitlement_source_missing');
+  }
 
   return {
     claim: row
@@ -255,12 +305,24 @@ export function readLatestShippingClaim(session, options = {}) {
           savedAt: row.created_at,
           productId: readMerchProductId(row.product_id),
           shipping: JSON.parse(row.shipping_json),
-          status: normalizeClaimStatus(row.claim_status),
-          submittedAt: row.submitted_at || null
+          status: hasSubmitted
+            ? 'submitted'
+            : normalizeClaimStatus(row.claim_status),
+          submittedAt: row.submitted_at || (hasSubmitted ? row.created_at : null)
         }
       : null,
-    hasSubmitted: hasSubmittedClaim(session, options)
+    hasSubmitted
   };
+}
+
+export function readClaimEntitlements(session, options = {}) {
+  const walletAddress = readSessionWalletAddress(session);
+  const db = getMerchDatabase(options.dbPath);
+
+  return readMerchProductEntitlements(db, {
+    productId: options.productId,
+    walletAddress
+  });
 }
 
 export function hasSubmittedClaim(session, options = {}) {
@@ -271,10 +333,9 @@ export function hasSubmittedClaim(session, options = {}) {
     .prepare(
       `
         SELECT 1
-        FROM shipping_claims
+        FROM merch_product_entitlements
         WHERE wallet_address = @walletAddress
           AND product_id = @productId
-          AND claim_status = 'submitted'
         LIMIT 1
       `
     )

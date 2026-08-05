@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import Database from 'better-sqlite3';
 import { getClaimDatabasePath } from './runtime-config.mjs';
+import { runShippingClaimEntitlementBackfillMigration } from './shipping-claim-entitlement-migration.mjs';
 import { runShippingProfileBackfillMigration } from './shipping-profile-migration.mjs';
 
 const SQLITE_BUSY_RETRY_LIMIT = 20;
@@ -85,6 +86,16 @@ export function getMerchDatabase(configuredPath) {
         PRIMARY KEY (wallet_address, product_id)
       );
 
+      CREATE TABLE IF NOT EXISTS merch_product_entitlements (
+        wallet_address TEXT NOT NULL,
+        product_id TEXT NOT NULL,
+        source_claim_id TEXT NOT NULL,
+        source TEXT NOT NULL,
+        granted_at TEXT NOT NULL,
+        eligibility_json TEXT NOT NULL,
+        PRIMARY KEY (wallet_address, product_id)
+      );
+
       CREATE INDEX IF NOT EXISTS idx_shipping_claims_wallet_created_at
         ON shipping_claims (wallet_address, created_at);
 
@@ -93,6 +104,9 @@ export function getMerchDatabase(configuredPath) {
 
       CREATE INDEX IF NOT EXISTS idx_merch_access_checks_user_sub
         ON merch_access_checks (user_sub);
+
+      CREATE INDEX IF NOT EXISTS idx_merch_product_entitlements_source_claim
+        ON merch_product_entitlements (source_claim_id);
     `);
 
     ensureColumn(database, 'shipping_claims', 'size', 'size TEXT');
@@ -119,6 +133,7 @@ export function getMerchDatabase(configuredPath) {
       CREATE INDEX IF NOT EXISTS idx_shipping_claims_wallet_product_created_at
         ON shipping_claims (wallet_address, product_id, created_at);
     `);
+    runShippingClaimEntitlementBackfillMigration(database);
     runShippingProfileBackfillMigration(database);
   });
 

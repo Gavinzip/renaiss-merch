@@ -40,7 +40,8 @@ export async function handleMerchEligibility(
   requestedProductId,
   options = {}
 ) {
-  const result = await readMerchEligibility(session, {
+  const readEligibility = options.readEligibility || readMerchEligibility;
+  const result = await readEligibility(session, {
     productId: requestedProductId
   });
 
@@ -128,6 +129,19 @@ export function applyCurrentMerchEligibilityRule(productId, result) {
   return {
     ...normalizedResult,
     reveal: { ...productRule.reveal }
+  };
+}
+
+export function applyClaimEntitlementAccess(productId, result) {
+  const normalizedProductId = readMerchProductId(productId);
+  const productRule = PRODUCT_ELIGIBILITY_RULES[normalizedProductId];
+
+  return {
+    ...result,
+    minimumSbtBalance: productRule.minimumSbtBalance,
+    productId: normalizedProductId,
+    reveal: { ...productRule.reveal },
+    status: 'eligible'
   };
 }
 

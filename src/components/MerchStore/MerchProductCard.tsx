@@ -27,7 +27,7 @@ export function MerchProductCard({
   const helperId = `merch-product-${product.id}-helper`;
   const isEligible = accessState?.status === 'eligible';
   const isUnqualified = accessState?.status === 'unqualified';
-  const cardCopy = readMerchProductPresentation(accessState);
+  const cardCopy = readMerchProductPresentation(product.id, accessState);
 
   return (
     <article

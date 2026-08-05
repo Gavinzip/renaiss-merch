@@ -1,6 +1,7 @@
 import assetRelease from '../../media/public-asset-release.json';
 
 export type StaticMerchAsset =
+  | 'braceletSealedDrop'
   | 'sealedDrop'
   | 'sealedDropCatalog'
   | 'storeBackground';
@@ -12,9 +13,13 @@ const configuredCdnBase = String(
   .replace(/\/+$/, '');
 
 const developmentPaths: Record<StaticMerchAsset, string> = {
-  sealedDrop: '/src/assets/merch/sealed-drop.jpg',
-  sealedDropCatalog: '/src/assets/merch/sealed-drop-square-v2-2k.png',
-  storeBackground: '/src/assets/merch/store-static-background-v3-2k.png'
+  braceletSealedDrop:
+    '/src/assets/merch/storefront/bracelet-box-closed.png',
+  sealedDrop: '/src/assets/merch/storefront/shirt-box-card.jpg',
+  sealedDropCatalog:
+    '/src/assets/merch/storefront/shirt-box-catalog.png',
+  storeBackground:
+    '/src/assets/merch/storefront/store-background.png'
 };
 
 export function staticMerchAssetUrl(assetKey: StaticMerchAsset) {

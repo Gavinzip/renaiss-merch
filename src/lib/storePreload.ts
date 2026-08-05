@@ -6,7 +6,8 @@ import {
 const STORE_ENTRY_ASSETS: readonly StaticMerchAsset[] = [
   'storeBackground',
   'sealedDrop',
-  'sealedDropCatalog'
+  'sealedDropCatalog',
+  'braceletSealedDrop'
 ];
 
 export async function preloadStoreAssets(

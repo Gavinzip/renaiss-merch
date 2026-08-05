@@ -27,7 +27,7 @@ export function CatalogProductTile({
   const helperId = `merch-catalog-${product.id}-helper`;
   const isEligible = accessState?.status === 'eligible';
   const isUnqualified = accessState?.status === 'unqualified';
-  const presentation = readMerchProductPresentation(accessState);
+  const presentation = readMerchProductPresentation(product.id, accessState);
   const releaseNumber = product.id === 'shirt' ? '01' : '02';
 
   return (
@@ -57,7 +57,11 @@ export function CatalogProductTile({
           <LockedProductVisual
             className="merch-catalog-item__media"
             productId={product.id}
-            sealedAsset="sealedDropCatalog"
+            sealedAsset={
+              product.id === 'bracelet'
+                ? 'braceletSealedDrop'
+                : 'sealedDropCatalog'
+            }
             revealedName={
               isEligible ? accessState.reveal.claimName : undefined
             }

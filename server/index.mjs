@@ -29,6 +29,7 @@ import {
   saveMerchAccessCheck
 } from './merch-access-state.mjs';
 import { getMerchDatabase } from './merch-database.mjs';
+import { readMerchProductAccess } from './merch-product-access.mjs';
 import {
   canManageFulfillment,
   requireFulfillmentAdministrator
@@ -195,6 +196,11 @@ async function handleRoute(req, res) {
       session,
       url.searchParams.get('productId'),
       {
+        readEligibility: (checkedSession, options) =>
+          readMerchProductAccess(checkedSession, {
+            ...databaseOptions,
+            ...options
+          }),
         onChecked: (checkedSession, result) =>
           saveMerchAccessCheck(checkedSession, result, databaseOptions)
       }
@@ -215,23 +221,29 @@ async function handleRoute(req, res) {
   }
 
   if (url.pathname === '/api/merch-reveal-media') {
+    const session = readSession(req);
+
     await handleMerchRevealMedia(
       req,
       res,
-      readSession(req),
+      session,
       url.searchParams.get('productId'),
-      url.searchParams.get('direction')
+      url.searchParams.get('direction'),
+      getSessionDatabaseOptions(session)
     );
     return true;
   }
 
   if (url.pathname === '/api/merch-reveal-thumbnail') {
+    const session = readSession(req);
+
     await handleMerchRevealThumbnail(
       req,
       res,
-      readSession(req),
+      session,
       url.searchParams.get('productId'),
-      url.searchParams.get('variant')
+      url.searchParams.get('variant'),
+      getSessionDatabaseOptions(session)
     );
     return true;
   }

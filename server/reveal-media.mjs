@@ -1,6 +1,7 @@
 import { HttpError } from './http.mjs';
-import { readMerchEligibility, readMerchProductId } from './eligibility.mjs';
+import { readMerchProductId } from './eligibility.mjs';
 import { getMerchMediaAsset } from './merch-media-assets.mjs';
+import { readMerchProductAccess } from './merch-product-access.mjs';
 import { deliverProtectedMedia } from './protected-media.mjs';
 
 export async function handleMerchRevealMedia(
@@ -8,7 +9,8 @@ export async function handleMerchRevealMedia(
   res,
   session,
   requestedProductId,
-  requestedDirection
+  requestedDirection,
+  options = {}
 ) {
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     throw new HttpError(405, 'method_not_allowed');
@@ -16,9 +18,12 @@ export async function handleMerchRevealMedia(
 
   const productId = readMerchProductId(requestedProductId);
   const direction = readDirection(requestedDirection);
-  const eligibility = await readMerchEligibility(session, { productId });
+  const access = await readMerchProductAccess(session, {
+    ...options,
+    productId
+  });
 
-  if (eligibility.status !== 'eligible') {
+  if (access.status !== 'eligible') {
     throw new HttpError(403, 'merch_reveal_forbidden');
   }
 

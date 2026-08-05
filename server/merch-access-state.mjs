@@ -7,6 +7,7 @@ import {
   getMerchDatabase,
   runWithSqliteBusyRetry
 } from './merch-database.mjs';
+import { readPermanentMerchAccessState } from './merch-product-access.mjs';
 
 const walletPattern = /^0x[a-fA-F0-9]{40}$/;
 
@@ -19,6 +20,12 @@ export function handleMerchAccessState(res, session, options = {}) {
 export function readMerchAccessState(session, options = {}) {
   const walletAddress = readSessionWalletAddress(session);
   const database = getMerchDatabase(options.dbPath);
+  const permanentAccessByProduct = new Map(
+    readPermanentMerchAccessState(session, options).map((access) => [
+      access.productId,
+      access
+    ])
+  );
   const rows = database
     .prepare(
       `
@@ -45,8 +52,15 @@ export function readMerchAccessState(session, options = {}) {
     )
     .all(walletAddress);
 
-  return rows.map((row) => {
+  const accessStates = rows.map((row) => {
     const productId = readMerchProductId(row.product_id);
+    const permanentAccess = permanentAccessByProduct.get(productId);
+
+    if (permanentAccess) {
+      permanentAccessByProduct.delete(productId);
+      return permanentAccess;
+    }
+
     const storedEligibility = JSON.parse(row.eligibility_json);
     const eligibility = applyCurrentMerchEligibilityRule(
       productId,
@@ -63,6 +77,11 @@ export function readMerchAccessState(session, options = {}) {
       status: eligibility.status
     };
   });
+
+  accessStates.push(...permanentAccessByProduct.values());
+  return accessStates.sort((left, right) =>
+    left.productId.localeCompare(right.productId)
+  );
 }
 
 export function saveMerchAccessCheck(session, eligibility, options = {}) {

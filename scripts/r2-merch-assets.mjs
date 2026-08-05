@@ -126,6 +126,7 @@ async function prepareRelease(catalog) {
     const sourcePath = resolveProjectPath(asset.source);
 
     await assertReadable(sourcePath);
+    await assertSourceMatchesMaster(key, sourcePath, asset.master);
 
     const temporaryPath = resolve(stagingRoot, 'pending', asset.path);
     await mkdir(dirname(temporaryPath), { recursive: true });
@@ -203,6 +204,29 @@ async function assertReadable(filePath) {
     await access(filePath, constants.R_OK);
   } catch {
     throw new Error(`Asset source is not readable: ${relative(projectRoot, filePath)}`);
+  }
+}
+
+async function assertSourceMatchesMaster(assetKey, sourcePath, master) {
+  if (!master) {
+    return;
+  }
+
+  const masterPath = resolveProjectPath(master);
+
+  await assertReadable(masterPath);
+
+  const [sourceBuffer, masterBuffer] = await Promise.all([
+    readFile(sourcePath),
+    readFile(masterPath)
+  ]);
+  const sourceHash = createHash('sha256').update(sourceBuffer).digest('hex');
+  const masterHash = createHash('sha256').update(masterBuffer).digest('hex');
+
+  if (sourceHash !== masterHash) {
+    throw new Error(
+      `Public asset ${assetKey} does not match its source master: ${master}`
+    );
   }
 }
 

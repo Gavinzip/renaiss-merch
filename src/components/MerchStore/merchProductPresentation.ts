@@ -1,5 +1,6 @@
 import type { MerchAccessProductState } from '../../lib/merchAccessState';
 import { getVerifiedSbtCount } from '../../lib/merchEligibility';
+import type { MerchProductId } from './merchCatalog';
 
 export type MerchProductPresentation = {
   buttonLabel: string;
@@ -11,8 +12,11 @@ export type MerchProductPresentation = {
 };
 
 export function readMerchProductPresentation(
+  productId: MerchProductId,
   accessState?: MerchAccessProductState
 ): MerchProductPresentation {
+  const lockedTitle =
+    productId === 'shirt' ? 'RENAISS T-shirt' : 'RENAISS Bracelet';
   const verifiedSbtCount = accessState
     ? getVerifiedSbtCount(accessState)
     : null;
@@ -44,7 +48,7 @@ export function readMerchProductPresentation(
       category: 'Access not met',
       description: `${missingSbt} more SBT required to reveal this release.`,
       headerStatus: 'Not eligible',
-      title: `${verifiedSbtCount} / ${minimumSbtBalance} SBT`,
+      title: lockedTitle,
       visualStatus: `${verifiedSbtCount} / ${minimumSbtBalance} SBT`
     };
   }
@@ -54,7 +58,7 @@ export function readMerchProductPresentation(
     category: 'Private drop',
     description: 'All release details stay sealed until your first access check.',
     headerStatus: 'Sealed',
-    title: 'Sealed edition',
+    title: lockedTitle,
     visualStatus: 'Access required'
   };
 }

@@ -10,56 +10,56 @@
     "shirtProduct": {
       "contentType": "image/avif",
       "path": "products/shirt.avif",
-      "source": "private/merch/shirt-product.png",
+      "source": "private/merch/runtime/shirt/product.png",
       "sourceContentType": "image/png",
       "type": "image"
     },
     "braceletProductGold": {
       "contentType": "image/avif",
       "path": "products/bracelet-gold.avif",
-      "source": "private/merch/bracelet-product.png",
+      "source": "private/merch/runtime/bracelet/product-gold.png",
       "sourceContentType": "image/png",
       "type": "image"
     },
     "braceletProductSilver": {
       "contentType": "image/avif",
       "path": "products/bracelet-silver.avif",
-      "source": "private/merch/bracelet-product-silver.png",
+      "source": "private/merch/runtime/bracelet/product-silver.png",
       "sourceContentType": "image/png",
       "type": "image"
     },
     "braceletStoreCover": {
       "contentType": "image/avif",
       "path": "products/bracelet-store-cover.avif",
-      "source": "private/merch/bracelet-store-cover.png",
+      "source": "private/merch/runtime/bracelet/store-cover.png",
       "sourceContentType": "image/png",
       "type": "image"
     },
     "shirtRevealForward": {
       "contentType": "video/mp4",
       "path": "reveal/shirt-forward.mp4",
-      "source": "private/merch/shirt-reveal.mp4",
+      "source": "private/merch/runtime/shirt/reveal-forward.mp4",
       "sourceContentType": "video/mp4",
       "type": "binary"
     },
     "shirtRevealReverse": {
       "contentType": "video/mp4",
       "path": "reveal/shirt-reverse.mp4",
-      "source": "private/merch/shirt-reveal-reverse.mp4",
+      "source": "private/merch/runtime/shirt/reveal-reverse.mp4",
       "sourceContentType": "video/mp4",
       "type": "binary"
     },
     "braceletRevealForward": {
       "contentType": "video/mp4",
       "path": "reveal/bracelet-forward.mp4",
-      "source": "private/merch/bracelet-reveal.mp4",
+      "source": "private/merch/runtime/bracelet/reveal-forward.mp4",
       "sourceContentType": "video/mp4",
       "type": "binary"
     },
     "braceletRevealReverse": {
       "contentType": "video/mp4",
       "path": "reveal/bracelet-reverse.mp4",
-      "source": "private/merch/bracelet-reveal-reverse.mp4",
+      "source": "private/merch/runtime/bracelet/reveal-reverse.mp4",
       "sourceContentType": "video/mp4",
       "type": "binary"
     }

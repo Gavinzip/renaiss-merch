@@ -10,7 +10,7 @@ type LockedProductVisualProps = {
   revealedName?: string;
   sealedAsset?: Extract<
     StaticMerchAsset,
-    'sealedDrop' | 'sealedDropCatalog'
+    'braceletSealedDrop' | 'sealedDrop' | 'sealedDropCatalog'
   >;
 };
 
@@ -18,9 +18,12 @@ export function LockedProductVisual({
   className,
   productId,
   revealedName,
-  sealedAsset = 'sealedDrop'
+  sealedAsset
 }: LockedProductVisualProps) {
   const isRevealed = !!revealedName;
+  const lockedAsset =
+    sealedAsset ??
+    (productId === 'bracelet' ? 'braceletSealedDrop' : 'sealedDrop');
   const revealedImageUrl =
     productId === 'bracelet'
       ? '/api/merch-reveal-thumbnail?productId=bracelet&variant=store-cover'
@@ -33,6 +36,7 @@ export function LockedProductVisual({
       className={[
         'merch-product-card__locked-media',
         isRevealed ? 'is-revealed' : '',
+        isRevealed ? '' : 'is-unrevealed',
         isRevealed ? `is-${productId}` : '',
         className || '',
         'is-ready'
@@ -44,7 +48,7 @@ export function LockedProductVisual({
       src={
         isRevealed
           ? revealedImageUrl
-          : staticMerchAssetUrl(sealedAsset)
+          : staticMerchAssetUrl(lockedAsset)
       }
     />
   );
