@@ -7,12 +7,14 @@ import {
   getMerchDatabase,
   runWithSqliteBusyRetry
 } from './merch-database.mjs';
+import { getPrivateMerchMediaRelease } from './merch-media-assets.mjs';
 import { readPermanentMerchAccessState } from './merch-product-access.mjs';
 
 const walletPattern = /^0x[a-fA-F0-9]{40}$/;
 
 export function handleMerchAccessState(res, session, options = {}) {
   sendJson(res, 200, {
+    privateMediaRelease: getPrivateMerchMediaRelease(),
     products: readMerchAccessState(session, options)
   });
 }

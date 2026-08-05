@@ -2,13 +2,16 @@ import {
   useEffect,
   useMemo,
   useState,
-  type CSSProperties
+  type CSSProperties,
+  type Dispatch,
+  type SetStateAction
 } from 'react';
 import renaissLogoMark from '../../assets/renaiss-logo-mark.png';
 import { staticMerchAssetCssUrl } from '../../lib/staticAssets';
 import {
   createMerchAccessProductState,
   readMerchAccessState,
+  type MerchAccessState,
   type MerchAccessProductState
 } from '../../lib/merchAccessState';
 import {
@@ -16,6 +19,11 @@ import {
   checkMerchEligibility,
   type MerchEligibilityResult
 } from '../../lib/merchEligibility';
+import {
+  prepareEligiblePrivateProductImages,
+  preparePrivateProductImage,
+  type PreparedPrivateProductImageUrls
+} from '../../lib/privateProductImages';
 import {
   readRenaissSession,
   signOutRenaiss,
@@ -88,6 +96,9 @@ export function MerchStore({
   const [productAccess, setProductAccess] = useState<
     Partial<Record<MerchProductId, MerchAccessProductState>>
   >({});
+  const [privateMediaRelease, setPrivateMediaRelease] = useState('');
+  const [productImageUrls, setProductImageUrls] =
+    useState<PreparedPrivateProductImageUrls>({});
   const [showFulfillment, setShowFulfillment] = useState(
     () => window.location.hash === '#fulfillment'
   );
@@ -164,14 +175,19 @@ export function MerchStore({
           await onAuthenticatedSession();
         }
 
-        const nextProductAccess = await readMerchAccessState();
+        const nextProductAccess = await readPreparedProductAccess();
 
         if (cancelled) {
           return;
         }
 
         setSession(nextSession);
-        setProductAccess(toProductAccessMap(nextProductAccess));
+        applyPreparedProductAccess(
+          nextProductAccess,
+          setPrivateMediaRelease,
+          setProductAccess,
+          setProductImageUrls
+        );
         setStoreState('authenticated');
       } catch {
         if (!cancelled) {
@@ -252,10 +268,15 @@ export function MerchStore({
       }
 
       await onAuthenticatedSession();
-      const nextProductAccess = await readMerchAccessState();
+      const nextProductAccess = await readPreparedProductAccess();
 
       setSession(demoSession);
-      setProductAccess(toProductAccessMap(nextProductAccess));
+      applyPreparedProductAccess(
+        nextProductAccess,
+        setPrivateMediaRelease,
+        setProductAccess,
+        setProductImageUrls
+      );
       setStoreState('authenticated');
     } catch {
       setStoreState('source-error');
@@ -285,16 +306,11 @@ export function MerchStore({
     try {
       const result = await checkMerchEligibility(productId);
 
-      setProductAccess((currentProductAccess) => ({
-        ...currentProductAccess,
-        [productId]: createMerchAccessProductState(
-          productId,
-          result,
-          currentProductAccess[productId]?.claimStatus || null
-        )
-      }));
-
       if (result.status === 'eligible') {
+        const productImageUrl = await preparePrivateProductImage(
+          productId,
+          privateMediaRelease
+        );
         const revealMedia = revealMediaController.read(productId);
 
         if (!revealMedia) {
@@ -303,10 +319,30 @@ export function MerchStore({
           );
         }
 
+        setProductImageUrls((currentImageUrls) => ({
+          ...currentImageUrls,
+          [productId]: productImageUrl
+        }));
+        setProductAccess((currentProductAccess) => ({
+          ...currentProductAccess,
+          [productId]: createMerchAccessProductState(
+            productId,
+            result,
+            currentProductAccess[productId]?.claimStatus || null
+          )
+        }));
         setAccessResult({ productId, result, revealMedia });
         return;
       }
 
+      setProductAccess((currentProductAccess) => ({
+        ...currentProductAccess,
+        [productId]: createMerchAccessProductState(
+          productId,
+          result,
+          currentProductAccess[productId]?.claimStatus || null
+        )
+      }));
       setAccessResult({ productId, result });
     } catch (error) {
       if (error instanceof StoreRevealMediaCancelledError) {
@@ -337,7 +373,12 @@ export function MerchStore({
     }
 
     try {
-      setProductAccess(toProductAccessMap(await readMerchAccessState()));
+      applyPreparedProductAccess(
+        await readPreparedProductAccess(),
+        setPrivateMediaRelease,
+        setProductAccess,
+        setProductImageUrls
+      );
     } catch {
       setStoreState('source-error');
     }
@@ -525,7 +566,8 @@ export function MerchStore({
               isChecking: isChecking && selectedProductId === product.id,
               onCheck: (productId: MerchProductId) =>
                 void handleProductCheck(productId),
-              product
+              product,
+              revealedImageUrl: productImageUrls[product.id]
             };
 
             return storeView === 'catalog' ? (
@@ -564,6 +606,43 @@ export function MerchStore({
       ) : null}
     </main>
   );
+}
+
+type PreparedProductAccess = MerchAccessState & {
+  imageUrls: PreparedPrivateProductImageUrls;
+};
+
+async function readPreparedProductAccess(): Promise<PreparedProductAccess> {
+  const accessState = await readMerchAccessState();
+  const imageUrls = await prepareEligiblePrivateProductImages(
+    accessState.products,
+    accessState.privateMediaRelease
+  );
+
+  return {
+    ...accessState,
+    imageUrls
+  };
+}
+
+function applyPreparedProductAccess(
+  access: PreparedProductAccess,
+  setPrivateMediaRelease: Dispatch<SetStateAction<string>>,
+  setProductAccess: Dispatch<
+    SetStateAction<
+      Partial<Record<MerchProductId, MerchAccessProductState>>
+    >
+  >,
+  setProductImageUrls: Dispatch<
+    SetStateAction<PreparedPrivateProductImageUrls>
+  >
+) {
+  setPrivateMediaRelease(access.privateMediaRelease);
+  setProductAccess(toProductAccessMap(access.products));
+  setProductImageUrls((currentImageUrls) => ({
+    ...currentImageUrls,
+    ...access.imageUrls
+  }));
 }
 
 function readProductHelperText(

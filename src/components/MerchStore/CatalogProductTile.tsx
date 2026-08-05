@@ -13,6 +13,7 @@ type CatalogProductTileProps = {
   isChecking: boolean;
   onCheck: (productId: MerchProductId) => void;
   product: MerchProduct;
+  revealedImageUrl?: string;
 };
 
 export function CatalogProductTile({
@@ -21,7 +22,8 @@ export function CatalogProductTile({
   helperText,
   isChecking,
   onCheck,
-  product
+  product,
+  revealedImageUrl
 }: CatalogProductTileProps) {
   const titleId = `merch-catalog-${product.id}-title`;
   const helperId = `merch-catalog-${product.id}-helper`;
@@ -62,6 +64,7 @@ export function CatalogProductTile({
                 ? 'braceletSealedDrop'
                 : 'sealedDropCatalog'
             }
+            revealedImageUrl={revealedImageUrl}
             revealedName={
               isEligible ? presentation.title : undefined
             }

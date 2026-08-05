@@ -55,6 +55,10 @@ export function getMerchMediaAsset(assetKey) {
   };
 }
 
+export function getPrivateMerchMediaRelease() {
+  return catalog.release;
+}
+
 function normalizePrivateMediaOrigin(value) {
   const configuredOrigin = String(value || '').trim().replace(/\/+$/, '');
 

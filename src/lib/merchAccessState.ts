@@ -17,12 +17,16 @@ export type MerchAccessProductState = MerchEligibilityResult & {
 };
 
 type MerchAccessStatePayload = {
+  privateMediaRelease?: unknown;
   products?: unknown;
 };
 
-export async function readMerchAccessState(): Promise<
-  readonly MerchAccessProductState[]
-> {
+export type MerchAccessState = {
+  privateMediaRelease: string;
+  products: readonly MerchAccessProductState[];
+};
+
+export async function readMerchAccessState(): Promise<MerchAccessState> {
   const response = await fetch('/api/merch-access-state', {
     headers: { Accept: 'application/json' }
   });
@@ -37,7 +41,17 @@ export async function readMerchAccessState(): Promise<
     throw new Error('Merch access state did not include products.');
   }
 
-  return payload.products.map(readMerchAccessProductState);
+  if (
+    typeof payload.privateMediaRelease !== 'string' ||
+    !payload.privateMediaRelease.trim()
+  ) {
+    throw new Error('Merch access state did not include a media release.');
+  }
+
+  return {
+    privateMediaRelease: payload.privateMediaRelease.trim(),
+    products: payload.products.map(readMerchAccessProductState)
+  };
 }
 
 export function createMerchAccessProductState(

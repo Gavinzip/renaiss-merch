@@ -13,6 +13,7 @@ type MerchProductCardProps = {
   isChecking: boolean;
   onCheck: (productId: MerchProductId) => void;
   product: MerchProduct;
+  revealedImageUrl?: string;
 };
 
 export function MerchProductCard({
@@ -21,7 +22,8 @@ export function MerchProductCard({
   helperText,
   isChecking,
   onCheck,
-  product
+  product,
+  revealedImageUrl
 }: MerchProductCardProps) {
   const titleId = `merch-product-${product.id}-title`;
   const helperId = `merch-product-${product.id}-helper`;
@@ -60,6 +62,7 @@ export function MerchProductCard({
       >
         <LockedProductVisual
           productId={product.id}
+          revealedImageUrl={revealedImageUrl}
           revealedName={
             accessState?.status === 'eligible'
               ? cardCopy.title

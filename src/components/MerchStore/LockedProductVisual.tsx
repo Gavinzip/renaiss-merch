@@ -7,6 +7,7 @@ import type { MerchProductId } from './merchCatalog';
 type LockedProductVisualProps = {
   className?: string;
   productId: MerchProductId;
+  revealedImageUrl?: string;
   revealedName?: string;
   sealedAsset?: Extract<
     StaticMerchAsset,
@@ -17,39 +18,50 @@ type LockedProductVisualProps = {
 export function LockedProductVisual({
   className,
   productId,
+  revealedImageUrl,
   revealedName,
   sealedAsset
 }: LockedProductVisualProps) {
-  const isRevealed = !!revealedName;
+  const isRevealed = !!revealedName && !!revealedImageUrl;
   const lockedAsset =
     sealedAsset ??
     (productId === 'bracelet' ? 'braceletSealedDrop' : 'sealedDrop');
-  const revealedImageUrl =
-    productId === 'bracelet'
-      ? '/api/merch-reveal-thumbnail?productId=bracelet&variant=store-cover'
-      : `/api/merch-reveal-thumbnail?productId=${productId}`;
 
   return (
-    <img
-      alt={revealedName || ''}
-      aria-hidden={isRevealed ? undefined : 'true'}
-      className={[
-        'merch-product-card__locked-media',
-        isRevealed ? 'is-revealed' : '',
-        isRevealed ? '' : 'is-unrevealed',
-        isRevealed ? `is-${productId}` : '',
-        className || '',
-        'is-ready'
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      decoding="async"
-      loading="eager"
-      src={
-        isRevealed
-          ? revealedImageUrl
-          : staticMerchAssetUrl(lockedAsset)
-      }
-    />
+    <>
+      <img
+        alt=""
+        aria-hidden="true"
+        className={[
+          'merch-product-card__locked-media',
+          'is-unrevealed',
+          isRevealed ? 'is-placeholder' : '',
+          className || '',
+          'is-ready'
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        decoding="async"
+        loading="eager"
+        src={staticMerchAssetUrl(lockedAsset)}
+      />
+      {isRevealed ? (
+        <img
+          alt={revealedName}
+          className={[
+            'merch-product-card__locked-media',
+            'is-revealed',
+            `is-${productId}`,
+            className || '',
+            'is-ready'
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          decoding="async"
+          loading="eager"
+          src={revealedImageUrl}
+        />
+      ) : null}
+    </>
   );
 }

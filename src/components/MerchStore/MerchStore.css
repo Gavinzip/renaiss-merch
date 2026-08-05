@@ -735,6 +735,14 @@
   opacity: 1;
 }
 
+.merch-product-card__locked-media.is-placeholder {
+  z-index: 0;
+}
+
+.merch-product-card__locked-media.is-revealed {
+  z-index: 1;
+}
+
 .merch-product-card__locked-media {
   object-fit: cover;
   object-position: center center;
