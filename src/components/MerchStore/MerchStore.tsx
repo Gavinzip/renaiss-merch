@@ -162,7 +162,6 @@ export function MerchStore({
 
         if (!revealMediaController.isAdmissionComplete()) {
           await onAuthenticatedSession();
-          return;
         }
 
         const nextProductAccess = await readMerchAccessState();
@@ -227,7 +226,6 @@ export function MerchStore({
         demoAvailable: session.demoAvailable
       });
       setSelectedProductId(null);
-      revealMediaController.releaseAll();
       setAccessResult(null);
       setProductAccess({});
       setShowSettings(false);
@@ -254,6 +252,11 @@ export function MerchStore({
       }
 
       await onAuthenticatedSession();
+      const nextProductAccess = await readMerchAccessState();
+
+      setSession(demoSession);
+      setProductAccess(toProductAccessMap(nextProductAccess));
+      setStoreState('authenticated');
     } catch {
       setStoreState('source-error');
     }

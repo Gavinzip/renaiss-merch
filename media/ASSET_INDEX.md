@@ -9,7 +9,7 @@ appear in default Git or ripgrep results.
 | Class | Location | Purpose | Production rule |
 | --- | --- | --- | --- |
 | Source | `private/merch/source/<product>/` | Final masters and untouched originals | Never ship in `public` or `dist` |
-| Runtime private | `private/merch/runtime/<product>/` | Inputs for `private-asset-release.json` | Publish to private R2 only |
+| Runtime private | `private/merch/runtime/<product>/` | Product-image inputs for `private-asset-release.json`; canonical MP4 inputs for the public reveal release | Product images stay private; the four reveal MP4s publish publicly by explicit product decision |
 | Runtime public | `src/assets/merch/storefront/` | Inputs for `public-asset-release.json` | Publish as versioned AVIF to public R2 |
 | Archive | `private/merch/archive/<product>/` | Superseded recoverable versions | Never publish |
 | Workbench | `private/merch/workbench/` | Extracted frames, experiments, and 3D research | Never publish |
@@ -33,8 +33,8 @@ appear in default Git or ripgrep results.
 | Gold runtime product image | `private/merch/runtime/bracelet/product-gold.png` | Private R2 |
 | Silver runtime product image | `private/merch/runtime/bracelet/product-silver.png` | Private R2 |
 | Runtime Store cover | `private/merch/runtime/bracelet/store-cover.png` | Private R2 |
-| Forward reveal | `private/merch/runtime/bracelet/reveal-forward.mp4` | Private R2 |
-| Reverse reveal | `private/merch/runtime/bracelet/reveal-reverse.mp4` | Private R2 |
+| Forward reveal | `private/merch/runtime/bracelet/reveal-forward.mp4` | Public versioned R2/CDN MP4, anonymously preloaded |
+| Reverse reveal | `private/merch/runtime/bracelet/reveal-reverse.mp4` | Public versioned R2/CDN MP4, anonymously preloaded |
 | Original forward video | `private/merch/source/bracelet/video/reveal-forward-original-20260728-105601.mp4` | Source only |
 | Archived forward video | `private/merch/archive/bracelet/video/reveal-forward-20260728-095420.mp4` | Archive only |
 | Archived reverse video | `private/merch/archive/bracelet/video/reveal-reverse-20260728-095420.mp4` | Archive only |
@@ -52,8 +52,8 @@ have the same SHA-256.
 | Role | Canonical file | Delivery |
 | --- | --- | --- |
 | Runtime product image | `private/merch/runtime/shirt/product.png` | Private R2 |
-| Forward reveal | `private/merch/runtime/shirt/reveal-forward.mp4` | Private R2 |
-| Reverse reveal | `private/merch/runtime/shirt/reveal-reverse.mp4` | Private R2 |
+| Forward reveal | `private/merch/runtime/shirt/reveal-forward.mp4` | Public versioned R2/CDN MP4, anonymously preloaded |
+| Reverse reveal | `private/merch/runtime/shirt/reveal-reverse.mp4` | Public versioned R2/CDN MP4, anonymously preloaded |
 | Unrevealed card image | `src/assets/merch/storefront/shirt-box-card.jpg` | Public R2, key `sealedDrop` |
 | Unrevealed catalog image | `src/assets/merch/storefront/shirt-box-catalog.png` | Public R2, key `sealedDropCatalog` |
 
@@ -82,7 +82,11 @@ Workbench files are evidence and experiments, not runtime candidates.
    video.
 4. Reuse the canonical source when it fits. Generate only when the inventory
    has no suitable asset.
-5. Publish public derivatives through `npm run assets:publish` and private
-   derivatives through `npm run assets:private:publish`.
-6. Verify the live Cloudflare response headers and MP4 range behavior before
+5. Publish public Store derivatives and the four reveal MP4s through
+   `npm run assets:publish`; publish gated product images through
+   `npm run assets:private:publish`.
+6. Use the managed `r2.dev` base only in preview. Production must set
+   `VITE_STATIC_ASSET_CDN_BASE_URL` to an R2 custom domain backed by
+   Cloudflare Cache.
+7. Verify the live Cloudflare response headers and MP4 range behavior before
    production deployment.

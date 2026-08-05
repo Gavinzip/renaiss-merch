@@ -62,7 +62,7 @@ export function MerchProductCard({
           productId={product.id}
           revealedName={
             accessState?.status === 'eligible'
-              ? accessState.reveal.claimName
+              ? cardCopy.title
               : undefined
           }
         />

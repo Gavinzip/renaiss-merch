@@ -16,7 +16,7 @@ export function readMerchProductPresentation(
   accessState?: MerchAccessProductState
 ): MerchProductPresentation {
   const lockedTitle =
-    productId === 'shirt' ? 'RENAISS T-shirt' : 'RENAISS Bracelet';
+    productId === 'shirt' ? 'Renaiss Tee' : 'Renaiss Bracelet';
   const verifiedSbtCount = accessState
     ? getVerifiedSbtCount(accessState)
     : null;
@@ -32,7 +32,7 @@ export function readMerchProductPresentation(
       category: accessState.reveal.category,
       description: `${accessState.reveal.description} ${minimumSbtBalance} SBT access requirement met.`,
       headerStatus: null,
-      title: accessState.reveal.claimName,
+      title: lockedTitle,
       visualStatus: null
     };
   }

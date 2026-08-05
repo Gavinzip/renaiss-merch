@@ -22,7 +22,7 @@ const PRODUCT_ELIGIBILITY_RULES = {
     minimumSbtBalance: 100,
     reveal: {
       category: 'Object',
-      claimName: 'RENAISS Bracelet',
+      claimName: 'Renaiss Bracelet',
       description: 'A private Renaiss object edition with a polished finish.',
       hasReverseVideo: true,
       requiresSize: false,

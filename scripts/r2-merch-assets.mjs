@@ -123,7 +123,7 @@ async function prepareRelease(catalog) {
   const preparedFiles = [];
 
   for (const [key, asset] of Object.entries(catalog.assets)) {
-    const sourcePath = resolveProjectPath(asset.source);
+    const sourcePath = resolveProjectPath(readAssetSource(key, asset));
 
     await assertReadable(sourcePath);
     await assertSourceMatchesMaster(key, sourcePath, asset.master);
@@ -187,6 +187,29 @@ async function prepareRelease(catalog) {
     releaseRoot,
     totalBytes: preparedFiles.reduce((sum, file) => sum + file.size, 0)
   };
+}
+
+function readAssetSource(assetKey, asset) {
+  if (asset.source) {
+    return asset.source;
+  }
+
+  const revealSource = /^(shirt|bracelet)Reveal(Forward|Reverse)$/.exec(
+    asset.sourceKey || ''
+  );
+
+  if (!revealSource) {
+    throw new Error(
+      `Asset ${assetKey} is missing a valid source or sourceKey.`
+    );
+  }
+
+  const [, productId, direction] = revealSource;
+
+  return (
+    `private/merch/runtime/${productId}/reveal-` +
+    `${direction.toLowerCase()}.mp4`
+  );
 }
 
 function resolveProjectPath(value) {
@@ -484,9 +507,28 @@ async function assertConfiguration() {
   const base = normalizeBase(
     String(process.env.VITE_STATIC_ASSET_CDN_BASE_URL || '')
   );
+  const storefrontMode = String(
+    process.env.MERCH_STOREFRONT_MODE || ''
+  ).trim();
+
+  if (!['preview', 'production'].includes(storefrontMode)) {
+    throw new Error(
+      'MERCH_STOREFRONT_MODE is required and must be preview or production.'
+    );
+  }
 
   if (catalog.release === 'unpublished') {
     throw new Error('Publish the media release before a production build.');
+  }
+
+  if (
+    storefrontMode === 'production' &&
+    new URL(base).hostname.endsWith('.r2.dev')
+  ) {
+    throw new Error(
+      'Production storefront media must use an R2 custom domain backed by ' +
+        'Cloudflare Cache; r2.dev is only allowed in preview mode.'
+    );
   }
 
   console.log(

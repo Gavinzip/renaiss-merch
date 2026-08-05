@@ -7,14 +7,13 @@ import type {
   EligibleMerchEligibilityResult,
   MerchEligibilityResult
 } from './lib/merchEligibility';
-import {
-  readRenaissSession,
-  startRenaissLogin
-} from './lib/renaissAuth';
+import { publicRevealMediaRelease } from './lib/publicRevealMedia';
+import { startRenaissLogin } from './lib/renaissAuth';
 import { createStoreRevealMediaController } from './lib/storeRevealMedia';
 import { preloadStoreAssets } from './lib/storePreload';
 
 const STORE_ADMISSION_QUERY = 'storeAdmission';
+const STORE_ADMISSION_SESSION_KEY = 'renaiss-merch-store-admitted';
 
 const previewQualifiedResult: EligibleMerchEligibilityResult = {
   minimumSbtBalance: 60,
@@ -36,7 +35,7 @@ const previewBraceletResult: MerchEligibilityResult = {
   minimumSbtBalance: 100,
   reveal: {
     category: 'Object',
-    claimName: 'RENAISS Bracelet',
+    claimName: 'Renaiss Bracelet',
     description: 'A private Renaiss object edition with a polished finish.',
     hasReverseVideo: true,
     requiresSize: false,
@@ -53,12 +52,18 @@ export default function App() {
   const [view, setView] = useState<AppView>('landing');
   const [storeLoadProgress, setStoreLoadProgress] = useState(0);
   const [storeLoadState, setStoreLoadState] =
-    useState<StoreLoadState>('idle');
+    useState<StoreLoadState>('loading');
   const [storeAuthFailed, setStoreAuthFailed] = useState(
     entryContext.authFailed
   );
   const storeEntryAdmittedRef = useRef(false);
+  const resumeStoreAfterPreparationRef = useRef(
+    entryContext.shouldResumeStore
+  );
   const storeAdmissionInFlightRef = useRef(false);
+  const storePreparationInFlightRef =
+    useRef<Promise<void> | null>(null);
+  const storeImagesReadyRef = useRef(false);
   const revealMediaControllerRef = useRef<ReturnType<
     typeof createStoreRevealMediaController
   > | null>(null);
@@ -69,35 +74,82 @@ export default function App() {
 
   const revealMediaController = revealMediaControllerRef.current;
 
+  const prepareStoreAssets = useCallback(async () => {
+    if (
+      storeImagesReadyRef.current &&
+      revealMediaController.isAdmissionComplete()
+    ) {
+      setStoreLoadProgress(100);
+      return;
+    }
+
+    const inFlight = storePreparationInFlightRef.current;
+
+    if (inFlight) {
+      await inFlight;
+      return;
+    }
+
+    let imageProgress = storeImagesReadyRef.current ? 100 : 0;
+    let revealProgress = revealMediaController.isAdmissionComplete()
+      ? 100
+      : 0;
+
+    function updateProgress() {
+      setStoreLoadProgress(
+        Math.min(
+          99,
+          Math.round(imageProgress * 0.02 + revealProgress * 0.98)
+        )
+      );
+    }
+
+    const preparation = Promise.all([
+      storeImagesReadyRef.current
+        ? Promise.resolve()
+        : preloadStoreAssets((progress) => {
+            imageProgress = progress;
+            updateProgress();
+          }).then(() => {
+            storeImagesReadyRef.current = true;
+          }),
+      revealMediaController.isAdmissionComplete()
+        ? Promise.resolve()
+        : revealMediaController.prepareAll((progress) => {
+            revealProgress = progress.percent;
+            updateProgress();
+          })
+    ]).then(() => {
+      setStoreLoadProgress(100);
+    });
+    storePreparationInFlightRef.current = preparation;
+
+    try {
+      await preparation;
+    } finally {
+      if (storePreparationInFlightRef.current === preparation) {
+        storePreparationInFlightRef.current = null;
+      }
+    }
+  }, [revealMediaController]);
+
   const enterStore = useCallback(async () => {
     if (storeAdmissionInFlightRef.current) {
       return;
     }
 
     storeAdmissionInFlightRef.current = true;
+    resumeStoreAfterPreparationRef.current = false;
     forceLandingLocation();
     setView('landing');
     setStoreLoadProgress(0);
     setStoreLoadState('loading');
 
     try {
-      const sessionRequest = readRenaissSession();
-
-      await preloadStoreAssets((progress) => {
-        setStoreLoadProgress(Math.round(progress * 0.2));
-      });
-      const session = await sessionRequest;
-
-      if (session.authenticated) {
-        revealMediaController.releaseAll();
-        await revealMediaController.prepareAll((progress) => {
-          setStoreLoadProgress(20 + Math.round(progress.percent * 0.8));
-        });
-      } else {
-        setStoreLoadProgress(100);
-      }
+      await prepareStoreAssets();
 
       storeEntryAdmittedRef.current = true;
+      rememberStoreAdmission();
       navigateToView('store', setView);
       setStoreLoadState('idle');
     } catch {
@@ -105,16 +157,52 @@ export default function App() {
     } finally {
       storeAdmissionInFlightRef.current = false;
     }
-  }, [revealMediaController]);
+  }, [prepareStoreAssets]);
 
   const invalidateStoreAdmission = useCallback(() => {
     storeEntryAdmittedRef.current = false;
+    resumeStoreAfterPreparationRef.current = false;
+    forgetStoreAdmission();
     revealMediaController.releaseAll();
     forceLandingLocation();
     setView('landing');
     setStoreLoadProgress(0);
     setStoreLoadState('idle');
   }, [revealMediaController]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const isLanding = view === 'landing';
+
+    if (isLanding) {
+      setStoreLoadState('loading');
+    }
+
+    void prepareStoreAssets()
+      .then(() => {
+        if (cancelled || !isLanding) {
+          return;
+        }
+
+        if (resumeStoreAfterPreparationRef.current) {
+          resumeStoreAfterPreparationRef.current = false;
+          storeEntryAdmittedRef.current = true;
+          rememberStoreAdmission();
+          navigateToView('store', setView, true);
+        }
+
+        setStoreLoadState('idle');
+      })
+      .catch(() => {
+        if (!cancelled && isLanding) {
+          setStoreLoadState('error');
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [prepareStoreAssets, view]);
 
   useEffect(() => {
     function syncView() {
@@ -144,16 +232,10 @@ export default function App() {
   useEffect(() => {
     if (entryContext.shouldResumeStore) {
       setStoreAuthFailed(entryContext.authFailed);
-      void enterStore();
     }
   }, [
-    enterStore,
     entryContext.authFailed,
     entryContext.shouldResumeStore
-  ]);
-
-  useEffect(() => () => revealMediaController.dispose(), [
-    revealMediaController
   ]);
 
   if (
@@ -181,7 +263,7 @@ export default function App() {
     return (
       <MerchStore
         initialAuthFailed={storeAuthFailed}
-        onAuthenticatedSession={enterStore}
+        onAuthenticatedSession={prepareStoreAssets}
         onExitStore={invalidateStoreAdmission}
         onLogin={() => startRenaissLogin(buildStoreAdmissionReturnTo())}
         revealMediaController={revealMediaController}
@@ -223,14 +305,19 @@ function consumeStoreEntryContext(): StoreEntryContext {
   const hasAdmissionIntent =
     url.searchParams.get(STORE_ADMISSION_QUERY) === '1';
   const protectedViewRequested = readViewFromLocation() === 'store';
+  const hasStoredAdmission = readStoredStoreAdmission();
   const authFailed = hasAdmissionIntent && authState === 'error';
-  const shouldResumeStore = hasAdmissionIntent;
+  const shouldResumeStore =
+    hasAdmissionIntent ||
+    (protectedViewRequested && hasStoredAdmission);
 
   url.searchParams.delete(STORE_ADMISSION_QUERY);
   url.searchParams.delete('auth');
   url.searchParams.delete('reason');
 
-  if (protectedViewRequested) {
+  if (shouldResumeStore) {
+    url.hash = 'store';
+  } else if (protectedViewRequested) {
     url.hash = '';
   }
 
@@ -244,6 +331,28 @@ function consumeStoreEntryContext(): StoreEntryContext {
     authFailed,
     shouldResumeStore
   };
+}
+
+function readStoredStoreAdmission() {
+  try {
+    return (
+      window.sessionStorage.getItem(STORE_ADMISSION_SESSION_KEY) ===
+      publicRevealMediaRelease
+    );
+  } catch {
+    return false;
+  }
+}
+
+function rememberStoreAdmission() {
+  window.sessionStorage.setItem(
+    STORE_ADMISSION_SESSION_KEY,
+    publicRevealMediaRelease
+  );
+}
+
+function forgetStoreAdmission() {
+  window.sessionStorage.removeItem(STORE_ADMISSION_SESSION_KEY);
 }
 
 function buildStoreAdmissionReturnTo() {
@@ -275,12 +384,17 @@ function forceLandingLocation() {
 
 function navigateToView(
   nextView: AppView,
-  setView: (view: AppView) => void
+  setView: (view: AppView) => void,
+  replace = false
 ) {
   const hash = nextView === 'store' ? '#store' : '';
   const nextUrl = `${window.location.pathname}${window.location.search}${hash}`;
 
-  window.history.pushState(null, '', nextUrl);
+  if (replace) {
+    window.history.replaceState(null, '', nextUrl);
+  } else {
+    window.history.pushState(null, '', nextUrl);
+  }
   setView(nextView);
   window.scrollTo({ top: 0, behavior: 'auto' });
 }

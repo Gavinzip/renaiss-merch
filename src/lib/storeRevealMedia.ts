@@ -4,7 +4,6 @@ import {
 } from './merchProducts';
 import {
   prepareRevealMedia,
-  RevealMediaAccessError,
   type PreparedRevealMedia,
   type RevealMediaAdmissionProgress,
   type RevealMediaAdmissionStage
@@ -85,18 +84,10 @@ export function createStoreRevealMediaController() {
 
     await Promise.all(
       MERCH_PRODUCT_IDS.map(async (productId) => {
-        try {
-          await prepareProduct(productId, (progress) => {
-            productProgress[productId] = progress;
-            updateOverallProgress();
-          });
-        } catch (error) {
-          if (error instanceof RevealMediaAccessError) {
-            return;
-          }
-
-          throw error;
-        }
+        await prepareProduct(productId, (progress) => {
+          productProgress[productId] = progress;
+          updateOverallProgress();
+        });
       })
     );
 
@@ -132,7 +123,8 @@ export function createStoreRevealMediaController() {
     const pending = pendingMedia[productId];
 
     if (pending) {
-      return pending;
+      await pending;
+      return prepareProduct(productId, onProgress);
     }
 
     const requestGeneration = generation;
@@ -182,12 +174,7 @@ export function createStoreRevealMediaController() {
     }
   }
 
-  function dispose() {
-    releaseAll();
-  }
-
   return {
-    dispose,
     isAdmissionComplete,
     prepareAll,
     prepareProduct,

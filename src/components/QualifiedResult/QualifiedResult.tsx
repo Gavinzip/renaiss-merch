@@ -23,12 +23,14 @@ import {
 } from '../../lib/merchVariants';
 import { readRenaissLogoutReturnUrl } from '../../lib/renaissAuth';
 import type { PreparedRevealMedia } from '../../lib/revealMediaPreload';
+import { publicRevealMediaUrl } from '../../lib/publicRevealMedia';
 import { shippingCountries } from '../../lib/shippingCountries';
 import { readStoredShippingProfile } from '../../lib/shippingProfile';
 import './QualifiedResult.css';
 
 const AUTO_REVEAL_SECONDS = 2.45;
 const REVEAL_WATCHDOG_BUFFER_MS = 900;
+const REVERSE_START_TIMEOUT_MS = 1500;
 const SCROLL_TRIGGER_PX = 36;
 const REVIEW_CLOSE_COOLDOWN_MS = 900;
 const REVIEW_CLOSE_WHEEL_DELTA_PX = 80;
@@ -54,51 +56,119 @@ type QualifiedResultProps = {
   result: EligibleMerchEligibilityResult;
 };
 
-function readRevealVideoUrl(
-  productId: MerchProductId,
-  direction: 'forward' | 'reverse'
-) {
-  const parameters = new URLSearchParams({ direction, productId });
+async function seekVideoToStart(video: HTMLVideoElement) {
+  if (video.readyState < HTMLMediaElement.HAVE_METADATA) {
+    await waitForVideoEvent(video, 'loadedmetadata');
+  }
 
-  return `/api/merch-reveal-media?${parameters.toString()}`;
+  if (video.currentTime > 0.01) {
+    const seeked = waitForVideoEvent(video, 'seeked');
+    video.currentTime = 0;
+    await seeked;
+  }
+
+  if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+    await waitForVideoEvent(video, 'loadeddata');
+  }
+}
+
+function waitForPresentedVideoFrame(video: HTMLVideoElement) {
+  return new Promise<void>((resolvePromise, rejectPromise) => {
+    const timeoutId = window.setTimeout(() => {
+      cleanup();
+      rejectPromise(
+        new Error('The reverse reveal did not present its first frame.')
+      );
+    }, REVERSE_START_TIMEOUT_MS);
+    const callbackId = video.requestVideoFrameCallback(() => {
+      cleanup();
+      resolvePromise();
+    });
+
+    function handleError() {
+      cleanup();
+      rejectPromise(new Error('The reverse reveal could not be decoded.'));
+    }
+
+    function cleanup() {
+      window.clearTimeout(timeoutId);
+      video.cancelVideoFrameCallback(callbackId);
+      video.removeEventListener('error', handleError);
+    }
+
+    video.addEventListener('error', handleError, { once: true });
+  });
+}
+
+function waitForVideoEvent(
+  video: HTMLVideoElement,
+  eventName: 'loadeddata' | 'loadedmetadata' | 'seeked'
+) {
+  return new Promise<void>((resolvePromise, rejectPromise) => {
+    const timeoutId = window.setTimeout(() => {
+      cleanup();
+      rejectPromise(
+        new Error(`The reverse reveal did not emit ${eventName}.`)
+      );
+    }, REVERSE_START_TIMEOUT_MS);
+
+    function handleEvent() {
+      cleanup();
+      resolvePromise();
+    }
+
+    function handleError() {
+      cleanup();
+      rejectPromise(new Error('The reverse reveal could not be decoded.'));
+    }
+
+    function cleanup() {
+      window.clearTimeout(timeoutId);
+      video.removeEventListener(eventName, handleEvent);
+      video.removeEventListener('error', handleError);
+    }
+
+    video.addEventListener(eventName, handleEvent, { once: true });
+    video.addEventListener('error', handleError, { once: true });
+  });
 }
 
 const merchSizes = [
   {
     size: 'S',
-    length: '71',
-    chest: '114',
-    shoulder: '54',
-    sleeve: '23',
-    height: '150-170',
-    weight: '80-125'
+    length: '73',
+    chest: '117',
+    shoulder: '56',
+    sleeve: '24',
+    height: '155-175',
+    weight: '82-129'
   },
   {
     size: 'M',
-    length: '74',
-    chest: '120',
-    shoulder: '56',
-    sleeve: '24',
-    height: '170-185',
-    weight: '135-160'
+    length: '76',
+    chest: '124',
+    shoulder: '58',
+    sleeve: '25',
+    height: '175-190',
+    weight: '139-165'
   },
   {
     size: 'L',
-    length: '77',
-    chest: '126',
-    shoulder: '58',
-    sleeve: '25',
-    height: '170-195',
-    weight: '160-200'
+    length: '79',
+    chest: '130',
+    shoulder: '60',
+    sleeve: '26',
+    height: '175-201',
+    weight: '165-206'
   },
   {
     size: 'XL',
-    length: '80',
-    chest: '132',
-    shoulder: '60',
-    sleeve: '26',
-    height: '170-200',
-    weight: '200-240'
+    length: '82',
+    chest: '136',
+    shoulder: '62',
+    sleeve: '27',
+    height: '175-206',
+    weight: '206-247'
   }
 ];
 
@@ -124,9 +194,9 @@ export function QualifiedResult({
 }: QualifiedResultProps) {
   const productConfig = result.reveal;
   const revealVideoSrc =
-    revealMedia?.forwardUrl || readRevealVideoUrl(productId, 'forward');
+    revealMedia?.forwardUrl || publicRevealMediaUrl(productId, 'forward');
   const reverseVideoSrc = productConfig.hasReverseVideo
-    ? revealMedia?.reverseUrl || readRevealVideoUrl(productId, 'reverse')
+    ? revealMedia?.reverseUrl || publicRevealMediaUrl(productId, 'reverse')
     : undefined;
   const scrollerRef = useRef<HTMLElement | null>(null);
   const shippingFormRef = useRef<HTMLFormElement | null>(null);
@@ -135,6 +205,8 @@ export function QualifiedResult({
   const shippingVisibleRef = useRef(false);
   const [showShipping, setShowShipping] = useState(false);
   const [mediaReady, setMediaReady] = useState(false);
+  const [revealPlaybackError, setRevealPlaybackError] =
+    useState<string | null>(null);
   const [revealPhase, setRevealPhase] = useState<RevealPhase>('idle');
   const [shippingActionState, setShippingActionState] =
     useState<ShippingActionState>('idle');
@@ -189,6 +261,8 @@ export function QualifiedResult({
     let upwardWheelDelta = 0;
     let lastWheelAt = 0;
     let manualReverseStartedAt = 0;
+    let closeRequestId = 0;
+    let disposed = false;
 
     function prepareVideo(targetVideo: HTMLVideoElement) {
       targetVideo.muted = true;
@@ -380,8 +454,10 @@ export function QualifiedResult({
         return;
       }
 
+      closeRequestId += 1;
       clearCloseTimer();
       clearMobileShippingRevealTimer();
+      setRevealPlaybackError(null);
       revealPhaseRef = 'idle';
       reverseVideo.pause();
       video.pause();
@@ -413,6 +489,7 @@ export function QualifiedResult({
       }
 
       revealPhaseRef = 'playing';
+      setRevealPlaybackError(null);
       setMediaReady(true);
       setRevealPhase('playing');
       video.playbackRate = Math.min(
@@ -434,46 +511,92 @@ export function QualifiedResult({
       }
 
       revealPhaseRef = 'closing';
+      setRevealPlaybackError(null);
+      closeRequestId += 1;
+      const requestId = closeRequestId;
       clearMobileShippingRevealTimer();
       hideShippingPanel();
       video.pause();
       reverseVideo.pause();
-      setRevealPhase('closing');
       clearCloseTimer();
 
+      if (!usesManualReverse) {
+        void beginReverseClose(requestId).catch((error) => {
+          if (
+            disposed ||
+            requestId !== closeRequestId ||
+            revealPhaseRef !== 'closing'
+          ) {
+            return;
+          }
+
+          reverseVideo.pause();
+          resetVideoToStart(reverseVideo);
+          revealPhaseRef = 'review';
+          setRevealPhase('review');
+          setMediaReady(true);
+          setRevealPlaybackError(
+            'Closing animation could not start. Scroll up again to retry.'
+          );
+          scheduleMobileShippingReveal();
+          reviewReadyAt = performance.now();
+          console.error('Reverse reveal could not start.', error);
+        });
+        return;
+      }
+
+      setRevealPhase('closing');
       window.requestAnimationFrame(() => {
         if (revealPhaseRef !== 'closing') {
           return;
         }
 
-        if (usesManualReverse) {
-          closeTimerId = window.setTimeout(
-            completeClose,
-            AUTO_REVEAL_SECONDS * 1000 + REVEAL_WATCHDOG_BUFFER_MS
-          );
-          manualReverseStartedAt = 0;
-          reverseVideo.currentTime = Math.max(0, duration - 0.02);
-          frameId = window.requestAnimationFrame(
-            syncProgressToManualReverse
-          );
-          return;
-        }
-
-        reverseVideo.playbackRate = Math.min(
-          3,
-          Math.max(1, duration / AUTO_REVEAL_SECONDS)
+        closeTimerId = window.setTimeout(
+          completeClose,
+          AUTO_REVEAL_SECONDS * 1000 + REVEAL_WATCHDOG_BUFFER_MS
         );
-        void reverseVideo
-          .play()
-          .then(() => {
-            closeTimerId = window.setTimeout(
-              completeClose,
-              AUTO_REVEAL_SECONDS * 1000 + REVEAL_WATCHDOG_BUFFER_MS
-            );
-            requestReverseProgressSync();
-          })
-          .catch(() => undefined);
+        manualReverseStartedAt = 0;
+        reverseVideo.currentTime = Math.max(0, duration - 0.02);
+        frameId = window.requestAnimationFrame(
+          syncProgressToManualReverse
+        );
       });
+    }
+
+    async function beginReverseClose(requestId: number) {
+      await seekVideoToStart(reverseVideo);
+
+      if (
+        disposed ||
+        requestId !== closeRequestId ||
+        revealPhaseRef !== 'closing'
+      ) {
+        return;
+      }
+
+      reverseVideo.playbackRate = Math.min(
+        3,
+        Math.max(1, duration / AUTO_REVEAL_SECONDS)
+      );
+      const firstFrame = waitForPresentedVideoFrame(reverseVideo);
+
+      await Promise.all([reverseVideo.play(), firstFrame]);
+
+      if (
+        disposed ||
+        requestId !== closeRequestId ||
+        revealPhaseRef !== 'closing'
+      ) {
+        return;
+      }
+
+      setMediaReady(true);
+      setRevealPhase('closing');
+      closeTimerId = window.setTimeout(
+        completeClose,
+        AUTO_REVEAL_SECONDS * 1000 + REVEAL_WATCHDOG_BUFFER_MS
+      );
+      requestReverseProgressSync();
     }
 
     function handleScroll() {
@@ -624,6 +747,9 @@ export function QualifiedResult({
     syncProgress(0);
 
     return () => {
+      disposed = true;
+      closeRequestId += 1;
+
       if (frameId) {
         window.cancelAnimationFrame(frameId);
       }
@@ -1146,6 +1272,12 @@ export function QualifiedResult({
               ) : null}
 
             </div>
+          ) : null}
+
+          {revealPlaybackError ? (
+            <p className="qualified-result__media-error" role="alert">
+              {revealPlaybackError}
+            </p>
           ) : null}
 
           <div className="qualified-result__loader" aria-hidden={mediaReady}>

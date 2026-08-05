@@ -55,7 +55,6 @@ import {
   handleMerchShippingProfile,
   handleStoredMerchShippingProfile
 } from './shipping-profile.mjs';
-import { handleMerchRevealMedia } from './reveal-media.mjs';
 import { handleMerchRevealThumbnail } from './reveal-thumbnail.mjs';
 import { getRuntimeConfig } from './runtime-config.mjs';
 import {
@@ -215,20 +214,6 @@ async function handleRoute(req, res) {
     handleMerchAccessState(
       res,
       session,
-      getSessionDatabaseOptions(session)
-    );
-    return true;
-  }
-
-  if (url.pathname === '/api/merch-reveal-media') {
-    const session = readSession(req);
-
-    await handleMerchRevealMedia(
-      req,
-      res,
-      session,
-      url.searchParams.get('productId'),
-      url.searchParams.get('direction'),
       getSessionDatabaseOptions(session)
     );
     return true;

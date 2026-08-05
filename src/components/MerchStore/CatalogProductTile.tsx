@@ -63,7 +63,7 @@ export function CatalogProductTile({
                 : 'sealedDropCatalog'
             }
             revealedName={
-              isEligible ? accessState.reveal.claimName : undefined
+              isEligible ? presentation.title : undefined
             }
           />
           {presentation.headerStatus ? (

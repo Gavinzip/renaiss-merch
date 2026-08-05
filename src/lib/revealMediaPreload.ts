@@ -1,10 +1,22 @@
 import type { MerchProductId } from './merchProducts';
+import {
+  publicRevealMediaUrl,
+  type RevealDirection
+} from './publicRevealMedia';
+import {
+  deleteCachedRevealMedia,
+  readCachedRevealMedia,
+  saveCachedRevealMedia,
+  type CachedRevealMedia
+} from './revealMediaCache';
 
-const REVEAL_DIRECTIONS = ['forward', 'reverse'] as const;
+const REVEAL_DIRECTIONS: readonly RevealDirection[] = [
+  'forward',
+  'reverse'
+];
 const DOWNLOAD_PROGRESS_MAX = 88;
+const MEDIA_EVENT_TIMEOUT_MS = 8000;
 const VIDEO_WARMUP_CHECKPOINTS = [0, 0.2, 0.4, 0.6, 0.8, 0.995] as const;
-
-type RevealDirection = (typeof REVEAL_DIRECTIONS)[number];
 
 export type RevealMediaAdmissionStage = 'download' | 'decode' | 'render';
 
@@ -21,13 +33,10 @@ export type PreparedRevealMedia = {
   reverseUrl: string;
 };
 
-export class RevealMediaAccessError extends Error {
-  readonly status: number;
-
-  constructor(status: number) {
-    super(`Reveal media access is unavailable: ${status}`);
-    this.name = 'RevealMediaAccessError';
-    this.status = status;
+class RevealMediaDecodeError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'RevealMediaDecodeError';
   }
 }
 
@@ -38,7 +47,7 @@ export async function prepareRevealMedia(
   const sources = Object.fromEntries(
     REVEAL_DIRECTIONS.map((direction) => [
       direction,
-      readRevealMediaUrl(productId, direction)
+      publicRevealMediaUrl(productId, direction)
     ])
   ) as Record<RevealDirection, string>;
   const sizes: Record<RevealDirection, number> = {
@@ -57,21 +66,61 @@ export async function prepareRevealMedia(
     totalBytes: 0
   });
 
-  const downloads = Object.fromEntries(
+  const cachedMedia = Object.fromEntries(
     await Promise.all(
       REVEAL_DIRECTIONS.map(async (direction) => {
+        const cached = await readCachedRevealMedia(productId, direction);
+
+        return [direction, cached];
+      })
+    )
+  ) as Record<RevealDirection, CachedRevealMedia | null>;
+
+  const mediaSources = Object.fromEntries(
+    await Promise.all(
+      REVEAL_DIRECTIONS.map(async (direction) => {
+        const cached = cachedMedia[direction];
+
+        if (cached) {
+          sizes[direction] = cached.expectedSize;
+          loadedBytes[direction] = cached.expectedSize;
+          return [
+            direction,
+            {
+              cached,
+              type: 'cached'
+            }
+          ];
+        }
+
         const download = await openMediaDownload(sources[direction]);
 
         sizes[direction] = download.expectedSize;
-        return [direction, download];
+        return [
+          direction,
+          {
+            download,
+            type: 'download'
+          }
+        ];
       })
     )
-  ) as Record<RevealDirection, OpenMediaDownload>;
+  ) as Record<RevealDirection, OpenMediaSource>;
   const totalBytes = sizes.forward + sizes.reverse;
+  const initiallyLoadedBytes =
+    loadedBytes.forward + loadedBytes.reverse;
 
   onProgress({
-    loadedBytes: 0,
-    percent: 1,
+    loadedBytes: initiallyLoadedBytes,
+    percent: Math.min(
+      DOWNLOAD_PROGRESS_MAX,
+      Math.max(
+        1,
+        Math.round(
+          (initiallyLoadedBytes / totalBytes) * DOWNLOAD_PROGRESS_MAX
+        )
+      )
+    ),
     stage: 'download',
     totalBytes
   });
@@ -80,11 +129,14 @@ export async function prepareRevealMedia(
     await Promise.all(
       REVEAL_DIRECTIONS.map(async (direction) => [
         direction,
-        await downloadMedia(
-          downloads[direction],
+        await readMediaBlob(
+          productId,
+          direction,
+          mediaSources[direction],
           (loaded) => {
             loadedBytes[direction] = loaded;
-            const loadedTotal = loadedBytes.forward + loadedBytes.reverse;
+            const loadedTotal =
+              loadedBytes.forward + loadedBytes.reverse;
 
             onProgress({
               loadedBytes: loadedTotal,
@@ -116,10 +168,22 @@ export async function prepareRevealMedia(
       stage: 'decode',
       totalBytes
     });
-    await Promise.all([
-      warmRevealVideo(forwardUrl),
-      warmRevealVideo(reverseUrl)
-    ]);
+    await Promise.all(
+      REVEAL_DIRECTIONS.map(async (direction) => {
+        const source =
+          direction === 'forward' ? forwardUrl : reverseUrl;
+
+        try {
+          await warmRevealVideo(source);
+        } catch (error) {
+          if (error instanceof RevealMediaDecodeError) {
+            await deleteCachedRevealMedia(productId, direction);
+          }
+
+          throw error;
+        }
+      })
+    );
     onProgress({
       loadedBytes: totalBytes,
       percent: 100,
@@ -144,17 +208,23 @@ type OpenMediaDownload = {
   expectedSize: number;
 };
 
+type OpenMediaSource =
+  | {
+      cached: CachedRevealMedia;
+      type: 'cached';
+    }
+  | {
+      download: OpenMediaDownload;
+      type: 'download';
+    };
+
 async function openMediaDownload(source: string): Promise<OpenMediaDownload> {
   const response = await fetch(source, {
-    cache: 'no-store',
-    credentials: 'same-origin'
+    cache: 'force-cache',
+    credentials: 'omit'
   });
 
   if (!response.ok || !response.body) {
-    if (isAccessResponse(response.status)) {
-      throw new RevealMediaAccessError(response.status);
-    }
-
     throw new Error(`Reveal media download failed: ${response.status}`);
   }
 
@@ -169,6 +239,31 @@ async function openMediaDownload(source: string): Promise<OpenMediaDownload> {
     contentType: response.headers.get('content-type') || 'video/mp4',
     expectedSize
   };
+}
+
+async function readMediaBlob(
+  productId: MerchProductId,
+  direction: RevealDirection,
+  source: OpenMediaSource,
+  onProgress: (loadedBytes: number, totalBytes: number) => void
+) {
+  if (source.type === 'cached') {
+    onProgress(
+      source.cached.expectedSize,
+      source.cached.expectedSize
+    );
+    return source.cached.blob;
+  }
+
+  const blob = await downloadMedia(source.download, onProgress);
+
+  await saveCachedRevealMedia(productId, direction, {
+    blob,
+    contentType: source.download.contentType,
+    expectedSize: source.download.expectedSize
+  });
+
+  return blob;
 }
 
 async function downloadMedia(
@@ -274,7 +369,13 @@ async function seekAndRender(
     await seeked;
   }
 
-  context.drawImage(video, 0, 0, 2, 2);
+  try {
+    context.drawImage(video, 0, 0, 2, 2);
+  } catch {
+    throw new RevealMediaDecodeError(
+      'Reveal media frame could not be rendered.'
+    );
+  }
 }
 
 function waitForMediaEvent(
@@ -282,6 +383,15 @@ function waitForMediaEvent(
   eventName: 'loadeddata' | 'seeked'
 ) {
   return new Promise<void>((resolvePromise, rejectPromise) => {
+    const timeoutId = window.setTimeout(() => {
+      cleanup();
+      rejectPromise(
+        new RevealMediaDecodeError(
+          `Reveal media did not emit ${eventName}.`
+        )
+      );
+    }, MEDIA_EVENT_TIMEOUT_MS);
+
     function handleEvent() {
       cleanup();
       resolvePromise();
@@ -289,10 +399,13 @@ function waitForMediaEvent(
 
     function handleError() {
       cleanup();
-      rejectPromise(new Error('Reveal media could not be decoded.'));
+      rejectPromise(
+        new RevealMediaDecodeError('Reveal media could not be decoded.')
+      );
     }
 
     function cleanup() {
+      window.clearTimeout(timeoutId);
       video.removeEventListener(eventName, handleEvent);
       video.removeEventListener('error', handleError);
     }
@@ -313,16 +426,4 @@ function createReleaseHandler(urls: readonly string[]) {
     released = true;
     urls.forEach((url) => URL.revokeObjectURL(url));
   };
-}
-
-function readRevealMediaUrl(
-  productId: MerchProductId,
-  direction: RevealDirection
-) {
-  const parameters = new URLSearchParams({ direction, productId });
-  return `/api/merch-reveal-media?${parameters.toString()}`;
-}
-
-function isAccessResponse(status: number) {
-  return status === 401 || status === 403 || status === 409;
 }
