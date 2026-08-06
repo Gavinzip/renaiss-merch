@@ -29,6 +29,7 @@ import {
   saveMerchAccessCheck
 } from './merch-access-state.mjs';
 import { getMerchDatabase } from './merch-database.mjs';
+import { handleMerchInventory } from './merch-inventory.mjs';
 import { readMerchProductAccess } from './merch-product-access.mjs';
 import {
   canManageFulfillment,
@@ -216,6 +217,14 @@ async function handleRoute(req, res) {
       session,
       getSessionDatabaseOptions(session)
     );
+    return true;
+  }
+
+  if (url.pathname === '/api/merch-inventory') {
+    requireMethod(req, 'GET');
+    const session = readSession(req);
+
+    handleMerchInventory(res, getSessionDatabaseOptions(session));
     return true;
   }
 

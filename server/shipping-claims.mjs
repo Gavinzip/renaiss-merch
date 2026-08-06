@@ -8,6 +8,7 @@ import {
   getMerchDatabase,
   runWithSqliteBusyRetry
 } from './merch-database.mjs';
+import { requireMerchProductInventory } from './merch-inventory.mjs';
 import {
   MERCH_PRODUCT_ENTITLEMENT_SOURCES,
   grantMerchProductEntitlement,
@@ -123,6 +124,10 @@ export function saveShippingClaim(claimInput, options = {}) {
       throw new HttpError(409, 'shipping_claim_already_submitted');
     }
 
+    if (nextClaim.status === 'submitted') {
+      requireMerchProductInventory(db, productId);
+    }
+
     // A wallet can revise its draft, but only one draft remains before submission.
     db.prepare(
       `
@@ -214,7 +219,7 @@ export function saveShippingClaim(claimInput, options = {}) {
   });
 
   try {
-    runWithSqliteBusyRetry(() => writeClaim(claim));
+    runWithSqliteBusyRetry(() => writeClaim.immediate(claim));
   } catch (error) {
     if (error instanceof HttpError) {
       throw error;

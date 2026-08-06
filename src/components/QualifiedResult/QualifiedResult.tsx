@@ -1421,6 +1421,8 @@ function readShippingClaimErrorMessage(
       return 'This wallet is not eligible to submit a merch claim.';
     case 'shipping_claim_already_submitted':
       return 'Shipping details have already been submitted and are locked.';
+    case 'merch_inventory_sold_out':
+      return 'The Renaiss Bracelet release is fully claimed.';
     default:
       return error.status >= 400 && error.status < 500
         ? 'Check the shipping details and try again.'

@@ -1,16 +1,21 @@
 import type { MerchAccessProductState } from '../../lib/merchAccessState';
+import type { MerchProductInventory } from '../../lib/merchInventory';
 import { LockedProductVisual } from './LockedProductVisual';
+import { MerchInventoryBadge } from './MerchInventoryBadge';
 import type { MerchProduct, MerchProductId } from './merchCatalog';
 import {
   readClaimStatus,
   readMerchProductPresentation
 } from './merchProductPresentation';
+import type { MerchInventoryLoadState } from './useMerchInventory';
 
 type CatalogProductTileProps = {
   accessState?: MerchAccessProductState;
   disabled: boolean;
   helperText?: string;
   isChecking: boolean;
+  inventory?: MerchProductInventory;
+  inventoryLoadState: MerchInventoryLoadState;
   onCheck: (productId: MerchProductId) => void;
   product: MerchProduct;
   revealedImageUrl?: string;
@@ -21,6 +26,8 @@ export function CatalogProductTile({
   disabled,
   helperText,
   isChecking,
+  inventory,
+  inventoryLoadState,
   onCheck,
   product,
   revealedImageUrl
@@ -29,6 +36,9 @@ export function CatalogProductTile({
   const helperId = `merch-catalog-${product.id}-helper`;
   const isEligible = accessState?.status === 'eligible';
   const isUnqualified = accessState?.status === 'unqualified';
+  const isSoldOut =
+    inventory?.soldOut === true &&
+    accessState?.claimStatus !== 'submitted';
   const presentation = readMerchProductPresentation(product.id, accessState);
   const releaseNumber = product.id === 'shirt' ? '01' : '02';
 
@@ -68,6 +78,12 @@ export function CatalogProductTile({
             revealedName={
               isEligible ? presentation.title : undefined
             }
+          />
+          <MerchInventoryBadge
+            inventory={inventory}
+            loadState={inventoryLoadState}
+            productId={product.id}
+            variant="catalog"
           />
           {presentation.headerStatus ? (
             <span className="merch-catalog-item__image-status">
@@ -109,11 +125,17 @@ export function CatalogProductTile({
         <div className="merch-catalog-item__access">
           <button
             aria-describedby={helperText ? helperId : undefined}
-            disabled={disabled}
+            disabled={disabled || isSoldOut}
             onClick={() => onCheck(product.id)}
             type="button"
           >
-            <span>{isChecking ? 'Checking' : presentation.buttonLabel}</span>
+            <span>
+              {isSoldOut
+                ? 'Sold out'
+                : isChecking
+                  ? 'Checking'
+                  : presentation.buttonLabel}
+            </span>
           </button>
           {helperText ? <p id={helperId}>{helperText}</p> : null}
         </div>

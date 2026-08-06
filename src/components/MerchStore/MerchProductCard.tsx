@@ -1,6 +1,9 @@
 import { LockedProductVisual } from './LockedProductVisual';
 import type { MerchAccessProductState } from '../../lib/merchAccessState';
 import type { MerchProduct, MerchProductId } from './merchCatalog';
+import type { MerchProductInventory } from '../../lib/merchInventory';
+import { MerchInventoryBadge } from './MerchInventoryBadge';
+import type { MerchInventoryLoadState } from './useMerchInventory';
 import {
   readClaimStatus,
   readMerchProductPresentation
@@ -11,6 +14,8 @@ type MerchProductCardProps = {
   disabled: boolean;
   helperText?: string;
   isChecking: boolean;
+  inventory?: MerchProductInventory;
+  inventoryLoadState: MerchInventoryLoadState;
   onCheck: (productId: MerchProductId) => void;
   product: MerchProduct;
   revealedImageUrl?: string;
@@ -21,6 +26,8 @@ export function MerchProductCard({
   disabled,
   helperText,
   isChecking,
+  inventory,
+  inventoryLoadState,
   onCheck,
   product,
   revealedImageUrl
@@ -29,6 +36,9 @@ export function MerchProductCard({
   const helperId = `merch-product-${product.id}-helper`;
   const isEligible = accessState?.status === 'eligible';
   const isUnqualified = accessState?.status === 'unqualified';
+  const isSoldOut =
+    inventory?.soldOut === true &&
+    accessState?.claimStatus !== 'submitted';
   const cardCopy = readMerchProductPresentation(product.id, accessState);
 
   return (
@@ -69,6 +79,11 @@ export function MerchProductCard({
               : undefined
           }
         />
+        <MerchInventoryBadge
+          inventory={inventory}
+          loadState={inventoryLoadState}
+          productId={product.id}
+        />
         {cardCopy.visualStatus ? (
           <span className="merch-product-card__lock-label">
             {cardCopy.visualStatus}
@@ -97,11 +112,15 @@ export function MerchProductCard({
         <div className="merch-product-card__access">
           <button
             aria-describedby={helperText ? helperId : undefined}
-            disabled={disabled}
+            disabled={disabled || isSoldOut}
             onClick={() => onCheck(product.id)}
             type="button"
           >
-            {isChecking ? 'Checking' : cardCopy.buttonLabel}
+            {isSoldOut
+              ? 'Sold out'
+              : isChecking
+                ? 'Checking'
+                : cardCopy.buttonLabel}
           </button>
           {helperText ? <p id={helperId}>{helperText}</p> : null}
         </div>

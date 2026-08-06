@@ -47,6 +47,7 @@ import {
   type MerchStoreView
 } from './merchStoreView';
 import { StoreAccessResult } from './StoreAccessResult';
+import { useMerchInventory } from './useMerchInventory';
 import { useScrolledHeader } from './useScrolledHeader';
 import '../MerchEligibilityEntry/MerchEligibilityEntry.css';
 import './MerchStore.css';
@@ -108,6 +109,15 @@ export function MerchStore({
       CATALOG_VIEW_ENABLED ? readStoredMerchStoreView() : 'cards'
   );
   const isCatalogHeaderScrolled = useScrolledHeader(storeView === 'catalog');
+  const inventoryScope =
+    session.authenticated && session.user.isDemo
+      ? 'demo'
+      : 'production';
+  const {
+    inventoryByProduct,
+    inventoryLoadState,
+    refreshInventory
+  } = useMerchInventory(inventoryScope);
 
   const user = session.authenticated ? session.user : null;
   const sessionLabel =
@@ -373,8 +383,13 @@ export function MerchStore({
     }
 
     try {
+      const [nextProductAccess] = await Promise.all([
+        readPreparedProductAccess(),
+        refreshInventory()
+      ]);
+
       applyPreparedProductAccess(
-        await readPreparedProductAccess(),
+        nextProductAccess,
         setPrivateMediaRelease,
         setProductAccess,
         setProductImageUrls
@@ -563,6 +578,8 @@ export function MerchStore({
               accessState,
               disabled,
               helperText,
+              inventory: inventoryByProduct[product.id],
+              inventoryLoadState,
               isChecking: isChecking && selectedProductId === product.id,
               onCheck: (productId: MerchProductId) =>
                 void handleProductCheck(productId),

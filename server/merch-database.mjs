@@ -132,6 +132,9 @@ export function getMerchDatabase(configuredPath) {
     database.exec(`
       CREATE INDEX IF NOT EXISTS idx_shipping_claims_wallet_product_created_at
         ON shipping_claims (wallet_address, product_id, created_at);
+
+      CREATE INDEX IF NOT EXISTS idx_shipping_claims_product_status
+        ON shipping_claims (product_id, claim_status);
     `);
     runShippingClaimEntitlementBackfillMigration(database);
     runShippingProfileBackfillMigration(database);

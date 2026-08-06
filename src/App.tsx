@@ -49,17 +49,16 @@ const previewBraceletResult: MerchEligibilityResult = {
 
 export default function App() {
   const [entryContext] = useState(consumeStoreEntryContext);
-  const [view, setView] = useState<AppView>('landing');
+  const [view, setView] = useState<AppView>(() =>
+    entryContext.shouldResumeStore ? 'store' : 'landing'
+  );
   const [storeLoadProgress, setStoreLoadProgress] = useState(0);
   const [storeLoadState, setStoreLoadState] =
     useState<StoreLoadState>('loading');
   const [storeAuthFailed, setStoreAuthFailed] = useState(
     entryContext.authFailed
   );
-  const storeEntryAdmittedRef = useRef(false);
-  const resumeStoreAfterPreparationRef = useRef(
-    entryContext.shouldResumeStore
-  );
+  const storeEntryAdmittedRef = useRef(entryContext.shouldResumeStore);
   const storeAdmissionInFlightRef = useRef(false);
   const storePreparationInFlightRef =
     useRef<Promise<void> | null>(null);
@@ -139,7 +138,6 @@ export default function App() {
     }
 
     storeAdmissionInFlightRef.current = true;
-    resumeStoreAfterPreparationRef.current = false;
     forceLandingLocation();
     setView('landing');
     setStoreLoadProgress(0);
@@ -161,7 +159,6 @@ export default function App() {
 
   const invalidateStoreAdmission = useCallback(() => {
     storeEntryAdmittedRef.current = false;
-    resumeStoreAfterPreparationRef.current = false;
     forgetStoreAdmission();
     revealMediaController.releaseAll();
     forceLandingLocation();
@@ -182,13 +179,6 @@ export default function App() {
       .then(() => {
         if (cancelled || !isLanding) {
           return;
-        }
-
-        if (resumeStoreAfterPreparationRef.current) {
-          resumeStoreAfterPreparationRef.current = false;
-          storeEntryAdmittedRef.current = true;
-          rememberStoreAdmission();
-          navigateToView('store', setView, true);
         }
 
         setStoreLoadState('idle');
@@ -308,8 +298,8 @@ function consumeStoreEntryContext(): StoreEntryContext {
   const hasStoredAdmission = readStoredStoreAdmission();
   const authFailed = hasAdmissionIntent && authState === 'error';
   const shouldResumeStore =
-    hasAdmissionIntent ||
-    (protectedViewRequested && hasStoredAdmission);
+    hasStoredAdmission &&
+    (hasAdmissionIntent || protectedViewRequested);
 
   url.searchParams.delete(STORE_ADMISSION_QUERY);
   url.searchParams.delete('auth');
