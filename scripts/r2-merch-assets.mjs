@@ -521,16 +521,6 @@ async function assertConfiguration() {
     throw new Error('Publish the media release before a production build.');
   }
 
-  if (
-    storefrontMode === 'production' &&
-    new URL(base).hostname.endsWith('.r2.dev')
-  ) {
-    throw new Error(
-      'Production storefront media must use an R2 custom domain backed by ' +
-        'Cloudflare Cache; r2.dev is only allowed in preview mode.'
-    );
-  }
-
   console.log(
     `Production media configuration: ${base}/${catalog.prefix}/${catalog.release}/`
   );

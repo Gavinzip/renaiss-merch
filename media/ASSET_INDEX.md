@@ -85,8 +85,9 @@ Workbench files are evidence and experiments, not runtime candidates.
 5. Publish public Store derivatives and the four reveal MP4s through
    `npm run assets:publish`; publish gated product images through
    `npm run assets:private:publish`.
-6. Use the managed `r2.dev` base only in preview. Production must set
-   `VITE_STATIC_ASSET_CDN_BASE_URL` to an R2 custom domain backed by
-   Cloudflare Cache.
-7. Verify the live Cloudflare response headers and MP4 range behavior before
+6. The public R2 `r2.dev` base is an approved delivery origin for the public
+   Store stills and four reveal MP4s in either storefront mode. A custom
+   Cloudflare domain is an optional future hardening step for custom cache and
+   traffic rules, not a release gate.
+7. Verify the live R2 response headers and MP4 range behavior before
    production deployment.
