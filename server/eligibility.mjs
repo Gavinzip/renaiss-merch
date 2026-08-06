@@ -8,7 +8,7 @@ const DEFAULT_CACHE_TTL_SECONDS = 60;
 const PAGE_SIZE = 1000;
 const PRODUCT_ELIGIBILITY_RULES = {
   shirt: {
-    minimumSbtBalance: 60,
+    minimumSbtBalance: 40,
     reveal: {
       category: 'Apparel',
       claimName: 'Renaiss Tee',

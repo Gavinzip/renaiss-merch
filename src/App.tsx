@@ -16,7 +16,7 @@ const STORE_ADMISSION_QUERY = 'storeAdmission';
 const STORE_ADMISSION_SESSION_KEY = 'renaiss-merch-store-admitted';
 
 const previewQualifiedResult: EligibleMerchEligibilityResult = {
-  minimumSbtBalance: 60,
+  minimumSbtBalance: 40,
   reveal: {
     category: 'Apparel',
     claimName: 'Renaiss Tee',
