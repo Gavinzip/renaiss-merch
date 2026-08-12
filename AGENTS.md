@@ -41,9 +41,8 @@
 - Public versioned media must also load directly from R2/CDN. Zeabur should
   continue serving HTML, hashed application JS/CSS, API, auth, and callback
   routes, with their appropriate cache policies.
-- The managed `r2.dev` URL is preview-only. Production mode must use an R2
-  custom domain with Cloudflare Cache; a production build configured with an
-  `r2.dev` media base must fail visibly.
+- Public versioned media may use the bucket's managed `r2.dev` origin in
+  production. A custom domain is not a release requirement for this project.
 - Public reveal MP4s must be downloaded anonymously before first Store entry
   and retained in browser Cache Storage by public release. Refresh and
   logout/login may decode again, but must not re-download the unchanged bytes.
