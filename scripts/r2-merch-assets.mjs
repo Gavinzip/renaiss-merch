@@ -521,6 +521,15 @@ async function assertConfiguration() {
     throw new Error('Publish the media release before a production build.');
   }
 
+  if (
+    storefrontMode === 'production' &&
+    new URL(base).hostname.endsWith('.r2.dev')
+  ) {
+    throw new Error(
+      'Production media must use the configured Cloudflare R2 custom domain; r2.dev is preview-only.'
+    );
+  }
+
   console.log(
     `Production media configuration: ${base}/${catalog.prefix}/${catalog.release}/`
   );
@@ -573,6 +582,13 @@ async function assertBuild() {
     throw new Error(
       'Built output does not contain the configured media base and release.'
     );
+  }
+
+  if (
+    process.env.MERCH_STOREFRONT_MODE === 'production' &&
+    combinedText.includes('.r2.dev')
+  ) {
+    throw new Error('Production build contains a preview-only r2.dev origin.');
   }
 
   console.log(

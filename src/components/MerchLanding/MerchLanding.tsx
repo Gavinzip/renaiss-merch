@@ -1,4 +1,4 @@
-import renaissProtocolLogo from '../../assets/renaiss-protocol-logo.png';
+import { staticMerchAssetUrl } from '../../lib/staticAssets';
 import Prism from '../Prism/Prism';
 import '../MerchEligibilityEntry/MerchEligibilityEntry.css';
 import './MerchLanding.css';
@@ -53,7 +53,10 @@ export function MerchLanding({
         {loadState === 'idle' ? (
           <>
             <p className="merch-entry__mark">
-              <img src={renaissProtocolLogo} alt="Renaiss Protocol" />
+              <img
+                src={staticMerchAssetUrl('renaissProtocolLogo')}
+                alt="Renaiss Protocol"
+              />
             </p>
             <h1 id="merch-entry-title">RENAISS MERCH</h1>
             <p className="merch-entry__copy">

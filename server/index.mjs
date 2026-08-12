@@ -56,6 +56,12 @@ import {
   handleMerchShippingProfile,
   handleStoredMerchShippingProfile
 } from './shipping-profile.mjs';
+import {
+  handleSevenElevenMapCallback,
+  handleSevenElevenMapStart,
+  handleSevenElevenSelectionConsume,
+  requireSevenElevenStoreMapConfiguration
+} from './seven-eleven-store-selection.mjs';
 import { handleMerchRevealThumbnail } from './reveal-thumbnail.mjs';
 import { getRuntimeConfig } from './runtime-config.mjs';
 import {
@@ -79,6 +85,11 @@ loadLocalEnv();
 
 const isProduction = process.env.NODE_ENV === 'production';
 const storefrontMode = getStorefrontMode();
+
+if (isProductionStorefrontMode(storefrontMode)) {
+  requireSevenElevenStoreMapConfiguration();
+}
+
 const port = Number(process.env.PORT || 5173);
 const host = process.env.HOST || (process.env.PORT ? '0.0.0.0' : '127.0.0.1');
 const backupTriggerAttempts = [];
@@ -244,7 +255,10 @@ async function handleRoute(req, res) {
 
   if (url.pathname === '/api/merch-shipping-claim') {
     const session = readSession(req);
-    const databaseOptions = getSessionDatabaseOptions(session);
+    const databaseOptions = {
+      ...getSessionDatabaseOptions(session),
+      selectionDbPath: getRuntimeConfig().databasePath
+    };
 
     if (req.method === 'GET') {
       handleStoredMerchShippingClaim(res, session, {
@@ -263,7 +277,10 @@ async function handleRoute(req, res) {
 
   if (url.pathname === '/api/merch-shipping-profile') {
     const session = readSession(req);
-    const databaseOptions = getSessionDatabaseOptions(session);
+    const databaseOptions = {
+      ...getSessionDatabaseOptions(session),
+      selectionDbPath: getRuntimeConfig().databasePath
+    };
 
     if (req.method === 'GET') {
       handleStoredMerchShippingProfile(res, session, databaseOptions);
@@ -272,6 +289,36 @@ async function handleRoute(req, res) {
 
     requireMethod(req, 'PUT');
     await handleMerchShippingProfile(req, res, session, databaseOptions);
+    return true;
+  }
+
+  if (url.pathname === '/api/merch-7-eleven/map') {
+    requireMethod(req, 'POST');
+    requireSameOrigin(req);
+    await handleSevenElevenMapStart(req, res, readSession(req), {
+      publicOrigin: getPublicOrigin(req),
+      selectionDbPath: getRuntimeConfig().databasePath
+    });
+    return true;
+  }
+
+  if (url.pathname === '/api/merch-7-eleven/callback') {
+    requireMethod(req, 'POST');
+    await handleSevenElevenMapCallback(req, res, {
+      selectionDbPath: getRuntimeConfig().databasePath
+    });
+    return true;
+  }
+
+  if (url.pathname === '/api/merch-7-eleven/selection') {
+    requireMethod(req, 'POST');
+    requireSameOrigin(req);
+    await handleSevenElevenSelectionConsume(
+      req,
+      res,
+      readSession(req),
+      { selectionDbPath: getRuntimeConfig().databasePath }
+    );
     return true;
   }
 

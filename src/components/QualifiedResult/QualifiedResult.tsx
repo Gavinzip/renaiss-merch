@@ -8,6 +8,13 @@ import {
 import {
   type EligibleMerchEligibilityResult
 } from '../../lib/merchEligibility';
+import {
+  applyChineseShippingFormValidity,
+  emptyChineseShippingReview,
+  focusFirstInvalidChineseShippingField,
+  reviewChineseShippingDetails,
+  type ChineseShippingReview
+} from '../../lib/chineseShippingValidation';
 import type { MerchProductId } from '../../lib/merchProducts';
 import {
   readStoredShippingClaim,
@@ -26,6 +33,22 @@ import type { PreparedRevealMedia } from '../../lib/revealMediaPreload';
 import { publicRevealMediaUrl } from '../../lib/publicRevealMedia';
 import { shippingCountries } from '../../lib/shippingCountries';
 import { readStoredShippingProfile } from '../../lib/shippingProfile';
+import {
+  beginSevenElevenStoreSelection,
+  consumeReturnedSevenElevenSelection,
+  applyTaiwanMobileValidity,
+  needsTaiwanMobileUpdate,
+  readReturnedSevenElevenContext,
+  readSevenElevenStore,
+  readStoredShippingDeliveryMethod,
+  resolveShippingDeliveryMethod,
+  toSevenElevenShippingFields,
+  type SevenElevenStore
+} from '../../lib/sevenElevenStore';
+import type { ShippingDeliveryMethod } from '../../lib/shippingClaim';
+import {
+  isChineseShippingErrorCode
+} from '../../../shared/shipping-address-policy.js';
 import './QualifiedResult.css';
 
 const AUTO_REVEAL_SECONDS = 2.45;
@@ -42,6 +65,7 @@ const MOBILE_VIDEO_PAN_END_X = 18;
 const SHIPPING_REVEAL_VIDEO_PROGRESS = 0.86;
 const emailInputPattern = '[^\\s@]+@[^\\s@]+\\.[^\\s@]+';
 const phoneInputPattern = '[+()0-9\\s.-]{6,32}';
+const chineseShippingNoticeId = 'qualified-shipping-chinese-notice';
 type RevealPhase = 'idle' | 'playing' | 'review' | 'closing';
 type ShippingActionState = 'idle' | 'saving' | 'submitting' | 'saved' | 'submitted' | 'error';
 type ShippingLoadState = 'loading' | 'loaded' | 'empty' | 'error';
@@ -184,6 +208,11 @@ const shippingFieldNames: Array<keyof ShippingClaimPayload> = [
   'phone',
   'postalCode',
   'region',
+  'sevenElevenSelectionToken',
+  'sevenElevenStoreAddress',
+  'sevenElevenStoreId',
+  'sevenElevenStoreName',
+  'sevenElevenStoreOutside',
   'size'
 ];
 
@@ -222,6 +251,21 @@ export function QualifiedResult({
   const [shippingActionError, setShippingActionError] = useState<string | null>(
     null
   );
+  const [chineseShippingReview, setChineseShippingReview] =
+    useState<ChineseShippingReview>(emptyChineseShippingReview);
+  const [shippingCountry, setShippingCountry] = useState('US');
+  const [deliveryMethod, setDeliveryMethod] =
+    useState<ShippingDeliveryMethod>('home_delivery');
+  const [sevenElevenStore, setSevenElevenStore] =
+    useState<SevenElevenStore | null>(null);
+  const [sevenElevenSelectionToken, setSevenElevenSelectionToken] =
+    useState('');
+  const [taiwanMobileNeedsUpdate, setTaiwanMobileNeedsUpdate] =
+    useState(false);
+  const resumesSevenElevenSelection = useRef(
+    readReturnedSevenElevenContext()?.context === 'claim' &&
+      readReturnedSevenElevenContext()?.productId === productId
+  ).current;
 
   useLayoutEffect(() => {
     const containerElement = scrollerRef.current;
@@ -664,6 +708,13 @@ export function QualifiedResult({
         Number.isFinite(video.duration) && video.duration > 0
           ? video.duration
           : duration;
+      if (resumesSevenElevenSelection) {
+        setMediaReady(true);
+        completeReveal();
+        showShippingPanel();
+        return;
+      }
+
       resetVideoToStart(video);
       video.playbackRate = Math.min(
         3,
@@ -744,7 +795,9 @@ export function QualifiedResult({
       markMediaReady();
     }
 
-    syncProgress(0);
+    if (!resumesSevenElevenSelection) {
+      syncProgress(0);
+    }
 
     return () => {
       disposed = true;
@@ -776,14 +829,21 @@ export function QualifiedResult({
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [reverseVideoSrc]);
+  }, [resumesSevenElevenSelection, reverseVideoSrc]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadStoredClaim() {
       try {
-        const storedClaim = await readStoredShippingClaim(productId);
+        setChineseShippingReview(emptyChineseShippingReview);
+        const [storedClaim, returnedSelection] = await Promise.all([
+          readStoredShippingClaim(productId),
+          consumeReturnedSevenElevenSelection({
+            context: 'claim',
+            productId
+          })
+        ]);
 
         if (cancelled) {
           return;
@@ -792,20 +852,71 @@ export function QualifiedResult({
         setHasSubmittedClaim(storedClaim.hasSubmitted);
         setStoredClaimStatus(storedClaim.claim?.status || null);
 
-        if (storedClaim.claim) {
+        const returnedShipping = returnedSelection
+          ? {
+              ...(returnedSelection.draft || {}),
+              ...toSevenElevenShippingFields(returnedSelection)
+            }
+          : null;
+
+        if (storedClaim.claim || returnedShipping) {
+          const shipping = {
+            ...(storedClaim.claim?.shipping || {}),
+            ...(returnedShipping || {})
+          };
+
           if (productId === 'bracelet') {
             setBraceletColor(
-              readBraceletColor(storedClaim.claim.shipping.color)
+              readBraceletColor(shipping.color)
             );
           }
+
+          const country = shipping.country || 'US';
+          const nextDeliveryMethod =
+            storedClaim.hasSubmitted && !returnedShipping
+              ? readStoredShippingDeliveryMethod(shipping.deliveryMethod)
+              : resolveShippingDeliveryMethod(country);
+          setShippingCountry(country);
+          setDeliveryMethod(nextDeliveryMethod);
+          setSevenElevenStore(readSevenElevenStore(shipping));
+          setSevenElevenSelectionToken(
+            shipping.sevenElevenSelectionToken || ''
+          );
+          setTaiwanMobileNeedsUpdate(
+            needsTaiwanMobileUpdate(
+              shipping.phone || '',
+              nextDeliveryMethod
+            )
+          );
 
           setShippingLoadState('loaded');
           window.requestAnimationFrame(() => {
             if (!cancelled && shippingFormRef.current) {
               applyShippingFormValues(
                 shippingFormRef.current,
-                storedClaim.claim?.shipping || {}
+                shipping
               );
+              applyTaiwanMobileValidity(
+                shippingFormRef.current,
+                nextDeliveryMethod,
+                chineseShippingNoticeId
+              );
+
+              if (storedClaim.hasSubmitted) {
+                applyChineseShippingFormValidity(
+                  shippingFormRef.current,
+                  emptyChineseShippingReview,
+                  chineseShippingNoticeId
+                );
+              } else {
+                setChineseShippingReview(
+                  syncClaimChineseShippingReview(shippingFormRef.current, {
+                    ...shipping,
+                    country,
+                    deliveryMethod: nextDeliveryMethod
+                  })
+                );
+              }
             }
           });
           return;
@@ -823,9 +934,39 @@ export function QualifiedResult({
         }
 
         setShippingLoadState('loaded');
+        const profileCountry = storedProfile.profile.country || 'US';
+        const profileDeliveryMethod =
+          resolveShippingDeliveryMethod(profileCountry);
+        setShippingCountry(profileCountry);
+        setDeliveryMethod(profileDeliveryMethod);
+        setSevenElevenStore(readSevenElevenStore(storedProfile.profile));
+        setSevenElevenSelectionToken(
+          storedProfile.profile.sevenElevenSelectionToken || ''
+        );
+        setTaiwanMobileNeedsUpdate(
+          needsTaiwanMobileUpdate(
+            storedProfile.profile.phone || '',
+            profileDeliveryMethod
+          )
+        );
         window.requestAnimationFrame(() => {
           if (!cancelled && shippingFormRef.current) {
-            applyShippingFormValues(shippingFormRef.current, storedProfile.profile || {});
+            applyShippingFormValues(
+              shippingFormRef.current,
+              storedProfile.profile || {}
+            );
+            applyTaiwanMobileValidity(
+              shippingFormRef.current,
+              profileDeliveryMethod,
+              chineseShippingNoticeId
+            );
+            setChineseShippingReview(
+              syncClaimChineseShippingReview(shippingFormRef.current, {
+                ...storedProfile.profile,
+                country: profileCountry,
+                deliveryMethod: profileDeliveryMethod
+              })
+            );
           }
         });
       } catch {
@@ -841,6 +982,58 @@ export function QualifiedResult({
       cancelled = true;
     };
   }, [productId]);
+
+  function handleShippingFormChange(event: FormEvent<HTMLFormElement>) {
+    if (hasSubmittedClaim) {
+      return;
+    }
+
+    const form = event.currentTarget;
+    const country = readFormValue(new FormData(form), 'country');
+    const nextDeliveryMethod = resolveShippingDeliveryMethod(country);
+
+    setShippingCountry(country);
+
+    if (nextDeliveryMethod !== deliveryMethod) {
+      setDeliveryMethod(nextDeliveryMethod);
+    }
+
+    applyTaiwanMobileValidity(
+      form,
+      nextDeliveryMethod,
+      chineseShippingNoticeId
+    );
+    setTaiwanMobileNeedsUpdate(
+      needsTaiwanMobileUpdate(
+        readFormValue(new FormData(form), 'phone'),
+        nextDeliveryMethod
+      )
+    );
+    setChineseShippingReview(
+      syncClaimChineseShippingReview(form, {
+        ...readShippingClaimPayload(form),
+        deliveryMethod: nextDeliveryMethod
+      })
+    );
+  }
+
+  function handleSelectSevenElevenStore() {
+    const form = shippingFormRef.current;
+
+    if (!form) {
+      return;
+    }
+
+    beginSevenElevenStoreSelection({
+      context: 'claim',
+      draft: {
+        ...readShippingClaimPayload(form),
+        country: 'TW',
+        deliveryMethod: 'seven_eleven_c2c'
+      },
+      productId
+    });
+  }
 
   async function handleShippingSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -860,6 +1053,40 @@ export function QualifiedResult({
     const payload = readShippingClaimPayload(event.currentTarget);
 
     if (hasSubmittedClaim) {
+      return;
+    }
+
+    applyTaiwanMobileValidity(
+      event.currentTarget,
+      deliveryMethod,
+      chineseShippingNoticeId
+    );
+    setTaiwanMobileNeedsUpdate(
+      needsTaiwanMobileUpdate(payload.phone, deliveryMethod)
+    );
+
+    if (
+      deliveryMethod === 'seven_eleven_c2c' &&
+      (!sevenElevenStore || !sevenElevenSelectionToken)
+    ) {
+      setShippingActionError('請先選擇 7-ELEVEN 取件門市。');
+      setShippingActionState('error');
+      return;
+    }
+
+    if (!event.currentTarget.checkValidity()) {
+      event.currentTarget.reportValidity();
+      return;
+    }
+
+    const review = syncClaimChineseShippingReview(
+      event.currentTarget,
+      payload
+    );
+    setChineseShippingReview(review);
+
+    if (review.needsUpdate) {
+      focusFirstInvalidChineseShippingField(event.currentTarget, review);
       return;
     }
 
@@ -949,6 +1176,7 @@ export function QualifiedResult({
           <form
             ref={shippingFormRef}
             className="qualified-result__shipping"
+            onChange={handleShippingFormChange}
             onSubmit={handleShippingSubmit}
             aria-label={`Shipping address for ${productConfig.claimName}`}
           >
@@ -960,12 +1188,76 @@ export function QualifiedResult({
                 : `${result.minimumSbtBalance} SBT access requirement met. Add the recipient details for this ${productConfig.claimName} claim.`}
             </p>
 
+            {!hasSubmittedClaim && chineseShippingReview.isRequired ? (
+              <div
+                className={`qualified-result__language-notice ${
+                  chineseShippingReview.needsUpdate ||
+                  taiwanMobileNeedsUpdate
+                    ? 'is-invalid'
+                    : ''
+                }`}
+                id={chineseShippingNoticeId}
+                role={
+                  chineseShippingReview.needsUpdate ||
+                  taiwanMobileNeedsUpdate
+                    ? 'alert'
+                    : 'status'
+                }
+              >
+                <span aria-hidden="true">!</span>
+                <div>
+                  <strong>
+                    {deliveryMethod === 'seven_eleven_c2c'
+                      ? '中文姓名與台灣手機必填'
+                      : '中文地址必填'}
+                  </strong>
+                  <p>
+                    {deliveryMethod === 'seven_eleven_c2c'
+                      ? '台灣訂單一律使用 7-ELEVEN 店到店。取件姓名須包含中文字，並填寫台灣手機號碼。'
+                      : '中國的收件人姓名及地址必須包含中文字。'}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
             <fieldset
               className="qualified-result__fields"
               disabled={hasSubmittedClaim || isPersisting}
             >
+              <input
+                name="deliveryMethod"
+                type="hidden"
+                value={deliveryMethod}
+              />
+              <input
+                name="sevenElevenSelectionToken"
+                type="hidden"
+                value={sevenElevenSelectionToken}
+              />
+              <input
+                name="sevenElevenStoreAddress"
+                type="hidden"
+                value={sevenElevenStore?.address || ''}
+              />
+              <input
+                name="sevenElevenStoreId"
+                type="hidden"
+                value={sevenElevenStore?.id || ''}
+              />
+              <input
+                name="sevenElevenStoreName"
+                type="hidden"
+                value={sevenElevenStore?.name || ''}
+              />
+              <input
+                name="sevenElevenStoreOutside"
+                type="hidden"
+                value={sevenElevenStore?.outside ? '1' : '0'}
+              />
               <label className="qualified-result__field-half">
-                First name
+                {chineseShippingReview.isRequired
+                  ? 'First name (中文)'
+                  : 'First name'}
                 <input
                   autoComplete="shipping given-name"
                   name="firstName"
@@ -975,7 +1267,9 @@ export function QualifiedResult({
                 />
               </label>
               <label className="qualified-result__field-half">
-                Last name
+                {chineseShippingReview.isRequired
+                  ? 'Last name (中文)'
+                  : 'Last name'}
                 <input
                   autoComplete="shipping family-name"
                   name="lastName"
@@ -1002,7 +1296,11 @@ export function QualifiedResult({
                   autoComplete="shipping tel"
                   name="phone"
                   pattern={phoneInputPattern}
-                  placeholder="+1 555 000 0000"
+                  placeholder={
+                    deliveryMethod === 'seven_eleven_c2c'
+                      ? '0912 345 678'
+                      : '+1 555 000 0000'
+                  }
                   required
                   title="Enter a valid phone number using digits, spaces, +, -, ., or parentheses."
                   type="tel"
@@ -1080,55 +1378,81 @@ export function QualifiedResult({
                   ))}
                 </select>
               </label>
-              <label className="qualified-result__field-wide">
-                Address line 1
-                <input
-                  autoComplete="shipping address-line1"
-                  name="addressLine1"
-                  placeholder="Street address or PO box"
-                  required
-                  type="text"
-                />
-              </label>
-              <label className="qualified-result__field-wide">
-                Address line 2
-                <input
-                  autoComplete="shipping address-line2"
-                  name="addressLine2"
-                  placeholder="Apartment, suite, unit, building (optional)"
-                  type="text"
-                />
-              </label>
-              <label className="qualified-result__field-third">
-                City
-                <input
-                  autoComplete="shipping address-level2"
-                  name="city"
-                  placeholder="City"
-                  required
-                  type="text"
-                />
-              </label>
-              <label className="qualified-result__field-third">
-                State / province
-                <input
-                  autoComplete="shipping address-level1"
-                  name="region"
-                  placeholder="State"
-                  required
-                  type="text"
-                />
-              </label>
-              <label className="qualified-result__field-third">
-                ZIP / postal code
-                <input
-                  autoComplete="shipping postal-code"
-                  name="postalCode"
-                  placeholder="Postal code"
-                  required
-                  type="text"
-                />
-              </label>
+              {deliveryMethod === 'seven_eleven_c2c' &&
+              shippingCountry === 'TW' ? (
+                <div className="qualified-result__store-picker qualified-result__field-wide">
+                  <div>
+                    <span className="qualified-result__field-label">
+                      Pickup store
+                    </span>
+                    {sevenElevenStore ? (
+                      <p>
+                        <strong>{sevenElevenStore.name}</strong>
+                        <span>
+                          {sevenElevenStore.id} · {sevenElevenStore.address}
+                        </span>
+                      </p>
+                    ) : (
+                      <p>尚未選擇取件門市。</p>
+                    )}
+                  </div>
+                  <button onClick={handleSelectSevenElevenStore} type="button">
+                    {sevenElevenStore ? '更換門市' : '選擇門市'}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <label className="qualified-result__field-wide">
+                    Address line 1
+                    <input
+                      autoComplete="shipping address-line1"
+                      name="addressLine1"
+                      placeholder="Street address or PO box"
+                      required
+                      type="text"
+                    />
+                  </label>
+                  <label className="qualified-result__field-wide">
+                    Address line 2
+                    <input
+                      autoComplete="shipping address-line2"
+                      name="addressLine2"
+                      placeholder="Apartment, suite, unit, building (optional)"
+                      type="text"
+                    />
+                  </label>
+                  <label className="qualified-result__field-third">
+                    City
+                    <input
+                      autoComplete="shipping address-level2"
+                      name="city"
+                      placeholder="City"
+                      required
+                      type="text"
+                    />
+                  </label>
+                  <label className="qualified-result__field-third">
+                    State / province
+                    <input
+                      autoComplete="shipping address-level1"
+                      name="region"
+                      placeholder="State"
+                      required
+                      type="text"
+                    />
+                  </label>
+                  <label className="qualified-result__field-third">
+                    ZIP / postal code
+                    <input
+                      autoComplete="shipping postal-code"
+                      name="postalCode"
+                      placeholder="Postal code"
+                      required
+                      type="text"
+                    />
+                  </label>
+                </>
+              )}
               <label className="qualified-result__field-wide">
                 Delivery notes
                 <textarea
@@ -1312,13 +1636,15 @@ function isMobileRevealViewport() {
 
 function readShippingClaimPayload(form: HTMLFormElement): ShippingClaimPayload {
   const formData = new FormData(form);
+  const country = readFormValue(formData, 'country');
 
   return {
     addressLine1: readFormValue(formData, 'addressLine1'),
     addressLine2: readFormValue(formData, 'addressLine2'),
     city: readFormValue(formData, 'city'),
     color: readFormValue(formData, 'color'),
-    country: readFormValue(formData, 'country'),
+    country,
+    deliveryMethod: resolveShippingDeliveryMethod(country),
     deliveryNotes: readFormValue(formData, 'deliveryNotes'),
     email: readFormValue(formData, 'email'),
     firstName: readFormValue(formData, 'firstName'),
@@ -1326,6 +1652,20 @@ function readShippingClaimPayload(form: HTMLFormElement): ShippingClaimPayload {
     phone: readFormValue(formData, 'phone'),
     postalCode: readFormValue(formData, 'postalCode'),
     region: readFormValue(formData, 'region'),
+    sevenElevenSelectionToken: readFormValue(
+      formData,
+      'sevenElevenSelectionToken'
+    ),
+    sevenElevenStoreAddress: readFormValue(
+      formData,
+      'sevenElevenStoreAddress'
+    ),
+    sevenElevenStoreId: readFormValue(formData, 'sevenElevenStoreId'),
+    sevenElevenStoreName: readFormValue(formData, 'sevenElevenStoreName'),
+    sevenElevenStoreOutside: readFormValue(
+      formData,
+      'sevenElevenStoreOutside'
+    ),
     size: readFormValue(formData, 'size')
   };
 }
@@ -1347,6 +1687,15 @@ function applyShippingFormValues(
       field.value = value;
     }
   }
+}
+
+function syncClaimChineseShippingReview(
+  form: HTMLFormElement,
+  shipping: Partial<ShippingClaimPayload> = readShippingClaimPayload(form)
+) {
+  const review = reviewChineseShippingDetails(shipping);
+  applyChineseShippingFormValidity(form, review, chineseShippingNoticeId);
+  return review;
 }
 
 function readFormValue(formData: FormData, name: string) {
@@ -1400,7 +1749,19 @@ function readShippingClaimErrorMessage(
       : 'Could not save shipping details.';
   }
 
+  if (isChineseShippingErrorCode(error.code)) {
+    return 'Taiwan and China shipping names and addresses must include Chinese characters.';
+  }
+
   switch (error.code) {
+    case 'taiwan_mobile_invalid':
+    case 'taiwan_mobile_required':
+      return '7-ELEVEN 取件請填寫台灣手機號碼。';
+    case 'seven_eleven_selection_required':
+    case 'seven_eleven_selection_invalid':
+    case 'seven_eleven_selection_not_found':
+    case 'seven_eleven_selection_not_ready':
+      return '請重新選擇 7-ELEVEN 取件門市。';
     case 'email_invalid':
       return 'Enter a complete email address, for example name@example.com.';
     case 'phone_invalid':

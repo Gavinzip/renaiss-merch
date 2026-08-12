@@ -70,6 +70,24 @@ export function getMerchDatabase(configuredPath) {
         updated_at TEXT NOT NULL
       );
 
+      CREATE TABLE IF NOT EXISTS seven_eleven_store_selections (
+        token TEXT PRIMARY KEY,
+        user_sub TEXT NOT NULL,
+        context TEXT NOT NULL,
+        product_id TEXT,
+        return_to TEXT NOT NULL,
+        merchant_id TEXT NOT NULL,
+        logistics_sub_type TEXT,
+        store_id TEXT,
+        store_name TEXT,
+        store_address TEXT,
+        store_outside TEXT,
+        created_at TEXT NOT NULL,
+        expires_at TEXT NOT NULL,
+        selected_at TEXT,
+        consumed_at TEXT
+      );
+
       CREATE TABLE IF NOT EXISTS merch_data_migrations (
         id TEXT PRIMARY KEY,
         applied_at TEXT NOT NULL,
@@ -107,6 +125,9 @@ export function getMerchDatabase(configuredPath) {
 
       CREATE INDEX IF NOT EXISTS idx_merch_product_entitlements_source_claim
         ON merch_product_entitlements (source_claim_id);
+
+      CREATE INDEX IF NOT EXISTS idx_seven_eleven_store_selections_user
+        ON seven_eleven_store_selections (user_sub, created_at);
     `);
 
     ensureColumn(database, 'shipping_claims', 'size', 'size TEXT');

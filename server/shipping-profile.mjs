@@ -7,6 +7,7 @@ import {
   normalizeShippingProfilePayload,
   readJsonBody
 } from './shipping-details.mjs';
+import { resolveSevenElevenShippingDetails } from './seven-eleven-store-selection.mjs';
 
 export function handleStoredMerchShippingProfile(res, session, options = {}) {
   requireSessionIdentity(session);
@@ -22,7 +23,11 @@ export async function handleMerchShippingProfile(
 ) {
   const userSub = requireSessionIdentity(session);
   const payload = await readJsonBody(req);
-  const profile = normalizeShippingProfilePayload(payload.profile || payload);
+  const profile = resolveSevenElevenShippingDetails(
+    session,
+    normalizeShippingProfilePayload(payload.profile || payload),
+    options
+  );
   const savedProfile = saveShippingProfile(
     {
       profile,

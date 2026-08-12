@@ -17,12 +17,11 @@ import {
   type ShippingClaimPayload
 } from '../../lib/shippingClaim';
 import { shippingCountries } from '../../lib/shippingCountries';
+import { publicRevealMediaUrl } from '../../../src/lib/publicRevealMedia';
 import './QualifiedResult.css';
 
-const MERCH_MEDIA_BASE_URL =
-  'https://pub-152183cd35ab428096bc92f48b651a94.r2.dev/merch/reveal';
-const revealVideoSrc = `${MERCH_MEDIA_BASE_URL}/merch-claim-reveal.mp4?v=20260627`;
-const reverseRevealVideoSrc = `${MERCH_MEDIA_BASE_URL}/merch-claim-reveal-reverse.mp4?v=20260627`;
+const revealVideoSrc = publicRevealMediaUrl('shirt', 'forward');
+const reverseRevealVideoSrc = publicRevealMediaUrl('shirt', 'reverse');
 const AUTO_REVEAL_SECONDS = 2.45;
 const REVEAL_WATCHDOG_BUFFER_MS = 900;
 const SCROLL_TRIGGER_PX = 36;

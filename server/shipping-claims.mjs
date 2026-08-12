@@ -18,6 +18,7 @@ import {
   normalizeShippingPayload,
   readJsonBody
 } from './shipping-details.mjs';
+import { resolveSevenElevenShippingDetails } from './seven-eleven-store-selection.mjs';
 
 const walletPattern = /^0x[a-fA-F0-9]{40}$/;
 
@@ -53,9 +54,13 @@ export async function handleMerchShippingClaim(req, res, session, options = {}) 
   }
 
   const intent = readShippingIntent(payload.intent);
-  const shipping = normalizeShippingPayload(
-    payload.shipping || payload,
-    productId
+  const shipping = resolveSevenElevenShippingDetails(
+    session,
+    normalizeShippingPayload(
+      payload.shipping || payload,
+      productId
+    ),
+    options.saveOptions
   );
   const claim = writeShippingClaim(
     {

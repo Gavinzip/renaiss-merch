@@ -4,6 +4,8 @@ import {
 } from './staticAssets';
 
 const STORE_ENTRY_ASSETS: readonly StaticMerchAsset[] = [
+  'renaissLogoMark',
+  'renaissProtocolLogo',
   'storeBackground',
   'sealedDrop',
   'sealedDropCatalog',

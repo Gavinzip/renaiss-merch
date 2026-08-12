@@ -6,6 +6,7 @@ export type ShippingClaimPayload = {
   city: string;
   color: string;
   country: string;
+  deliveryMethod: ShippingDeliveryMethod;
   deliveryNotes: string;
   email: string;
   firstName: string;
@@ -13,8 +14,17 @@ export type ShippingClaimPayload = {
   phone: string;
   postalCode: string;
   region: string;
+  sevenElevenSelectionToken: string;
+  sevenElevenStoreAddress: string;
+  sevenElevenStoreId: string;
+  sevenElevenStoreName: string;
+  sevenElevenStoreOutside: string;
   size: string;
 };
+
+export type ShippingDeliveryMethod =
+  | 'home_delivery'
+  | 'seven_eleven_c2c';
 
 export type ShippingClaimIntent = 'save' | 'submit';
 

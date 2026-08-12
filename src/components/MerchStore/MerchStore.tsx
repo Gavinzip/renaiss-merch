@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -6,8 +7,10 @@ import {
   type Dispatch,
   type SetStateAction
 } from 'react';
-import renaissLogoMark from '../../assets/renaiss-logo-mark.png';
-import { staticMerchAssetCssUrl } from '../../lib/staticAssets';
+import {
+  staticMerchAssetCssUrl,
+  staticMerchAssetUrl
+} from '../../lib/staticAssets';
 import {
   createMerchAccessProductState,
   readMerchAccessState,
@@ -30,7 +33,13 @@ import {
   startDemoRenaissSession,
   type RenaissSession
 } from '../../lib/renaissAuth';
+import { reviewChineseShippingDetails } from '../../lib/chineseShippingValidation';
+import {
+  needsTaiwanSevenElevenUpdate,
+  readReturnedSevenElevenContext
+} from '../../lib/sevenElevenStore';
 import { type PreparedRevealMedia } from '../../lib/revealMediaPreload';
+import { readStoredShippingProfile } from '../../lib/shippingProfile';
 import {
   StoreRevealMediaCancelledError,
   type StoreRevealMediaController
@@ -103,7 +112,12 @@ export function MerchStore({
   const [showFulfillment, setShowFulfillment] = useState(
     () => window.location.hash === '#fulfillment'
   );
-  const [showSettings, setShowSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(
+    () => readReturnedSevenElevenContext()?.context === 'profile'
+  );
+  const [addressNeedsUpdate, setAddressNeedsUpdate] = useState(false);
+  const [addressReviewUnavailable, setAddressReviewUnavailable] =
+    useState(false);
   const [storeView, setStoreView] = useState<MerchStoreView>(
     () =>
       CATALOG_VIEW_ENABLED ? readStoredMerchStoreView() : 'cards'
@@ -120,6 +134,7 @@ export function MerchStore({
   } = useMerchInventory(inventoryScope);
 
   const user = session.authenticated ? session.user : null;
+  const authenticatedUserSub = user?.sub || null;
   const sessionLabel =
     user?.name || user?.email || formatTwitterUsername(user?.twitterUsername);
   const walletLabel = user?.safeWalletAddress
@@ -127,6 +142,12 @@ export function MerchStore({
     : 'Safe wallet pending';
   const isChecking =
     storeState === 'checking';
+  const showAddressWarning =
+    addressNeedsUpdate || addressReviewUnavailable;
+  const handleProfileReviewChange = useCallback((needsUpdate: boolean) => {
+    setAddressNeedsUpdate(needsUpdate);
+    setAddressReviewUnavailable(false);
+  }, []);
 
   const statusText = useMemo(() => {
     switch (storeState) {
@@ -199,6 +220,29 @@ export function MerchStore({
           setProductImageUrls
         );
         setStoreState('authenticated');
+
+        const returnedSelection = readReturnedSevenElevenContext();
+
+        if (
+          returnedSelection?.context === 'claim' &&
+          returnedSelection.productId
+        ) {
+          const storedAccess = nextProductAccess.products.find(
+            (product) => product.productId === returnedSelection.productId
+          );
+          const revealMedia = revealMediaController.read(
+            returnedSelection.productId
+          );
+
+          if (storedAccess?.status === 'eligible' && revealMedia) {
+            setSelectedProductId(returnedSelection.productId);
+            setAccessResult({
+              productId: returnedSelection.productId,
+              result: storedAccess,
+              revealMedia
+            });
+          }
+        }
       } catch {
         if (!cancelled) {
           setStoreState('source-error');
@@ -216,6 +260,43 @@ export function MerchStore({
     onAuthenticatedSession,
     revealMediaController
   ]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!authenticatedUserSub) {
+      setAddressNeedsUpdate(false);
+      setAddressReviewUnavailable(false);
+      return undefined;
+    }
+
+    setAddressNeedsUpdate(false);
+    setAddressReviewUnavailable(false);
+
+    async function loadAddressReviewStatus() {
+      try {
+        const storedProfile = await readStoredShippingProfile();
+
+        if (!cancelled) {
+          setAddressNeedsUpdate(
+            reviewChineseShippingDetails(storedProfile.profile).needsUpdate ||
+              needsTaiwanSevenElevenUpdate(storedProfile.profile)
+          );
+          setAddressReviewUnavailable(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setAddressReviewUnavailable(true);
+        }
+      }
+    }
+
+    void loadAddressReviewStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authenticatedUserSub]);
 
   useEffect(() => {
     function syncFulfillmentView() {
@@ -451,7 +532,11 @@ export function MerchStore({
           onClick={onExitStore}
           type="button"
         >
-          <img src={renaissLogoMark} alt="" aria-hidden="true" />
+          <img
+            src={staticMerchAssetUrl('renaissLogoMark')}
+            alt=""
+            aria-hidden="true"
+          />
           <span>renaiss merch store</span>
         </button>
 
@@ -468,11 +553,28 @@ export function MerchStore({
                 </button>
               ) : null}
               <button
-                className="merch-store__secondary-action"
+                aria-label={
+                  addressNeedsUpdate
+                    ? 'Address, shipping update required'
+                    : addressReviewUnavailable
+                      ? 'Address status unavailable, review required'
+                      : 'Address'
+                }
+                className={`merch-store__secondary-action merch-store__address-action ${
+                  showAddressWarning ? 'is-warning' : ''
+                }`}
                 onClick={() => setShowSettings(true)}
                 type="button"
               >
-                Address
+                <span>Address</span>
+                {showAddressWarning ? (
+                  <span
+                    aria-hidden="true"
+                    className="merch-store__address-warning"
+                  >
+                    !
+                  </span>
+                ) : null}
               </button>
               <div className="merch-store__identity">
                 <span>{sessionLabel || 'Renaiss account'}</span>
@@ -619,6 +721,7 @@ export function MerchStore({
         <ShippingSettings
           accountLabel={sessionLabel || walletLabel}
           onClose={() => setShowSettings(false)}
+          onProfileReviewChange={handleProfileReviewChange}
         />
       ) : null}
     </main>

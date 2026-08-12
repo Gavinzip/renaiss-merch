@@ -1,6 +1,8 @@
 import assetRelease from '../../media/public-asset-release.json';
 
 export type StaticMerchAsset =
+  | 'renaissLogoMark'
+  | 'renaissProtocolLogo'
   | 'braceletSealedDrop'
   | 'sealedDrop'
   | 'sealedDropCatalog'
@@ -13,13 +15,18 @@ const configuredCdnBase = String(
   .replace(/\/+$/, '');
 
 const developmentPaths: Record<StaticMerchAsset, string> = {
+  renaissLogoMark:
+    '/src/assets/brand/website/renaiss-logo-mark.png',
+  renaissProtocolLogo:
+    '/src/assets/brand/website/renaiss-protocol-logo.png',
   braceletSealedDrop:
-    '/src/assets/merch/storefront/bracelet-box-closed.png',
-  sealedDrop: '/src/assets/merch/storefront/shirt-box-card.jpg',
+    '/src/assets/merch/products/bracelet/website/box-closed.png',
+  sealedDrop:
+    '/src/assets/merch/products/shirt/website/box-card.jpg',
   sealedDropCatalog:
-    '/src/assets/merch/storefront/shirt-box-catalog.png',
+    '/src/assets/merch/products/shirt/website/box-catalog.png',
   storeBackground:
-    '/src/assets/merch/storefront/store-background.png'
+    '/src/assets/merch/shared/website/store-background.png'
 };
 
 export function staticMerchAssetUrl(assetKey: StaticMerchAsset) {
@@ -49,4 +56,21 @@ export function staticMerchAssetUrl(assetKey: StaticMerchAsset) {
 
 export function staticMerchAssetCssUrl(assetKey: StaticMerchAsset) {
   return `url("${staticMerchAssetUrl(assetKey)}")`;
+}
+
+export function applyStaticMerchFavicon() {
+  const favicon = document.createElement('link');
+  const existingFavicon = document.querySelector<HTMLLinkElement>(
+    'link[rel="icon"]'
+  );
+
+  favicon.rel = 'icon';
+  favicon.type = 'image/avif';
+  favicon.href = staticMerchAssetUrl('renaissLogoMark');
+
+  if (existingFavicon) {
+    existingFavicon.replaceWith(favicon);
+  } else {
+    document.head.append(favicon);
+  }
 }

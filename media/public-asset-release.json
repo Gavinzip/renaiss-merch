@@ -1,38 +1,52 @@
 {
   "access": "public",
   "bucket": "renaiss-merch-media",
-  "contentHash": "31cc63afcda3b47382f4c7616418c123b262f0872e3e03ff20668d09a1dc204e",
-  "fileCount": 8,
+  "contentHash": "0c6b161f379cd2aa2a33f630b4dbc29825b1db56c376142c8351ee2639fab086",
+  "fileCount": 10,
   "prefix": "merch/v1.2",
-  "release": "r31cc63afcda3b47382f4",
-  "totalBytes": 28634461,
+  "release": "r0c6b161f379cd2aa2a33",
+  "totalBytes": 28661675,
   "assets": {
+    "renaissLogoMark": {
+      "contentType": "image/avif",
+      "path": "brand/renaiss-logo-mark.avif",
+      "source": "src/assets/brand/website/renaiss-logo-mark.png",
+      "sourceContentType": "image/png",
+      "type": "image"
+    },
+    "renaissProtocolLogo": {
+      "contentType": "image/avif",
+      "path": "brand/renaiss-protocol-logo.avif",
+      "source": "src/assets/brand/website/renaiss-protocol-logo.png",
+      "sourceContentType": "image/png",
+      "type": "image"
+    },
     "braceletSealedDrop": {
       "contentType": "image/avif",
-      "master": "private/merch/source/bracelet/stills/box-closed-storefront.png",
+      "master": "private/merch/products/bracelet/source/images/packaging/box-closed-storefront.png",
       "path": "store/bracelet-box-closed.avif",
-      "source": "src/assets/merch/storefront/bracelet-box-closed.png",
+      "source": "src/assets/merch/products/bracelet/website/box-closed.png",
       "sourceContentType": "image/png",
       "type": "image"
     },
     "sealedDrop": {
       "contentType": "image/avif",
       "path": "store/shirt-box-card.avif",
-      "source": "src/assets/merch/storefront/shirt-box-card.jpg",
+      "source": "src/assets/merch/products/shirt/website/box-card.jpg",
       "sourceContentType": "image/jpeg",
       "type": "image"
     },
     "sealedDropCatalog": {
       "contentType": "image/avif",
       "path": "store/shirt-box-catalog.avif",
-      "source": "src/assets/merch/storefront/shirt-box-catalog.png",
+      "source": "src/assets/merch/products/shirt/website/box-catalog.png",
       "sourceContentType": "image/png",
       "type": "image"
     },
     "storeBackground": {
       "contentType": "image/avif",
       "path": "store/store-background.avif",
-      "source": "src/assets/merch/storefront/store-background.png",
+      "source": "src/assets/merch/shared/website/store-background.png",
       "sourceContentType": "image/png",
       "type": "image"
     },

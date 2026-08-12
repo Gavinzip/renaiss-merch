@@ -10,28 +10,28 @@
     "shirtProduct": {
       "contentType": "image/avif",
       "path": "products/shirt.avif",
-      "source": "private/merch/runtime/shirt/product.png",
+      "source": "private/merch/products/shirt/website/images/product.png",
       "sourceContentType": "image/png",
       "type": "image"
     },
     "braceletProductGold": {
       "contentType": "image/avif",
       "path": "products/bracelet-gold.avif",
-      "source": "private/merch/runtime/bracelet/product-gold.png",
+      "source": "private/merch/products/bracelet/website/images/product-gold.png",
       "sourceContentType": "image/png",
       "type": "image"
     },
     "braceletProductSilver": {
       "contentType": "image/avif",
       "path": "products/bracelet-silver.avif",
-      "source": "private/merch/runtime/bracelet/product-silver.png",
+      "source": "private/merch/products/bracelet/website/images/product-silver.png",
       "sourceContentType": "image/png",
       "type": "image"
     },
     "braceletStoreCover": {
       "contentType": "image/avif",
       "path": "products/bracelet-store-cover.avif",
-      "source": "private/merch/runtime/bracelet/store-cover.png",
+      "source": "private/merch/products/bracelet/website/images/store-cover.png",
       "sourceContentType": "image/png",
       "type": "image"
     },
