@@ -35,5 +35,6 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/media ./media
 COPY --from=build /app/server ./server
+COPY --from=build /app/shared ./shared
 EXPOSE 8080
 CMD ["npm", "run", "start"]
