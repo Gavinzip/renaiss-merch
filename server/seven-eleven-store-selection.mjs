@@ -71,11 +71,6 @@ export async function handleSevenElevenMapCallback(req, res, options = {}) {
   }
 
   const merchantId = readMerchantId(payload.get('MerchantID'));
-  const logisticsType = readRequiredText(
-    payload.get('LogisticsType'),
-    'seven_eleven_logistics_type_invalid',
-    20
-  );
   const logisticsSubType = readRequiredText(
     payload.get('LogisticsSubType'),
     'seven_eleven_logistics_sub_type_invalid',
@@ -84,7 +79,6 @@ export async function handleSevenElevenMapCallback(req, res, options = {}) {
 
   if (
     merchantId !== selection.merchant_id ||
-    logisticsType !== 'CVS' ||
     logisticsSubType !== LOGISTICS_SUB_TYPE
   ) {
     throw new HttpError(400, 'seven_eleven_callback_invalid');
