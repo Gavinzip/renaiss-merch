@@ -136,6 +136,72 @@
   border-radius: 6px;
 }
 
+.fulfillment-console__scope {
+  padding: 0;
+  margin: 1.5rem 0 0;
+  border: 0;
+}
+
+.fulfillment-console__scope legend {
+  padding: 0;
+  color: rgba(20, 21, 24, 0.55);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.fulfillment-console__scope-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-top: 0.7rem;
+}
+
+.fulfillment-console__scope-options label {
+  position: relative;
+  cursor: pointer;
+}
+
+.fulfillment-console__scope-options input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.fulfillment-console__scope-options span {
+  display: flex;
+  align-items: center;
+  min-height: 3rem;
+  padding: 0.72rem 0.9rem;
+  color: rgba(20, 21, 24, 0.7);
+  background: rgba(255, 255, 255, 0.48);
+  border: 1px solid rgba(20, 21, 24, 0.16);
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.fulfillment-console__scope-options input:checked + span {
+  color: #fff;
+  background: #16181b;
+  border-color: #16181b;
+}
+
+.fulfillment-console__scope-options input:focus-visible + span {
+  outline: 2px solid #2886a5;
+  outline-offset: 3px;
+}
+
+.fulfillment-console__scope-name {
+  display: block;
+  margin-top: 0.35rem;
+  color: #fff;
+  font-size: 1.05rem;
+}
+
 .fulfillment-console__action-copy {
   margin: 0.42rem 0 0;
   color: rgba(255, 255, 255, 0.72);
@@ -226,6 +292,21 @@
   font-weight: 800;
 }
 
+.fulfillment-console__history li div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.fulfillment-console__history li div strong {
+  color: #141518;
+  font-size: 0.82rem;
+}
+
+.fulfillment-console__history time {
+  color: rgba(20, 21, 24, 0.56);
+  font-size: 0.76rem;
+}
+
 @media (max-width: 620px) {
   .fulfillment-console {
     padding: 0.7rem;
@@ -246,6 +327,10 @@
   }
 
   .fulfillment-console__metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .fulfillment-console__scope-options {
     grid-template-columns: 1fr;
   }
 

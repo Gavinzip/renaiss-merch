@@ -1,11 +1,11 @@
 import { HttpError } from './http.mjs';
+import { normalizeClaimEmail } from './claim-email.mjs';
 import {
   findShippingFieldsMissingChinese,
   readChineseShippingFieldErrorCode
 } from '../shared/shipping-address-policy.js';
 
 const MAX_REQUEST_BODY_BYTES = 16 * 1024;
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const countryPattern = /^[A-Z]{2}$/;
 const phonePattern = /^[+()\d\s.-]{6,32}$/;
 const taiwanMobilePattern = /^(?:09\d{8}|\+8869\d{8})$/;
@@ -63,7 +63,7 @@ export function normalizeShippingProfilePayload(payload) {
     country,
     deliveryMethod,
     deliveryNotes: readOptionalText(payload.deliveryNotes, 600),
-    email: readEmail(payload.email, 'email_invalid'),
+    email: normalizeClaimEmail(payload.email),
     firstName: readRequiredText(
       payload.firstName,
       'first_name_required',
@@ -105,6 +105,10 @@ export function normalizeShippingProfilePayload(payload) {
 }
 
 export function normalizeShippingPayload(payload, productId) {
+  if (productId === 'ticket') {
+    throw new HttpError(400, 'shipping_product_invalid');
+  }
+
   return {
     ...normalizeShippingProfilePayload(payload),
     color: productId === 'bracelet' ? readBraceletColor(payload.color) : 'BLACK',
@@ -138,16 +142,6 @@ function readOptionalText(value, maxLength) {
   }
 
   return text;
-}
-
-function readEmail(value, code) {
-  const email = readRequiredText(value, code, 160).toLowerCase();
-
-  if (!emailPattern.test(email)) {
-    throw new HttpError(400, code);
-  }
-
-  return email;
 }
 
 function readPhone(value) {

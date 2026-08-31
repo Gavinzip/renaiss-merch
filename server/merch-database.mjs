@@ -70,6 +70,20 @@ export function getMerchDatabase(configuredPath) {
         updated_at TEXT NOT NULL
       );
 
+      CREATE TABLE IF NOT EXISTS vip_ticket_claims (
+        id TEXT PRIMARY KEY,
+        created_at TEXT NOT NULL,
+        submitted_at TEXT NOT NULL,
+        product_id TEXT NOT NULL,
+        wallet_address TEXT NOT NULL,
+        user_sub TEXT,
+        user_email TEXT,
+        claim_email TEXT NOT NULL,
+        eligibility_json TEXT NOT NULL,
+        user_json TEXT NOT NULL,
+        UNIQUE (wallet_address, product_id)
+      );
+
       CREATE TABLE IF NOT EXISTS seven_eleven_store_selections (
         token TEXT PRIMARY KEY,
         user_sub TEXT NOT NULL,
@@ -119,6 +133,9 @@ export function getMerchDatabase(configuredPath) {
 
       CREATE INDEX IF NOT EXISTS idx_shipping_claims_created_at
         ON shipping_claims (created_at);
+
+      CREATE INDEX IF NOT EXISTS idx_vip_ticket_claims_submitted_at
+        ON vip_ticket_claims (submitted_at);
 
       CREATE INDEX IF NOT EXISTS idx_merch_access_checks_user_sub
         ON merch_access_checks (user_sub);

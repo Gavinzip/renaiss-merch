@@ -35,6 +35,10 @@ that the current website or release pipeline actually uses. Moving a file into
 | --- | --- |
 | Gold master | `private/merch/products/bracelet/source/images/product/bracelet-gold.png` |
 | Gold generated detail variant | `private/merch/products/bracelet/source/images/product/bracelet-gold-generated.png` |
+| Approved gold rainbow front modeling reference | `private/merch/products/bracelet/workbench/3d/reference-images/bracelet-gold-rainbow-front-orthographic.png` |
+| Approved gold rainbow full-chain reference | `private/merch/products/bracelet/workbench/3d/reference-images/bracelet-gold-rainbow-full-chain-reference.png` |
+| Final gold + rainbow UV texture | `private/merch/products/bracelet/workbench/3d/final/textures/bracelet-center-gold-rainbow-uv.png` |
+| Final silver + colorless UV texture | `private/merch/products/bracelet/workbench/3d/final/textures/bracelet-center-silver-colorless-uv.png` |
 | Silver master | `private/merch/products/bracelet/source/images/product/bracelet-silver.png` |
 | Silver generated detail variant | `private/merch/products/bracelet/source/images/product/bracelet-silver-generated.png` |
 | Silver cutout detail | `private/merch/products/bracelet/source/images/product/bracelet-silver-cutout.png` |
@@ -58,10 +62,11 @@ The tracked unrevealed Store image must remain byte-for-byte identical to the
 approved horizontal source master. The asset pipeline enforces this with a
 SHA-256 comparison.
 
-All Bracelet product-detail crops, texture maps, assessment files, and 3D
-previews are retained under
-`private/merch/products/bracelet/workbench/3d/`. The approved AI generation
-output used to create the horizontal Store master is retained under
+The Bracelet 3D workbench retains only the two approved modeling references
+and the two approved registered UV texture masters. Superseded blockouts,
+OpenSCAD experiments, crop maps, texture experiments, and review renders were
+removed from the project after explicit keeper selection on 2026-08-14. The
+approved AI generation output used to create the horizontal Store master is retained under
 `private/merch/products/bracelet/workbench/generation-provenance/` so it is
 kept with Bracelet instead of a generic generated-image bucket.
 
@@ -104,7 +109,9 @@ public R2 release, so the production bundle must not contain either PNG.
 The initial organization did not delete media. After a separate explicit user
 instruction on 2026-08-09, six confirmed-wrong images were deleted using exact
 paths after reference checks. One merely superseded Bracelet image remains
-retained. The complete record is in `media/ASSET_DELETE_REVIEW.md`.
+retained. On 2026-08-14, the user selected both final Bracelet 3D finishes and
+the other generated Bracelet 3D work was moved to a recoverable Trash location.
+The complete record is in `media/ASSET_DELETE_REVIEW.md`.
 
 ## Required workflow
 

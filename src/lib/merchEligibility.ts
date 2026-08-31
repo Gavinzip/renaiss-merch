@@ -2,6 +2,7 @@ import type { MerchProductId } from './merchProducts';
 
 export type MerchRevealDetails = {
   category: string;
+  claimKind: 'email' | 'shipping';
   claimName: string;
   description: string;
   hasReverseVideo: boolean;
@@ -194,6 +195,8 @@ function readRevealDetails(value: unknown): MerchRevealDetails | null {
   if (
     typeof candidate.category !== 'string' ||
     !candidate.category.trim() ||
+    (candidate.claimKind !== 'email' &&
+      candidate.claimKind !== 'shipping') ||
     typeof candidate.claimName !== 'string' ||
     !candidate.claimName.trim() ||
     typeof candidate.description !== 'string' ||
@@ -208,6 +211,7 @@ function readRevealDetails(value: unknown): MerchRevealDetails | null {
 
   return {
     category: candidate.category.trim(),
+    claimKind: candidate.claimKind,
     claimName: candidate.claimName.trim(),
     description: candidate.description.trim(),
     hasReverseVideo: candidate.hasReverseVideo,

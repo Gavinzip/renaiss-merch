@@ -11,6 +11,7 @@ const PRODUCT_ELIGIBILITY_RULES = {
     minimumSbtBalance: 40,
     reveal: {
       category: 'Apparel',
+      claimKind: 'shipping',
       claimName: 'Renaiss Tee',
       description: 'A private Renaiss edition with worldwide fulfilment.',
       hasReverseVideo: true,
@@ -22,11 +23,24 @@ const PRODUCT_ELIGIBILITY_RULES = {
     minimumSbtBalance: 100,
     reveal: {
       category: 'Object',
+      claimKind: 'shipping',
       claimName: 'Renaiss Bracelet',
       description: 'A private Renaiss object edition with a polished finish.',
       hasReverseVideo: true,
       requiresSize: false,
       statusEyebrow: 'RENAISS OBJECT / DROP 02'
+    }
+  },
+  ticket: {
+    minimumSbtBalance: 20,
+    reveal: {
+      category: 'Event access',
+      claimKind: 'email',
+      claimName: 'Flagship Taiwan VIP Ticket',
+      description: 'VIP event access delivered to your registered email.',
+      hasReverseVideo: false,
+      requiresSize: false,
+      statusEyebrow: 'FLAGSHIP TAIWAN / VIP ACCESS'
     }
   }
 };

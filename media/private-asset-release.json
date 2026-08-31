@@ -1,11 +1,11 @@
 {
   "access": "private",
   "bucket": "renaiss-merch-private-media",
-  "contentHash": "4f8e3a3a6b99b2ea9d86b691f00381d4ae80aa4c5f422094b5b2a2c2e0e990b4",
-  "fileCount": 8,
+  "contentHash": "edba3e6f26f4df4108406234051e0f8d4229d80aa682bb13e7b82f6044c1df08",
+  "fileCount": 10,
   "prefix": "merch/v1.2",
-  "release": "r4f8e3a3a6b99b2ea9d86",
-  "totalBytes": 29012254,
+  "release": "redba3e6f26f4df410840",
+  "totalBytes": 69471043,
   "assets": {
     "shirtProduct": {
       "contentType": "image/avif",
@@ -35,31 +35,45 @@
       "sourceContentType": "image/png",
       "type": "image"
     },
+    "ticketProduct": {
+      "contentType": "image/avif",
+      "path": "products/flagship-taiwan-vip-ticket.avif",
+      "source": "private/merch/products/ticket/source/images/product/flagship-taiwan-vip-ticket-final.png",
+      "sourceContentType": "image/png",
+      "type": "image"
+    },
+    "ticketRevealForward": {
+      "contentType": "video/mp4",
+      "path": "reveal/flagship-taiwan-vip-ticket-forward.mp4",
+      "source": "private/merch/products/ticket/website/videos/reveal-forward-scrub.mp4",
+      "sourceContentType": "video/mp4",
+      "type": "binary"
+    },
     "shirtRevealForward": {
       "contentType": "video/mp4",
       "path": "reveal/shirt-forward.mp4",
-      "source": "private/merch/runtime/shirt/reveal-forward.mp4",
+      "source": "private/merch/products/shirt/website/videos/reveal-forward-scrub.mp4",
       "sourceContentType": "video/mp4",
       "type": "binary"
     },
     "shirtRevealReverse": {
       "contentType": "video/mp4",
       "path": "reveal/shirt-reverse.mp4",
-      "source": "private/merch/runtime/shirt/reveal-reverse.mp4",
+      "source": "private/merch/products/shirt/website/videos/reveal-reverse-scrub.mp4",
       "sourceContentType": "video/mp4",
       "type": "binary"
     },
     "braceletRevealForward": {
       "contentType": "video/mp4",
       "path": "reveal/bracelet-forward.mp4",
-      "source": "private/merch/runtime/bracelet/reveal-forward.mp4",
+      "source": "private/merch/products/bracelet/website/videos/reveal-forward-scrub.mp4",
       "sourceContentType": "video/mp4",
       "type": "binary"
     },
     "braceletRevealReverse": {
       "contentType": "video/mp4",
       "path": "reveal/bracelet-reverse.mp4",
-      "source": "private/merch/runtime/bracelet/reveal-reverse.mp4",
+      "source": "private/merch/products/bracelet/website/videos/reveal-reverse-scrub.mp4",
       "sourceContentType": "video/mp4",
       "type": "binary"
     }

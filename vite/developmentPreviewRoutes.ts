@@ -11,7 +11,9 @@ export function developmentPreviewRoutes(): Plugin {
         const requestUrl = new URL(request.url ?? '/', 'http://localhost');
         const isDevelopmentPreview =
           requestUrl.pathname === '/' &&
-          requestUrl.searchParams.get('preview') === 'tshirt-physics';
+          ['tshirt-physics', 'bracelet-3d'].includes(
+            requestUrl.searchParams.get('preview') ?? ''
+          );
 
         if (isDevelopmentPreview) {
           request.url = `${DEVELOPMENT_PREVIEW_ENTRY}${requestUrl.search}`;

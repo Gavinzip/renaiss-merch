@@ -39,6 +39,7 @@ import {
   readReturnedSevenElevenContext
 } from '../../lib/sevenElevenStore';
 import { type PreparedRevealMedia } from '../../lib/revealMediaPreload';
+import { preparePrivateTicketRevealMedia } from '../../lib/privateRevealMedia';
 import { readStoredShippingProfile } from '../../lib/shippingProfile';
 import {
   StoreRevealMediaCancelledError,
@@ -183,6 +184,16 @@ export function MerchStore({
       saveMerchStoreView(storeView);
     }
   }, [storeView]);
+
+  useEffect(() => {
+    if (accessResult?.productId !== 'ticket') {
+      return undefined;
+    }
+
+    const ticketRevealMedia = accessResult.revealMedia;
+
+    return () => ticketRevealMedia?.release();
+  }, [accessResult]);
 
   useEffect(() => {
     let cancelled = false;
@@ -402,7 +413,10 @@ export function MerchStore({
           productId,
           privateMediaRelease
         );
-        const revealMedia = revealMediaController.read(productId);
+        const revealMedia =
+          productId === 'ticket'
+            ? await preparePrivateTicketRevealMedia(privateMediaRelease)
+            : revealMediaController.read(productId);
 
         if (!revealMedia) {
           throw new Error(
@@ -630,7 +644,7 @@ export function MerchStore({
             Renaiss Protocol / Private editions
           </h1>
           <p className="merch-store__lede">
-            Two sealed releases. Each piece is revealed only after your wallet
+            Three sealed releases. Each piece is revealed only after your wallet
             access is verified.
           </p>
         </div>

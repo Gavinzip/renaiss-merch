@@ -1,7 +1,6 @@
 import {
   type FormEvent,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState
 } from 'react';
@@ -15,7 +14,10 @@ import {
   reviewChineseShippingDetails,
   type ChineseShippingReview
 } from '../../lib/chineseShippingValidation';
-import type { MerchProductId } from '../../lib/merchProducts';
+import {
+  hasPublicRevealMedia,
+  type MerchProductId
+} from '../../lib/merchProducts';
 import {
   readStoredShippingClaim,
   saveShippingClaim,
@@ -49,24 +51,16 @@ import type { ShippingDeliveryMethod } from '../../lib/shippingClaim';
 import {
   isChineseShippingErrorCode
 } from '../../../shared/shipping-address-policy.js';
+import { VipTicketClaimForm } from './VipTicketClaimForm';
+import {
+  type MerchRevealPhase,
+  useMerchRevealAssistedCompletion
+} from './useMerchRevealAssistedCompletion';
 import './QualifiedResult.css';
 
-const AUTO_REVEAL_SECONDS = 2.45;
-const REVEAL_WATCHDOG_BUFFER_MS = 900;
-const REVERSE_START_TIMEOUT_MS = 1500;
-const SCROLL_TRIGGER_PX = 36;
-const REVIEW_CLOSE_COOLDOWN_MS = 900;
-const REVIEW_CLOSE_WHEEL_DELTA_PX = 80;
-const REVIEW_CLOSE_WHEEL_WINDOW_MS = 320;
-const MOBILE_REVEAL_MEDIA_QUERY = '(max-width: 860px), (pointer: coarse)';
-const MOBILE_SHIPPING_REVEAL_DELAY_MS = 2000;
-const MOBILE_VIDEO_PAN_START_X = 50;
-const MOBILE_VIDEO_PAN_END_X = 18;
-const SHIPPING_REVEAL_VIDEO_PROGRESS = 0.86;
 const emailInputPattern = '[^\\s@]+@[^\\s@]+\\.[^\\s@]+';
 const phoneInputPattern = '[+()0-9\\s.-]{6,32}';
 const chineseShippingNoticeId = 'qualified-shipping-chinese-notice';
-type RevealPhase = 'idle' | 'playing' | 'review' | 'closing';
 type ShippingActionState = 'idle' | 'saving' | 'submitting' | 'saved' | 'submitted' | 'error';
 type ShippingLoadState = 'loading' | 'loaded' | 'empty' | 'error';
 type ClaimDialog = 'size-chart' | 'submitted' | null;
@@ -79,83 +73,6 @@ type QualifiedResultProps = {
   >;
   result: EligibleMerchEligibilityResult;
 };
-
-async function seekVideoToStart(video: HTMLVideoElement) {
-  if (video.readyState < HTMLMediaElement.HAVE_METADATA) {
-    await waitForVideoEvent(video, 'loadedmetadata');
-  }
-
-  if (video.currentTime > 0.01) {
-    const seeked = waitForVideoEvent(video, 'seeked');
-    video.currentTime = 0;
-    await seeked;
-  }
-
-  if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
-    await waitForVideoEvent(video, 'loadeddata');
-  }
-}
-
-function waitForPresentedVideoFrame(video: HTMLVideoElement) {
-  return new Promise<void>((resolvePromise, rejectPromise) => {
-    const timeoutId = window.setTimeout(() => {
-      cleanup();
-      rejectPromise(
-        new Error('The reverse reveal did not present its first frame.')
-      );
-    }, REVERSE_START_TIMEOUT_MS);
-    const callbackId = video.requestVideoFrameCallback(() => {
-      cleanup();
-      resolvePromise();
-    });
-
-    function handleError() {
-      cleanup();
-      rejectPromise(new Error('The reverse reveal could not be decoded.'));
-    }
-
-    function cleanup() {
-      window.clearTimeout(timeoutId);
-      video.cancelVideoFrameCallback(callbackId);
-      video.removeEventListener('error', handleError);
-    }
-
-    video.addEventListener('error', handleError, { once: true });
-  });
-}
-
-function waitForVideoEvent(
-  video: HTMLVideoElement,
-  eventName: 'loadeddata' | 'loadedmetadata' | 'seeked'
-) {
-  return new Promise<void>((resolvePromise, rejectPromise) => {
-    const timeoutId = window.setTimeout(() => {
-      cleanup();
-      rejectPromise(
-        new Error(`The reverse reveal did not emit ${eventName}.`)
-      );
-    }, REVERSE_START_TIMEOUT_MS);
-
-    function handleEvent() {
-      cleanup();
-      resolvePromise();
-    }
-
-    function handleError() {
-      cleanup();
-      rejectPromise(new Error('The reverse reveal could not be decoded.'));
-    }
-
-    function cleanup() {
-      window.clearTimeout(timeoutId);
-      video.removeEventListener(eventName, handleEvent);
-      video.removeEventListener('error', handleError);
-    }
-
-    video.addEventListener(eventName, handleEvent, { once: true });
-    video.addEventListener('error', handleError, { once: true });
-  });
-}
 
 const merchSizes = [
   {
@@ -222,21 +139,28 @@ export function QualifiedResult({
   result
 }: QualifiedResultProps) {
   const productConfig = result.reveal;
-  const revealVideoSrc =
-    revealMedia?.forwardUrl || publicRevealMediaUrl(productId, 'forward');
+  const revealVideoSrc = readRevealVideoSource(
+    productId,
+    revealMedia?.forwardUrl,
+    'forward'
+  );
   const reverseVideoSrc = productConfig.hasReverseVideo
-    ? revealMedia?.reverseUrl || publicRevealMediaUrl(productId, 'reverse')
+    ? readRevealVideoSource(
+        productId,
+        revealMedia?.reverseUrl,
+        'reverse'
+      )
     : undefined;
   const scrollerRef = useRef<HTMLElement | null>(null);
   const shippingFormRef = useRef<HTMLFormElement | null>(null);
   const forwardVideoRef = useRef<HTMLVideoElement | null>(null);
   const reverseVideoRef = useRef<HTMLVideoElement | null>(null);
-  const shippingVisibleRef = useRef(false);
   const [showShipping, setShowShipping] = useState(false);
   const [mediaReady, setMediaReady] = useState(false);
   const [revealPlaybackError, setRevealPlaybackError] =
     useState<string | null>(null);
-  const [revealPhase, setRevealPhase] = useState<RevealPhase>('idle');
+  const [revealPhase, setRevealPhase] =
+    useState<MerchRevealPhase>('idle');
   const [shippingActionState, setShippingActionState] =
     useState<ShippingActionState>('idle');
   const [shippingLoadState, setShippingLoadState] =
@@ -267,572 +191,26 @@ export function QualifiedResult({
       readReturnedSevenElevenContext()?.productId === productId
   ).current;
 
-  useLayoutEffect(() => {
-    const containerElement = scrollerRef.current;
-    const forwardVideoElement = forwardVideoRef.current;
-    const reverseVideoElement = reverseVideoRef.current;
-
-    if (!containerElement || !forwardVideoElement || !reverseVideoElement) {
-      return undefined;
-    }
-
-    const container = containerElement;
-    const video = forwardVideoElement;
-    const reverseVideo = reverseVideoElement;
-    const usesManualReverse = !reverseVideoSrc;
-
-    const reduceMotionQuery = window.matchMedia?.(
-      '(prefers-reduced-motion: reduce)'
-    );
-
-    if (reduceMotionQuery?.matches) {
-      video.pause();
-      reverseVideo.pause();
-      shippingVisibleRef.current = true;
-      setShowShipping(true);
-      container.style.setProperty('--claim-progress', '1');
-      return undefined;
-    }
-
-    let frameId = 0;
-    let duration =
-      Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 6;
-    let revealPhaseRef: RevealPhase = 'idle';
-    let reviewReadyAt = 0;
-    let revealTimerId = 0;
-    let closeTimerId = 0;
-    let mobileShippingRevealTimerId = 0;
-    let upwardWheelDelta = 0;
-    let lastWheelAt = 0;
-    let manualReverseStartedAt = 0;
-    let closeRequestId = 0;
-    let disposed = false;
-
-    function prepareVideo(targetVideo: HTMLVideoElement) {
-      targetVideo.muted = true;
-      targetVideo.playsInline = true;
-      targetVideo.setAttribute('playsinline', '');
-      targetVideo.setAttribute('webkit-playsinline', '');
-    }
-
-    function resetVideoToStart(targetVideo: HTMLVideoElement) {
-      targetVideo.pause();
-
-      try {
-        targetVideo.currentTime = 0;
-      } catch {
-        // Metadata may not be ready yet; loadedmetadata will retry the reset.
-      }
-    }
-
-    function markMediaReady() {
-      const reverseReady =
-        usesManualReverse || reverseVideo.readyState >= 2;
-
-      if (
-        video.readyState >= 2 &&
-        reverseReady &&
-        video.currentTime <= 0.08
-      ) {
-        setMediaReady(true);
-      }
-    }
-
-    function syncProgress(nextProgress: number, allowShipping = true) {
-      const progress = Math.min(
-        1,
-        Math.max(0, Number.isFinite(nextProgress) ? nextProgress : 0)
-      );
-
-      container.style.setProperty('--claim-progress', progress.toFixed(3));
-      container.style.setProperty(
-        '--claim-mobile-video-x',
-        `${readMobileVideoPanX(progress).toFixed(2)}%`
-      );
-
-      const nextShippingVisible =
-        allowShipping &&
-        !isMobileRevealViewport() &&
-        progress >= SHIPPING_REVEAL_VIDEO_PROGRESS;
-      if (shippingVisibleRef.current !== nextShippingVisible) {
-        shippingVisibleRef.current = nextShippingVisible;
-        setShowShipping(nextShippingVisible);
-      }
-    }
-
-    function showShippingPanel() {
-      shippingVisibleRef.current = true;
-      setShowShipping(true);
-    }
-
-    function hideShippingPanel() {
-      shippingVisibleRef.current = false;
-      setShowShipping(false);
-    }
-
-    function scheduleMobileShippingReveal() {
-      clearMobileShippingRevealTimer();
-
-      if (!isMobileRevealViewport()) {
-        showShippingPanel();
-        return;
-      }
-
-      hideShippingPanel();
-      mobileShippingRevealTimerId = window.setTimeout(() => {
-        if (revealPhaseRef !== 'review') {
-          return;
-        }
-
-        showShippingPanel();
-      }, MOBILE_SHIPPING_REVEAL_DELAY_MS);
-    }
-
-    function getScrollProgress() {
-      const viewportHeight =
-        window.innerHeight || document.documentElement.clientHeight || 1;
-      const containerTop = container.getBoundingClientRect().top + window.scrollY;
-      const travel = Math.max(1, container.offsetHeight - viewportHeight);
-      const progress = Math.min(
-        1,
-        Math.max(0, (window.scrollY - containerTop) / travel)
-      );
-
-      return { containerTop, progress, travel };
-    }
-
-    function syncProgressToVideo() {
-      frameId = 0;
-      syncProgress(duration > 0 ? video.currentTime / duration : 0);
-
-      if (!video.paused && !video.ended) {
-        frameId = window.requestAnimationFrame(syncProgressToVideo);
-      }
-    }
-
-    function syncProgressToReverseVideo() {
-      frameId = 0;
-      const reverseProgress =
-        duration > 0 ? 1 - reverseVideo.currentTime / duration : 1;
-      syncProgress(reverseProgress, false);
-
-      if (!reverseVideo.paused && !reverseVideo.ended) {
-        frameId = window.requestAnimationFrame(syncProgressToReverseVideo);
-      }
-    }
-
-    function requestProgressSync() {
-      if (frameId) {
-        return;
-      }
-
-      frameId = window.requestAnimationFrame(syncProgressToVideo);
-    }
-
-    function requestReverseProgressSync() {
-      if (frameId) {
-        return;
-      }
-
-      frameId = window.requestAnimationFrame(syncProgressToReverseVideo);
-    }
-
-    function syncProgressToManualReverse(timestamp: number) {
-      frameId = 0;
-
-      if (revealPhaseRef !== 'closing') {
-        return;
-      }
-
-      if (!manualReverseStartedAt) {
-        manualReverseStartedAt = timestamp;
-      }
-
-      const elapsed = timestamp - manualReverseStartedAt;
-      const progress = Math.max(
-        0,
-        1 - elapsed / (AUTO_REVEAL_SECONDS * 1000)
-      );
-
-      reverseVideo.currentTime = Math.max(
-        0,
-        Math.min(duration, duration * progress)
-      );
-      syncProgress(progress, false);
-
-      if (progress <= 0) {
-        completeClose();
-        return;
-      }
-
-      frameId = window.requestAnimationFrame(syncProgressToManualReverse);
-    }
-
-    function completeReveal() {
-      if (revealPhaseRef === 'review') {
-        return;
-      }
-
-      clearRevealTimer();
-      revealPhaseRef = 'review';
-      setRevealPhase('review');
-      video.pause();
-      video.currentTime = Math.max(0, duration - 0.02);
-      if (!usesManualReverse) {
-        resetVideoToStart(reverseVideo);
-      }
-      syncProgress(1);
-      scheduleMobileShippingReveal();
-      reviewReadyAt = performance.now();
-      upwardWheelDelta = 0;
-
-      const { containerTop, travel } = getScrollProgress();
-      window.scrollTo({
-        top: Math.round(containerTop + travel),
-        behavior: 'auto'
-      });
-    }
-
-    function completeClose() {
-      if (revealPhaseRef === 'idle') {
-        return;
-      }
-
-      closeRequestId += 1;
-      clearCloseTimer();
-      clearMobileShippingRevealTimer();
-      setRevealPlaybackError(null);
-      revealPhaseRef = 'idle';
-      reverseVideo.pause();
-      video.pause();
-      manualReverseStartedAt = 0;
-      resetVideoToStart(video);
-      resetVideoToStart(reverseVideo);
-      video.playbackRate = Math.min(
-        3,
-        Math.max(1, duration / AUTO_REVEAL_SECONDS)
-      );
-      hideShippingPanel();
-      setMediaReady(true);
-      syncProgress(0);
-
-      const { containerTop } = getScrollProgress();
-      window.scrollTo({
-        top: Math.round(containerTop),
-        behavior: 'auto'
-      });
-
-      window.requestAnimationFrame(() => {
-        setRevealPhase('idle');
-      });
-    }
-
-    function startReveal() {
-      if (revealPhaseRef !== 'idle' || document.visibilityState === 'hidden') {
-        return;
-      }
-
-      revealPhaseRef = 'playing';
-      setRevealPlaybackError(null);
-      setMediaReady(true);
-      setRevealPhase('playing');
-      video.playbackRate = Math.min(
-        3,
-        Math.max(1, duration / AUTO_REVEAL_SECONDS)
-      );
-      clearRevealTimer();
-      revealTimerId = window.setTimeout(
-        completeReveal,
-        AUTO_REVEAL_SECONDS * 1000 + REVEAL_WATCHDOG_BUFFER_MS
-      );
-
-      void video.play().then(requestProgressSync).catch(() => undefined);
-    }
-
-    function startClose() {
-      if (revealPhaseRef !== 'review' || document.visibilityState === 'hidden') {
-        return;
-      }
-
-      revealPhaseRef = 'closing';
-      setRevealPlaybackError(null);
-      closeRequestId += 1;
-      const requestId = closeRequestId;
-      clearMobileShippingRevealTimer();
-      hideShippingPanel();
-      video.pause();
-      reverseVideo.pause();
-      clearCloseTimer();
-
-      if (!usesManualReverse) {
-        void beginReverseClose(requestId).catch((error) => {
-          if (
-            disposed ||
-            requestId !== closeRequestId ||
-            revealPhaseRef !== 'closing'
-          ) {
-            return;
-          }
-
-          reverseVideo.pause();
-          resetVideoToStart(reverseVideo);
-          revealPhaseRef = 'review';
-          setRevealPhase('review');
-          setMediaReady(true);
-          setRevealPlaybackError(
-            'Closing animation could not start. Scroll up again to retry.'
-          );
-          scheduleMobileShippingReveal();
-          reviewReadyAt = performance.now();
-          console.error('Reverse reveal could not start.', error);
-        });
-        return;
-      }
-
-      setRevealPhase('closing');
-      window.requestAnimationFrame(() => {
-        if (revealPhaseRef !== 'closing') {
-          return;
-        }
-
-        closeTimerId = window.setTimeout(
-          completeClose,
-          AUTO_REVEAL_SECONDS * 1000 + REVEAL_WATCHDOG_BUFFER_MS
-        );
-        manualReverseStartedAt = 0;
-        reverseVideo.currentTime = Math.max(0, duration - 0.02);
-        frameId = window.requestAnimationFrame(
-          syncProgressToManualReverse
-        );
-      });
-    }
-
-    async function beginReverseClose(requestId: number) {
-      await seekVideoToStart(reverseVideo);
-
-      if (
-        disposed ||
-        requestId !== closeRequestId ||
-        revealPhaseRef !== 'closing'
-      ) {
-        return;
-      }
-
-      reverseVideo.playbackRate = Math.min(
-        3,
-        Math.max(1, duration / AUTO_REVEAL_SECONDS)
-      );
-      const firstFrame = waitForPresentedVideoFrame(reverseVideo);
-
-      await Promise.all([reverseVideo.play(), firstFrame]);
-
-      if (
-        disposed ||
-        requestId !== closeRequestId ||
-        revealPhaseRef !== 'closing'
-      ) {
-        return;
-      }
-
-      setMediaReady(true);
-      setRevealPhase('closing');
-      closeTimerId = window.setTimeout(
-        completeClose,
-        AUTO_REVEAL_SECONDS * 1000 + REVEAL_WATCHDOG_BUFFER_MS
-      );
-      requestReverseProgressSync();
-    }
-
-    function handleScroll() {
-      if (revealPhaseRef === 'review') {
-        const { containerTop, travel } = getScrollProgress();
-        const reviewScrollTop = containerTop + travel;
-
-        if (
-          performance.now() - reviewReadyAt >= REVIEW_CLOSE_COOLDOWN_MS &&
-          window.scrollY <= reviewScrollTop - SCROLL_TRIGGER_PX
-        ) {
-          startClose();
-        }
-
-        return;
-      }
-
-      if (revealPhaseRef !== 'idle') {
-        return;
-      }
-
-      const { containerTop } = getScrollProgress();
-      const scrollDelta = window.scrollY - containerTop;
-
-      if (scrollDelta >= SCROLL_TRIGGER_PX) {
-        startReveal();
-      }
-    }
-
-    function handleWheel(event: WheelEvent) {
-      if (revealPhaseRef !== 'review' || event.deltaY >= 0) {
-        return;
-      }
-
-      if (performance.now() - reviewReadyAt < REVIEW_CLOSE_COOLDOWN_MS) {
-        return;
-      }
-
-      const target = event.target instanceof Element ? event.target : null;
-      const shippingPanel = target?.closest('.qualified-result__shipping');
-      if (
-        shippingPanel instanceof HTMLElement &&
-        shippingPanel.scrollTop > 0
-      ) {
-        return;
-      }
-
-      const now = performance.now();
-      upwardWheelDelta =
-        now - lastWheelAt > REVIEW_CLOSE_WHEEL_WINDOW_MS
-          ? Math.abs(event.deltaY)
-          : upwardWheelDelta + Math.abs(event.deltaY);
-      lastWheelAt = now;
-
-      if (upwardWheelDelta < REVIEW_CLOSE_WHEEL_DELTA_PX) {
-        return;
-      }
-
-      event.preventDefault();
-      startClose();
-    }
-
-    function handleMetadata() {
-      duration =
-        Number.isFinite(video.duration) && video.duration > 0
-          ? video.duration
-          : duration;
-      if (resumesSevenElevenSelection) {
-        setMediaReady(true);
-        completeReveal();
-        showShippingPanel();
-        return;
-      }
-
-      resetVideoToStart(video);
-      video.playbackRate = Math.min(
-        3,
-        Math.max(1, duration / AUTO_REVEAL_SECONDS)
-      );
-      if (!usesManualReverse) {
-        reverseVideo.playbackRate = video.playbackRate;
-      }
-      syncProgress(0);
-      markMediaReady();
-    }
-
-    function handleEnded() {
-      completeReveal();
-    }
-
-    function handleReverseEnded() {
-      completeClose();
-    }
-
-    function clearRevealTimer() {
-      if (revealTimerId) {
-        window.clearTimeout(revealTimerId);
-        revealTimerId = 0;
-      }
-    }
-
-    function clearCloseTimer() {
-      if (closeTimerId) {
-        window.clearTimeout(closeTimerId);
-        closeTimerId = 0;
-      }
-    }
-
-    function clearMobileShippingRevealTimer() {
-      if (mobileShippingRevealTimerId) {
-        window.clearTimeout(mobileShippingRevealTimerId);
-        mobileShippingRevealTimerId = 0;
-      }
-    }
-
-    function handleVisibilityChange() {
-      if (document.visibilityState === 'hidden' && revealPhaseRef === 'playing') {
-        video.pause();
-      }
-
-      if (document.visibilityState === 'hidden' && revealPhaseRef === 'closing') {
-        reverseVideo.pause();
-      }
-    }
-
-    prepareVideo(video);
-    prepareVideo(reverseVideo);
-    setMediaReady(false);
-    resetVideoToStart(video);
-    resetVideoToStart(reverseVideo);
-    video.addEventListener('loadedmetadata', handleMetadata);
-    video.addEventListener('loadeddata', markMediaReady);
-    video.addEventListener('canplay', markMediaReady);
-    video.addEventListener('seeked', markMediaReady);
-    video.addEventListener('timeupdate', requestProgressSync);
-    video.addEventListener('ended', handleEnded);
-    if (!usesManualReverse) {
-      reverseVideo.addEventListener('loadeddata', markMediaReady);
-      reverseVideo.addEventListener('canplay', markMediaReady);
-      reverseVideo.addEventListener('timeupdate', requestReverseProgressSync);
-      reverseVideo.addEventListener('ended', handleReverseEnded);
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    window.addEventListener('visibilitychange', handleVisibilityChange);
-
-    if (video.readyState >= 1) {
-      handleMetadata();
-    }
-
-    if (video.readyState >= 2) {
-      markMediaReady();
-    }
-
-    if (!resumesSevenElevenSelection) {
-      syncProgress(0);
-    }
-
-    return () => {
-      disposed = true;
-      closeRequestId += 1;
-
-      if (frameId) {
-        window.cancelAnimationFrame(frameId);
-      }
-
-      clearRevealTimer();
-      clearCloseTimer();
-      clearMobileShippingRevealTimer();
-      video.removeEventListener('loadedmetadata', handleMetadata);
-      video.removeEventListener('loadeddata', markMediaReady);
-      video.removeEventListener('canplay', markMediaReady);
-      video.removeEventListener('seeked', markMediaReady);
-      video.removeEventListener('timeupdate', requestProgressSync);
-      video.removeEventListener('ended', handleEnded);
-      if (!usesManualReverse) {
-        reverseVideo.removeEventListener('loadeddata', markMediaReady);
-        reverseVideo.removeEventListener('canplay', markMediaReady);
-        reverseVideo.removeEventListener(
-          'timeupdate',
-          requestReverseProgressSync
-        );
-        reverseVideo.removeEventListener('ended', handleReverseEnded);
-      }
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('wheel', handleWheel);
-      window.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [resumesSevenElevenSelection, reverseVideoSrc]);
+  useMerchRevealAssistedCompletion({
+    forwardVideoRef,
+    hasReverseVideo: productConfig.hasReverseVideo,
+    journeyRef: scrollerRef,
+    productId,
+    reverseVideoRef,
+    setMediaReady,
+    setPlaybackError: setRevealPlaybackError,
+    setRevealPhase,
+    setShowClaimForm: setShowShipping,
+    startAtEnd: resumesSevenElevenSelection
+  });
 
   useEffect(() => {
     let cancelled = false;
+
+    if (productConfig.claimKind === 'email') {
+      setShippingLoadState('loaded');
+      return undefined;
+    }
 
     async function loadStoredClaim() {
       try {
@@ -981,7 +359,7 @@ export function QualifiedResult({
     return () => {
       cancelled = true;
     };
-  }, [productId]);
+  }, [productConfig.claimKind, productId]);
 
   function handleShippingFormChange(event: FormEvent<HTMLFormElement>) {
     if (hasSubmittedClaim) {
@@ -1173,6 +551,12 @@ export function QualifiedResult({
             </p>
           </div>
 
+          {productConfig.claimKind === 'email' ? (
+            <VipTicketClaimForm
+              claimName={productConfig.claimName}
+              minimumSbtBalance={result.minimumSbtBalance}
+            />
+          ) : (
           <form
             ref={shippingFormRef}
             className="qualified-result__shipping"
@@ -1509,6 +893,7 @@ export function QualifiedResult({
               </>
             )}
           </form>
+          )}
 
           {activeDialog ? (
             <div className="qualified-result__modal-backdrop" role="presentation">
@@ -1613,25 +998,20 @@ export function QualifiedResult({
   );
 }
 
-function readMobileVideoPanX(progress: number) {
-  const clampedProgress = Math.min(
-    1,
-    Math.max(0, Number.isFinite(progress) ? progress : 0)
-  );
-  const easedProgress =
-    clampedProgress * clampedProgress * (3 - 2 * clampedProgress);
+function readRevealVideoSource(
+  productId: MerchProductId,
+  preparedSource: string | undefined,
+  direction: 'forward' | 'reverse'
+) {
+  if (preparedSource) {
+    return preparedSource;
+  }
 
-  return (
-    MOBILE_VIDEO_PAN_START_X +
-    (MOBILE_VIDEO_PAN_END_X - MOBILE_VIDEO_PAN_START_X) * easedProgress
-  );
-}
+  if (hasPublicRevealMedia(productId)) {
+    return publicRevealMediaUrl(productId, direction);
+  }
 
-function isMobileRevealViewport() {
-  return (
-    window.innerWidth <= 860 ||
-    window.matchMedia?.(MOBILE_REVEAL_MEDIA_QUERY).matches === true
-  );
+  throw new Error(`Private reveal media is required for ${productId}.`);
 }
 
 function readShippingClaimPayload(form: HTMLFormElement): ShippingClaimPayload {

@@ -12,5 +12,8 @@ export const merchCatalog: readonly MerchProduct[] = [
   },
   {
     id: 'bracelet'
+  },
+  {
+    id: 'ticket'
   }
 ];

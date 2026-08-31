@@ -19,6 +19,7 @@ const previewQualifiedResult: EligibleMerchEligibilityResult = {
   minimumSbtBalance: 40,
   reveal: {
     category: 'Apparel',
+    claimKind: 'shipping',
     claimName: 'Renaiss Tee',
     description: 'A private Renaiss edition with worldwide fulfilment.',
     hasReverseVideo: true,
@@ -35,6 +36,7 @@ const previewBraceletResult: MerchEligibilityResult = {
   minimumSbtBalance: 100,
   reveal: {
     category: 'Object',
+    claimKind: 'shipping',
     claimName: 'Renaiss Bracelet',
     description: 'A private Renaiss object edition with a polished finish.',
     hasReverseVideo: true,

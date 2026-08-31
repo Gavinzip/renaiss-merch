@@ -37,8 +37,12 @@ export async function handleMerchRevealThumbnail(
 }
 
 function readProductImageAsset(productId, requestedVariant) {
-  if (productId !== 'bracelet') {
+  if (productId === 'shirt') {
     return 'shirtProduct';
+  }
+
+  if (productId === 'ticket') {
+    return 'ticketProduct';
   }
 
   if (requestedVariant === 'silver') {

@@ -3,8 +3,14 @@ import {
   exportFulfillmentCsv,
   FulfillmentError,
   readFulfillmentOverview,
+  type FulfillmentProductScope,
   type FulfillmentOverview
 } from '../../lib/fulfillment';
+import {
+  MERCH_PRODUCT_IDS,
+  MERCH_PRODUCT_LABELS,
+  type MerchProductId
+} from '../../lib/merchProducts';
 import './FulfillmentConsole.css';
 
 type FulfillmentConsoleProps = {
@@ -13,11 +19,27 @@ type FulfillmentConsoleProps = {
 
 type LoadState = 'loading' | 'ready' | 'error';
 
+const PRODUCT_SCOPE_OPTIONS: ReadonlyArray<{
+  id: FulfillmentProductScope;
+  label: string;
+}> = [
+  { id: 'all', label: 'All products' },
+  ...MERCH_PRODUCT_IDS.map((id) => ({ id, label: MERCH_PRODUCT_LABELS[id] }))
+];
+
 export function FulfillmentConsole({ onClose }: FulfillmentConsoleProps) {
   const [overview, setOverview] = useState<FulfillmentOverview | null>(null);
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [isExporting, setIsExporting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [productScope, setProductScope] =
+    useState<FulfillmentProductScope>('all');
+  const selectedRecipientCount = overview
+    ? readScopedRecipientCount(overview, productScope)
+    : 0;
+  const latestScopedExport = overview?.exports.find(
+    (record) => readExportRecordScope(record.productId) === productScope
+  ) || null;
 
   useEffect(() => {
     let active = true;
@@ -50,7 +72,7 @@ export function FulfillmentConsole({ onClose }: FulfillmentConsoleProps) {
     setNotice(null);
 
     try {
-      const result = await exportFulfillmentCsv();
+      const result = await exportFulfillmentCsv(productScope);
       downloadCsv(result.blob, result.fileName);
       setOverview((current) => {
         if (!current) {
@@ -60,17 +82,18 @@ export function FulfillmentConsole({ onClose }: FulfillmentConsoleProps) {
         const record = {
           id: `${result.exportedAt}-${result.recipientCount}`,
           createdAt: result.exportedAt,
+          productId: result.productScope === 'all' ? null : result.productScope,
           recipientCount: result.recipientCount
         };
 
         return {
-          completedRecipientCount: current.completedRecipientCount,
+          ...current,
           lastExport: record,
           previousExportRecipientCount: result.recipientCount,
           exports: [record, ...current.exports]
         };
       });
-      setNotice(`Exported ${result.recipientCount} completed recipient${result.recipientCount === 1 ? '' : 's'}.`);
+      setNotice(`Exported ${result.recipientCount} completed ${readProductScopeLabel(result.productScope)} recipient${result.recipientCount === 1 ? '' : 's'}.`);
     } catch (error) {
       setNotice(readErrorMessage(error));
     } finally {
@@ -104,23 +127,47 @@ export function FulfillmentConsole({ onClose }: FulfillmentConsoleProps) {
         {loadState === 'ready' && overview ? (
           <>
             <div className="fulfillment-console__metrics">
-              <Metric label="Ready to ship" value={overview.completedRecipientCount} />
+              <Metric label="Ready in scope" value={selectedRecipientCount} />
               <Metric
-                label="Previous export"
-                value={overview.previousExportRecipientCount ?? 'None'}
+                label="Previous in scope"
+                value={latestScopedExport?.recipientCount ?? 'None'}
               />
               <Metric
-                label="Latest export"
-                value={overview.lastExport ? formatDate(overview.lastExport.createdAt) : 'Not exported'}
+                label="Latest in scope"
+                value={latestScopedExport ? formatDate(latestScopedExport.createdAt) : 'Not exported'}
                 compact
               />
             </div>
 
+            <fieldset className="fulfillment-console__scope">
+              <legend>Export product</legend>
+              <div className="fulfillment-console__scope-options">
+                {PRODUCT_SCOPE_OPTIONS.map((option) => (
+                  <label key={option.id}>
+                    <input
+                      type="radio"
+                      name="fulfillment-product-scope"
+                      value={option.id}
+                      checked={productScope === option.id}
+                      onChange={() => {
+                        setProductScope(option.id);
+                        setNotice(null);
+                      }}
+                    />
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
             <div className="fulfillment-console__action-row">
               <div>
-                <p className="fulfillment-console__action-label">Current dispatch</p>
+                <p className="fulfillment-console__action-label">Exporting now</p>
+                <strong className="fulfillment-console__scope-name">
+                  {readProductScopeLabel(productScope)}
+                </strong>
                 <p className="fulfillment-console__action-copy">
-                  {overview.completedRecipientCount} completed shipping form{overview.completedRecipientCount === 1 ? '' : 's'} ready for CSV export.
+                  {selectedRecipientCount} completed recipient{selectedRecipientCount === 1 ? '' : 's'} ready for CSV export.
                 </p>
               </div>
               <button
@@ -144,7 +191,10 @@ export function FulfillmentConsole({ onClose }: FulfillmentConsoleProps) {
                 <ol>
                   {overview.exports.map((item) => (
                     <li key={item.id}>
-                      <time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time>
+                      <div>
+                        <strong>{readProductScopeLabel(readExportRecordScope(item.productId))}</strong>
+                        <time dateTime={item.createdAt}>{formatDate(item.createdAt)}</time>
+                      </div>
                       <span>{item.recipientCount} recipient{item.recipientCount === 1 ? '' : 's'}</span>
                     </li>
                   ))}
@@ -158,6 +208,27 @@ export function FulfillmentConsole({ onClose }: FulfillmentConsoleProps) {
       </div>
     </section>
   );
+}
+
+function readScopedRecipientCount(
+  overview: FulfillmentOverview,
+  productScope: FulfillmentProductScope
+) {
+  return productScope === 'all'
+    ? overview.completedRecipientCount
+    : overview.completedRecipientCounts[productScope];
+}
+
+function readProductScopeLabel(productScope: FulfillmentProductScope) {
+  return productScope === 'all'
+    ? 'All products'
+    : MERCH_PRODUCT_LABELS[productScope];
+}
+
+function readExportRecordScope(
+  productId: MerchProductId | null
+): FulfillmentProductScope {
+  return productId || 'all';
 }
 
 function Metric({

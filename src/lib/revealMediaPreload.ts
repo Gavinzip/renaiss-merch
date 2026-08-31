@@ -1,4 +1,7 @@
-import type { MerchProductId } from './merchProducts';
+import type {
+  MerchProductId,
+  PublicRevealProductId
+} from './merchProducts';
 import {
   publicRevealMediaUrl,
   type RevealDirection
@@ -41,7 +44,7 @@ class RevealMediaDecodeError extends Error {
 }
 
 export async function prepareRevealMedia(
-  productId: MerchProductId,
+  productId: PublicRevealProductId,
   onProgress: (progress: RevealMediaAdmissionProgress) => void
 ): Promise<PreparedRevealMedia> {
   const sources = Object.fromEntries(

@@ -36,6 +36,10 @@ export async function handleSevenElevenMapStart(
     context === 'claim'
       ? readMerchProductId(payload.get('productId'))
       : null;
+
+  if (productId === 'ticket') {
+    throw new HttpError(400, 'shipping_product_invalid');
+  }
   const returnTo = readSafeReturnTo(payload.get('returnTo'));
   const device = payload.get('device') === '1' ? '1' : '0';
   const config = getEcpayStoreMapConfig(options.publicOrigin);

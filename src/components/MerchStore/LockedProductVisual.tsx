@@ -11,7 +11,10 @@ type LockedProductVisualProps = {
   revealedName?: string;
   sealedAsset?: Extract<
     StaticMerchAsset,
-    'braceletSealedDrop' | 'sealedDrop' | 'sealedDropCatalog'
+    | 'braceletSealedDrop'
+    | 'sealedDrop'
+    | 'sealedDropCatalog'
+    | 'ticketSealedDrop'
   >;
 };
 
@@ -25,7 +28,11 @@ export function LockedProductVisual({
   const isRevealed = !!revealedName && !!revealedImageUrl;
   const lockedAsset =
     sealedAsset ??
-    (productId === 'bracelet' ? 'braceletSealedDrop' : 'sealedDrop');
+    (productId === 'bracelet'
+      ? 'braceletSealedDrop'
+      : productId === 'ticket'
+        ? 'ticketSealedDrop'
+        : 'sealedDrop');
 
   return (
     <>

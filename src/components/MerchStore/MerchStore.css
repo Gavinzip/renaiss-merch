@@ -334,7 +334,7 @@
 
 .merch-store__products {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(0.85rem, 2vw, 1.45rem);
 }
 
@@ -365,6 +365,10 @@
   padding-top: 0.75rem;
   border-right: 0;
   animation-delay: 90ms;
+}
+
+.merch-catalog-item:nth-child(3) {
+  animation-delay: 180ms;
 }
 
 .merch-catalog-item__visual-shell {
@@ -789,7 +793,10 @@
 
 .merch-product-card--bracelet
   .merch-product-card__locked-media.is-unrevealed,
-.merch-catalog-item--bracelet .merch-catalog-item__media.is-unrevealed {
+.merch-catalog-item--bracelet .merch-catalog-item__media.is-unrevealed,
+.merch-product-card--ticket
+  .merch-product-card__locked-media.is-unrevealed,
+.merch-catalog-item--ticket .merch-catalog-item__media.is-unrevealed {
   object-position: center center;
 }
 

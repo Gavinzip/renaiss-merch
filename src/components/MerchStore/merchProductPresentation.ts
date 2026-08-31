@@ -1,5 +1,6 @@
 import type { MerchAccessProductState } from '../../lib/merchAccessState';
 import { getVerifiedSbtCount } from '../../lib/merchEligibility';
+import { MERCH_PRODUCT_LABELS } from '../../lib/merchProducts';
 import type { MerchProductId } from './merchCatalog';
 
 export type MerchProductPresentation = {
@@ -15,8 +16,7 @@ export function readMerchProductPresentation(
   productId: MerchProductId,
   accessState?: MerchAccessProductState
 ): MerchProductPresentation {
-  const lockedTitle =
-    productId === 'shirt' ? 'Renaiss Tee' : 'Renaiss Bracelet';
+  const lockedTitle = MERCH_PRODUCT_LABELS[productId];
   const verifiedSbtCount = accessState
     ? getVerifiedSbtCount(accessState)
     : null;

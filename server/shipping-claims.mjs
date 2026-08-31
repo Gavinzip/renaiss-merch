@@ -27,7 +27,7 @@ export function handleStoredMerchShippingClaim(res, session, options = {}) {
     throw new HttpError(401, 'unauthenticated');
   }
 
-  const productId = readMerchProductId(options.productId);
+  const productId = readShippingProductId(options.productId);
   sendJson(
     res,
     200,
@@ -46,7 +46,7 @@ export async function handleMerchShippingClaim(req, res, session, options = {}) 
   const readEligibility = options.readEligibility || readMerchEligibility;
   const writeShippingClaim = options.saveShippingClaim || saveShippingClaim;
   const payload = await readJsonBody(req);
-  const productId = readMerchProductId(payload.productId);
+  const productId = readShippingProductId(payload.productId);
   const eligibility = await readEligibility(session, { productId });
 
   if (eligibility.status !== 'eligible') {
@@ -89,7 +89,7 @@ export async function handleMerchShippingClaim(req, res, session, options = {}) 
 export function saveShippingClaim(claimInput, options = {}) {
   const db = getMerchDatabase(options.dbPath);
   const createdAt = new Date().toISOString();
-  const productId = readMerchProductId(claimInput.productId);
+  const productId = readShippingProductId(claimInput.productId);
   const status = claimInput.intent === 'submit' ? 'submitted' : 'draft';
   const walletAddress = normalizeWalletAddress(
     claimInput.eligibility?.walletAddress
@@ -258,7 +258,7 @@ export function readStoredShippingClaims(options = {}) {
 
 export function readLatestShippingClaim(session, options = {}) {
   const walletAddress = readSessionWalletAddress(session);
-  const productId = readMerchProductId(options.productId);
+  const productId = readShippingProductId(options.productId);
   const db = getMerchDatabase(options.dbPath);
   const entitlement = readClaimEntitlements(session, {
     ...options,
@@ -337,7 +337,7 @@ export function readClaimEntitlements(session, options = {}) {
 
 export function hasSubmittedClaim(session, options = {}) {
   const walletAddress = readSessionWalletAddress(session);
-  const productId = readMerchProductId(options.productId);
+  const productId = readShippingProductId(options.productId);
   const db = getMerchDatabase(options.dbPath);
   const row = db
     .prepare(
@@ -391,6 +391,16 @@ function toClaimRow(claim) {
 
 function readShippingIntent(value) {
   return value === 'submit' ? 'submit' : 'save';
+}
+
+function readShippingProductId(value) {
+  const productId = readMerchProductId(value);
+
+  if (productId === 'ticket') {
+    throw new HttpError(400, 'shipping_product_invalid');
+  }
+
+  return productId;
 }
 
 function normalizeClaimStatus(value) {

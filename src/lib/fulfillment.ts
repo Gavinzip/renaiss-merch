@@ -1,11 +1,17 @@
+import type { MerchProductId } from './merchProducts';
+
+export type FulfillmentProductScope = 'all' | MerchProductId;
+
 export type FulfillmentExportRecord = {
   id: string;
   createdAt: string;
+  productId: MerchProductId | null;
   recipientCount: number;
 };
 
 export type FulfillmentOverview = {
   completedRecipientCount: number;
+  completedRecipientCounts: Record<MerchProductId, number>;
   lastExport: FulfillmentExportRecord | null;
   previousExportRecipientCount: number | null;
   exports: FulfillmentExportRecord[];
@@ -31,13 +37,15 @@ export async function readFulfillmentOverview(): Promise<FulfillmentOverview> {
   return (await response.json()) as FulfillmentOverview;
 }
 
-export async function exportFulfillmentCsv(): Promise<{
+export async function exportFulfillmentCsv(productScope: FulfillmentProductScope): Promise<{
   blob: Blob;
   fileName: string;
+  productScope: FulfillmentProductScope;
   recipientCount: number;
   exportedAt: string;
 }> {
-  const response = await fetch('/api/admin/fulfillment/export', {
+  const query = new URLSearchParams({ productId: productScope });
+  const response = await fetch(`/api/admin/fulfillment/export?${query}`, {
     method: 'POST',
     credentials: 'same-origin',
     headers: { Accept: 'text/csv' }
@@ -52,10 +60,16 @@ export async function exportFulfillmentCsv(): Promise<{
     'renaiss-merch-fulfillment.csv';
   const recipientCount = Number(response.headers.get('X-Fulfillment-Export-Count'));
   const exportedAt = response.headers.get('X-Fulfillment-Exported-At') || new Date().toISOString();
+  const responseProductScope = response.headers.get('X-Fulfillment-Export-Product');
+
+  if (responseProductScope !== productScope) {
+    throw new FulfillmentError('fulfillment_export_scope_mismatch');
+  }
 
   return {
     blob: await response.blob(),
     fileName,
+    productScope,
     recipientCount: Number.isSafeInteger(recipientCount) ? recipientCount : 0,
     exportedAt
   };

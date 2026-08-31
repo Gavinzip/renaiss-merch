@@ -1,10 +1,10 @@
 import assetRelease from '../../media/public-asset-release.json';
-import type { MerchProductId } from './merchProducts';
+import type { PublicRevealProductId } from './merchProducts';
 
 export type RevealDirection = 'forward' | 'reverse';
 
 type RevealAssetKey =
-  `${MerchProductId}Reveal${'Forward' | 'Reverse'}`;
+  `${PublicRevealProductId}Reveal${'Forward' | 'Reverse'}`;
 
 const configuredCdnBase = String(
   import.meta.env.VITE_STATIC_ASSET_CDN_BASE_URL || ''
@@ -15,7 +15,7 @@ const configuredCdnBase = String(
 export const publicRevealMediaRelease = assetRelease.release;
 
 export function publicRevealMediaUrl(
-  productId: MerchProductId,
+  productId: PublicRevealProductId,
   direction: RevealDirection
 ) {
   const assetKey = readRevealAssetKey(productId, direction);
@@ -47,7 +47,7 @@ export function publicRevealMediaUrl(
 }
 
 function readRevealAssetKey(
-  productId: MerchProductId,
+  productId: PublicRevealProductId,
   direction: RevealDirection
 ): RevealAssetKey {
   const suffix = direction === 'forward' ? 'Forward' : 'Reverse';

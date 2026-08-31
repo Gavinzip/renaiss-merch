@@ -57,12 +57,17 @@ import {
   handleStoredMerchShippingProfile
 } from './shipping-profile.mjs';
 import {
+  handleStoredVipTicketClaim,
+  handleVipTicketClaim
+} from './vip-ticket-claims.mjs';
+import {
   handleSevenElevenMapCallback,
   handleSevenElevenMapStart,
   handleSevenElevenSelectionConsume,
   requireSevenElevenStoreMapConfiguration
 } from './seven-eleven-store-selection.mjs';
 import { handleMerchRevealThumbnail } from './reveal-thumbnail.mjs';
+import { handleMerchRevealVideo } from './reveal-video.mjs';
 import { getRuntimeConfig } from './runtime-config.mjs';
 import {
   CHALLENGE_MAX_AGE_SECONDS,
@@ -253,6 +258,19 @@ async function handleRoute(req, res) {
     return true;
   }
 
+  if (url.pathname === '/api/merch-reveal-video') {
+    const session = readSession(req);
+
+    await handleMerchRevealVideo(
+      req,
+      res,
+      session,
+      url.searchParams.get('productId'),
+      getSessionDatabaseOptions(session)
+    );
+    return true;
+  }
+
   if (url.pathname === '/api/merch-shipping-claim') {
     const session = readSession(req);
     const databaseOptions = {
@@ -270,6 +288,25 @@ async function handleRoute(req, res) {
 
     requireMethod(req, 'POST');
     await handleMerchShippingClaim(req, res, session, {
+      saveOptions: databaseOptions
+    });
+    return true;
+  }
+
+  if (url.pathname === '/api/merch-vip-ticket-claim') {
+    const session = readSession(req);
+    const databaseOptions = getSessionDatabaseOptions(session);
+
+    if (req.method === 'GET') {
+      handleStoredVipTicketClaim(res, session, {
+        ...databaseOptions,
+        productId: url.searchParams.get('productId')
+      });
+      return true;
+    }
+
+    requireMethod(req, 'POST');
+    await handleVipTicketClaim(req, res, session, {
       saveOptions: databaseOptions
     });
     return true;
@@ -330,7 +367,7 @@ async function handleRoute(req, res) {
 
   if (url.pathname === '/api/admin/fulfillment/export') {
     requireMethod(req, 'POST');
-    exportFulfillmentRecipients(req, res);
+    exportFulfillmentRecipients(req, res, url);
     return true;
   }
 
@@ -582,22 +619,27 @@ function sendFulfillmentOverview(req, res) {
   sendJson(res, 200, readFulfillmentOverview());
 }
 
-function exportFulfillmentRecipients(req, res) {
+function exportFulfillmentRecipients(req, res, url) {
   const session = readSession(req);
   requireFulfillmentAdministrator(session);
   requireSameOrigin(req);
 
-  const { csv, exportRecord } = createFulfillmentExport();
+  const requestedProductId = url.searchParams.get('productId');
+  const { csv, exportRecord } = createFulfillmentExport({
+    productId: requestedProductId
+  });
   const body = Buffer.from(csv, 'utf8');
   const timestamp = exportRecord.createdAt.replace(/[:.]/g, '-');
+  const productScope = exportRecord.productId || 'all';
 
   res.writeHead(200, {
     'Cache-Control': 'no-store, private',
-    'Content-Disposition': `attachment; filename="renaiss-merch-fulfillment-${timestamp}.csv"`,
+    'Content-Disposition': `attachment; filename="renaiss-merch-fulfillment-${productScope}-${timestamp}.csv"`,
     'Content-Length': body.byteLength,
     'Content-Type': 'text/csv; charset=utf-8',
     'X-Fulfillment-Export-Count': String(exportRecord.recipientCount),
-    'X-Fulfillment-Exported-At': exportRecord.createdAt
+    'X-Fulfillment-Exported-At': exportRecord.createdAt,
+    'X-Fulfillment-Export-Product': productScope
   });
   res.end(body);
 }

@@ -40,7 +40,8 @@ export function CatalogProductTile({
     inventory?.soldOut === true &&
     accessState?.claimStatus !== 'submitted';
   const presentation = readMerchProductPresentation(product.id, accessState);
-  const releaseNumber = product.id === 'shirt' ? '01' : '02';
+  const releaseNumber =
+    product.id === 'shirt' ? '01' : product.id === 'bracelet' ? '02' : '03';
 
   return (
     <article
@@ -72,7 +73,9 @@ export function CatalogProductTile({
             sealedAsset={
               product.id === 'bracelet'
                 ? 'braceletSealedDrop'
-                : 'sealedDropCatalog'
+                : product.id === 'ticket'
+                  ? 'ticketSealedDrop'
+                  : 'sealedDropCatalog'
             }
             revealedImageUrl={revealedImageUrl}
             revealedName={

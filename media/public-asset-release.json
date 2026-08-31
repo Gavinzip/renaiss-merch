@@ -1,11 +1,11 @@
 {
   "access": "public",
   "bucket": "renaiss-merch-media",
-  "contentHash": "0c6b161f379cd2aa2a33f630b4dbc29825b1db56c376142c8351ee2639fab086",
-  "fileCount": 10,
+  "contentHash": "1f6bf5a86c3a3c8abec20b13c75ead00f86b9e44b8e2de3383d45707f28562f8",
+  "fileCount": 11,
   "prefix": "merch/v1.2",
-  "release": "r0c6b161f379cd2aa2a33",
-  "totalBytes": 28661675,
+  "release": "r1f6bf5a86c3a3c8abec2",
+  "totalBytes": 57783035,
   "assets": {
     "renaissLogoMark": {
       "contentType": "image/avif",
@@ -26,6 +26,13 @@
       "master": "private/merch/products/bracelet/source/images/packaging/box-closed-storefront.png",
       "path": "store/bracelet-box-closed.avif",
       "source": "src/assets/merch/products/bracelet/website/box-closed.png",
+      "sourceContentType": "image/png",
+      "type": "image"
+    },
+    "ticketSealedDrop": {
+      "contentType": "image/avif",
+      "path": "store/vip-ticket-pack-sealed.avif",
+      "source": "private/merch/products/ticket/website/images/reveal-first-frame.png",
       "sourceContentType": "image/png",
       "type": "image"
     },
@@ -53,29 +60,29 @@
     "shirtRevealForward": {
       "contentType": "video/mp4",
       "path": "reveal/shirt-forward.mp4",
+      "source": "private/merch/products/shirt/website/videos/reveal-forward-scrub.mp4",
       "sourceContentType": "video/mp4",
-      "sourceKey": "shirtRevealForward",
       "type": "binary"
     },
     "shirtRevealReverse": {
       "contentType": "video/mp4",
       "path": "reveal/shirt-reverse.mp4",
+      "source": "private/merch/products/shirt/website/videos/reveal-reverse-scrub.mp4",
       "sourceContentType": "video/mp4",
-      "sourceKey": "shirtRevealReverse",
       "type": "binary"
     },
     "braceletRevealForward": {
       "contentType": "video/mp4",
       "path": "reveal/bracelet-forward.mp4",
+      "source": "private/merch/products/bracelet/website/videos/reveal-forward-scrub.mp4",
       "sourceContentType": "video/mp4",
-      "sourceKey": "braceletRevealForward",
       "type": "binary"
     },
     "braceletRevealReverse": {
       "contentType": "video/mp4",
       "path": "reveal/bracelet-reverse.mp4",
+      "source": "private/merch/products/bracelet/website/videos/reveal-reverse-scrub.mp4",
       "sourceContentType": "video/mp4",
-      "sourceKey": "braceletRevealReverse",
       "type": "binary"
     }
   }

@@ -6,6 +6,7 @@ export type StaticMerchAsset =
   | 'braceletSealedDrop'
   | 'sealedDrop'
   | 'sealedDropCatalog'
+  | 'ticketSealedDrop'
   | 'storeBackground';
 
 const configuredCdnBase = String(
@@ -25,6 +26,8 @@ const developmentPaths: Record<StaticMerchAsset, string> = {
     '/src/assets/merch/products/shirt/website/box-card.jpg',
   sealedDropCatalog:
     '/src/assets/merch/products/shirt/website/box-catalog.png',
+  ticketSealedDrop:
+    '/private/merch/products/ticket/website/images/reveal-first-frame.png',
   storeBackground:
     '/src/assets/merch/shared/website/store-background.png'
 };

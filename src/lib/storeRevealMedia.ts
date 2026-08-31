@@ -1,6 +1,7 @@
 import {
-  MERCH_PRODUCT_IDS,
-  type MerchProductId
+  PUBLIC_REVEAL_PRODUCT_IDS,
+  type MerchProductId,
+  type PublicRevealProductId
 } from './merchProducts';
 import {
   prepareRevealMedia,
@@ -83,7 +84,7 @@ export function createStoreRevealMediaController() {
     });
 
     await Promise.all(
-      MERCH_PRODUCT_IDS.map(async (productId) => {
+      PUBLIC_REVEAL_PRODUCT_IDS.map(async (productId) => {
         await prepareProduct(productId, (progress) => {
           productProgress[productId] = progress;
           updateOverallProgress();
@@ -111,7 +112,7 @@ export function createStoreRevealMediaController() {
   }
 
   async function prepareProduct(
-    productId: MerchProductId,
+    productId: PublicRevealProductId,
     onProgress: (progress: RevealMediaAdmissionProgress) => void
   ) {
     const prepared = preparedMedia[productId];
@@ -161,7 +162,7 @@ export function createStoreRevealMediaController() {
     admissionComplete = false;
     const released = new Set<PreparedRevealMedia>();
 
-    for (const productId of MERCH_PRODUCT_IDS) {
+    for (const productId of PUBLIC_REVEAL_PRODUCT_IDS) {
       const prepared = preparedMedia[productId];
 
       if (prepared && !released.has(prepared)) {
