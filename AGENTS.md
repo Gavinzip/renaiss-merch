@@ -7,10 +7,11 @@
 - Do not ship source, concept, AI-generation working files, or other original
   production materials in `public` or `dist`.
 - Product images and claim-only media remain eligibility-gated in private R2.
-  The four T-shirt/Bracelet reveal MP4s are an explicit public exception: they
-  are versioned public R2/CDN assets, anonymously preloaded before Store entry,
-  and may be opened, downloaded, or shared without authentication. Eligibility
-  still gates the reveal UI, claim access, and shipping data.
+  The five T-shirt, Bracelet, and VIP Ticket reveal MP4s are explicit public
+  exceptions: they are versioned public R2/CDN assets, anonymously preloaded
+  after the Store becomes visible, and may be opened, downloaded, or shared
+  without authentication. Eligibility still gates the reveal UI, claim access,
+  and shipping data.
 - Preserve HTTP range support for MP4 playback and scroll scrubbing. Configure
   immutable caching and compression for versioned public assets, but do not
   long-cache HTML, API, authentication, or callback responses.
@@ -29,7 +30,7 @@
   must travel directly from Cloudflare R2/Worker/CDN to the browser and must
   never be streamed, buffered, or proxied through Zeabur in production.
 - Keep genuinely private product/claim media gated. Its direct Cloudflare URL
-  must be short-lived and signed. The four explicitly public reveal MP4s load
+  must be short-lived and signed. The five explicitly public reveal MP4s load
   from permanent content-versioned public CDN URLs instead.
 - Preserve `Content-Length`, `Content-Type`, `ETag`, and HTTP range behavior on
   the Cloudflare response. Verify representative MP4 requests return
@@ -43,9 +44,11 @@
   routes, with their appropriate cache policies.
 - Public versioned media may use the bucket's managed `r2.dev` origin in
   production. A custom domain is not a release requirement for this project.
-- Public reveal MP4s must be downloaded anonymously before first Store entry
-  and retained in browser Cache Storage by public release. Refresh and
-  logout/login may decode again, but must not re-download the unchanged bytes.
+- Public reveal MP4s must begin anonymous background preparation after the Store
+  is visible and be retained in browser Cache Storage by public release. A
+  product may open only after its own video is downloaded, decoded, and its
+  first visible frame is ready. Refresh and logout/login may decode again, but
+  must not re-download the unchanged bytes.
 
 ## Storefront release mode
 

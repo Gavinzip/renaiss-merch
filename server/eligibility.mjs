@@ -166,14 +166,6 @@ function getEligibilityConfig(productId) {
     throw new HttpError(500, 'bscscan_not_configured');
   }
 
-  const sbtContract = normalizeWallet(
-    readOptionalEnv('ONCHAIN_SBT_CONTRACT') || DEFAULT_SBT_CONTRACT
-  );
-
-  if (!sbtContract) {
-    throw new HttpError(500, 'sbt_contract_invalid');
-  }
-
   const productRule = PRODUCT_ELIGIBILITY_RULES[productId];
 
   return {
@@ -186,8 +178,25 @@ function getEligibilityConfig(productId) {
         'MERCH_SBT_CACHE_TTL_SECONDS',
         DEFAULT_CACHE_TTL_SECONDS
       ) * 1000,
-    sbtContract
+    sbtContract: readConfiguredSbtContract()
   };
+}
+
+export function readConfiguredSbtContract() {
+  const sbtContract = normalizeWallet(
+    readOptionalEnv('ONCHAIN_SBT_CONTRACT') || DEFAULT_SBT_CONTRACT
+  );
+
+  if (!sbtContract) {
+    throw new HttpError(500, 'sbt_contract_invalid');
+  }
+
+  return sbtContract;
+}
+
+export function readMerchMinimumSbtBalance(productId) {
+  const normalizedProductId = readMerchProductId(productId);
+  return PRODUCT_ELIGIBILITY_RULES[normalizedProductId].minimumSbtBalance;
 }
 
 export function readMerchProductId(value) {

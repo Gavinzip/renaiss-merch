@@ -126,7 +126,7 @@ The complete record is in `media/ASSET_DELETE_REVIEW.md`.
 6. Move approved generated files into the relevant product's `source` or
    `workbench` directory; never leave adopted media in a generic generation
    bucket.
-7. Publish public Store derivatives and the four reveal MP4s through
+7. Publish public Store derivatives and the five reveal MP4s through
    `npm run assets:publish`; publish gated product images through
    `npm run assets:private:publish`.
 8. Verify the live R2/CDN response headers and MP4 range behavior before a

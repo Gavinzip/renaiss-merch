@@ -3,9 +3,11 @@ import type { PreparedRevealMedia } from '../../lib/revealMediaPreload';
 import { QualifiedResult } from '../QualifiedResult/QualifiedResult';
 import { UnqualifiedResult } from '../UnqualifiedResult/UnqualifiedResult';
 import type { MerchProductId } from './merchCatalog';
+import { useLocale } from '../../i18n/LocaleContext';
 
 type StoreAccessResultProps = {
   onBack: () => void;
+  onMediaReady?: () => void;
   productId: MerchProductId;
   revealMedia?: Pick<
     PreparedRevealMedia,
@@ -16,10 +18,13 @@ type StoreAccessResultProps = {
 
 export function StoreAccessResult({
   onBack,
+  onMediaReady,
   productId,
   revealMedia,
   result
 }: StoreAccessResultProps) {
+  const { locale } = useLocale();
+
   return (
     <div
       className={[
@@ -33,13 +38,14 @@ export function StoreAccessResult({
         onClick={onBack}
         type="button"
       >
-        Back to store
+        {locale === 'zh-TW' ? '返回商店' : 'Back to store'}
       </button>
 
       {result.status === 'unqualified' ? (
         <UnqualifiedResult result={result} />
       ) : (
         <QualifiedResult
+          onMediaReady={onMediaReady}
           productId={productId}
           revealMedia={revealMedia}
           result={result}

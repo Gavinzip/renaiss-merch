@@ -1,3 +1,5 @@
+import type { AppLocale } from '../i18n/LocaleContext';
+
 export type ShippingCountry = {
   code: string;
   label: string;
@@ -283,32 +285,53 @@ const labelOverrides: Record<string, string> = {
   XK: 'Kosovo'
 };
 
-const regionNameFormatter =
-  typeof Intl.DisplayNames === 'function'
-    ? new Intl.DisplayNames(['en'], { type: 'region' })
-    : null;
+const countryOptionsByLocale = new Map<AppLocale, ShippingCountry[]>();
 
-const countryByCode = new Map(
-  regionCodes.map((code) => [
-    code,
-    {
+export function readShippingCountries(locale: AppLocale) {
+  const existing = countryOptionsByLocale.get(locale);
+
+  if (existing) {
+    return existing;
+  }
+
+  const regionNameFormatter = new Intl.DisplayNames([locale], {
+    type: 'region'
+  });
+  const countryByCode = new Map(
+    regionCodes.map((code) => [
       code,
-      label: labelOverrides[code] || regionNameFormatter?.of(code) || code
-    }
-  ])
-);
+      {
+        code,
+        label:
+          locale === 'en' && labelOverrides[code]
+            ? labelOverrides[code]
+            : regionNameFormatter.of(code) || code
+      }
+    ])
+  );
+  const countries = [
+    ...preferredCountryCodes,
+    ...regionCodes
+      .filter((code) => !preferredCountryCodes.includes(code))
+      .sort((firstCode, secondCode) =>
+        readCountryLabel(firstCode, countryByCode).localeCompare(
+          readCountryLabel(secondCode, countryByCode),
+          locale
+        )
+      )
+  ]
+    .map((code) => countryByCode.get(code))
+    .filter((country): country is ShippingCountry => Boolean(country));
 
-export const shippingCountries: ShippingCountry[] = [
-  ...preferredCountryCodes,
-  ...regionCodes
-    .filter((code) => !preferredCountryCodes.includes(code))
-    .sort((firstCode, secondCode) =>
-      getCountryLabel(firstCode).localeCompare(getCountryLabel(secondCode))
-    )
-]
-  .map((code) => countryByCode.get(code))
-  .filter((country): country is ShippingCountry => Boolean(country));
+  countryOptionsByLocale.set(locale, countries);
+  return countries;
+}
 
-function getCountryLabel(code: string) {
-  return countryByCode.get(code)?.label || code;
+export const shippingCountries = readShippingCountries('en');
+
+function readCountryLabel(
+  code: string,
+  countries: Map<string, ShippingCountry>
+) {
+  return countries.get(code)?.label || code;
 }

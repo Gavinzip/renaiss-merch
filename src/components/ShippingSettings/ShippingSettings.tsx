@@ -20,7 +20,7 @@ import {
 import {
   isChineseShippingErrorCode
 } from '../../../shared/shipping-address-policy.js';
-import { shippingCountries } from '../../lib/shippingCountries';
+import { readShippingCountries } from '../../lib/shippingCountries';
 import {
   beginSevenElevenStoreSelection,
   consumeReturnedSevenElevenSelection,
@@ -34,6 +34,11 @@ import {
 } from '../../lib/sevenElevenStore';
 import type { ShippingDeliveryMethod } from '../../lib/shippingClaim';
 import './ShippingSettings.css';
+import {
+  formatLocalizedDate,
+  useLocale,
+  type AppLocale
+} from '../../i18n/LocaleContext';
 
 type ShippingSettingsProps = {
   accountLabel: string;
@@ -75,6 +80,9 @@ export function ShippingSettings({
   onClose,
   onProfileReviewChange
 }: ShippingSettingsProps) {
+  const { locale } = useLocale();
+  const copy = settingsCopy[locale];
+  const shippingCountries = readShippingCountries(locale);
   const formRef = useRef<HTMLFormElement | null>(null);
   const [settingsState, setSettingsState] =
     useState<SettingsState>('loading');
@@ -312,24 +320,17 @@ export function ShippingSettings({
       >
         <header className="shipping-settings__header">
           <div>
-            <p>Account defaults</p>
-            <h2 id="shipping-settings-title">Shipping address</h2>
+            <p>{copy.eyebrow}</p>
+            <h2 id="shipping-settings-title">{copy.title}</h2>
           </div>
           <button onClick={onClose} type="button">
-            Close
+            {copy.close}
           </button>
         </header>
 
         <div className="shipping-settings__intro">
-          <p>
-            Save the recipient details you use most often. New product claims
-            will be prefilled automatically.
-          </p>
-          <p>
-            Every claim stays independent. You can change its address without
-            changing these defaults, and product options such as size remain
-            specific to that item.
-          </p>
+          <p>{copy.introPrimary}</p>
+          <p>{copy.introSecondary}</p>
           <span>{accountLabel}</span>
         </div>
 
@@ -356,13 +357,13 @@ export function ShippingSettings({
               <div>
                 <strong>
                   {deliveryMethod === 'seven_eleven_c2c'
-                    ? '中文姓名與台灣手機必填'
-                    : '中文地址必填'}
+                    ? copy.chineseNoticeTaiwanTitle
+                    : copy.chineseNoticeChinaTitle}
                 </strong>
                 <p>
                   {deliveryMethod === 'seven_eleven_c2c'
-                    ? '台灣訂單一律使用 7-ELEVEN 店到店。取件姓名須包含中文字，並填寫台灣手機號碼。'
-                    : '中國的收件人姓名及地址必須包含中文字。'}
+                    ? copy.chineseNoticeTaiwanBody
+                    : copy.chineseNoticeChinaBody}
                 </p>
               </div>
             </div>
@@ -401,8 +402,8 @@ export function ShippingSettings({
             />
             <label className="shipping-settings__field-half">
               {chineseShippingReview.isRequired
-                ? 'First name (中文)'
-                : 'First name'}
+                ? copy.firstNameChinese
+                : copy.firstName}
               <input
                 autoComplete="shipping given-name"
                 name="firstName"
@@ -412,8 +413,8 @@ export function ShippingSettings({
             </label>
             <label className="shipping-settings__field-half">
               {chineseShippingReview.isRequired
-                ? 'Last name (中文)'
-                : 'Last name'}
+                ? copy.lastNameChinese
+                : copy.lastName}
               <input
                 autoComplete="shipping family-name"
                 name="lastName"
@@ -422,7 +423,7 @@ export function ShippingSettings({
               />
             </label>
             <label className="shipping-settings__field-half">
-              Email
+              {copy.email}
               <input
                 autoComplete="email"
                 name="email"
@@ -433,7 +434,7 @@ export function ShippingSettings({
               />
             </label>
             <label className="shipping-settings__field-half">
-              Phone
+              {copy.phone}
               <input
                 autoComplete="shipping tel"
                 name="phone"
@@ -448,7 +449,7 @@ export function ShippingSettings({
               />
             </label>
             <label className="shipping-settings__field-half">
-              Country / region
+              {copy.countryRegion}
               <select
                 autoComplete="shipping country-name"
                 defaultValue="US"
@@ -466,7 +467,7 @@ export function ShippingSettings({
             shippingCountry === 'TW' ? (
               <div className="shipping-settings__store-picker shipping-settings__field-wide">
                 <div>
-                  <span>Pickup store</span>
+                  <span>{copy.pickupStore}</span>
                   {sevenElevenStore ? (
                     <p>
                       <strong>{sevenElevenStore.name}</strong>
@@ -475,17 +476,17 @@ export function ShippingSettings({
                       </span>
                     </p>
                   ) : (
-                    <p>尚未選擇取件門市。</p>
+                    <p>{copy.noStoreSelected}</p>
                   )}
                 </div>
                 <button onClick={handleSelectSevenElevenStore} type="button">
-                  {sevenElevenStore ? '更換門市' : '選擇門市'}
+                  {sevenElevenStore ? copy.changeStore : copy.selectStore}
                 </button>
               </div>
             ) : (
               <>
                 <label className="shipping-settings__field-half">
-                  ZIP / postal code
+                  {copy.postalCode}
                   <input
                     autoComplete="shipping postal-code"
                     name="postalCode"
@@ -494,26 +495,26 @@ export function ShippingSettings({
                   />
                 </label>
                 <label className="shipping-settings__field-wide">
-                  Address line 1
+                  {copy.addressLine1}
                   <input
                     autoComplete="shipping address-line1"
                     name="addressLine1"
-                    placeholder="Street address or PO box"
+                    placeholder={copy.addressLine1Placeholder}
                     required
                     type="text"
                   />
                 </label>
                 <label className="shipping-settings__field-wide">
-                  Address line 2
+                  {copy.addressLine2}
                   <input
                     autoComplete="shipping address-line2"
                     name="addressLine2"
-                    placeholder="Apartment, suite, unit, building (optional)"
+                    placeholder={copy.addressLine2Placeholder}
                     type="text"
                   />
                 </label>
                 <label className="shipping-settings__field-half">
-                  City
+                  {copy.city}
                   <input
                     autoComplete="shipping address-level2"
                     name="city"
@@ -522,7 +523,7 @@ export function ShippingSettings({
                   />
                 </label>
                 <label className="shipping-settings__field-half">
-                  State / province
+                  {copy.region}
                   <input
                     autoComplete="shipping address-level1"
                     name="region"
@@ -533,10 +534,10 @@ export function ShippingSettings({
               </>
             )}
             <label className="shipping-settings__field-wide">
-              Delivery notes
+              {copy.deliveryNotes}
               <textarea
                 name="deliveryNotes"
-                placeholder="Gate code, preferred delivery detail, or local instructions (optional)"
+                placeholder={copy.deliveryNotesPlaceholder}
                 rows={3}
               />
             </label>
@@ -549,11 +550,12 @@ export function ShippingSettings({
                 savedAt,
                 chineseShippingReview,
                 deliveryMethod,
-                taiwanMobileNeedsUpdate
+                taiwanMobileNeedsUpdate,
+                locale
               )}
             </p>
             <button disabled={isLoading || isSaving} type="submit">
-              {isSaving ? 'Saving' : 'Save defaults'}
+              {isSaving ? copy.saving : copy.saveDefaults}
             </button>
           </div>
         </form>
@@ -638,42 +640,139 @@ function readSettingsStatus(
   savedAt: string | null,
   chineseShippingReview: ChineseShippingReview,
   deliveryMethod: ShippingDeliveryMethod,
-  taiwanMobileNeedsUpdate: boolean
+  taiwanMobileNeedsUpdate: boolean,
+  locale: AppLocale
 ) {
+  const copy = settingsCopy[locale];
+
   switch (settingsState) {
     case 'loading':
-      return 'Loading your saved defaults.';
+      return copy.statusLoading;
     case 'saving':
-      return 'Saving your default recipient details.';
+      return copy.statusSaving;
     case 'dirty':
       return deliveryMethod === 'seven_eleven_c2c'
-        ? '門市與收件資料尚未儲存。'
-        : 'Changes are not saved yet.';
+        ? copy.statusStoreDirty
+        : copy.statusDirty;
     case 'saved':
-      return 'Defaults saved. Future claims will be prefilled.';
+      return copy.statusSaved;
     case 'invalid':
       return deliveryMethod === 'seven_eleven_c2c'
-        ? '請更新標示的中文姓名與台灣手機號碼。'
-        : 'Update the highlighted name and address fields before saving.';
+        ? copy.statusTaiwanInvalid
+        : copy.statusInvalid;
     case 'store-required':
-      return '請先選擇 7-ELEVEN 取件門市。';
+      return copy.statusStoreRequired;
     case 'error':
-      return 'Your defaults could not be loaded or saved. Please try again.';
+      return copy.statusError;
     default:
       if (
         chineseShippingReview.needsUpdate ||
         taiwanMobileNeedsUpdate
       ) {
         return deliveryMethod === 'seven_eleven_c2c'
-          ? '請更新標示的中文姓名與台灣手機號碼。'
-          : 'Update the highlighted name and address fields before saving.';
+          ? copy.statusTaiwanInvalid
+          : copy.statusInvalid;
       }
 
       return savedAt
-        ? `Saved ${new Intl.DateTimeFormat(undefined, {
-            dateStyle: 'medium',
-            timeStyle: 'short'
-          }).format(new Date(savedAt))}.`
-        : 'No defaults saved yet.';
+        ? copy.statusSavedAt(formatLocalizedDate(savedAt, locale))
+        : copy.statusEmpty;
   }
 }
+
+const settingsCopy = {
+  en: {
+    addressLine1: 'Address line 1',
+    addressLine1Placeholder: 'Street address or PO box',
+    addressLine2: 'Address line 2',
+    addressLine2Placeholder: 'Apartment, suite, unit, building (optional)',
+    changeStore: 'Change store',
+    chineseNoticeChinaBody:
+      'The recipient name and address for China must include Chinese characters.',
+    chineseNoticeChinaTitle: 'Chinese address required',
+    chineseNoticeTaiwanBody:
+      'Taiwan orders use 7-ELEVEN store pickup. The recipient name must include Chinese characters and a Taiwan mobile number is required.',
+    chineseNoticeTaiwanTitle: 'Chinese name and Taiwan mobile number required',
+    city: 'City',
+    close: 'Close',
+    countryRegion: 'Country / region',
+    deliveryNotes: 'Delivery notes',
+    deliveryNotesPlaceholder:
+      'Gate code, preferred delivery detail, or local instructions (optional)',
+    email: 'Email',
+    eyebrow: 'Account defaults',
+    firstName: 'First name',
+    firstNameChinese: 'First name (Chinese)',
+    introPrimary:
+      'Save the recipient details you use most often. New product claims will be prefilled automatically.',
+    introSecondary:
+      'Every claim stays independent. You can change its address without changing these defaults, and product options such as size remain specific to that item.',
+    lastName: 'Last name',
+    lastNameChinese: 'Last name (Chinese)',
+    noStoreSelected: 'No pickup store selected.',
+    phone: 'Phone',
+    pickupStore: 'Pickup store',
+    postalCode: 'ZIP / postal code',
+    region: 'State / province',
+    saveDefaults: 'Save defaults',
+    saving: 'Saving',
+    selectStore: 'Select store',
+    statusDirty: 'Changes are not saved yet.',
+    statusEmpty: 'No defaults saved yet.',
+    statusError: 'Your defaults could not be loaded or saved. Please try again.',
+    statusInvalid: 'Update the highlighted name and address fields before saving.',
+    statusLoading: 'Loading your saved defaults.',
+    statusSaved: 'Defaults saved. Future claims will be prefilled.',
+    statusSavedAt: (date: string) => `Saved ${date}.`,
+    statusSaving: 'Saving your default recipient details.',
+    statusStoreDirty: 'Store and recipient details are not saved yet.',
+    statusStoreRequired: 'Select a 7-ELEVEN pickup store first.',
+    statusTaiwanInvalid: 'Update the highlighted Chinese name and Taiwan mobile number.',
+    title: 'Shipping address'
+  },
+  'zh-TW': {
+    addressLine1: '地址第 1 行',
+    addressLine1Placeholder: '街道地址或郵政信箱',
+    addressLine2: '地址第 2 行',
+    addressLine2Placeholder: '公寓、樓層、單位或大樓名稱（選填）',
+    changeStore: '更換門市',
+    chineseNoticeChinaBody: '中國的收件人姓名及地址必須包含中文字。',
+    chineseNoticeChinaTitle: '中文地址必填',
+    chineseNoticeTaiwanBody:
+      '台灣訂單一律使用 7-ELEVEN 店到店。取件姓名須包含中文字，並填寫台灣手機號碼。',
+    chineseNoticeTaiwanTitle: '中文姓名與台灣手機必填',
+    city: '城市',
+    close: '關閉',
+    countryRegion: '國家／地區',
+    deliveryNotes: '配送備註',
+    deliveryNotesPlaceholder: '門禁、偏好配送方式或當地配送說明（選填）',
+    email: '電子信箱',
+    eyebrow: '帳號預設資料',
+    firstName: '名字',
+    firstNameChinese: '名字（中文）',
+    introPrimary: '儲存你最常使用的收件資料，之後申請商品時會自動帶入。',
+    introSecondary: '每次領取申請仍各自獨立，你可以單獨修改地址；尺寸等商品選項也只套用於該商品。',
+    lastName: '姓氏',
+    lastNameChinese: '姓氏（中文）',
+    noStoreSelected: '尚未選擇取件門市。',
+    phone: '電話',
+    pickupStore: '取件門市',
+    postalCode: '郵遞區號',
+    region: '州／省／地區',
+    saveDefaults: '儲存預設資料',
+    saving: '儲存中',
+    selectStore: '選擇門市',
+    statusDirty: '變更尚未儲存。',
+    statusEmpty: '目前尚未儲存預設資料。',
+    statusError: '目前無法讀取或儲存預設資料，請再試一次。',
+    statusInvalid: '儲存前請更新標示的姓名與地址欄位。',
+    statusLoading: '正在讀取已儲存的預設資料。',
+    statusSaved: '預設資料已儲存，之後的領取申請會自動帶入。',
+    statusSavedAt: (date: string) => `已於 ${date} 儲存。`,
+    statusSaving: '正在儲存預設收件資料。',
+    statusStoreDirty: '門市與收件資料尚未儲存。',
+    statusStoreRequired: '請先選擇 7-ELEVEN 取件門市。',
+    statusTaiwanInvalid: '請更新標示的中文姓名與台灣手機號碼。',
+    title: '配送地址'
+  }
+} as const;

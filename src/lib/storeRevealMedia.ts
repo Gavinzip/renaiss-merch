@@ -1,7 +1,6 @@
 import {
   PUBLIC_REVEAL_PRODUCT_IDS,
-  type MerchProductId,
-  type PublicRevealProductId
+  type MerchProductId
 } from './merchProducts';
 import {
   prepareRevealMedia,
@@ -19,6 +18,12 @@ type PendingMediaMap = Partial<
 type ProgressMap = Partial<
   Record<MerchProductId, RevealMediaAdmissionProgress>
 >;
+type ProgressListener = (
+  progress: RevealMediaAdmissionProgress
+) => void;
+type ProgressListenerMap = Partial<
+  Record<MerchProductId, Set<ProgressListener>>
+>;
 
 export type StoreRevealMediaController = ReturnType<
   typeof createStoreRevealMediaController
@@ -34,6 +39,8 @@ export class StoreRevealMediaCancelledError extends Error {
 export function createStoreRevealMediaController() {
   const preparedMedia: PreparedMediaMap = {};
   const pendingMedia: PendingMediaMap = {};
+  const latestProgress: ProgressMap = {};
+  const progressListeners: ProgressListenerMap = {};
   let admissionComplete = false;
   let generation = 0;
 
@@ -112,41 +119,82 @@ export function createStoreRevealMediaController() {
   }
 
   async function prepareProduct(
-    productId: PublicRevealProductId,
+    productId: MerchProductId,
     onProgress: (progress: RevealMediaAdmissionProgress) => void
   ) {
-    const prepared = preparedMedia[productId];
-
-    if (prepared) {
-      return prepared;
-    }
-
-    const pending = pendingMedia[productId];
-
-    if (pending) {
-      await pending;
-      return prepareProduct(productId, onProgress);
-    }
-
-    const requestGeneration = generation;
-    const request = prepareRevealMedia(productId, onProgress);
-    pendingMedia[productId] = request;
+    const unsubscribe = subscribeToProgress(productId, onProgress);
 
     try {
-      const result = await request;
+      const prepared = preparedMedia[productId];
 
-      if (requestGeneration !== generation) {
-        result.release();
-        throw new StoreRevealMediaCancelledError();
+      if (prepared) {
+        onProgress(
+          latestProgress[productId] || readCompletedProgress()
+        );
+        return prepared;
       }
 
-      preparedMedia[productId] = result;
-      return result;
+      let request = pendingMedia[productId];
+
+      if (!request) {
+        const requestGeneration = generation;
+        request = prepareRevealMedia(productId, (progress) => {
+          publishProgress(productId, progress);
+        })
+          .then((result) => {
+            if (requestGeneration !== generation) {
+              result.release();
+              throw new StoreRevealMediaCancelledError();
+            }
+
+            preparedMedia[productId] = result;
+            admissionComplete = PUBLIC_REVEAL_PRODUCT_IDS.every(
+              (publicProductId) => !!preparedMedia[publicProductId]
+            );
+            return result;
+          })
+          .finally(() => {
+            if (pendingMedia[productId] === request) {
+              delete pendingMedia[productId];
+            }
+          });
+        pendingMedia[productId] = request;
+      }
+
+      return await request;
     } finally {
-      if (pendingMedia[productId] === request) {
-        delete pendingMedia[productId];
-      }
+      unsubscribe();
     }
+  }
+
+  function subscribeToProgress(
+    productId: MerchProductId,
+    listener: ProgressListener
+  ) {
+    const listeners =
+      progressListeners[productId] || new Set<ProgressListener>();
+    progressListeners[productId] = listeners;
+    listeners.add(listener);
+
+    const progress = latestProgress[productId];
+
+    if (progress) {
+      listener(progress);
+    }
+
+    return () => {
+      listeners.delete(listener);
+    };
+  }
+
+  function publishProgress(
+    productId: MerchProductId,
+    progress: RevealMediaAdmissionProgress
+  ) {
+    latestProgress[productId] = progress;
+    progressListeners[productId]?.forEach((listener) => {
+      listener(progress);
+    });
   }
 
   function read(productId: MerchProductId) {
@@ -172,6 +220,9 @@ export function createStoreRevealMediaController() {
 
       delete preparedMedia[productId];
       delete pendingMedia[productId];
+      delete latestProgress[productId];
+      progressListeners[productId]?.clear();
+      delete progressListeners[productId];
     }
   }
 
@@ -181,6 +232,15 @@ export function createStoreRevealMediaController() {
     prepareProduct,
     read,
     releaseAll
+  };
+}
+
+function readCompletedProgress(): RevealMediaAdmissionProgress {
+  return {
+    loadedBytes: 1,
+    percent: 100,
+    stage: 'render',
+    totalBytes: 1
   };
 }
 

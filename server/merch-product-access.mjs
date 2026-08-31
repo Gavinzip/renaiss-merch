@@ -4,6 +4,9 @@ import {
   readMerchProductId
 } from './eligibility.mjs';
 import { HttpError } from './http.mjs';
+import {
+  readReusableEligibilityProof
+} from './merch-eligibility-proof.mjs';
 import { readClaimEntitlements } from './shipping-claims.mjs';
 
 export async function readMerchProductAccess(session, options = {}) {
@@ -12,7 +15,9 @@ export async function readMerchProductAccess(session, options = {}) {
   }
 
   const productId = readMerchProductId(options.productId);
-  const entitlement = readClaimEntitlements(session, {
+  const readEntitlements =
+    options.readClaimEntitlements || readClaimEntitlements;
+  const entitlement = readEntitlements(session, {
     dbPath: options.dbPath,
     productId
   })[0];
@@ -22,6 +27,19 @@ export async function readMerchProductAccess(session, options = {}) {
       productId,
       entitlement.eligibility
     );
+  }
+
+  const readStoredEligibilityProof =
+    options.readStoredEligibilityProof ||
+    readReusableEligibilityProof;
+  const storedEligibilityProof =
+    await readStoredEligibilityProof(session, {
+      dbPath: options.dbPath,
+      productId
+    });
+
+  if (storedEligibilityProof) {
+    return storedEligibilityProof;
   }
 
   const readEligibility = options.readEligibility || readMerchEligibility;

@@ -76,10 +76,7 @@ export default function App() {
   const revealMediaController = revealMediaControllerRef.current;
 
   const prepareStoreAssets = useCallback(async () => {
-    if (
-      storeImagesReadyRef.current &&
-      revealMediaController.isAdmissionComplete()
-    ) {
+    if (storeImagesReadyRef.current) {
       setStoreLoadProgress(100);
       return;
     }
@@ -91,36 +88,10 @@ export default function App() {
       return;
     }
 
-    let imageProgress = storeImagesReadyRef.current ? 100 : 0;
-    let revealProgress = revealMediaController.isAdmissionComplete()
-      ? 100
-      : 0;
-
-    function updateProgress() {
-      setStoreLoadProgress(
-        Math.min(
-          99,
-          Math.round(imageProgress * 0.02 + revealProgress * 0.98)
-        )
-      );
-    }
-
-    const preparation = Promise.all([
-      storeImagesReadyRef.current
-        ? Promise.resolve()
-        : preloadStoreAssets((progress) => {
-            imageProgress = progress;
-            updateProgress();
-          }).then(() => {
-            storeImagesReadyRef.current = true;
-          }),
-      revealMediaController.isAdmissionComplete()
-        ? Promise.resolve()
-        : revealMediaController.prepareAll((progress) => {
-            revealProgress = progress.percent;
-            updateProgress();
-          })
-    ]).then(() => {
+    const preparation = preloadStoreAssets((progress) => {
+      setStoreLoadProgress(Math.min(99, progress));
+    }).then(() => {
+      storeImagesReadyRef.current = true;
       setStoreLoadProgress(100);
     });
     storePreparationInFlightRef.current = preparation;
@@ -132,7 +103,7 @@ export default function App() {
         storePreparationInFlightRef.current = null;
       }
     }
-  }, [revealMediaController]);
+  }, []);
 
   const enterStore = useCallback(async () => {
     if (storeAdmissionInFlightRef.current) {
@@ -255,7 +226,6 @@ export default function App() {
     return (
       <MerchStore
         initialAuthFailed={storeAuthFailed}
-        onAuthenticatedSession={prepareStoreAssets}
         onExitStore={invalidateStoreAdmission}
         onLogin={() => startRenaissLogin(buildStoreAdmissionReturnTo())}
         revealMediaController={revealMediaController}

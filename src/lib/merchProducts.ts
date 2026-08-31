@@ -1,6 +1,10 @@
 export const MERCH_PRODUCT_IDS = ['shirt', 'bracelet', 'ticket'] as const;
 
-export const PUBLIC_REVEAL_PRODUCT_IDS = ['shirt', 'bracelet'] as const;
+export const PUBLIC_REVEAL_PRODUCT_IDS = [
+  'shirt',
+  'bracelet',
+  'ticket'
+] as const;
 
 export type MerchProductId = (typeof MERCH_PRODUCT_IDS)[number];
 

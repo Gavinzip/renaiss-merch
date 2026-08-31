@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type Dispatch,
@@ -38,8 +39,7 @@ import {
   needsTaiwanSevenElevenUpdate,
   readReturnedSevenElevenContext
 } from '../../lib/sevenElevenStore';
-import { type PreparedRevealMedia } from '../../lib/revealMediaPreload';
-import { preparePrivateTicketRevealMedia } from '../../lib/privateRevealMedia';
+import type { PreparedRevealMedia } from '../../lib/revealMediaPreload';
 import { readStoredShippingProfile } from '../../lib/shippingProfile';
 import {
   StoreRevealMediaCancelledError,
@@ -59,6 +59,11 @@ import {
 import { StoreAccessResult } from './StoreAccessResult';
 import { useMerchInventory } from './useMerchInventory';
 import { useScrolledHeader } from './useScrolledHeader';
+import {
+  useLocale,
+  type AppLocale
+} from '../../i18n/LocaleContext';
+import { merchStoreCopy } from '../../i18n/merchStoreCopy';
 import '../MerchEligibilityEntry/MerchEligibilityEntry.css';
 import './MerchStore.css';
 
@@ -70,6 +75,7 @@ type StoreState =
   | 'opening-demo'
   | 'authenticated'
   | 'checking'
+  | 'making'
   | 'wallet-pending'
   | 'eligibility-pending'
   | 'source-error'
@@ -81,9 +87,13 @@ type AccessResult = {
   result: MerchEligibilityResult;
 };
 
+type ProductPreparationProgress = {
+  percent: number;
+  productId: MerchProductId;
+};
+
 type MerchStoreProps = {
   initialAuthFailed: boolean;
-  onAuthenticatedSession: () => Promise<void>;
   onExitStore?: () => void;
   onLogin: () => void;
   revealMediaController: StoreRevealMediaController;
@@ -91,11 +101,12 @@ type MerchStoreProps = {
 
 export function MerchStore({
   initialAuthFailed,
-  onAuthenticatedSession,
   onExitStore,
   onLogin,
   revealMediaController
 }: MerchStoreProps) {
+  const { locale, setLocale } = useLocale();
+  const copy = merchStoreCopy[locale];
   const [session, setSession] = useState<RenaissSession>({
     authenticated: false
   });
@@ -104,12 +115,17 @@ export function MerchStore({
   const [selectedProductId, setSelectedProductId] =
     useState<MerchProductId | null>(null);
   const [accessResult, setAccessResult] = useState<AccessResult | null>(null);
+  const [accessResultReady, setAccessResultReady] = useState(false);
   const [productAccess, setProductAccess] = useState<
     Partial<Record<MerchProductId, MerchAccessProductState>>
   >({});
   const [privateMediaRelease, setPrivateMediaRelease] = useState('');
   const [productImageUrls, setProductImageUrls] =
     useState<PreparedPrivateProductImageUrls>({});
+  const [productPreparationProgress, setProductPreparationProgress] =
+    useState<ProductPreparationProgress | null>(null);
+  const [backgroundMediaError, setBackgroundMediaError] =
+    useState(false);
   const [showFulfillment, setShowFulfillment] = useState(
     () => window.location.hash === '#fulfillment'
   );
@@ -123,6 +139,8 @@ export function MerchStore({
     () =>
       CATALOG_VIEW_ENABLED ? readStoredMerchStoreView() : 'cards'
   );
+  const accessResultGenerationRef = useRef(0);
+  const productCheckGenerationRef = useRef(0);
   const isCatalogHeaderScrolled = useScrolledHeader(storeView === 'catalog');
   const inventoryScope =
     session.authenticated && session.user.isDemo
@@ -133,51 +151,75 @@ export function MerchStore({
     inventoryLoadState,
     refreshInventory
   } = useMerchInventory(inventoryScope);
+  const prepareStoredProductImages = useCallback(
+    async (
+      accessState: MerchAccessState,
+      isCurrent: () => boolean = () => true
+    ) => {
+      try {
+        const imageUrls = await prepareEligiblePrivateProductImages(
+          accessState.products,
+          accessState.privateMediaRelease
+        );
+
+        if (!isCurrent()) {
+          return;
+        }
+
+        setProductImageUrls((currentImageUrls) => ({
+          ...currentImageUrls,
+          ...imageUrls
+        }));
+        setBackgroundMediaError(false);
+      } catch {
+        if (isCurrent()) {
+          setBackgroundMediaError(true);
+        }
+      }
+    },
+    []
+  );
 
   const user = session.authenticated ? session.user : null;
   const authenticatedUserSub = user?.sub || null;
-  const sessionLabel =
-    user?.name || user?.email || formatTwitterUsername(user?.twitterUsername);
+  const sessionLabel = user?.isDemo
+    ? copy.demoMember
+    : user?.name ||
+      user?.email ||
+      formatTwitterUsername(user?.twitterUsername);
   const walletLabel = user?.safeWalletAddress
     ? shortenWallet(user.safeWalletAddress)
-    : 'Safe wallet pending';
-  const isChecking =
-    storeState === 'checking';
+    : copy.safeWalletPending;
+  const isPreparing =
+    storeState === 'checking' || storeState === 'making';
   const showAddressWarning =
     addressNeedsUpdate || addressReviewUnavailable;
   const handleProfileReviewChange = useCallback((needsUpdate: boolean) => {
     setAddressNeedsUpdate(needsUpdate);
     setAddressReviewUnavailable(false);
   }, []);
-
-  const statusText = useMemo(() => {
-    switch (storeState) {
-      case 'loading-session':
-        return 'Checking your Renaiss session.';
-      case 'idle':
-        return 'Explore the releases, then sign in when you are ready.';
-      case 'auth-required':
-        return 'Sign in with Renaiss before checking this release.';
-      case 'signing-in':
-        return 'Opening Renaiss sign in.';
-      case 'opening-demo':
-        return 'Opening a Demo Member session.';
-      case 'authenticated':
-        return 'Renaiss connected. Choose a release to verify.';
-      case 'checking':
-        return 'Verifying this release against your Safe wallet.';
-      case 'wallet-pending':
-        return 'Your Safe wallet is not ready yet.';
-      case 'eligibility-pending':
-        return 'The eligibility rule is not configured yet.';
-      case 'source-error':
-        return 'The access check could not be completed.';
-      case 'auth-error':
-        return 'Renaiss sign in did not complete. You can retry here.';
-      default:
-        return 'Explore the releases, then sign in when you are ready.';
+  const handleAccessResultMediaReady = useCallback(() => {
+    if (
+      accessResultGenerationRef.current !==
+      productCheckGenerationRef.current
+    ) {
+      return;
     }
-  }, [storeState]);
+
+    setProductPreparationProgress(null);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    setAccessResultReady(true);
+  }, []);
+  const statusText = useMemo(() => {
+    if (
+      backgroundMediaError &&
+      (storeState === 'idle' || storeState === 'authenticated')
+    ) {
+      return copy.backgroundMediaError;
+    }
+
+    return copy.status[storeState];
+  }, [backgroundMediaError, copy, storeState]);
 
   useEffect(() => {
     if (CATALOG_VIEW_ENABLED) {
@@ -186,14 +228,23 @@ export function MerchStore({
   }, [storeView]);
 
   useEffect(() => {
-    if (accessResult?.productId !== 'ticket') {
-      return undefined;
-    }
+    let cancelled = false;
+    const animationFrameId = window.requestAnimationFrame(() => {
+      void revealMediaController.prepareAll(() => undefined).catch((error) => {
+        if (
+          !cancelled &&
+          !(error instanceof StoreRevealMediaCancelledError)
+        ) {
+          setBackgroundMediaError(true);
+        }
+      });
+    });
 
-    const ticketRevealMedia = accessResult.revealMedia;
-
-    return () => ticketRevealMedia?.release();
-  }, [accessResult]);
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(animationFrameId);
+    };
+  }, [revealMediaController]);
 
   useEffect(() => {
     let cancelled = false;
@@ -213,24 +264,23 @@ export function MerchStore({
           return;
         }
 
-        if (!revealMediaController.isAdmissionComplete()) {
-          await onAuthenticatedSession();
-        }
-
-        const nextProductAccess = await readPreparedProductAccess();
+        const nextProductAccess = await readMerchAccessState();
 
         if (cancelled) {
           return;
         }
 
         setSession(nextSession);
-        applyPreparedProductAccess(
+        applyProductAccess(
           nextProductAccess,
           setPrivateMediaRelease,
-          setProductAccess,
-          setProductImageUrls
+          setProductAccess
         );
         setStoreState('authenticated');
+        void prepareStoredProductImages(
+          nextProductAccess,
+          () => !cancelled
+        );
 
         const returnedSelection = readReturnedSevenElevenContext();
 
@@ -268,7 +318,7 @@ export function MerchStore({
     };
   }, [
     initialAuthFailed,
-    onAuthenticatedSession,
+    prepareStoredProductImages,
     revealMediaController
   ]);
 
@@ -337,6 +387,9 @@ export function MerchStore({
   }
 
   async function handleLogout() {
+    productCheckGenerationRef.current += 1;
+    setProductPreparationProgress(null);
+
     try {
       await signOutRenaiss();
       setSession({
@@ -345,6 +398,8 @@ export function MerchStore({
       });
       setSelectedProductId(null);
       setAccessResult(null);
+      setAccessResultReady(false);
+      setProductPreparationProgress(null);
       setProductAccess({});
       setShowSettings(false);
       closeFulfillment();
@@ -369,17 +424,16 @@ export function MerchStore({
         return;
       }
 
-      await onAuthenticatedSession();
-      const nextProductAccess = await readPreparedProductAccess();
+      const nextProductAccess = await readMerchAccessState();
 
       setSession(demoSession);
-      applyPreparedProductAccess(
+      applyProductAccess(
         nextProductAccess,
         setPrivateMediaRelease,
-        setProductAccess,
-        setProductImageUrls
+        setProductAccess
       );
       setStoreState('authenticated');
+      void prepareStoredProductImages(nextProductAccess);
     } catch {
       setStoreState('source-error');
     }
@@ -390,11 +444,12 @@ export function MerchStore({
       storeState === 'loading-session' ||
       storeState === 'signing-in' ||
       storeState === 'opening-demo' ||
-      isChecking
+      isPreparing
     ) {
       return;
     }
 
+    const checkGeneration = ++productCheckGenerationRef.current;
     setSelectedProductId(productId);
 
     if (!session.authenticated) {
@@ -403,40 +458,55 @@ export function MerchStore({
     }
 
     setAccessResult(null);
+    setAccessResultReady(false);
+    setProductPreparationProgress(null);
     setStoreState('checking');
 
     try {
-      const result = await checkMerchEligibility(productId);
+      let mediaPercent = revealMediaController.read(productId) ? 100 : 0;
+      let imageReady = !!productImageUrls[productId];
 
-      if (result.status === 'eligible') {
-        const productImageUrl = await preparePrivateProductImage(
-          productId,
-          privateMediaRelease
-        );
-        const revealMedia =
-          productId === 'ticket'
-            ? await preparePrivateTicketRevealMedia(privateMediaRelease)
-            : revealMediaController.read(productId);
-
-        if (!revealMedia) {
-          throw new Error(
-            `Eligible reveal media was not admitted before check: ${productId}`
-          );
+      function syncMakingProgress() {
+        if (productCheckGenerationRef.current !== checkGeneration) {
+          return;
         }
 
-        setProductImageUrls((currentImageUrls) => ({
-          ...currentImageUrls,
-          [productId]: productImageUrl
-        }));
-        setProductAccess((currentProductAccess) => ({
-          ...currentProductAccess,
-          [productId]: createMerchAccessProductState(
-            productId,
-            result,
-            currentProductAccess[productId]?.claimStatus || null
-          )
-        }));
-        setAccessResult({ productId, result, revealMedia });
+        setProductPreparationProgress((currentProgress) =>
+          currentProgress?.productId === productId
+            ? {
+                percent: readMakingProgress(mediaPercent, imageReady),
+                productId
+              }
+            : currentProgress
+        );
+      }
+
+      const revealMediaPromise = revealMediaController.prepareProduct(
+        productId,
+        (progress) => {
+          mediaPercent = progress.percent;
+          syncMakingProgress();
+        }
+      );
+      void revealMediaPromise.then(
+        () => {
+          if (productCheckGenerationRef.current === checkGeneration) {
+            setBackgroundMediaError(false);
+          }
+        },
+        (error) => {
+          if (
+            productCheckGenerationRef.current === checkGeneration &&
+            !(error instanceof StoreRevealMediaCancelledError)
+          ) {
+            setBackgroundMediaError(true);
+          }
+        }
+      );
+
+      const result = await checkMerchEligibility(productId);
+
+      if (productCheckGenerationRef.current !== checkGeneration) {
         return;
       }
 
@@ -448,8 +518,78 @@ export function MerchStore({
           currentProductAccess[productId]?.claimStatus || null
         )
       }));
-      setAccessResult({ productId, result });
+
+      if (result.status === 'unqualified') {
+        setProductPreparationProgress(null);
+        setAccessResultReady(true);
+        setAccessResult({ productId, result });
+        return;
+      }
+
+      const admittedRevealMedia = revealMediaController.read(productId);
+      const admittedProductImage = productImageUrls[productId];
+
+      if (admittedRevealMedia && admittedProductImage) {
+        setBackgroundMediaError(false);
+        accessResultGenerationRef.current = checkGeneration;
+        setProductPreparationProgress(null);
+        setStoreState('authenticated');
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        setAccessResultReady(false);
+        setAccessResult({
+          productId,
+          result,
+          revealMedia: admittedRevealMedia
+        });
+        return;
+      }
+
+      setStoreState('making');
+      setProductPreparationProgress({
+        percent: readMakingProgress(mediaPercent, imageReady),
+        productId
+      });
+
+      const [revealMedia, productImageUrl] = await Promise.all([
+        revealMediaPromise,
+        admittedProductImage
+          ? Promise.resolve(admittedProductImage)
+          : preparePrivateProductImage(
+              productId,
+              privateMediaRelease
+            ).then((preparedImageUrl) => {
+              imageReady = true;
+              syncMakingProgress();
+              return preparedImageUrl;
+            })
+      ]);
+
+      if (productCheckGenerationRef.current !== checkGeneration) {
+        return;
+      }
+
+      if (!productImageUrl) {
+        throw new Error(
+          `Eligible product image was not admitted before check: ${productId}`
+        );
+      }
+
+      setBackgroundMediaError(false);
+      setProductImageUrls((currentImageUrls) => ({
+        ...currentImageUrls,
+        [productId]: productImageUrl
+      }));
+      setProductPreparationProgress({ percent: 99, productId });
+      accessResultGenerationRef.current = checkGeneration;
+      setAccessResultReady(false);
+      setAccessResult({ productId, result, revealMedia });
     } catch (error) {
+      if (productCheckGenerationRef.current !== checkGeneration) {
+        return;
+      }
+
+      setProductPreparationProgress(null);
+
       if (error instanceof StoreRevealMediaCancelledError) {
         return;
       }
@@ -468,7 +608,10 @@ export function MerchStore({
   }
 
   async function resetAccessResult() {
+    const resetGeneration = ++productCheckGenerationRef.current;
     setAccessResult(null);
+    setAccessResultReady(false);
+    setProductPreparationProgress(null);
     setSelectedProductId(null);
     setStoreState('authenticated');
     window.scrollTo({ top: 0, behavior: 'auto' });
@@ -479,16 +622,20 @@ export function MerchStore({
 
     try {
       const [nextProductAccess] = await Promise.all([
-        readPreparedProductAccess(),
+        readMerchAccessState(),
         refreshInventory()
       ]);
 
-      applyPreparedProductAccess(
+      if (productCheckGenerationRef.current !== resetGeneration) {
+        return;
+      }
+
+      applyProductAccess(
         nextProductAccess,
         setPrivateMediaRelease,
-        setProductAccess,
-        setProductImageUrls
+        setProductAccess
       );
+      void prepareStoredProductImages(nextProductAccess);
     } catch {
       setStoreState('source-error');
     }
@@ -510,28 +657,27 @@ export function MerchStore({
     setShowFulfillment(false);
   }
 
-  if (accessResult) {
-    return (
-      <StoreAccessResult
-        onBack={resetAccessResult}
-        productId={accessResult.productId}
-        revealMedia={accessResult.revealMedia}
-        result={accessResult.result}
-      />
-    );
+  function handleExitStore() {
+    productCheckGenerationRef.current += 1;
+    onExitStore?.();
   }
 
+  const showStore = !accessResult || !accessResultReady;
+
   return (
-    <main
-      className={`merch-entry merch-store merch-store--${storeView}`}
-      aria-labelledby="merch-store-title"
-      style={
-        {
-          '--merch-store-background':
-            staticMerchAssetCssUrl('storeBackground')
-        } as CSSProperties
-      }
-    >
+    <>
+      {showStore ? (
+        <main
+          key="store"
+          className={`merch-entry merch-store merch-store--${storeView}`}
+          aria-labelledby="merch-store-title"
+          style={
+            {
+              '--merch-store-background':
+                staticMerchAssetCssUrl('storeBackground')
+            } as CSSProperties
+          }
+        >
       <header
         className={[
           'merch-store__header',
@@ -543,7 +689,7 @@ export function MerchStore({
       >
         <button
           className="merch-store__brand"
-          onClick={onExitStore}
+          onClick={handleExitStore}
           type="button"
         >
           <img
@@ -551,10 +697,32 @@ export function MerchStore({
             alt=""
             aria-hidden="true"
           />
-          <span>renaiss merch store</span>
+          <span>{copy.brand}</span>
         </button>
 
         <div className="merch-store__account">
+          <div
+            aria-label={copy.languageLabel}
+            className="merch-store__language-switch"
+            role="group"
+          >
+            <button
+              aria-pressed={locale === 'en'}
+              className={locale === 'en' ? 'is-active' : ''}
+              onClick={() => setLocale('en')}
+              type="button"
+            >
+              EN
+            </button>
+            <button
+              aria-pressed={locale === 'zh-TW'}
+              className={locale === 'zh-TW' ? 'is-active' : ''}
+              onClick={() => setLocale('zh-TW')}
+              type="button"
+            >
+              中文
+            </button>
+          </div>
           {session.authenticated ? (
             <>
               {session.user.canManageFulfillment ? (
@@ -563,16 +731,16 @@ export function MerchStore({
                   onClick={openFulfillment}
                   type="button"
                 >
-                  Fulfilment
+                  {copy.fulfillment}
                 </button>
               ) : null}
               <button
                 aria-label={
                   addressNeedsUpdate
-                    ? 'Address, shipping update required'
+                    ? copy.addressUpdateRequired
                     : addressReviewUnavailable
-                      ? 'Address status unavailable, review required'
-                      : 'Address'
+                      ? copy.addressStatusUnavailable
+                      : copy.address
                 }
                 className={`merch-store__secondary-action merch-store__address-action ${
                   showAddressWarning ? 'is-warning' : ''
@@ -580,7 +748,7 @@ export function MerchStore({
                 onClick={() => setShowSettings(true)}
                 type="button"
               >
-                <span>Address</span>
+                <span>{copy.address}</span>
                 {showAddressWarning ? (
                   <span
                     aria-hidden="true"
@@ -591,7 +759,7 @@ export function MerchStore({
                 ) : null}
               </button>
               <div className="merch-store__identity">
-                <span>{sessionLabel || 'Renaiss account'}</span>
+                <span>{sessionLabel || copy.renaissAccount}</span>
                 <strong>{walletLabel}</strong>
               </div>
               <button
@@ -599,7 +767,7 @@ export function MerchStore({
                 onClick={() => void handleLogout()}
                 type="button"
               >
-                Sign out
+                {copy.signOut}
               </button>
             </>
           ) : (
@@ -615,7 +783,9 @@ export function MerchStore({
                   onClick={() => void handleDemoAccess()}
                   type="button"
                 >
-                  {storeState === 'opening-demo' ? 'Opening' : 'Demo access'}
+                  {storeState === 'opening-demo'
+                    ? copy.opening
+                    : copy.demoAccess}
                 </button>
               ) : null}
               <button
@@ -628,7 +798,7 @@ export function MerchStore({
                 onClick={handleLogin}
                 type="button"
               >
-                {storeState === 'signing-in' ? 'Opening' : 'Login'}
+                {storeState === 'signing-in' ? copy.opening : copy.login}
               </button>
             </>
           )}
@@ -641,35 +811,34 @@ export function MerchStore({
       >
         <div className="merch-store__intro">
           <h1 className="merch-store__eyebrow" id="merch-store-title">
-            Renaiss Protocol / Private editions
+            {copy.title}
           </h1>
           <p className="merch-store__lede">
-            Three sealed releases. Each piece is revealed only after your wallet
-            access is verified.
+            {copy.lede}
           </p>
         </div>
 
         {CATALOG_VIEW_ENABLED ? (
           <div className="merch-store__view-bar">
-            <span>Display</span>
+            <span>{copy.display}</span>
             <div
               className="merch-store__view-switch"
               role="group"
-              aria-label="Product display"
+              aria-label={copy.productDisplay}
             >
               <button
                 aria-pressed={storeView === 'cards'}
                 onClick={() => setStoreView('cards')}
                 type="button"
               >
-                Cards
+                {copy.cards}
               </button>
               <button
                 aria-pressed={storeView === 'catalog'}
                 onClick={() => setStoreView('catalog')}
                 type="button"
               >
-                Catalog
+                {copy.catalog}
               </button>
             </div>
           </div>
@@ -684,11 +853,13 @@ export function MerchStore({
               storeState === 'loading-session' ||
               storeState === 'signing-in' ||
               storeState === 'opening-demo' ||
-              (isChecking && selectedProductId !== product.id);
+              (isPreparing && selectedProductId !== product.id);
             const helperText = readProductHelperText(
               product.id,
+              accessState,
               selectedProductId,
-              storeState
+              storeState,
+              locale
             );
             const productProps = {
               accessState,
@@ -696,7 +867,15 @@ export function MerchStore({
               helperText,
               inventory: inventoryByProduct[product.id],
               inventoryLoadState,
-              isChecking: isChecking && selectedProductId === product.id,
+              preparationPhase:
+                selectedProductId === product.id &&
+                (storeState === 'checking' || storeState === 'making')
+                  ? storeState
+                  : undefined,
+              preparationPercent:
+                productPreparationProgress?.productId === product.id
+                  ? productPreparationProgress.percent
+                  : undefined,
               onCheck: (productId: MerchProductId) =>
                 void handleProductCheck(productId),
               product,
@@ -720,9 +899,9 @@ export function MerchStore({
       </section>
 
       <footer className="merch-store__footer" aria-hidden="true">
-        <span>Private release</span>
-        <span>Wallet verified</span>
-        <span>Worldwide fulfilment</span>
+        <span>{copy.footerPrivate}</span>
+        <span>{copy.footerWallet}</span>
+        <span>{copy.footerWorldwide}</span>
       </footer>
 
       {showFulfillment &&
@@ -738,64 +917,81 @@ export function MerchStore({
           onProfileReviewChange={handleProfileReviewChange}
         />
       ) : null}
-    </main>
+
+        </main>
+      ) : null}
+
+      {accessResult ? (
+        <div
+          aria-hidden={!accessResultReady}
+          className={`merch-store__result-shell ${
+            accessResultReady ? 'is-ready' : 'is-admitting'
+          }`}
+          inert={accessResultReady ? undefined : true}
+          key="access-result"
+        >
+          <StoreAccessResult
+            onBack={resetAccessResult}
+            onMediaReady={
+              accessResult.result.status === 'eligible'
+                ? handleAccessResultMediaReady
+                : undefined
+            }
+            productId={accessResult.productId}
+            revealMedia={accessResult.revealMedia}
+            result={accessResult.result}
+          />
+        </div>
+      ) : null}
+    </>
   );
 }
 
-type PreparedProductAccess = MerchAccessState & {
-  imageUrls: PreparedPrivateProductImageUrls;
-};
-
-async function readPreparedProductAccess(): Promise<PreparedProductAccess> {
-  const accessState = await readMerchAccessState();
-  const imageUrls = await prepareEligiblePrivateProductImages(
-    accessState.products,
-    accessState.privateMediaRelease
-  );
-
-  return {
-    ...accessState,
-    imageUrls
-  };
-}
-
-function applyPreparedProductAccess(
-  access: PreparedProductAccess,
+function applyProductAccess(
+  access: MerchAccessState,
   setPrivateMediaRelease: Dispatch<SetStateAction<string>>,
   setProductAccess: Dispatch<
     SetStateAction<
       Partial<Record<MerchProductId, MerchAccessProductState>>
     >
-  >,
-  setProductImageUrls: Dispatch<
-    SetStateAction<PreparedPrivateProductImageUrls>
   >
 ) {
   setPrivateMediaRelease(access.privateMediaRelease);
   setProductAccess(toProductAccessMap(access.products));
-  setProductImageUrls((currentImageUrls) => ({
-    ...currentImageUrls,
-    ...access.imageUrls
-  }));
+}
+
+function readMakingProgress(mediaPercent: number, imageReady: boolean) {
+  return Math.min(
+    99,
+    Math.max(0, Math.round(mediaPercent * 0.9 + (imageReady ? 9 : 0)))
+  );
 }
 
 function readProductHelperText(
   productId: MerchProductId,
+  accessState: MerchAccessProductState | undefined,
   selectedProductId: MerchProductId | null,
-  storeState: StoreState
+  storeState: StoreState,
+  locale: AppLocale
 ) {
+  const copy = merchStoreCopy[locale];
+
   if (selectedProductId === productId) {
     switch (storeState) {
       case 'auth-required':
-        return 'Sign in with Renaiss, then check this release.';
+        return copy.helper.authRequired;
       case 'checking':
-        return 'Reading verified SBT access.';
+        return copy.helper.checking;
+      case 'making':
+        return copy.helper.making;
       case 'wallet-pending':
-        return 'Your Safe wallet is not ready yet.';
+        return copy.helper.walletPending;
       case 'eligibility-pending':
-        return 'Access rules are not ready yet.';
+        return copy.helper.eligibilityPending;
       case 'source-error':
-        return 'Check unavailable. Please try again.';
+        return accessState?.status === 'eligible'
+          ? copy.helper.itemUnavailable
+          : copy.helper.checkUnavailable;
       default:
         break;
     }

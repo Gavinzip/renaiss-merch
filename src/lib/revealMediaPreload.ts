@@ -13,9 +13,12 @@ import {
   type CachedRevealMedia
 } from './revealMediaCache';
 
-const REVEAL_DIRECTIONS: readonly RevealDirection[] = [
+const TWO_WAY_REVEAL_DIRECTIONS: readonly RevealDirection[] = [
   'forward',
   'reverse'
+];
+const FORWARD_ONLY_REVEAL_DIRECTIONS: readonly RevealDirection[] = [
+  'forward'
 ];
 const DOWNLOAD_PROGRESS_MAX = 88;
 const MEDIA_EVENT_TIMEOUT_MS = 8000;
@@ -47,20 +50,15 @@ export async function prepareRevealMedia(
   productId: PublicRevealProductId,
   onProgress: (progress: RevealMediaAdmissionProgress) => void
 ): Promise<PreparedRevealMedia> {
+  const directions = readRevealDirections(productId);
   const sources = Object.fromEntries(
-    REVEAL_DIRECTIONS.map((direction) => [
+    directions.map((direction) => [
       direction,
       publicRevealMediaUrl(productId, direction)
     ])
   ) as Record<RevealDirection, string>;
-  const sizes: Record<RevealDirection, number> = {
-    forward: 0,
-    reverse: 0
-  };
-  const loadedBytes: Record<RevealDirection, number> = {
-    forward: 0,
-    reverse: 0
-  };
+  const sizes: Partial<Record<RevealDirection, number>> = {};
+  const loadedBytes: Partial<Record<RevealDirection, number>> = {};
 
   onProgress({
     loadedBytes: 0,
@@ -71,7 +69,7 @@ export async function prepareRevealMedia(
 
   const cachedMedia = Object.fromEntries(
     await Promise.all(
-      REVEAL_DIRECTIONS.map(async (direction) => {
+      directions.map(async (direction) => {
         const cached = await readCachedRevealMedia(productId, direction);
 
         return [direction, cached];
@@ -81,7 +79,7 @@ export async function prepareRevealMedia(
 
   const mediaSources = Object.fromEntries(
     await Promise.all(
-      REVEAL_DIRECTIONS.map(async (direction) => {
+      directions.map(async (direction) => {
         const cached = cachedMedia[direction];
 
         if (cached) {
@@ -109,9 +107,11 @@ export async function prepareRevealMedia(
       })
     )
   ) as Record<RevealDirection, OpenMediaSource>;
-  const totalBytes = sizes.forward + sizes.reverse;
-  const initiallyLoadedBytes =
-    loadedBytes.forward + loadedBytes.reverse;
+  const totalBytes = sumDirectionValues(directions, sizes);
+  const initiallyLoadedBytes = sumDirectionValues(
+    directions,
+    loadedBytes
+  );
 
   onProgress({
     loadedBytes: initiallyLoadedBytes,
@@ -130,7 +130,7 @@ export async function prepareRevealMedia(
 
   const blobs = Object.fromEntries(
     await Promise.all(
-      REVEAL_DIRECTIONS.map(async (direction) => [
+      directions.map(async (direction) => [
         direction,
         await readMediaBlob(
           productId,
@@ -138,8 +138,10 @@ export async function prepareRevealMedia(
           mediaSources[direction],
           (loaded) => {
             loadedBytes[direction] = loaded;
-            const loadedTotal =
-              loadedBytes.forward + loadedBytes.reverse;
+            const loadedTotal = sumDirectionValues(
+              directions,
+              loadedBytes
+            );
 
             onProgress({
               loadedBytes: loadedTotal,
@@ -159,10 +161,20 @@ export async function prepareRevealMedia(
         )
       ])
     )
-  ) as Record<RevealDirection, Blob>;
-  const forwardUrl = URL.createObjectURL(blobs.forward);
-  const reverseUrl = URL.createObjectURL(blobs.reverse);
-  const release = createReleaseHandler([forwardUrl, reverseUrl]);
+  ) as Partial<Record<RevealDirection, Blob>>;
+  const forwardBlob = blobs.forward;
+
+  if (!forwardBlob) {
+    throw new Error('Reveal media is missing its forward video.');
+  }
+
+  const forwardUrl = URL.createObjectURL(forwardBlob);
+  const reverseUrl = blobs.reverse
+    ? URL.createObjectURL(blobs.reverse)
+    : forwardUrl;
+  const release = createReleaseHandler(
+    Array.from(new Set([forwardUrl, reverseUrl]))
+  );
 
   try {
     onProgress({
@@ -172,7 +184,7 @@ export async function prepareRevealMedia(
       totalBytes
     });
     await Promise.all(
-      REVEAL_DIRECTIONS.map(async (direction) => {
+      directions.map(async (direction) => {
         const source =
           direction === 'forward' ? forwardUrl : reverseUrl;
 
@@ -203,6 +215,22 @@ export async function prepareRevealMedia(
     release();
     throw error;
   }
+}
+
+function readRevealDirections(productId: PublicRevealProductId) {
+  return productId === 'ticket'
+    ? FORWARD_ONLY_REVEAL_DIRECTIONS
+    : TWO_WAY_REVEAL_DIRECTIONS;
+}
+
+function sumDirectionValues(
+  directions: readonly RevealDirection[],
+  values: Partial<Record<RevealDirection, number>>
+) {
+  return directions.reduce(
+    (total, direction) => total + (values[direction] || 0),
+    0
+  );
 }
 
 type OpenMediaDownload = {

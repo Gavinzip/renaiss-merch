@@ -1,11 +1,11 @@
 {
   "access": "public",
   "bucket": "renaiss-merch-media",
-  "contentHash": "1f6bf5a86c3a3c8abec20b13c75ead00f86b9e44b8e2de3383d45707f28562f8",
-  "fileCount": 11,
+  "contentHash": "8d67256bd306adb172dc686031ec47cfc1c8a2f81da31a0c1648f4a8cf52b442",
+  "fileCount": 12,
   "prefix": "merch/v1.2",
-  "release": "r1f6bf5a86c3a3c8abec2",
-  "totalBytes": 57783035,
+  "release": "r8d67256bd306adb172dc",
+  "totalBytes": 69012833,
   "assets": {
     "renaissLogoMark": {
       "contentType": "image/avif",
@@ -82,6 +82,13 @@
       "contentType": "video/mp4",
       "path": "reveal/bracelet-reverse.mp4",
       "source": "private/merch/products/bracelet/website/videos/reveal-reverse-scrub.mp4",
+      "sourceContentType": "video/mp4",
+      "type": "binary"
+    },
+    "ticketRevealForward": {
+      "contentType": "video/mp4",
+      "path": "reveal/flagship-taiwan-vip-ticket-forward.mp4",
+      "source": "private/merch/products/ticket/website/videos/reveal-forward-scrub.mp4",
       "sourceContentType": "video/mp4",
       "type": "binary"
     }

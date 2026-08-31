@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 export function loadLocalEnv() {
-  for (const fileName of ['.env', '.env.local']) {
+  for (const fileName of ['.env', '.env.local', '.env.media.local']) {
     const filePath = path.join(rootDir, fileName);
 
     if (existsSync(filePath)) {

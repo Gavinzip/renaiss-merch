@@ -7,16 +7,22 @@ import {
   readClaimStatus,
   readMerchProductPresentation
 } from './merchProductPresentation';
+import {
+  ProductPreparationLabel,
+  type ProductPreparationPhase
+} from './ProductPreparationLabel';
 import type { MerchInventoryLoadState } from './useMerchInventory';
+import { useLocale } from '../../i18n/LocaleContext';
 
 type CatalogProductTileProps = {
   accessState?: MerchAccessProductState;
   disabled: boolean;
   helperText?: string;
-  isChecking: boolean;
   inventory?: MerchProductInventory;
   inventoryLoadState: MerchInventoryLoadState;
   onCheck: (productId: MerchProductId) => void;
+  preparationPhase?: ProductPreparationPhase;
+  preparationPercent?: number;
   product: MerchProduct;
   revealedImageUrl?: string;
 };
@@ -25,13 +31,16 @@ export function CatalogProductTile({
   accessState,
   disabled,
   helperText,
-  isChecking,
   inventory,
   inventoryLoadState,
   onCheck,
+  preparationPhase,
+  preparationPercent,
   product,
   revealedImageUrl
 }: CatalogProductTileProps) {
+  const { locale } = useLocale();
+  const copy = catalogCopy[locale];
   const titleId = `merch-catalog-${product.id}-title`;
   const helperId = `merch-catalog-${product.id}-helper`;
   const isEligible = accessState?.status === 'eligible';
@@ -39,7 +48,11 @@ export function CatalogProductTile({
   const isSoldOut =
     inventory?.soldOut === true &&
     accessState?.claimStatus !== 'submitted';
-  const presentation = readMerchProductPresentation(product.id, accessState);
+  const presentation = readMerchProductPresentation(
+    product.id,
+    locale,
+    accessState
+  );
   const releaseNumber =
     product.id === 'shirt' ? '01' : product.id === 'bracelet' ? '02' : '03';
 
@@ -50,7 +63,7 @@ export function CatalogProductTile({
         `merch-catalog-item--${product.id}`,
         isEligible ? 'is-eligible' : '',
         isUnqualified ? 'is-unqualified' : '',
-        isChecking ? 'is-checking' : ''
+        preparationPhase ? `is-${preparationPhase}` : ''
       ]
         .filter(Boolean)
         .join(' ')}
@@ -63,7 +76,7 @@ export function CatalogProductTile({
           aria-label={
             isEligible
               ? undefined
-              : 'This release remains sealed until access is checked.'
+              : copy.sealedAria
           }
           role={isEligible ? undefined : 'img'}
         >
@@ -96,18 +109,18 @@ export function CatalogProductTile({
         </div>
 
         <div className="merch-catalog-item__rail" aria-hidden="true">
-          <span>Release {releaseNumber}</span>
+          <span>{copy.release} {releaseNumber}</span>
           <strong>
             {isEligible
               ? presentation.category
-              : presentation.visualStatus || 'Private drop'}
+              : presentation.visualStatus || copy.privateDrop}
           </strong>
         </div>
       </div>
 
       <div className="merch-catalog-item__body">
         <p className="merch-catalog-item__category">
-          Release {releaseNumber} / {presentation.category}
+          {copy.release} {releaseNumber} / {presentation.category}
         </p>
         <h2 id={titleId}>{presentation.title}</h2>
         <p className="merch-catalog-item__description">
@@ -120,8 +133,8 @@ export function CatalogProductTile({
               accessState.claimStatus || 'not-started'
             }`}
           >
-            <span>Claim form</span>
-            <strong>{readClaimStatus(accessState.claimStatus)}</strong>
+            <span>{copy.claimForm}</span>
+            <strong>{readClaimStatus(accessState.claimStatus, locale)}</strong>
           </p>
         ) : null}
 
@@ -132,13 +145,16 @@ export function CatalogProductTile({
             onClick={() => onCheck(product.id)}
             type="button"
           >
-            <span>
-              {isSoldOut
-                ? 'Sold out'
-                : isChecking
-                  ? 'Checking'
-                  : presentation.buttonLabel}
-            </span>
+            {isSoldOut ? (
+              <span>{copy.soldOut}</span>
+            ) : preparationPhase ? (
+              <ProductPreparationLabel
+                percent={preparationPercent}
+                phase={preparationPhase}
+              />
+            ) : (
+              <span>{presentation.buttonLabel}</span>
+            )}
           </button>
           {helperText ? <p id={helperId}>{helperText}</p> : null}
         </div>
@@ -146,3 +162,20 @@ export function CatalogProductTile({
     </article>
   );
 }
+
+const catalogCopy = {
+  en: {
+    claimForm: 'Claim form',
+    privateDrop: 'Private drop',
+    release: 'Release',
+    sealedAria: 'This release remains sealed until access is checked.',
+    soldOut: 'Sold out'
+  },
+  'zh-TW': {
+    claimForm: '領取表單',
+    privateDrop: '限定發行',
+    release: '系列',
+    sealedAria: '此商品會保持封存，直到完成資格檢查。',
+    soldOut: '已全數領取'
+  }
+} as const;

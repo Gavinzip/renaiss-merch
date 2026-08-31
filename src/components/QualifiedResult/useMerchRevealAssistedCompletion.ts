@@ -12,6 +12,11 @@ type MerchRevealAssistedCompletionOptions = {
   forwardVideoRef: RefObject<HTMLVideoElement | null>;
   hasReverseVideo: boolean;
   journeyRef: RefObject<HTMLElement | null>;
+  playbackErrors: {
+    closing: string;
+    decode: string;
+    reveal: string;
+  };
   productId: MerchProductId;
   reverseVideoRef: RefObject<HTMLVideoElement | null>;
   setMediaReady: Dispatch<SetStateAction<boolean>>;
@@ -34,6 +39,7 @@ export function useMerchRevealAssistedCompletion({
   forwardVideoRef,
   hasReverseVideo,
   journeyRef,
+  playbackErrors,
   productId,
   reverseVideoRef,
   setMediaReady,
@@ -245,8 +251,8 @@ export function useMerchRevealAssistedCompletion({
       setMediaReady(true);
       setPlaybackError(
         kind === 'forward'
-          ? 'Reveal animation could not finish. Scroll down to retry.'
-          : 'Closing animation could not finish. Scroll up to retry.'
+          ? playbackErrors.reveal
+          : playbackErrors.closing
       );
     }
 
@@ -476,7 +482,7 @@ export function useMerchRevealAssistedCompletion({
       } else if (currentPhase === 'playing') {
         failPlayback('forward');
       } else {
-        setPlaybackError('Reveal media could not be decoded.');
+        setPlaybackError(playbackErrors.decode);
       }
     }
 
@@ -553,6 +559,7 @@ export function useMerchRevealAssistedCompletion({
     forwardVideoRef,
     hasReverseVideo,
     journeyRef,
+    playbackErrors,
     productId,
     reverseVideoRef,
     setMediaReady,

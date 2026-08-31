@@ -33,7 +33,7 @@ import {
 import { readRenaissLogoutReturnUrl } from '../../lib/renaissAuth';
 import type { PreparedRevealMedia } from '../../lib/revealMediaPreload';
 import { publicRevealMediaUrl } from '../../lib/publicRevealMedia';
-import { shippingCountries } from '../../lib/shippingCountries';
+import { readShippingCountries } from '../../lib/shippingCountries';
 import { readStoredShippingProfile } from '../../lib/shippingProfile';
 import {
   beginSevenElevenStoreSelection,
@@ -57,6 +57,12 @@ import {
   useMerchRevealAssistedCompletion
 } from './useMerchRevealAssistedCompletion';
 import './QualifiedResult.css';
+import {
+  readLocalizedProductName,
+  useLocale,
+  type AppLocale
+} from '../../i18n/LocaleContext';
+import { qualifiedResultCopy } from '../../i18n/qualifiedResultCopy';
 
 const emailInputPattern = '[^\\s@]+@[^\\s@]+\\.[^\\s@]+';
 const phoneInputPattern = '[+()0-9\\s.-]{6,32}';
@@ -66,6 +72,7 @@ type ShippingLoadState = 'loading' | 'loaded' | 'empty' | 'error';
 type ClaimDialog = 'size-chart' | 'submitted' | null;
 
 type QualifiedResultProps = {
+  onMediaReady?: () => void;
   productId?: MerchProductId;
   revealMedia?: Pick<
     PreparedRevealMedia,
@@ -134,10 +141,15 @@ const shippingFieldNames: Array<keyof ShippingClaimPayload> = [
 ];
 
 export function QualifiedResult({
+  onMediaReady,
   productId = 'shirt',
   revealMedia,
   result
 }: QualifiedResultProps) {
+  const { locale } = useLocale();
+  const copy = qualifiedResultCopy[locale];
+  const productName = readLocalizedProductName(productId, locale);
+  const shippingCountries = readShippingCountries(locale);
   const productConfig = result.reveal;
   const revealVideoSrc = readRevealVideoSource(
     productId,
@@ -195,6 +207,7 @@ export function QualifiedResult({
     forwardVideoRef,
     hasReverseVideo: productConfig.hasReverseVideo,
     journeyRef: scrollerRef,
+    playbackErrors: copy.playbackErrors,
     productId,
     reverseVideoRef,
     setMediaReady,
@@ -203,6 +216,12 @@ export function QualifiedResult({
     setShowClaimForm: setShowShipping,
     startAtEnd: resumesSevenElevenSelection
   });
+
+  useEffect(() => {
+    if (mediaReady) {
+      onMediaReady?.();
+    }
+  }, [mediaReady, onMediaReady]);
 
   useEffect(() => {
     let cancelled = false;
@@ -447,7 +466,7 @@ export function QualifiedResult({
       deliveryMethod === 'seven_eleven_c2c' &&
       (!sevenElevenStore || !sevenElevenSelectionToken)
     ) {
-      setShippingActionError('請先選擇 7-ELEVEN 取件門市。');
+      setShippingActionError(copy.selectStoreFirst);
       setShippingActionState('error');
       return;
     }
@@ -489,7 +508,9 @@ export function QualifiedResult({
         setActiveDialog('submitted');
       }
     } catch (error) {
-      setShippingActionError(readShippingClaimErrorMessage(error, intent));
+      setShippingActionError(
+        readShippingClaimErrorMessage(error, intent, locale)
+      );
       setShippingActionState('error');
     }
   }
@@ -543,12 +564,10 @@ export function QualifiedResult({
 
           <div className="qualified-result__status" aria-hidden={showShipping}>
             <p className="qualified-result__eyebrow">
-              {productConfig.statusEyebrow}
+              {copy.statusEyebrows[productId]}
             </p>
-            <h2 id="qualified-title">Qualified</h2>
-            <p>
-              {result.minimumSbtBalance} SBT access requirement met.
-            </p>
+            <h2 id="qualified-title">{copy.qualified}</h2>
+            <p>{copy.requirementMet(result.minimumSbtBalance)}</p>
           </div>
 
           {productConfig.claimKind === 'email' ? (
@@ -562,14 +581,17 @@ export function QualifiedResult({
             className="qualified-result__shipping"
             onChange={handleShippingFormChange}
             onSubmit={handleShippingSubmit}
-            aria-label={`Shipping address for ${productConfig.claimName}`}
+            aria-label={copy.shippingAria(productName)}
           >
-            <p className="qualified-result__eyebrow">Claim details</p>
-            <h2>Shipping address</h2>
+            <p className="qualified-result__eyebrow">{copy.claimDetails}</p>
+            <h2>{copy.shippingAddress}</h2>
             <p>
               {hasSubmittedClaim
-                ? 'Shipping details have been submitted and are locked.'
-                : `${result.minimumSbtBalance} SBT access requirement met. Add the recipient details for this ${productConfig.claimName} claim.`}
+                ? copy.shippingLocked
+                : copy.shippingDescription(
+                    result.minimumSbtBalance,
+                    productName
+                  )}
             </p>
 
             {!hasSubmittedClaim && chineseShippingReview.isRequired ? (
@@ -592,13 +614,13 @@ export function QualifiedResult({
                 <div>
                   <strong>
                     {deliveryMethod === 'seven_eleven_c2c'
-                      ? '中文姓名與台灣手機必填'
-                      : '中文地址必填'}
+                      ? copy.chineseNoticeTaiwanTitle
+                      : copy.chineseNoticeChinaTitle}
                   </strong>
                   <p>
                     {deliveryMethod === 'seven_eleven_c2c'
-                      ? '台灣訂單一律使用 7-ELEVEN 店到店。取件姓名須包含中文字，並填寫台灣手機號碼。'
-                      : '中國的收件人姓名及地址必須包含中文字。'}
+                      ? copy.chineseNoticeTaiwanBody
+                      : copy.chineseNoticeChinaBody}
                   </p>
                 </div>
               </div>
@@ -640,42 +662,42 @@ export function QualifiedResult({
               />
               <label className="qualified-result__field-half">
                 {chineseShippingReview.isRequired
-                  ? 'First name (中文)'
-                  : 'First name'}
+                  ? copy.firstNameChinese
+                  : copy.firstName}
                 <input
                   autoComplete="shipping given-name"
                   name="firstName"
-                  placeholder="First name"
+                  placeholder={copy.firstName}
                   required
                   type="text"
                 />
               </label>
               <label className="qualified-result__field-half">
                 {chineseShippingReview.isRequired
-                  ? 'Last name (中文)'
-                  : 'Last name'}
+                  ? copy.lastNameChinese
+                  : copy.lastName}
                 <input
                   autoComplete="shipping family-name"
                   name="lastName"
-                  placeholder="Last name"
+                  placeholder={copy.lastName}
                   required
                   type="text"
                 />
               </label>
               <label className="qualified-result__field-half">
-                Email
+                {copy.email}
                 <input
                   autoComplete="email"
                   name="email"
                   pattern={emailInputPattern}
                   placeholder="name@example.com"
                   required
-                  title="Enter a complete email address, for example name@example.com."
+                  title={copy.emailTitle}
                   type="email"
                 />
               </label>
               <label className="qualified-result__field-half">
-                Phone
+                {copy.phone}
                 <input
                   autoComplete="shipping tel"
                   name="phone"
@@ -686,7 +708,7 @@ export function QualifiedResult({
                       : '+1 555 000 0000'
                   }
                   required
-                  title="Enter a valid phone number using digits, spaces, +, -, ., or parentheses."
+                  title={copy.phoneTitle}
                   type="tel"
                 />
               </label>
@@ -694,19 +716,19 @@ export function QualifiedResult({
                 <>
                   <div className="qualified-result__field-half qualified-result__field-control">
                     <div className="qualified-result__field-label">
-                      <span>Size</span>
+                      <span>{copy.size}</span>
                       <button
-                        aria-label="Open size chart"
+                        aria-label={copy.openSizeChart}
                         className="qualified-result__size-chart-link"
                         type="button"
                         onClick={() => setActiveDialog('size-chart')}
                       >
-                        Size chart
+                        {copy.sizeChart}
                       </button>
                     </div>
                     <select name="size" required defaultValue="">
                       <option value="" disabled>
-                        Select size
+                        {copy.selectSize}
                       </option>
                       {merchSizes.map((size) => (
                         <option key={size.size} value={size.size}>
@@ -719,9 +741,9 @@ export function QualifiedResult({
                 </>
               ) : (
                 <div className="qualified-result__field-half qualified-result__field-control">
-                  <span className="qualified-result__field-label">Color</span>
+                  <span className="qualified-result__field-label">{copy.color}</span>
                   <div
-                    aria-label="Bracelet color"
+                    aria-label={copy.braceletColor}
                     className="qualified-result__color-options"
                     role="group"
                   >
@@ -739,7 +761,7 @@ export function QualifiedResult({
                           aria-hidden="true"
                           className={`qualified-result__color-swatch qualified-result__color-swatch--${color.id.toLowerCase()}`}
                         />
-                        {color.label}
+                        {copy.braceletColors[color.id]}
                       </button>
                     ))}
                   </div>
@@ -748,7 +770,7 @@ export function QualifiedResult({
                 </div>
               )}
               <label className="qualified-result__field-half">
-                Country / region
+                {copy.countryRegion}
                 <select
                   autoComplete="shipping country-name"
                   name="country"
@@ -767,7 +789,7 @@ export function QualifiedResult({
                 <div className="qualified-result__store-picker qualified-result__field-wide">
                   <div>
                     <span className="qualified-result__field-label">
-                      Pickup store
+                      {copy.pickupStore}
                     </span>
                     {sevenElevenStore ? (
                       <p>
@@ -777,60 +799,60 @@ export function QualifiedResult({
                         </span>
                       </p>
                     ) : (
-                      <p>尚未選擇取件門市。</p>
+                      <p>{copy.noStoreSelected}</p>
                     )}
                   </div>
                   <button onClick={handleSelectSevenElevenStore} type="button">
-                    {sevenElevenStore ? '更換門市' : '選擇門市'}
+                    {sevenElevenStore ? copy.changeStore : copy.selectStore}
                   </button>
                 </div>
               ) : (
                 <>
                   <label className="qualified-result__field-wide">
-                    Address line 1
+                    {copy.addressLine1}
                     <input
                       autoComplete="shipping address-line1"
                       name="addressLine1"
-                      placeholder="Street address or PO box"
+                      placeholder={copy.addressLine1Placeholder}
                       required
                       type="text"
                     />
                   </label>
                   <label className="qualified-result__field-wide">
-                    Address line 2
+                    {copy.addressLine2}
                     <input
                       autoComplete="shipping address-line2"
                       name="addressLine2"
-                      placeholder="Apartment, suite, unit, building (optional)"
+                      placeholder={copy.addressLine2Placeholder}
                       type="text"
                     />
                   </label>
                   <label className="qualified-result__field-third">
-                    City
+                    {copy.city}
                     <input
                       autoComplete="shipping address-level2"
                       name="city"
-                      placeholder="City"
+                      placeholder={copy.city}
                       required
                       type="text"
                     />
                   </label>
                   <label className="qualified-result__field-third">
-                    State / province
+                    {copy.region}
                     <input
                       autoComplete="shipping address-level1"
                       name="region"
-                      placeholder="State"
+                      placeholder={copy.regionPlaceholder}
                       required
                       type="text"
                     />
                   </label>
                   <label className="qualified-result__field-third">
-                    ZIP / postal code
+                    {copy.postalCode}
                     <input
                       autoComplete="shipping postal-code"
                       name="postalCode"
-                      placeholder="Postal code"
+                      placeholder={copy.postalCodePlaceholder}
                       required
                       type="text"
                     />
@@ -838,10 +860,10 @@ export function QualifiedResult({
                 </>
               )}
               <label className="qualified-result__field-wide">
-                Delivery notes
+                {copy.deliveryNotes}
                 <textarea
                   name="deliveryNotes"
-                  placeholder="Gate code, preferred delivery detail, or local instructions (optional)"
+                  placeholder={copy.deliveryNotesPlaceholder}
                   rows={3}
                 />
               </label>
@@ -852,7 +874,7 @@ export function QualifiedResult({
                 className="qualified-result__submit-status qualified-result__submit-status--locked"
                 role="status"
               >
-                Claim submitted. Shipping details cannot be changed.
+                {copy.claimLocked}
               </p>
             ) : (
               <>
@@ -864,8 +886,8 @@ export function QualifiedResult({
                     disabled={isPersisting}
                   >
                     {shippingActionState === 'submitting'
-                      ? 'Submitting'
-                      : 'Submit claim'}
+                      ? copy.submitting
+                      : copy.submitClaim}
                   </button>
                   <button
                     className="qualified-result__save-button"
@@ -875,8 +897,8 @@ export function QualifiedResult({
                     disabled={isPersisting}
                   >
                     {shippingActionState === 'saving'
-                      ? 'Saving'
-                      : 'Save shipping details'}
+                      ? copy.saving
+                      : copy.saveShipping}
                   </button>
                 </div>
                 <p
@@ -887,7 +909,8 @@ export function QualifiedResult({
                     shippingActionState,
                     shippingLoadState,
                     storedClaimStatus,
-                    shippingActionError
+                    shippingActionError,
+                    locale
                   )}
                 </p>
               </>
@@ -905,9 +928,9 @@ export function QualifiedResult({
                   role="dialog"
                 >
                   <div className="qualified-result__modal-header">
-                    <h3 id="qualified-size-chart-title">Size chart</h3>
+                    <h3 id="qualified-size-chart-title">{copy.sizeChart}</h3>
                     <button
-                      aria-label="Close size chart"
+                      aria-label={copy.closeSizeChart}
                       className="qualified-result__modal-close"
                       type="button"
                       onClick={() => setActiveDialog(null)}
@@ -916,19 +939,19 @@ export function QualifiedResult({
                     </button>
                   </div>
                   <p className="qualified-result__size-fit-note">
-                    Oversized fit. Size down is recommended.
+                    {copy.sizeFitNote}
                   </p>
                   <div className="qualified-result__size-chart-wrap">
                     <table className="qualified-result__size-chart">
                       <thead>
                         <tr>
-                          <th>Size</th>
-                          <th>Length</th>
-                          <th>Chest</th>
-                          <th>Shoulder</th>
-                          <th>Sleeve</th>
-                          <th>Height</th>
-                          <th>Weight</th>
+                          <th>{copy.size}</th>
+                          <th>{copy.length}</th>
+                          <th>{copy.chest}</th>
+                          <th>{copy.shoulder}</th>
+                          <th>{copy.sleeve}</th>
+                          <th>{copy.height}</th>
+                          <th>{copy.weight}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -957,24 +980,23 @@ export function QualifiedResult({
                   role="dialog"
                 >
                   <p className="qualified-result__modal-eyebrow">
-                    Claim submitted
+                    {copy.claimSubmitted}
                   </p>
                   <h3 id="qualified-submit-success-title">
-                    Shipping details received.
+                    {copy.shippingReceived}
                   </h3>
                   <p>
-                    Your {productConfig.claimName} claim has been submitted and
-                    the shipping details are now locked.
+                    {copy.submittedDialog(productName)}
                   </p>
                   <div className="qualified-result__modal-actions">
                     <button type="button" onClick={() => setActiveDialog(null)}>
-                      Stay here
+                      {copy.stayHere}
                     </button>
                     <a
                       className="qualified-result__reset-link"
                       href={readRenaissLogoutReturnUrl()}
                     >
-                      Check another wallet
+                      {copy.checkAnotherWallet}
                     </a>
                   </div>
                 </div>
@@ -1088,32 +1110,35 @@ function readShippingSubmitStatus(
   actionState: ShippingActionState,
   loadState: ShippingLoadState,
   storedStatus: 'draft' | 'submitted' | null,
-  actionError: string | null
+  actionError: string | null,
+  locale: AppLocale
 ) {
+  const copy = qualifiedResultCopy[locale];
+
   switch (actionState) {
     case 'saving':
-      return 'Saving shipping details.';
+      return copy.statusSaving;
     case 'submitting':
-      return 'Submitting claim.';
+      return copy.statusSubmitting;
     case 'saved':
-      return 'Shipping details saved.';
+      return copy.statusSaved;
     case 'submitted':
-      return 'Claim submitted.';
+      return copy.statusSubmitted;
     case 'error':
-      return actionError || 'Could not save shipping details.';
+      return actionError || copy.errors.saveFailed;
     default:
       break;
   }
 
   switch (loadState) {
     case 'loading':
-      return 'Checking saved details.';
+      return copy.statusLoading;
     case 'loaded':
       return storedStatus === 'submitted'
-        ? 'Submitted details loaded.'
-        : 'Saved details loaded.';
+        ? copy.statusSubmittedLoaded
+        : copy.statusSavedLoaded;
     case 'error':
-      return 'Could not load saved details.';
+      return copy.statusLoadFailed;
     default:
       return '';
   }
@@ -1121,54 +1146,57 @@ function readShippingSubmitStatus(
 
 function readShippingClaimErrorMessage(
   error: unknown,
-  intent: ShippingClaimIntent
+  intent: ShippingClaimIntent,
+  locale: AppLocale
 ) {
+  const copy = qualifiedResultCopy[locale];
+
   if (!(error instanceof ShippingClaimError)) {
     return intent === 'submit'
-      ? 'Could not submit claim.'
-      : 'Could not save shipping details.';
+      ? copy.errors.submitFailed
+      : copy.errors.saveFailed;
   }
 
   if (isChineseShippingErrorCode(error.code)) {
-    return 'Taiwan and China shipping names and addresses must include Chinese characters.';
+    return copy.errors.chineseRequired;
   }
 
   switch (error.code) {
     case 'taiwan_mobile_invalid':
     case 'taiwan_mobile_required':
-      return '7-ELEVEN 取件請填寫台灣手機號碼。';
+      return copy.errors.taiwanMobile;
     case 'seven_eleven_selection_required':
     case 'seven_eleven_selection_invalid':
     case 'seven_eleven_selection_not_found':
     case 'seven_eleven_selection_not_ready':
-      return '請重新選擇 7-ELEVEN 取件門市。';
+      return copy.errors.storeReselect;
     case 'email_invalid':
-      return 'Enter a complete email address, for example name@example.com.';
+      return copy.errors.email;
     case 'phone_invalid':
     case 'phone_required':
-      return 'Enter a valid phone number using digits, spaces, +, -, ., or parentheses.';
+      return copy.errors.phone;
     case 'size_required':
     case 'size_invalid':
-      return 'Select a merch size before saving.';
+      return copy.errors.size;
     case 'color_required':
     case 'color_invalid':
-      return 'Select Gold or Silver before saving.';
+      return copy.errors.color;
     case 'country_invalid':
     case 'country_required':
-      return 'Select a valid country or region.';
+      return copy.errors.country;
     case 'unauthenticated':
-      return 'Session expired. Please sign in again.';
+      return copy.errors.sessionExpired;
     case 'wallet_not_eligible':
-      return 'This wallet is not eligible to submit a merch claim.';
+      return copy.errors.walletNotEligible;
     case 'shipping_claim_already_submitted':
-      return 'Shipping details have already been submitted and are locked.';
+      return copy.errors.alreadySubmitted;
     case 'merch_inventory_sold_out':
-      return 'The Renaiss Bracelet release is fully claimed.';
+      return copy.errors.soldOut;
     default:
       return error.status >= 400 && error.status < 500
-        ? 'Check the shipping details and try again.'
+        ? copy.errors.checkDetails
         : intent === 'submit'
-          ? 'Could not submit claim.'
-          : 'Could not save shipping details.';
+          ? copy.errors.submitFailed
+          : copy.errors.saveFailed;
   }
 }

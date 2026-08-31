@@ -4,7 +4,11 @@ import type { PublicRevealProductId } from './merchProducts';
 export type RevealDirection = 'forward' | 'reverse';
 
 type RevealAssetKey =
-  `${PublicRevealProductId}Reveal${'Forward' | 'Reverse'}`;
+  | 'braceletRevealForward'
+  | 'braceletRevealReverse'
+  | 'shirtRevealForward'
+  | 'shirtRevealReverse'
+  | 'ticketRevealForward';
 
 const configuredCdnBase = String(
   import.meta.env.VITE_STATIC_ASSET_CDN_BASE_URL || ''
@@ -21,6 +25,13 @@ export function publicRevealMediaUrl(
   const assetKey = readRevealAssetKey(productId, direction);
 
   if (import.meta.env.DEV) {
+    if (productId === 'ticket') {
+      return (
+        '/private/merch/products/ticket/website/videos/' +
+        'reveal-forward-scrub.mp4'
+      );
+    }
+
     return (
       `/private/merch/runtime/${productId}/` +
       `reveal-${direction}.mp4`
@@ -50,6 +61,10 @@ function readRevealAssetKey(
   productId: PublicRevealProductId,
   direction: RevealDirection
 ): RevealAssetKey {
+  if (productId === 'ticket') {
+    return 'ticketRevealForward';
+  }
+
   const suffix = direction === 'forward' ? 'Forward' : 'Reverse';
 
   return `${productId}Reveal${suffix}`;
