@@ -572,6 +572,13 @@
   text-shadow: none;
 }
 
+:root:lang(zh-TW) .merch-catalog-item__body h2,
+:root:lang(zh-TW) .merch-product-card__body h2 {
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+
 .merch-catalog-item__description {
   max-width: 31rem;
   margin: 0.72rem 0 0;

@@ -57,6 +57,7 @@ import {
   type MerchStoreView
 } from './merchStoreView';
 import { StoreAccessResult } from './StoreAccessResult';
+import { StoreAuthToast } from './StoreAuthToast';
 import { useMerchInventory } from './useMerchInventory';
 import { useScrolledHeader } from './useScrolledHeader';
 import {
@@ -135,6 +136,7 @@ export function MerchStore({
   const [addressNeedsUpdate, setAddressNeedsUpdate] = useState(false);
   const [addressReviewUnavailable, setAddressReviewUnavailable] =
     useState(false);
+  const [authPromptVersion, setAuthPromptVersion] = useState(0);
   const [storeView, setStoreView] = useState<MerchStoreView>(
     () =>
       CATALOG_VIEW_ENABLED ? readStoredMerchStoreView() : 'cards'
@@ -220,6 +222,20 @@ export function MerchStore({
 
     return copy.status[storeState];
   }, [backgroundMediaError, copy, storeState]);
+
+  useEffect(() => {
+    if (authPromptVersion === 0) {
+      return;
+    }
+
+    const dismissTimer = window.setTimeout(() => {
+      setAuthPromptVersion(0);
+    }, 3200);
+
+    return () => {
+      window.clearTimeout(dismissTimer);
+    };
+  }, [authPromptVersion]);
 
   useEffect(() => {
     if (CATALOG_VIEW_ENABLED) {
@@ -382,6 +398,7 @@ export function MerchStore({
   }, [session, showFulfillment, storeState]);
 
   function handleLogin() {
+    setAuthPromptVersion(0);
     setStoreState('signing-in');
     onLogin();
   }
@@ -453,6 +470,7 @@ export function MerchStore({
     setSelectedProductId(productId);
 
     if (!session.authenticated) {
+      setAuthPromptVersion((currentVersion) => currentVersion + 1);
       setStoreState('auth-required');
       return;
     }
@@ -915,6 +933,14 @@ export function MerchStore({
           accountLabel={sessionLabel || walletLabel}
           onClose={() => setShowSettings(false)}
           onProfileReviewChange={handleProfileReviewChange}
+        />
+      ) : null}
+
+      {authPromptVersion > 0 ? (
+        <StoreAuthToast
+          key={authPromptVersion}
+          message={copy.authPrompt.message}
+          title={copy.authPrompt.title}
         />
       ) : null}
 

@@ -28,6 +28,10 @@ export const merchStoreCopy = {
     lede:
       'Three sealed releases. Each piece is revealed only after your wallet access is verified.',
     login: 'Login',
+    authPrompt: {
+      message: 'Use Login in the top right before checking access.',
+      title: 'Please sign in'
+    },
     opening: 'Opening',
     productDisplay: 'Product display',
     renaissAccount: 'Renaiss account',
@@ -76,6 +80,10 @@ export const merchStoreCopy = {
     languageLabel: '語言',
     lede: '三款封存商品，只有在錢包資格驗證完成後才會揭曉。',
     login: '登入',
+    authPrompt: {
+      message: '請先使用右上角的登入，再檢查商品資格。',
+      title: '請先登入'
+    },
     opening: '開啟中',
     productDisplay: '商品顯示方式',
     renaissAccount: 'Renaiss 帳號',
