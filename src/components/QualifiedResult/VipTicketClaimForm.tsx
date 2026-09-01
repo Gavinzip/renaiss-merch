@@ -203,10 +203,10 @@ const ticketCopy = {
     },
     eyebrow: 'VIP claim',
     formLabel: (_claimName: string) => 'Email registration for the VIP ticket',
-    generalTicketLink: 'apply for and claim general admission',
+    generalTicketLink: 'apply for general admission',
     instructionPrefix: 'If you have not applied for general admission, first ',
     instructionSuffix:
-      '. After claiming it, return here to apply for the VIP ticket and enter the same registration email.',
+      '. After submitting the application, return here to apply for the VIP ticket entering the same registration email.',
     instructionTitle: 'Claim general admission before applying for VIP access',
     loading: 'Loading registration status.',
     registered: (email: string) => `Registered: ${email}`,

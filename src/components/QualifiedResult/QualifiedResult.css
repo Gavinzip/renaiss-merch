@@ -605,6 +605,9 @@
 .qualified-result__actions button,
 .qualified-result__modal-actions button,
 .qualified-result__reset-link {
+  --qualified-action-background: linear-gradient(180deg, #1b1a18, #0f0f0e);
+  --qualified-action-hover-background: #000000;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -620,7 +623,7 @@
   text-decoration: none;
   text-transform: uppercase;
   cursor: pointer;
-  background: linear-gradient(180deg, #1b1a18, #0f0f0e);
+  background: var(--qualified-action-background);
   border: 1px solid rgba(17, 17, 17, 0.86);
   border-radius: 6px;
   box-shadow:
@@ -633,8 +636,26 @@
 
 .qualified-result__actions button:hover,
 .qualified-result__modal-actions button:hover {
-  background: #000000;
+  background: var(--qualified-action-hover-background);
   transform: translateY(-1px);
+}
+
+.qualified-result__ticket-claim .qualified-result__actions button {
+  --qualified-action-hover-background: var(--qualified-action-background);
+
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.qualified-result__ticket-claim
+  .qualified-result__actions
+  button:hover:not(:disabled) {
+  border-color: #111111;
+  box-shadow:
+    0 16px 36px rgba(17, 17, 17, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 .qualified-result__actions button:disabled {
