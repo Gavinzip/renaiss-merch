@@ -83,7 +83,7 @@ export function readClaimStatus(
     case 'draft':
       return copy.draftSaved;
     default:
-      return copy.notStarted;
+      return copy.startClaim;
   }
 }
 
@@ -102,11 +102,11 @@ const presentationCopy = {
     eligibleDescription: (productId: MerchProductId, minimum: number) =>
       `${eligibleDescriptions.en[productId]} ${minimum} SBT access requirement met.`,
     notEligible: 'Not eligible',
-    notStarted: 'Not started',
     privateDrop: 'Private drop',
     sealed: 'Sealed',
     sealedDescription:
       'All release details stay sealed until your first access check.',
+    startClaim: 'Start to Claim',
     submitted: 'Submitted',
     unqualifiedDescription: (missing: number) =>
       `${missing} more SBT required to reveal this release.`,
@@ -126,10 +126,10 @@ const presentationCopy = {
     eligibleDescription: (productId: MerchProductId, minimum: number) =>
       `${eligibleDescriptions['zh-TW'][productId]} 已符合 ${minimum} SBT 的領取資格。`,
     notEligible: '不符合資格',
-    notStarted: '尚未開始',
     privateDrop: '限定發行',
     sealed: '尚未解鎖',
     sealedDescription: '首次檢查資格前，所有商品資訊都會保持封存。',
+    startClaim: '開始領取',
     submitted: '已送出',
     unqualifiedDescription: (missing: number) =>
       `還需要 ${missing} SBT 才能解鎖此商品。`,
