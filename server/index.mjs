@@ -23,7 +23,7 @@ import {
   isDemoSession,
   requireDemoAccess
 } from './demo-session.mjs';
-import { handleMerchEligibility } from './eligibility.mjs';
+import { handleMerchEligibility, readMerchEligibility } from './eligibility.mjs';
 import {
   handleMerchAccessState,
   saveMerchAccessCheck
@@ -202,6 +202,15 @@ async function handleRoute(req, res) {
     return true;
   }
 
+  if (url.pathname === '/api/merch-eligibility/prepare') {
+    requireMethod(req, 'GET');
+    // Warm only the shared wallet-count cache. Do not save a product access
+    // check or grant/reveal any item before the user explicitly checks it.
+    await readMerchEligibility(readSession(req), { productId: 'shirt' });
+    sendNoContent(res);
+    return true;
+  }
+
   if (url.pathname === '/api/merch-eligibility') {
     requireMethod(req, 'GET');
     const session = readSession(req);
@@ -212,6 +221,7 @@ async function handleRoute(req, res) {
       session,
       url.searchParams.get('productId'),
       {
+        forceRefresh: url.searchParams.get('refresh') === '1',
         readEligibility: (checkedSession, options) =>
           readMerchProductAccess(checkedSession, {
             ...databaseOptions,

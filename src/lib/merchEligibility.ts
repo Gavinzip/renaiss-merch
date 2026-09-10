@@ -68,6 +68,15 @@ export type EligibilityPayload = {
 
 const eligibilityStatuses = new Set(['eligible', 'unqualified']);
 
+export async function prepareMerchEligibility(signal: AbortSignal): Promise<void> {
+  const response = await fetch('/api/merch-eligibility/prepare', {
+    cache: 'no-store', signal, headers: { Accept: 'application/json' }
+  });
+  if (!response.ok) {
+    throw new EligibilitySourceError(`Eligibility preparation returned ${response.status}.`);
+  }
+}
+
 function readSbtBalance(payload: EligibilityPayload) {
   const rawBalance =
     payload.sbtBalance ?? payload.sbtCount ?? payload.sbt ?? payload.sbt_balance;
@@ -77,14 +86,17 @@ function readSbtBalance(payload: EligibilityPayload) {
 }
 
 export async function checkMerchEligibility(
-  productId: MerchProductId = 'shirt'
+  productId: MerchProductId = 'shirt',
+  options: { forceRefresh?: boolean } = {}
 ): Promise<MerchEligibilityResult> {
   const endpoint =
     import.meta.env.VITE_MERCH_ELIGIBILITY_ENDPOINT || '/api/merch-eligibility';
   const url = new URL(endpoint, window.location.origin);
   url.searchParams.set('productId', productId);
+  if (options.forceRefresh) url.searchParams.set('refresh', '1');
 
   const response = await fetch(url, {
+    cache: 'no-store',
     headers: { Accept: 'application/json' }
   });
   const payload = (await response.json()) as EligibilityPayload;

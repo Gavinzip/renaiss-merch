@@ -6,6 +6,7 @@ import {
 } from './eligibility.mjs';
 import { HttpError } from './http.mjs';
 import { getMerchDatabase } from './merch-database.mjs';
+import { hasCurrentSbtVerification } from './sbt-verification.mjs';
 
 const DEFAULT_PROOF_TTL_SECONDS = 24 * 60 * 60;
 const walletPattern = /^0x[a-fA-F0-9]{40}$/;
@@ -67,10 +68,10 @@ export function selectReusableEligibilityProof(rows, options = {}) {
     }
 
     const storedEligibility = readStoredEligibility(row.eligibility_json);
-    const proofCheckedAt = readProofCheckedAt(
-      storedEligibility,
-      row.checked_at
-    );
+    // Explorer-only snapshots predate the dual-source policy and must be
+    // rechecked rather than carrying the old undercount into the new reader.
+    if (!hasCurrentSbtVerification(storedEligibility)) continue;
+    const proofCheckedAt = readProofCheckedAt(storedEligibility);
 
     if (
       normalizeWalletAddress(storedEligibility.walletAddress) !==
@@ -136,12 +137,12 @@ function readStoredEligibility(value) {
   }
 }
 
-function readProofCheckedAt(eligibility, rowCheckedAt) {
+function readProofCheckedAt(eligibility) {
   const proofCheckedAt =
     eligibility.source === 'stored_higher_tier_access' ||
     eligibility.source === 'stored_access_proof'
       ? eligibility.proofCheckedAt
-      : rowCheckedAt;
+      : eligibility.verifiedAt;
   const proofTimestamp = Date.parse(proofCheckedAt);
 
   if (!Number.isFinite(proofTimestamp)) {

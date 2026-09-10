@@ -59,6 +59,7 @@ import {
 import { StoreAccessResult } from './StoreAccessResult';
 import { StoreAuthToast } from './StoreAuthToast';
 import { useMerchInventory } from './useMerchInventory';
+import { useEligibilityPreparation } from './useEligibilityPreparation';
 import { useScrolledHeader } from './useScrolledHeader';
 import {
   useLocale,
@@ -183,6 +184,7 @@ export function MerchStore({
   );
 
   const user = session.authenticated ? session.user : null;
+  useEligibilityPreparation(user?.safeWalletAddress || null);
   const authenticatedUserSub = user?.sub || null;
   const sessionLabel = user?.isDemo
     ? copy.demoMember
@@ -522,7 +524,9 @@ export function MerchStore({
         }
       );
 
-      const result = await checkMerchEligibility(productId);
+      const result = await checkMerchEligibility(productId, {
+        forceRefresh: productAccess[productId]?.status === 'unqualified'
+      });
 
       if (productCheckGenerationRef.current !== checkGeneration) {
         return;

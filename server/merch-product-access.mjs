@@ -33,7 +33,7 @@ export async function readMerchProductAccess(session, options = {}) {
     options.readStoredEligibilityProof ||
     readReusableEligibilityProof;
   const storedEligibilityProof =
-    await readStoredEligibilityProof(session, {
+    options.forceRefresh ? null : await readStoredEligibilityProof(session, {
       dbPath: options.dbPath,
       productId
     });
@@ -43,7 +43,7 @@ export async function readMerchProductAccess(session, options = {}) {
   }
 
   const readEligibility = options.readEligibility || readMerchEligibility;
-  return readEligibility(session, { productId });
+  return readEligibility(session, { productId, forceRefresh: options.forceRefresh === true });
 }
 
 export function readPermanentMerchAccessState(session, options = {}) {

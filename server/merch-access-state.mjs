@@ -9,6 +9,8 @@ import {
 } from './merch-database.mjs';
 import { getPrivateMerchMediaRelease } from './merch-media-assets.mjs';
 import { readPermanentMerchAccessState } from './merch-product-access.mjs';
+import { hasCurrentSbtVerification } from './sbt-verification.mjs';
+import { isDemoSession } from './demo-session.mjs';
 
 const walletPattern = /^0x[a-fA-F0-9]{40}$/;
 
@@ -64,6 +66,7 @@ export function readMerchAccessState(session, options = {}) {
     }
 
     const storedEligibility = JSON.parse(row.eligibility_json);
+    if (!hasCurrentSbtVerification(storedEligibility) && !isDemoSession(session)) return null;
     const eligibility = applyCurrentMerchEligibilityRule(
       productId,
       storedEligibility
@@ -78,7 +81,7 @@ export function readMerchAccessState(session, options = {}) {
       productId,
       status: eligibility.status
     };
-  });
+  }).filter(Boolean);
 
   accessStates.push(...permanentAccessByProduct.values());
   return accessStates.sort((left, right) =>
