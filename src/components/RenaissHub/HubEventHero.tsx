@@ -20,15 +20,18 @@ export function HubEventHero({ cards, locale, enabled }: { cards: CommunityCard[
     <div className="hub-event-hero__stage" aria-live={carousel.playing ? 'off' : 'polite'}>
       {cards.map((card, index) => {
         const active = card.id === carousel.active;
-        const dateValue = card.eventStart || card.publishedAt;
+        const dateValue = card.effectiveEventDate || card.eventStart || card.eventEnd || card.publishedAt;
         const date = new Date(dateValue);
+        const ended = card.eventStatus === 'ended';
+        const hasEventDate = Boolean(card.effectiveEventDate || card.eventStart || card.eventEnd);
         return <div key={card.id} className="hub-event-hero__slide" data-active={active} aria-hidden={!active} inert={!active}
           role="group" aria-roledescription={english ? 'slide' : '張'} aria-label={`${index + 1} / ${cards.length}`}>
-          <a href={card.url} target="_blank" rel="noopener noreferrer" aria-label={card.title}>
+          <a href={card.url} target="_blank" rel="noopener noreferrer" aria-label={`${card.title}${ended ? english ? ' · Ended' : ' · 已結束' : ''}`}>
             <div className="hub-event-hero__media">
               {card.imageUrl ? <HubFeedImage key={card.imageUrl} url={card.imageUrl} locale={locale} eager onSettled={() => carousel.markSettled(card.id)} />
                 : <span className="hub-event-hero__missing">{english ? 'No image in the original post' : '原文未提供圖片'}</span>}
-              {!Number.isNaN(date.valueOf()) ? <time dateTime={dateValue} title={english ? card.eventStart ? 'Event date' : 'Posted' : card.eventStart ? '活動日期' : '公告日期'}>{date.toLocaleDateString(locale,{month:'2-digit',day:'2-digit'})}</time> : null}
+              {!Number.isNaN(date.valueOf()) ? <time dateTime={dateValue} title={english ? hasEventDate ? 'Event date' : 'Posted' : hasEventDate ? '活動日期' : '公告日期'}>{date.toLocaleDateString(locale,{month:'2-digit',day:'2-digit'})}</time> : null}
+              {ended ? <span className="hub-event-hero__ended">{english ? 'Ended' : '已結束'}</span> : null}
               <span className="hub-event-hero__open" aria-hidden="true">↗</span>
             </div>
             <h3>{card.title}</h3>

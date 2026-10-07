@@ -11,7 +11,7 @@ import type { CommunityFeedState } from "./useCommunityFeed";
 export type HubWidgetContentProps = {
   widget: HubWidget; locale: AppLocale; account: AccountState; feed: CommunityFeedState;
   onRetryFeed: () => void; onRetryAccount: () => void; onLogin: () => void;
-  onOpenCampaign: () => void; onEnter: () => void; loadProgress: number; loadState: "idle" | "loading" | "error";
+  onOpenCampaign: (target?: 'tasks') => void; onEnter: () => void; loadProgress: number; loadState: "idle" | "loading" | "error";
   enterRequested: boolean; preview?: boolean; editing?: boolean;
 };
 

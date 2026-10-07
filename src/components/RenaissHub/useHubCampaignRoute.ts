@@ -24,6 +24,7 @@ export function useHubCampaignRoute() {
   const animations = useRef(new Set<Animation>());
   const dashboardPosition = useRef(0);
   const triggerKey = useRef<string | null>(null);
+  const landingTarget = useRef<'top' | 'tasks'>('top');
   const hasOpened = useRef(false);
 
   function cancelMotion() {
@@ -100,8 +101,14 @@ export function useHubCampaignRoute() {
     if (active) {
       const url = new URL(location.href);
       if (url.hash !== surfCampaignHash) history.replaceState(history.state, '', `${url.pathname}${url.search}${surfCampaignHash}`);
-      window.scrollTo({ top: 0, behavior: 'instant' });
-      ref.current?.querySelector<HTMLElement>('#surf-campaign-title')?.focus({ preventScroll: true });
+      if (landingTarget.current === 'tasks') {
+        ref.current?.querySelector<HTMLElement>('#surf-campaign-tasks')?.scrollIntoView({ behavior: 'instant', block: 'start' });
+        ref.current?.querySelector<HTMLElement>('#surf-tasks-title')?.focus({ preventScroll: true });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        ref.current?.querySelector<HTMLElement>('#surf-campaign-title')?.focus({ preventScroll: true });
+      }
+      landingTarget.current = 'top';
     } else if (hasOpened.current) {
       window.scrollTo({ top: dashboardPosition.current, behavior: 'instant' });
       const returnTarget = triggerKey.current ? ref.current?.querySelector<HTMLElement>(`[data-campaign-entry="${CSS.escape(triggerKey.current)}"]`) : ref.current?.querySelector<HTMLElement>('.renaiss-hub__brand');
@@ -122,8 +129,9 @@ export function useHubCampaignRoute() {
     return cancelMotion;
   }, [active, revision]);
 
-  function open() {
+  function open(target: 'top' | 'tasks' = 'top') {
     triggerKey.current = document.activeElement?.getAttribute('data-campaign-entry') ?? null;
+    landingTarget.current = target;
     location.hash = surfCampaignHash;
   }
   function back() { location.hash = '#portal-top'; }

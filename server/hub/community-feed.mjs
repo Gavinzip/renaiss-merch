@@ -136,6 +136,8 @@ function adaptCard(card, projectMap) {
     storyTags: Array.isArray(card.tags) ? card.tags.filter(tag => typeof tag === "string").slice(0, 20).map(tag => text(tag, 100)) : [],
     eventStart: text(card.timeline_date, 80),
     eventEnd: text(card.timeline_end_date, 80),
+    eventStatus: text(card.event_status, 40),
+    effectiveEventDate: text(card.effective_event_date, 80),
     // Use the published cover, never a fabricated or generated placeholder.
     imageUrl: coverUrl(card.cover_image),
   };

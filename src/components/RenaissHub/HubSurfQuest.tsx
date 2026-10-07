@@ -8,7 +8,7 @@ import type { AccountState } from "./RenaissHubFeatures";
 import { useSurfMissions } from "./useSurfMissions";
 
 export function HubSurfQuest({ locale, account, onOpenCampaign, preview = false }: {
-  locale: AppLocale; account: AccountState; onOpenCampaign: () => void; preview?: boolean;
+  locale: AppLocale; account: AccountState; onOpenCampaign: (target?: 'tasks') => void; preview?: boolean;
 }) {
   const copy = surfQuestCopy[locale];
   const signedIn = !preview && account.status === 'ready' && account.session.authenticated && !account.session.user.isDemo;
@@ -22,11 +22,12 @@ export function HubSurfQuest({ locale, account, onOpenCampaign, preview = false 
     { id: "discord-join", title: copy.join, meta: "Surf Community", action: copy.openDiscord, url: surfCampaign.discordUrl,
       complete: mission?.providers.discord.configured === true && Boolean(mission.providers.discord.connection) && mission.providers.discord.result?.outcome === 'verified' && !mission.providers.discord.result.stale },
   ];
+  const allComplete = tasks.every(task => task.complete);
   return (
     <article className="renaiss-hub__card hub-surf-quest" id={preview ? undefined : "portal-partner"}>
       <div className="renaiss-hub__card-heading">
         <span className="renaiss-hub__eyebrow">{copy.eyebrow}</span>
-        <button type="button" data-campaign-entry="stage" className="hub-surf-quest__stage" onClick={onOpenCampaign}>{copy.stage}<span aria-hidden="true"> ↗</span></button>
+        <button type="button" data-campaign-entry="stage" className="hub-surf-quest__stage" onClick={() => onOpenCampaign()}>{copy.stage}<span aria-hidden="true"> ↗</span></button>
       </div>
       <div className="hub-surf-quest__brands" aria-hidden="true">
         <HubLogo />
@@ -34,7 +35,7 @@ export function HubSurfQuest({ locale, account, onOpenCampaign, preview = false 
         <SurfLogo />
       </div>
       <h2>
-        <button className="hub-title-action" data-campaign-entry="title" type="button" onClick={onOpenCampaign}>
+        <button className="hub-title-action" data-campaign-entry="title" type="button" onClick={() => onOpenCampaign()}>
           <HubMotionText>{copy.title}</HubMotionText>
         </button>
       </h2>
@@ -56,8 +57,8 @@ export function HubSurfQuest({ locale, account, onOpenCampaign, preview = false 
           </li>
         ))}
       </ol>
-      <button type="button" data-campaign-entry="details" className="hub-surf-quest__preview-action" onClick={onOpenCampaign}>
-        <span><span className="hub-action-label">{copy.viewCampaign}</span><small>{copy.prizeSummary}</small></span><ExternalArrow />
+      <button type="button" data-campaign-entry="details" className="hub-surf-quest__preview-action" onClick={() => onOpenCampaign(allComplete ? undefined : 'tasks')}>
+        <span><span className="hub-action-label">{allComplete ? copy.viewCampaign : copy.completeTasks}</span><small>{allComplete ? copy.prizeSummary : copy.taskSummary}</small></span><ExternalArrow />
       </button>
       <footer className="hub-surf-quest__footer"><span>{copy.notOpen}</span><p>{copy.notice}</p></footer>
     </article>

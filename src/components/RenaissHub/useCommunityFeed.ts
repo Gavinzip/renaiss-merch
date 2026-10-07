@@ -19,6 +19,8 @@ export type CommunityCard = {
   storyTags?: string[];
   eventStart?: string;
   eventEnd?: string;
+  eventStatus?: string;
+  effectiveEventDate?: string;
 };
 export type CommunityFeedState =
   | { status: "loading" }
@@ -66,6 +68,20 @@ export function useCommunityFeed(locale: AppLocale, enabled: boolean) {
   return { state, retry };
 }
 
+function isDisplayableEvent(card: CommunityCard, today: string) {
+  if (card.eventStatus === 'ended') return true;
+  if (card.eventStatus === 'not_event' || card.eventStatus === 'timing_unconfirmed') return false;
+  return (card.eventEnd || card.eventStart || '').slice(0, 10) >= today;
+}
+
+function compareEventCards(a: CommunityCard, b: CommunityCard) {
+  const aEnded = a.eventStatus === 'ended', bEnded = b.eventStatus === 'ended';
+  if (aEnded !== bEnded) return aEnded ? 1 : -1;
+  const aDate = Date.parse(a.effectiveEventDate || a.eventStart || a.eventEnd || a.publishedAt);
+  const bDate = Date.parse(b.effectiveEventDate || b.eventStart || b.eventEnd || b.publishedAt);
+  return aEnded ? bDate - aDate : aDate - bDate;
+}
+
 export function selectCommunityCards(
   cards: CommunityCard[],
   settings: HubFeedWidget,
@@ -88,11 +104,11 @@ export function selectCommunityCards(
         (settings.source !== "official" || settings.project !== "tcg" || card.account.replace(/^@/, "").toLowerCase() === "renaissxyz") &&
         (settings.project === "all" || settings.project === card.project) &&
         (settings.region === "all" || settings.region === card.region) &&
-        (settings.source !== "events" || (card.eventEnd || card.eventStart || '').slice(0, 10) >= today)
+        (settings.source !== "events" || isDisplayableEvent(card, today))
       );
     });
   const ordered = settings.source === "events"
-    ? [...matching].sort((a, b) => Date.parse(b.eventStart || b.publishedAt) - Date.parse(a.eventStart || a.publishedAt))
+    ? [...matching].sort(compareEventCards)
     : matching;
   const distinct = distinctCommunityStories(ordered);
   if (settings.source !== "events") distinct.sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
