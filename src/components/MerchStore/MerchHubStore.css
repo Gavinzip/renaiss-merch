@@ -1,0 +1,63 @@
+/* The Store is a page in Renaiss Community, with the same material and header. */
+.merch-store--hub {
+  --store-ink: #25262e;
+  --store-muted: #737480;
+  --store-soft: #918596;
+  color: var(--store-ink);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+    var(--merch-store-background) center / cover fixed no-repeat;
+}
+
+.merch-store--hub > :not(.merch-store__startup-overlay) { opacity: 1; filter: blur(0); }
+.merch-store--hub[data-initial-ready="false"] > :not(.merch-store__startup-overlay) { visibility: hidden; opacity: 0; filter: blur(2px); }
+.merch-store--hub[data-initial-ready="true"] > :not(.merch-store__startup-overlay) { transition: opacity var(--loading-reveal-dur) ease-in-out, filter var(--loading-reveal-dur) ease-in-out; }
+.hub-page-loading.merch-store__startup-overlay { position: fixed; z-index: 30; inset: 0; overflow: auto; }
+
+.merch-store--hub .hub-site-header,
+.merch-store--hub .merch-store__content {
+  width: min(calc(100% - 6rem), 1320px);
+  margin-inline: auto;
+}
+
+.merch-store--hub .hub-site-header { position: relative; z-index: 3; margin-top: 2rem; }
+.merch-store--hub .merch-store__content { padding-top: clamp(1.4rem, 2.8vw, 2.5rem); }
+.merch-store--hub .merch-store__intro {
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.65fr);
+  gap: 2rem;
+  align-items: center;
+  padding-bottom: 1.35rem;
+  margin-bottom: 1.7rem;
+  border-bottom: 1px solid rgba(57, 56, 74, 0.11);
+}
+.merch-store--hub .merch-store__eyebrow { color: #8f7d97; font-size: 0.64rem; font-weight: 550; letter-spacing: 0.18em; }
+.merch-store--hub .merch-store__lede { max-width: 36rem; font-size: clamp(0.9rem, 1.2vw, 1.04rem); font-weight: 420; line-height: 1.8; }
+.merch-store--hub .hub-site-header__store-identity { display: grid; gap: .12rem; min-width: 6rem; color: #8a7f8c; font-size: .63rem; line-height: 1.2; text-align: right; }
+.merch-store--hub .hub-site-header__store-identity span { overflow: hidden; max-width: 9rem; text-overflow: ellipsis; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+.merch-store--hub .hub-site-header__store-identity strong { color: #35303a; font-size: .72rem; white-space: nowrap; }
+
+@media (max-width: 1120px) {
+  .merch-store--hub .hub-site-header { flex-wrap: wrap; }
+  .merch-store--hub .hub-site-header__controls { margin-left: auto; flex-wrap: wrap; }
+}
+
+.merch-store--hub .merch-product-card {
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.61);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 18px 40px -28px rgba(66, 60, 86, 0.2);
+  backdrop-filter: blur(24px) saturate(120%);
+}
+.merch-store--hub .merch-product-card:hover { transform: translateY(-2px); border-color: #fff; box-shadow: 0 20px 42px -24px rgba(66, 60, 86, 0.26); }
+.merch-store--hub .merch-product-card__body { padding: 1.25rem 1.25rem 1.5rem; background: rgba(255, 255, 255, 0.72); box-shadow: none; }
+.merch-store--hub .merch-product-card__body h2 { font-size: clamp(1.35rem, 1.8vw, 1.85rem); font-weight: 640; line-height: 1.25; }
+.merch-store--hub .merch-product-card__description { font-weight: 420; line-height: 1.7; }
+.merch-store--hub .merch-product-card__access button { border-radius: 999px; box-shadow: none; background: #2b292d; color: white; }
+.merch-store--hub .merch-product-card__access button:hover:not(:disabled) { background: #4b3843; }
+
+@media (max-width: 760px) {
+  .merch-store--hub .hub-site-header,
+  .merch-store--hub .merch-store__content { width: min(calc(100% - 2rem), 1320px); }
+  .merch-store--hub .hub-site-header { margin-top: 1rem; }
+  .merch-store--hub .merch-store__intro { grid-template-columns: 1fr; gap: 0.8rem; padding-bottom: 1.2rem; margin-bottom: 1.5rem; }
+}

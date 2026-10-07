@@ -1,13 +1,15 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { AppLocale } from "../../i18n/LocaleContext";
+import './HubNavigation.css';
 
 const navigationCopy = {
   "zh-TW": { open: "開啟導覽", close: "收起導覽", label: "探索", current: "目前頁面", home: "總覽", homeHint: "帳號、收藏與動態", quest: "Partner Quest", questHint: "合作活動與獎品", merch: "Renaiss Merch", merchHint: "會員限定收藏", community: "Community Hub", preparing: "準備商店中…" },
   en: { open: "Open navigation", close: "Close navigation", label: "Explore", current: "You’re here", home: "Overview", homeHint: "Account, collections & updates", quest: "Partner Quest", questHint: "Campaigns & prizes", merch: "Renaiss Merch", merchHint: "Members’ editions", community: "Community Hub", preparing: "Preparing Store…" },
 };
 
-export function HubNavigation({ locale, onOpenCampaign, onEnterMerch, preparing, disabled }: {
+export function HubNavigation({ locale, onOpenCampaign, onEnterMerch, onGoHome, current = 'home', preparing, disabled }: {
   locale: AppLocale; onOpenCampaign: () => void; onEnterMerch: () => void;
+  onGoHome?: () => void; current?: 'home' | 'store';
   preparing: boolean; disabled: boolean;
 }) {
   const copy = navigationCopy[locale];
@@ -61,20 +63,20 @@ export function HubNavigation({ locale, onOpenCampaign, onEnterMerch, preparing,
       style={{ visibility: phase === "closed" || disabled ? "hidden" : "visible" }}
       data-origin="top-right" aria-label="Renaiss" aria-hidden={!open} inert={!open}>
       <div className="hub-navigation__destinations">
-        <a className="hub-navigation__destination" href="#portal-top" aria-current="page" onClick={() => { trigger.current?.focus(); close(); }}>
+        <a className="hub-navigation__destination" href="#portal-top" aria-current={current === 'home' ? 'page' : undefined} onClick={event => { if (onGoHome) { event.preventDefault(); onGoHome(); } trigger.current?.focus(); close(); }}>
           <span className="hub-navigation__icon"><NavigationIcon kind="home" /></span>
           <span className="hub-navigation__copy"><span className="hub-navigation__title">{copy.home}</span><small>{copy.homeHint}</small></span>
-          <span className="hub-navigation__current">{copy.current}</span>
+          {current === 'home' ? <span className="hub-navigation__current">{copy.current}</span> : <NavigationIcon kind="arrow" />}
         </a>
         <button className="hub-navigation__destination" type="button" onClick={() => { trigger.current?.focus(); close(); onOpenCampaign(); }}>
           <span className="hub-navigation__icon"><NavigationIcon kind="quest" /></span>
           <span className="hub-navigation__copy"><span className="hub-navigation__title">{copy.quest}</span><small>{copy.questHint}</small></span>
           <NavigationIcon kind="arrow" />
         </button>
-        <button className="hub-navigation__destination" type="button" disabled={preparing} onClick={() => { trigger.current?.focus(); close(); onEnterMerch(); }}>
+        <button className="hub-navigation__destination" type="button" disabled={preparing || current === 'store'} aria-current={current === 'store' ? 'page' : undefined} onClick={() => { trigger.current?.focus(); close(); onEnterMerch(); }}>
           <span className="hub-navigation__icon"><NavigationIcon kind="merch" /></span>
           <span className="hub-navigation__copy"><span className="hub-navigation__title">{preparing ? copy.preparing : copy.merch}</span><small>{copy.merchHint}</small></span>
-          <NavigationIcon kind="arrow" />
+          {current === 'store' ? <span className="hub-navigation__current">{copy.current}</span> : <NavigationIcon kind="arrow" />}
         </button>
       </div>
       <a className="hub-navigation__footer" href="https://renaiss.zeabur.app/community-hub/" target="_blank" rel="noopener noreferrer" onClick={close}>

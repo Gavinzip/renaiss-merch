@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
 import type { AppLocale } from "../../i18n/LocaleContext";
-import { HubWordmark } from "./HubWordmark";
+import { HubSiteHeader } from "./HubSiteHeader";
 import type { RenaissHubCopy } from "./RenaissHubCopy";
 import type { HubWidgetCopy } from "./HubWidgetCopy";
-import { HubLanguageMenu } from "./HubLanguageMenu";
 
 export function HubHomeIntro({
   navigation,
@@ -12,6 +11,7 @@ export function HubHomeIntro({
   setLocale,
   copy,
   widgetsCopy,
+  showPreviewNote,
   editing,
   saving,
   canCustomize,
@@ -25,6 +25,7 @@ export function HubHomeIntro({
   setLocale: (locale: AppLocale) => void;
   copy: RenaissHubCopy;
   widgetsCopy: HubWidgetCopy;
+  showPreviewNote: boolean;
   editing: boolean;
   saving: boolean;
   canCustomize: boolean;
@@ -35,18 +36,7 @@ export function HubHomeIntro({
   return (
     <div className="hub-home-intro">
       <div className="hub-home-intro__utility">
-        <div className="hub-home-intro__brand-area">
-        <a
-          className="renaiss-hub__brand"
-          href="#portal-top"
-          aria-label="Renaiss"
-        >
-          <HubWordmark />
-        </a>
-        </div>
-        <div className="hub-home__controls">
-          <HubLanguageMenu locale={locale} setLocale={setLocale} />
-          {editing ? (
+        <HubSiteHeader locale={locale} setLocale={setLocale} navigation={navigation} accountAction={accountAction} editingActions={editing ? (
             <>
               <button
                 className="hub-home__cancel"
@@ -85,12 +75,9 @@ export function HubHomeIntro({
               </svg>
               <span className="hub-home__customize-label">{widgetsCopy.customize}</span>
             </button>
-          )}
-          {navigation}
-          {accountAction}
-        </div>
+          )} />
       </div>
-      <span className="hub-home-intro__preview-note">{copy.preview}</span>
+      {showPreviewNote ? <span className="hub-home-intro__preview-note">{copy.preview}</span> : null}
     </div>
   );
 }

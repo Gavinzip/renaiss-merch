@@ -1,6 +1,7 @@
 import { RENAISS_ACCOUNT_SETTINGS_URL } from '../../lib/renaissAuth';
 import { HubLogo } from './HubLogo';
 import { HubMemberAvatar } from './HubMemberAvatar';
+import { HubMemberEmail } from './HubMemberEmail';
 import { HubWalletCopy } from './HubWalletCopy';
 import { HubMotionText } from './HubMotionText';
 import { useMemberSbt } from './useMemberSbt';
@@ -17,10 +18,7 @@ export function HubMember({ account, copy, onLogin, onRetry, preview = false }: 
   const displayName = user ? user.name || user.twitterUsername || copy.accountLabel : copy.disconnected;
   const message = account.status === 'loading' ? copy.loading : account.status === 'error' ? copy.error :
     user ? copy.accountLabel : copy.description;
-  const emailVerified = Boolean(user?.email && user.emailVerified === true);
-  const emailStatus = !user?.email ? copy.emailMissing : emailVerified ? copy.emailVerified :
-    user.emailVerificationStatus === 'unverified' ? copy.emailUnverified : copy.emailUnknown;
-  const needsSync = user && (!emailVerified || !user.twitterUsername);
+  const needsSync = user && (!user.email || !user.twitterUsername);
   const sbtMessage = sbt.status === 'error' ? copy.sbtError : sbt.status === 'wallet-pending' ? copy.missingWallet :
     sbt.status === 'preview' ? copy.sbtPreview : sbt.status === 'demo' ? copy.sbtDemo : copy.sbtLoading;
 
@@ -43,8 +41,7 @@ export function HubMember({ account, copy, onLogin, onRetry, preview = false }: 
     </div> : null}
     <dl className="renaiss-hub__account-details">
       <div><dt>{copy.wallet}</dt><dd>{user?.safeWalletAddress ? <HubWalletCopy key={user.safeWalletAddress} address={user.safeWalletAddress} copy={copy} /> : user ? copy.missingWallet : copy.unavailable}</dd></div>
-      {user ? <div><dt>{copy.email}</dt><dd>{emailVerified ? <span className="hub-member__verified"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 4 4 8-8" /></svg>{emailStatus}</span> :
-        <a className="hub-member__settings" href={RENAISS_ACCOUNT_SETTINGS_URL} target="_blank" rel="noopener noreferrer" title={copy.emailSettings}>{emailStatus}<ExternalArrow /></a>}</dd></div> : null}
+      {user ? <div><dt>{copy.email}</dt><dd className="hub-member__email-detail"><HubMemberEmail user={user} copy={copy} /></dd></div> : null}
       <div><dt>{copy.x}</dt><dd>{user?.twitterUsername ? <a className="hub-member__settings is-linked" href={`https://x.com/${encodeURIComponent(user.twitterUsername.replace(/^@/, ''))}`} target="_blank" rel="noopener noreferrer">@{user.twitterUsername.replace(/^@/, '')}<ExternalArrow /></a> : user ?
         <a className="hub-member__settings" href={RENAISS_ACCOUNT_SETTINGS_URL} target="_blank" rel="noopener noreferrer" title={copy.xSettings}>{copy.missingX}<ExternalArrow /></a> : copy.unavailable}</dd></div>
     </dl>

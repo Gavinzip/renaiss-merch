@@ -30,7 +30,9 @@ export async function readRenaissSession(): Promise<RenaissSession> {
   const endpoint = new URL('/api/auth/session', window.location.origin);
   endpoint.searchParams.set('surface', 'v1.2');
   const response = await fetch(`${endpoint.pathname}${endpoint.search}`, {
-    headers: { Accept: 'application/json' }
+    headers: { Accept: 'application/json' },
+    cache: 'no-store',
+    signal: AbortSignal.timeout(15_000)
   });
 
   if (!response.ok) {

@@ -7,7 +7,6 @@ import './HubCommunityWidget.css';
 import './HubMerchHero.css';
 import './HubAssistant.css';
 import './HubSurfQuest.css';
-import './HubNavigation.css';
 import './HubOverview.css';
 import './HubOverviewFeed.css';
 import './HubWidgetInteractions.css';

@@ -21,6 +21,11 @@
   cursor: pointer;
   transition: box-shadow 220ms, color 220ms;
 }
+.hub-account-actions { display: inline-flex; align-items: center; gap: 5px; }
+.hub-account-action__logout { min-height: 38px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: #8c7b91; font: inherit; font-size: 11px; cursor: pointer; white-space: nowrap; }
+.hub-account-action__logout:hover { color: #9a5778; background: #ffffffbb; }
+.hub-account-action__logout:disabled { opacity: .55; cursor: wait; }
+.hub-account-action__logout:focus-visible { outline: 2px solid #a38db8; outline-offset: 3px; }
 .hub-account-action svg { width: 18px; height: 18px; flex: none; color: #8b779e; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .hub-account-action:hover {
   background: linear-gradient(125deg, #fff, #f8f5fceb) padding-box,

@@ -1,7 +1,7 @@
 import "./RenaissHubStyles";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useLocale } from "../../i18n/LocaleContext";
-import { readRenaissSession, startRenaissLogin } from "../../lib/renaissAuth";
+import { readRenaissSession, signOutRenaiss, startRenaissLogin } from "../../lib/renaissAuth";
 import { staticMerchAssetCssUrl } from "../../lib/staticAssets";
 import type { AccountState } from "./RenaissHubFeatures";
 import { HubWidgetContent } from "./HubWidgetContent";
@@ -24,6 +24,8 @@ import { HubNavigation } from "./HubNavigation";
 import { HubAccountAction } from "./HubAccountAction";
 import { SurfCampaignPage } from "./SurfCampaignPage";
 import { useHubCampaignRoute } from "./useHubCampaignRoute";
+import { useHubInitialReadiness } from './useHubInitialReadiness';
+import { HubPageLoading } from './HubPageLoading';
 import { editableHubLayout, visibleHubLayout } from "./hubLayout";
 
 
@@ -31,18 +33,22 @@ type RenaissHubProps = {
   loadProgress: number;
   loadState: "idle" | "loading" | "error";
   onEnterMerch: () => void;
+  showPreviewNote?: boolean;
 };
 
 export function RenaissHub({
   loadProgress,
   loadState,
   onEnterMerch,
+  showPreviewNote = true,
 }: RenaissHubProps) {
   const { locale, setLocale } = useLocale();
   const copy = renaissHubCopy[locale];
   const campaignRoute = useHubCampaignRoute();
   const [account, setAccount] = useState<AccountState>({ status: "loading" });
   const [accountRequest, setAccountRequest] = useState(0);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState(false);
   const [enterRequested, setEnterRequested] = useState(false);
   const [draft, setDraft] = useState<HubPreferences | null>(null);
   const [restoreSelection, setRestoreSelection] = useState<HubWidget | null>(null);
@@ -55,7 +61,10 @@ export function RenaissHub({
     locale,
     editing || preferences.widgets.some((widget) => widget.type === "feed"),
   );
+  const overviewRef = useRef<HTMLElement>(null);
+  const initialReadiness = useHubInitialReadiness(account, settings.status, feed.state, overviewRef);
   const widgetMotion = useHubWidgetMotion(preferences.widgets, editing);
+
   const [moveAnnouncement, setMoveAnnouncement] = useState("");
   const widgetDrag = useHubWidgetDrag({
     gridRef: widgetMotion.gridRef,
@@ -130,6 +139,21 @@ export function RenaissHub({
     setAccountRequest((current) => current + 1);
   }
 
+  async function logout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setLogoutError(false);
+    try {
+      await signOutRenaiss();
+      setAccount({ status: 'ready', session: { authenticated: false } });
+      setDraft(null);
+    } catch {
+      setLogoutError(true);
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
   useEffect(() => {
     let cancelled = false;
     void readRenaissSession()
@@ -146,8 +170,10 @@ export function RenaissHub({
 
   return (
     <div className="hub-route-motion" ref={campaignRoute.ref} data-route-motion="true" data-route-transitioned={campaignRoute.hasTransitioned} data-route-busy={campaignRoute.busy} inert={campaignRoute.busy}>
-    {campaignRoute.active ? <SurfCampaignPage locale={locale} setLocale={setLocale} account={account} motionRevision={campaignRoute.revision} onBack={campaignRoute.back} onLogin={() => startRenaissLogin()} onRetry={retryAccount} /> : <main
+    {campaignRoute.active ? <SurfCampaignPage locale={locale} setLocale={setLocale} account={account} motionRevision={campaignRoute.revision} onBack={campaignRoute.back} onLogin={() => startRenaissLogin()} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} /> : <main
+      ref={overviewRef}
       className="renaiss-hub"
+      data-initial-ready={initialReadiness === 'ready'}
       id="portal-top"
       aria-label={locale === "en" ? "Renaiss dashboard" : "Renaiss 總覽"}
       data-layout={preferences.layout}
@@ -162,12 +188,13 @@ export function RenaissHub({
     >
       <div className="renaiss-hub__content">
         <HubHomeIntro
-          accountAction={<HubAccountAction account={account} locale={locale} onRetry={retryAccount} disabled={editing || settings.saving} />}
+      accountAction={<><HubAccountAction account={account} locale={locale} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} disabled={editing || settings.saving} />{logoutError ? <span className="hub-site-header__error" role="alert">{locale === 'zh-TW' ? '登出失敗，請重試' : 'Sign out failed. Try again.'}</span> : null}</>}
           navigation={<HubNavigation locale={locale} onOpenCampaign={campaignRoute.open} onEnterMerch={enterMerch} preparing={enterRequested && loadState === "loading"} disabled={editing || settings.saving} />}
           locale={locale}
           setLocale={setLocale}
           copy={copy}
           widgetsCopy={widgetsCopy}
+          showPreviewNote={showPreviewNote}
           editing={editing}
           saving={settings.saving}
           canCustomize={settings.status === "ready"}
@@ -299,6 +326,7 @@ export function RenaissHub({
         </footer>
       </div>
       <HubAssistant locale={locale} disabled={editing || settings.saving} />
+      <HubPageLoading className="renaiss-hub__initial-overlay" locale={locale} ready={initialReadiness === 'ready'} error={initialReadiness === 'error'} onRetry={() => window.location.reload()} />
     </main>}
     </div>
   );

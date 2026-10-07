@@ -19,8 +19,6 @@ export function missionErrorCopy(code: string, zh: boolean) {
     demo_missions_disabled: ['Demo 無法驗證活動任務。', 'Demo cannot verify campaign tasks.'],
     mission_state_unavailable: ['任務狀態讀取失敗，請重試。', 'Could not load task status. Try again.'],
     renaiss_email_missing: ['Renaiss 未提供登入信箱，請先綁定信箱後重新登入。', 'Add an email to Renaiss, then sign in again.'],
-    renaiss_email_unverified: ['Renaiss 尚未確認信箱已驗證，請到帳號設定確認，再重新登入。', 'Renaiss has not confirmed your email is verified. Check account settings, then sign in again.'],
-    renaiss_email_verification_unavailable: ['Renaiss 登入未提供信箱驗證狀態，請確認綁定並重新登入；若仍無法查核，請聯絡支援。', 'Renaiss sign-in did not confirm email verification. Check your linked email and sign in again. If this persists, contact support.'],
     renaiss_email_invalid: ['Renaiss 回傳的信箱格式不正確，請到帳號設定確認，再重新登入。', 'Renaiss returned an invalid email. Check account settings, then sign in again.'],
     renaiss_email_changed: ['登入信箱已變更，請重新登入後驗證。', 'Your sign-in email changed. Sign in again before verifying.'],
     surf_email_invalid: ['Renaiss 回傳的信箱格式不正確，請到帳號設定確認。', 'Check the email in Renaiss account settings.'],

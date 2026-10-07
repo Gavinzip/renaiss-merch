@@ -80,7 +80,7 @@ export function HubCommunityWidget({
           </button>
         </div>
       ) : cards.length === 0 ? (
-        <p className="hub-feed__state">{copy.empty}</p>
+        <p className="hub-feed__state">{settings.source === 'events' ? locale === 'zh-TW' ? '目前沒有已確認可參與的活動，請查看官方活動頁取得最新消息。' : 'No confirmed upcoming events. Check the official events page for updates.' : copy.empty}</p>
       ) : settings.source === "events" ? (
         <HubEventHero cards={cards} locale={locale} enabled={!editing && !preview} />
       ) : (

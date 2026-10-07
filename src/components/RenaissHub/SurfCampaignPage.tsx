@@ -11,10 +11,10 @@ import { SurfCampaignTasks } from './SurfCampaignTasks';
 import { useSurfMissions } from './useSurfMissions';
 import { useSurfCampaignMotion } from './useSurfCampaignMotion';
 
-export function SurfCampaignPage({ locale, setLocale, account, motionRevision, onBack, onLogin, onRetry }: {
+export function SurfCampaignPage({ locale, setLocale, account, motionRevision, onBack, onLogin, onRetry, onLogout, loggingOut }: {
   locale: AppLocale; setLocale: (locale: AppLocale) => void; account: AccountState;
   motionRevision: number;
-  onBack: () => void; onLogin: () => void; onRetry: () => void;
+  onBack: () => void; onLogin: () => void; onRetry: () => void; onLogout: () => void; loggingOut: boolean;
 }) {
   const copy = surfCampaignCopy[locale];
   const motionRoot = useSurfCampaignMotion(locale, motionRevision);
@@ -41,7 +41,9 @@ export function SurfCampaignPage({ locale, setLocale, account, motionRevision, o
       <header className="surf-page__header" data-surf-reveal="0">
         <div className="surf-page__location"><button className="surf-page__back" type="button" onClick={onBack}><span aria-hidden="true">←</span><HubLogo /><span>{copy.back}</span></button><span className="surf-page__location-label">{copy.pageLabel}</span></div>
         <nav aria-label={copy.pageNavigation}><button type="button" onClick={() => goTo('surf-campaign-rewards')}>{copy.viewRewards}</button><button type="button" onClick={() => goTo('surf-campaign-tasks')}>{copy.viewTasks}</button></nav>
-        <HubLanguageMenu locale={locale} setLocale={setLocale} />
+        <div className="surf-page__account-controls"><HubLanguageMenu locale={locale} setLocale={setLocale} />
+          {account.status === 'ready' && account.session.authenticated ? <button className="surf-page__logout" type="button" onClick={onLogout} disabled={loggingOut}>{loggingOut ? locale === 'zh-TW' ? '登出中' : 'Signing out' : locale === 'zh-TW' ? '登出' : 'Sign out'}</button> : null}
+        </div>
       </header>
       <SurfCampaignHero locale={locale} onTasks={() => goTo('surf-campaign-tasks')} onRewards={() => goTo('surf-campaign-rewards')} />
       <SurfCampaignRewards locale={locale} />

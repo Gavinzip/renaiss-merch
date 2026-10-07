@@ -67,7 +67,7 @@
   overscroll-behavior: contain;
   border: 1px solid #fffffff2;
   border-radius: 18px;
-  background: linear-gradient(135deg, #fff9f5c9, #faf6ffd9 58%, #f4fbffe0);
+  background: linear-gradient(135deg, #fff9f5f5, #faf6fff7 58%, #f4fbfff5);
   -webkit-backdrop-filter: blur(26px) saturate(1.15);
   backdrop-filter: blur(26px) saturate(1.15);
   box-shadow: 0 20px 48px -12px #48335438, 0 4px 12px #4938540d, inset 0 1px 0 #fff;

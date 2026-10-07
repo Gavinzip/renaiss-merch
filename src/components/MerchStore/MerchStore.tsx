@@ -71,6 +71,12 @@ import { merchStoreCopy } from '../../i18n/merchStoreCopy';
 import '../MerchEligibilityEntry/MerchEligibilityEntry.css';
 import './MerchStore.css';
 import { useStorefrontFeatures } from '../../hooks/useStorefrontFeatures';
+import { HubSiteHeader } from '../RenaissHub/HubSiteHeader';
+import { HubNavigation } from '../RenaissHub/HubNavigation';
+import { HubAccountAction } from '../RenaissHub/HubAccountAction';
+import { HubPageLoading } from '../RenaissHub/HubPageLoading';
+import { useStoreInitialReadiness } from './useStoreInitialReadiness';
+import './MerchHubStore.css';
 
 // Preview cards remain outside the physical-product claim flow. Their temporary
 // visibility comes from the server environment, so it does not require a build.
@@ -103,16 +109,20 @@ type ProductPreparationProgress = {
 
 type MerchStoreProps = {
   allowPartnerRewards?: boolean;
+  integratedHub?: boolean;
   initialAuthFailed: boolean;
   onExitStore?: () => void;
+  onOpenCampaign?: () => void;
   onLogin: () => void;
   revealMediaController: StoreRevealMediaController;
 };
 
 export function MerchStore({
   allowPartnerRewards = false,
+  integratedHub = false,
   initialAuthFailed,
   onExitStore,
+  onOpenCampaign,
   onLogin,
   revealMediaController
 }: MerchStoreProps) {
@@ -123,6 +133,7 @@ export function MerchStore({
   const [session, setSession] = useState<RenaissSession>({
     authenticated: false
   });
+  const [loggingOut, setLoggingOut] = useState(false);
   const [storeState, setStoreState] =
     useState<StoreState>('loading-session');
   const [selectedProductId, setSelectedProductId] =
@@ -153,8 +164,10 @@ export function MerchStore({
     () =>
       CATALOG_VIEW_ENABLED ? readStoredMerchStoreView() : 'cards'
   );
+  const storeRoot = useRef<HTMLElement>(null);
   const accessResultGenerationRef = useRef(0);
   const productCheckGenerationRef = useRef(0);
+  const privateImageGenerationRef = useRef(0);
   const isCatalogHeaderScrolled = useScrolledHeader(storeView === 'catalog');
   const inventoryScope =
     session.authenticated && session.user.isDemo
@@ -165,18 +178,21 @@ export function MerchStore({
     inventoryLoadState,
     refreshInventory
   } = useMerchInventory(inventoryScope);
+  const initialReadiness = useStoreInitialReadiness(integratedHub,
+    storeState !== 'loading-session' && inventoryLoadState !== 'loading', storeRoot);
   const prepareStoredProductImages = useCallback(
     async (
       accessState: MerchAccessState,
       isCurrent: () => boolean = () => true
     ) => {
+      const generation = privateImageGenerationRef.current;
       try {
         const imageUrls = await prepareEligiblePrivateProductImages(
           accessState.products,
           accessState.privateMediaRelease
         );
 
-        if (!isCurrent()) {
+        if (!isCurrent() || generation !== privateImageGenerationRef.current) {
           return;
         }
 
@@ -186,7 +202,7 @@ export function MerchStore({
         }));
         setBackgroundMediaError(false);
       } catch {
-        if (isCurrent()) {
+        if (isCurrent() && generation === privateImageGenerationRef.current) {
           setBackgroundMediaError(true);
         }
       }
@@ -417,7 +433,10 @@ export function MerchStore({
   }
 
   async function handleLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
     productCheckGenerationRef.current += 1;
+    privateImageGenerationRef.current += 1;
     setProductPreparationProgress(null);
 
     try {
@@ -431,11 +450,15 @@ export function MerchStore({
       setAccessResultReady(false);
       setProductPreparationProgress(null);
       setProductAccess({});
+      setPrivateMediaRelease('');
+      setProductImageUrls({});
       setShowSettings(false);
       closeFulfillment();
       setStoreState('idle');
     } catch {
       setStoreState('source-error');
+    } finally {
+      setLoggingOut(false);
     }
   }
 
@@ -701,8 +724,10 @@ export function MerchStore({
     <>
       {showStore ? (
         <main
+          ref={storeRoot}
           key="store"
-          className={`merch-entry merch-store merch-store--${storeView}`}
+          className={`merch-entry merch-store merch-store--${storeView}${integratedHub ? ' merch-store--hub' : ''}`}
+          data-initial-ready={initialReadiness === 'ready'}
           aria-labelledby="merch-store-title"
           style={
             {
@@ -711,7 +736,15 @@ export function MerchStore({
             } as CSSProperties
           }
         >
-      <header
+      {integratedHub ? <HubSiteHeader locale={locale} setLocale={setLocale} location={locale === 'zh-TW' ? '周邊商店' : 'Merch'} onBack={handleExitStore}
+        navigation={<HubNavigation locale={locale} current="store" onGoHome={handleExitStore} onOpenCampaign={onOpenCampaign || handleExitStore} onEnterMerch={() => {}} preparing={false} disabled={false} />}
+        actions={session.authenticated ? <div className="hub-site-header__actions">
+          {session.user.canManageFulfillment ? <button className="hub-site-header__action" type="button" onClick={openFulfillment}>{copy.fulfillment}</button> : null}
+          <button className={`hub-site-header__action${showAddressWarning ? ' is-alert' : ''}`} type="button" onClick={() => setShowSettings(true)} aria-label={addressNeedsUpdate ? copy.addressUpdateRequired : addressReviewUnavailable ? copy.addressStatusUnavailable : copy.address}>{copy.address}{showAddressWarning ? ' !' : ''}</button>
+          <div className="hub-site-header__store-identity"><span>{sessionLabel || copy.renaissAccount}</span><strong>{walletLabel}</strong></div>
+        </div> : session.demoAvailable ? <div className="hub-site-header__actions"><button className="hub-site-header__action" type="button" disabled={storeState === 'loading-session' || storeState === 'signing-in' || storeState === 'opening-demo'} onClick={() => void handleDemoAccess()}>{storeState === 'opening-demo' ? copy.opening : copy.demoAccess}</button></div> : null}
+        accountAction={<HubAccountAction account={storeState === 'loading-session' ? { status: 'loading' } : storeState === 'source-error' && !session.authenticated ? { status: 'error' } : { status: 'ready', session }} locale={locale} onRetry={() => window.location.reload()} onLogout={() => void handleLogout()} loggingOut={loggingOut} disabled={false} />}
+      /> : <header
         className={[
           'merch-store__header',
           isCatalogHeaderScrolled ? 'is-scrolled' : ''
@@ -797,6 +830,7 @@ export function MerchStore({
               </div>
               <button
                 className="merch-store__secondary-action"
+                disabled={loggingOut}
                 onClick={() => void handleLogout()}
                 type="button"
               >
@@ -836,16 +870,14 @@ export function MerchStore({
             </>
           )}
         </div>
-      </header>
+      </header>}
 
       <section
         className="merch-store__content"
         aria-hidden={showFulfillment || showSettings}
       >
         <div className="merch-store__intro">
-          <h1 className="merch-store__eyebrow" id="merch-store-title">
-            {copy.title}
-          </h1>
+          {integratedHub ? <div><span className="merch-store__eyebrow">{copy.title}</span><h1 id="merch-store-title" className="sr-only">{locale === 'zh-TW' ? '周邊商店' : 'Merch Store'}</h1></div> : <h1 className="merch-store__eyebrow" id="merch-store-title">{copy.title}</h1>}
           <p className="merch-store__lede">
             {showSurfRewards
               ? locale === 'zh-TW'
@@ -946,6 +978,7 @@ export function MerchStore({
           {statusText}
         </p>
       </section>
+      {integratedHub ? <HubPageLoading className="merch-store__startup-overlay" locale={locale} ready={initialReadiness === 'ready'} error={initialReadiness === 'error'} onRetry={() => window.location.reload()} /> : null}
 
       <footer className="merch-store__footer" aria-hidden="true">
         <span>{copy.footerPrivate}</span>

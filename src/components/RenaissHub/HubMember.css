@@ -12,14 +12,18 @@
 .hub-member.is-authenticated .renaiss-hub__account-details { gap: 0; margin: 0; }
 .hub-member.is-authenticated .renaiss-hub__account-details > div { min-height: 34px; }
 .hub-member.is-authenticated .renaiss-hub__account-details dd { min-width: 0; overflow: visible; }
-.hub-member__wallet-copy,.hub-member__settings,.hub-member__verified { display: inline-flex; align-items: center; justify-content: flex-end; gap: .35rem; color: inherit; font: inherit; text-decoration: none; }
+.hub-member__wallet-copy,.hub-member__settings,.hub-member__linked { display: inline-flex; align-items: center; justify-content: flex-end; gap: .35rem; color: inherit; font: inherit; text-decoration: none; }
 .hub-member__wallet-copy { min-height: 34px; padding: 0; border: 0; background: transparent; cursor: pointer; }
 .hub-member__wallet-copy:disabled { cursor: wait; }
 .hub-member__wallet-copy > span:first-child { font-variant-numeric: tabular-nums; }
 .hub-member__settings { min-height: 34px; color: #956f98; }
 .hub-member__settings.is-linked { color: var(--hub-ink); }
 .hub-member__settings:hover { color: #6b4e80; }
-.hub-member__verified { color: #668574; }
+.hub-member__linked { color: #8b769b; }
+.hub-member.is-authenticated .renaiss-hub__account-details .hub-member__email-detail { flex: 1; white-space: normal; text-align: right; padding: .2rem 0; }
+.hub-member__email { display: grid; justify-items: end; gap: .2rem; min-width: 0; }
+.hub-member__email-address { max-width: 100%; overflow-wrap: anywhere; line-height: 1.5; color: var(--hub-ink); }
+.hub-member__email .hub-member__settings { min-height: 24px; }
 .hub-member__copy-icon { position: relative; display: block; width: 16px; height: 16px; }
 .hub-member__copy-icon svg { position: absolute; inset: 0; transition: opacity 180ms,transform 250ms var(--hub-ease); }
 .hub-member__copy-sheet { opacity: 1; transform: scale(1); }
@@ -27,7 +31,7 @@
 .hub-member__wallet-copy[data-copied="true"] .hub-member__copy-sheet { opacity: .01; transform: scale(.65); }
 .hub-member__wallet-copy[data-copied="true"] .hub-member__copy-check { opacity: 1; transform: scale(1); }
 .hub-member__copy-error { display: block; max-width: 180px; color: #a2647f; font-size: .6rem; white-space: normal; }
-.hub-member :is(.hub-member__wallet-copy,.hub-member__settings,.hub-member__verified,.hub-member__retry,.hub-member__sync button) svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.hub-member :is(.hub-member__wallet-copy,.hub-member__settings,.hub-member__linked,.hub-member__retry,.hub-member__sync button) svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
 .hub-member__sync { display: flex; align-items: center; justify-content: space-between; gap: .4rem; margin-top: auto; padding-top: .45rem; color: #94819d; font-size: .58rem; }
 .hub-member__sync button,.hub-member__retry { display: inline-flex; align-items: center; gap: .3rem; min-height: 30px; padding: 0; border: 0; background: transparent; color: #816393; font: inherit; cursor: pointer; }
 .hub-member__retry { flex-shrink: 0; font-size: .63rem; }
@@ -44,6 +48,7 @@
 }
 @media (max-width: 720px) {
   .hub-member__wallet-copy,.hub-member__settings { min-height: 44px; }
+  .hub-member__email .hub-member__settings { min-height: 44px; }
   .hub-member__sync button,.hub-member__retry { min-height: 44px; }
 }
 @media (prefers-reduced-motion: reduce) { .hub-member__sbt-count { animation: none; } .hub-member__copy-icon svg { transition: none; } }

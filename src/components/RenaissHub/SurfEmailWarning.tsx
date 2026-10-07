@@ -13,8 +13,7 @@ export function SurfEmailWarning({ locale, reason, onLogin, disabled }: {
   const zh = locale === 'zh-TW', titleId = useId(), descriptionId = useId();
   const dialog = useModalDialog();
   useEffect(() => { dialog.open(); }, [reason]);
-  const title = reason === 'renaiss_email_missing' ? (zh ? '先確認你的 Renaiss 信箱' : 'Check your Renaiss email') :
-    (zh ? '需要已驗證的 Renaiss 信箱' : 'A verified Renaiss email is needed');
+  const title = zh ? '先確認你的 Renaiss 信箱' : 'Check your Renaiss email';
   return <>
     <div className="surf-email-warning__inline" role="alert">
       <p>{missionErrorCopy(reason, zh)}</p>
@@ -27,12 +26,12 @@ export function SurfEmailWarning({ locale, reason, onLogin, disabled }: {
         <button className="surf-email-warning__close" type="button" onClick={dialog.close} aria-label={zh ? '關閉提醒' : 'Close reminder'}>×</button>
         <span className="surf-email-warning__eyebrow">RENAISS × SURF</span>
         <h2 id={titleId} tabIndex={-1}>{title}</h2>
-        <p id={descriptionId}>{zh ? '請到 Renaiss 帳號設定綁定並驗證信箱，再回來重新登入。Surf 必須使用同一個信箱，才能自動確認雙方帳號。' : 'Link and verify your email in Renaiss account settings, then return and sign in again. Surf must use the same email to verify both accounts automatically.'}</p>
+        <p id={descriptionId}>{zh ? '請到 Renaiss 帳號設定確認已綁定有效信箱，再回來重新登入同步。Surf 必須使用同一個信箱，才能自動確認雙方帳號。' : 'Check that a valid email is linked in Renaiss account settings, then return and sign in again to sync. Surf must use the same email to verify both accounts automatically.'}</p>
         <div className="surf-email-warning__actions">
           <a href={RENAISS_SETTINGS_URL} target="_blank" rel="noopener noreferrer">{zh ? '前往 Renaiss 帳號設定' : 'Open Renaiss settings'}<span aria-hidden="true">↗</span></a>
           <button type="button" disabled={disabled} onClick={onLogin}>{zh ? '已完成，重新登入' : 'Done — sign in again'}</button>
         </div>
-        <p className="surf-email-warning__note">{zh ? '若已綁定並驗證，重新登入後仍出現此提醒，代表 Renaiss 尚未回傳可用的驗證資料，請聯絡支援。' : 'If this reminder remains after verifying your email and signing in again, Renaiss has not returned usable verification data. Please contact support.'}</p>
+        <p className="surf-email-warning__note">{zh ? '若已綁定，重新登入後仍出現此提醒，代表 Renaiss 尚未回傳可用的信箱資料，請聯絡支援。' : 'If this reminder remains after linking your email and signing in again, Renaiss has not returned a usable email. Please contact support.'}</p>
       </div>
     </dialog>
   </>;

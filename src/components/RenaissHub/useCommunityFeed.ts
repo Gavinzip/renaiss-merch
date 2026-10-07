@@ -40,7 +40,7 @@ export function useCommunityFeed(locale: AppLocale, enabled: boolean) {
     setState({ status: "loading" });
     void fetch(`/api/hub/feed?lang=${locale}`, {
       cache: "no-store",
-      signal: controller.signal,
+      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15_000)]),
     })
       .then(async (response) => {
         if (!response.ok) throw new Error("feed_unavailable");
@@ -70,6 +70,7 @@ export function selectCommunityCards(
   cards: CommunityCard[],
   settings: HubFeedWidget,
 ) {
+  const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
   const matching = cards
     .filter((card) => {
       const sourceMatches =
@@ -86,7 +87,8 @@ export function selectCommunityCards(
         sourceMatches &&
         (settings.source !== "official" || settings.project !== "tcg" || card.account.replace(/^@/, "").toLowerCase() === "renaissxyz") &&
         (settings.project === "all" || settings.project === card.project) &&
-        (settings.region === "all" || settings.region === card.region)
+        (settings.region === "all" || settings.region === card.region) &&
+        (settings.source !== "events" || (card.eventEnd || card.eventStart || '').slice(0, 10) >= today)
       );
     });
   const ordered = settings.source === "events"

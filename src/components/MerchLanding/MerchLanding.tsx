@@ -5,6 +5,7 @@ import '../MerchEligibilityEntry/MerchEligibilityEntry.css';
 import './MerchLanding.css';
 
 type MerchLandingProps = {
+  kind?: 'merch' | 'community';
   loadProgress: number;
   loadState: 'idle' | 'loading' | 'error';
   onEnterStore: () => void;
@@ -12,13 +13,14 @@ type MerchLandingProps = {
 };
 
 export function MerchLanding({
+  kind = 'merch',
   loadProgress,
   loadState,
   onEnterStore,
   onRetry
 }: MerchLandingProps) {
   const { locale } = useLocale();
-  const copy = landingCopy[locale];
+  const copy = kind === 'community' ? communityCopy[locale] : landingCopy[locale];
   const isLoading = loadState === 'loading';
 
   return (
@@ -61,7 +63,7 @@ export function MerchLanding({
                 alt="Renaiss Protocol"
               />
             </p>
-            <h1 id="merch-entry-title">RENAISS MERCH</h1>
+            <h1 id="merch-entry-title">{kind === 'community' ? 'RENAISS COMMUNITY' : 'RENAISS MERCH'}</h1>
             <p className="merch-entry__copy">
               {copy.intro}
             </p>
@@ -144,5 +146,24 @@ const landingCopy = {
     loadingTitle: '正在載入商店',
     progressLabel: '商店載入進度',
     tryAgain: '再試一次'
+  }
+} as const;
+
+const communityCopy = {
+  en: {
+    ...landingCopy.en,
+    enterStore: 'Enter Renaiss Community',
+    footerAccess: 'Your space',
+    footerPrivate: 'Connect',
+    footerStore: 'Explore',
+    intro: 'Your Renaiss home for community, quests, and member collections.'
+  },
+  'zh-TW': {
+    ...landingCopy['zh-TW'],
+    enterStore: '進入 Renaiss Community',
+    footerAccess: '你的空間',
+    footerPrivate: '連結社群',
+    footerStore: '探索收藏',
+    intro: '從社群動態、合作任務到會員限定收藏，都從這裡開始。'
   }
 } as const;

@@ -15,6 +15,8 @@ import { publicRevealMediaRelease } from './lib/publicRevealMedia';
 import { startRenaissLogin } from './lib/renaissAuth';
 import { createStoreRevealMediaController } from './lib/storeRevealMedia';
 import { preloadStoreAssets } from './lib/storePreload';
+import { HubPageLoading } from './components/RenaissHub/HubPageLoading';
+import { useLocale } from './i18n/LocaleContext';
 
 const STORE_ADMISSION_QUERY = 'storeAdmission';
 const STORE_ADMISSION_SESSION_KEY = 'renaiss-merch-store-admitted';
@@ -55,13 +57,23 @@ const previewBraceletResult: MerchEligibilityResult = {
 };
 
 export default function App() {
+  const { locale } = useLocale();
   const [entryContext] = useState(consumeStoreEntryContext);
   const [view, setView] = useState<AppView>(() =>
     entryContext.shouldResumeStore ? 'store' : 'landing'
   );
-  const isHubPreview = isHiddenHubPath(window.location.pathname) ||
-    (import.meta.env.DEV && new URLSearchParams(window.location.search).get('preview') === 'hub');
-  const storePageMotion = useStorePageTransition(view, isHubPreview);
+  const preview = new URLSearchParams(window.location.search).get('preview');
+  // Keep the public Merch entry in place until the Community launch is approved.
+  const isCommunityEntry = import.meta.env.DEV && preview === 'community-entry';
+  const isHubExperience = isCommunityEntry || isHiddenHubPath(window.location.pathname) ||
+    (import.meta.env.DEV && preview === 'hub');
+  useEffect(() => {
+    document.title = isHubExperience ? 'Renaiss Community' : 'RENAISS MERCH';
+  }, [isHubExperience]);
+  const [communityEntered, setCommunityEntered] = useState(() =>
+    !isCommunityEntry || Boolean(window.location.hash) || entryContext.shouldResumeStore
+  );
+  const storePageMotion = useStorePageTransition(view, isHubExperience);
   const [storeLoadProgress, setStoreLoadProgress] = useState(0);
   const [storeLoadState, setStoreLoadState] =
     useState<StoreLoadState>('loading');
@@ -144,29 +156,31 @@ export default function App() {
     forgetStoreAdmission();
     revealMediaController.releaseAll();
     forceLandingLocation();
+    if (isCommunityEntry) {
+      replaceWithCommunityDashboardLocation();
+      setCommunityEntered(true);
+    }
     setView('landing');
     setStoreLoadProgress(0);
     setStoreLoadState('idle');
-  }, [revealMediaController]);
+  }, [isCommunityEntry, revealMediaController]);
 
   useEffect(() => {
     let cancelled = false;
-    const isLanding = view === 'landing';
-
-    if (isLanding) {
+    if (view === 'landing') {
       setStoreLoadState('loading');
     }
 
     void prepareStoreAssets()
       .then(() => {
-        if (cancelled || !isLanding) {
+        if (cancelled) {
           return;
         }
 
         setStoreLoadState('idle');
       })
       .catch(() => {
-        if (!cancelled && isLanding) {
+        if (!cancelled) {
           setStoreLoadState('error');
         }
       });
@@ -186,10 +200,12 @@ export default function App() {
       ) {
         forceLandingLocation();
         setView('landing');
+        if (isCommunityEntry) setCommunityEntered(false);
         return;
       }
 
       setView(requestedView);
+      if (isCommunityEntry) setCommunityEntered(Boolean(window.location.hash));
     }
 
     window.addEventListener('hashchange', syncView);
@@ -199,7 +215,7 @@ export default function App() {
       window.removeEventListener('hashchange', syncView);
       window.removeEventListener('popstate', syncView);
     };
-  }, [revealMediaController]);
+  }, [isCommunityEntry, revealMediaController]);
 
   useEffect(() => {
     if (entryContext.shouldResumeStore) {
@@ -232,20 +248,39 @@ export default function App() {
   }
 
   const store = <MerchStore
-    allowPartnerRewards={isHubPreview}
+    allowPartnerRewards={isHubExperience}
+    integratedHub={isHubExperience}
     initialAuthFailed={storeAuthFailed}
     onExitStore={invalidateStoreAdmission}
+    onOpenCampaign={() => { invalidateStoreAdmission(); window.location.hash = '#campaign/surf'; }}
     onLogin={() => startRenaissLogin(buildStoreAdmissionReturnTo())}
     revealMediaController={revealMediaController}
   />;
 
-  if (isHubPreview) {
+  if (isCommunityEntry && !communityEntered && view === 'landing') {
+    return <MerchLanding
+      kind="community"
+      loadProgress={100}
+      loadState="idle"
+      onEnterStore={() => {
+        replaceWithCommunityDashboardLocation(false);
+        setCommunityEntered(true);
+      }}
+      onRetry={() => {
+        replaceWithCommunityDashboardLocation(false);
+        setCommunityEntered(true);
+      }}
+    />;
+  }
+
+  if (isHubExperience) {
     return <div className="store-page-transition" ref={storePageMotion.ref}
       data-page={view} data-page-busy={storePageMotion.busy} inert={storePageMotion.busy}
       style={{ '--store-page-background': staticMerchAssetCssUrl('storeBackground') } as CSSProperties}>
-      {view === 'store' ? store : <Suspense><RenaissHub
+      {view === 'store' ? storeLoadState === 'loading' ? <HubPageLoading locale={locale} /> : storeLoadState === 'error' ? <HubPageLoading locale={locale} error onRetry={() => window.location.reload()} /> : store : <Suspense fallback={<HubPageLoading locale={locale} />}><RenaissHub
         loadProgress={storeLoadProgress}
         loadState={storeLoadState}
+        showPreviewNote={!isCommunityEntry}
         onEnterMerch={() => {
           setStoreAuthFailed(false);
           void enterStore();
@@ -364,6 +399,15 @@ function forceLandingLocation() {
     '',
     `${url.pathname}${url.search}`
   );
+  window.scrollTo({ top: 0, behavior: 'auto' });
+}
+
+function replaceWithCommunityDashboardLocation(replace = true) {
+  const url = new URL(window.location.href);
+  url.hash = 'portal-top';
+  const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+  if (replace) window.history.replaceState(null, '', nextUrl);
+  else window.history.pushState(null, '', nextUrl);
   window.scrollTo({ top: 0, behavior: 'auto' });
 }
 

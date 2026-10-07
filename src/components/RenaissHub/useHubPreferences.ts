@@ -13,6 +13,7 @@ export function useHubPreferences(account: AccountState) {
   const [preferences, setPreferences] = useState<HubPreferences>(
     createDefaultHubPreferences,
   );
+  const [loadedIdentity, setLoadedIdentity] = useState<string | null | undefined>(undefined);
   const [status, setStatus] = useState<PreferencesState>("loading");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
@@ -46,7 +47,7 @@ export function useHubPreferences(account: AccountState) {
         } else {
           const response = await fetch("/api/hub/preferences", {
             cache: "no-store",
-            signal: controller.signal,
+            signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15_000)]),
           });
           if (!response.ok) throw new Error("preferences_unavailable");
           const result = (await response.json()) as { preferences: unknown };
@@ -58,6 +59,7 @@ export function useHubPreferences(account: AccountState) {
         const next = validateHubPreferences(value);
         if (!controller.signal.aborted) {
           setPreferences(next);
+          setLoadedIdentity(identity);
           setStatus("ready");
         }
       } catch {
@@ -89,6 +91,7 @@ export function useHubPreferences(account: AccountState) {
         }
         if (currentIdentity.current !== identity) return false;
         setPreferences(next);
+        setLoadedIdentity(identity);
         setStatus("ready");
         return true;
       } catch {
@@ -102,8 +105,8 @@ export function useHubPreferences(account: AccountState) {
   );
 
   return {
-    preferences,
-    status,
+    preferences: loadedIdentity === identity ? preferences : createDefaultHubPreferences(),
+    status: status === "error" ? "error" : loadedIdentity === identity ? status : "loading",
     saving,
     saveError,
     save,

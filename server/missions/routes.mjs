@@ -26,7 +26,7 @@ export function createMissionRouteHandler({ readSession, storeFactory = createMi
           throw new HttpError(401, 'unauthenticated');
         return current.user;
       };
-      // The email comes only from the verified Renaiss identity, never JSON input.
+      // Use the linked email from the verified Renaiss session, never JSON input.
       await checkAccounts(user, { store, fetchImpl, rateStore: rateStoreFactory(), assertCurrentUser });
       const current = readSession(req);
       if (current?.user?.sub !== user.sub || current.user.isDemo) throw new HttpError(401, 'unauthenticated');

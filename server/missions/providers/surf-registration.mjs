@@ -10,8 +10,8 @@ export function normalizeSurfEmail(value) {
   return email;
 }
 
-// This endpoint proves active registration, not ownership of an arbitrary email.
-// Ownership must be established by the caller before requesting a mission check.
+// This endpoint checks active Surf registration for the caller's Renaiss-linked
+// email. It does not independently verify mailbox ownership.
 export async function verifySurfRegistration({ email, partnerKey, fetchImpl = fetch, now = Date.now }) {
   const normalizedEmail = normalizeSurfEmail(email);
   let response;

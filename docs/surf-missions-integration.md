@@ -1,6 +1,6 @@
 # Renaiss × Surf 任務串接
 
-更新：2026-10-07。改用 Renaiss SSO 已驗證信箱自動查 Surf，兩邊必須使用同一信箱。缺少信箱或驗證證據時顯示提醒並導向官方帳號設定；沒有自行寄碼或寄信服務依賴。X 與 Discord 既有查核保留。尚未 push、部署、抽獎或發獎。
+更新：2026-10-08。使用 Renaiss SSO 已綁定信箱自動查 Surf，兩邊必須使用同一信箱；不以 `email_verified` 作為門檻。缺少信箱或格式不正確時顯示提醒並導向官方帳號設定；沒有自行寄碼或寄信服務依賴。X 與 Discord 既有查核保留。未啟動抽獎或發獎。
 
 ## 活動依據與規則
 
@@ -11,7 +11,7 @@
 
 | 任務 | 判定來源 | 規劃抽獎機會 |
 | --- | --- | --- |
-| 擁有 Renaiss + Surf 帳號 | 有效 Renaiss SSO + 已驗證信箱 + Surf 帳號 API | 必做，1 次 |
+| 擁有 Renaiss + Surf 帳號 | 有效 Renaiss SSO + 回傳有效信箱 + Surf 帳號 API | 必做，1 次 |
 | Follow Surf X | 參加者的 X OAuth token + 官方 following 清單 | 選做，+1 次 |
 | Join Surf Discord | 參加者的 Discord OAuth token + 官方 Guild member API | 選做，+1 次 |
 
@@ -31,7 +31,7 @@
 | HTTP route | 用途 |
 | --- | --- |
 | `GET /api/missions/surf` | 讀取本人狀態；訪客僅取得配置與未登入狀態 |
-| `POST /api/missions/surf/accounts/verify` | 只使用目前 Renaiss SSO 已驗證信箱查核 Surf；首次／過期自動查核，也可手動重查 |
+| `POST /api/missions/surf/accounts/verify` | 只使用目前 Renaiss SSO 回傳的有效信箱查核 Surf；首次／過期自動查核，也可手動重查 |
 | `POST /api/missions/surf/{x\|discord}/connect` | 建立授權連結 |
 | `GET /auth/{x\|discord}/callback` | 完成授權、連接、查核並返回活動 |
 | `POST /api/missions/surf/{x\|discord}/verify` | 查核已連接帳號 |
@@ -83,7 +83,7 @@ Discord App 已建立為 `renaiss community`，Client ID `1557039188212326553`�
 - `server/missions/routes.mjs`：HTTP/OAuth 路由及 session/Origin/state 綁定。
 - `server/missions/oauth.mjs`：交換／更新 token、平台身分、Renaiss X 比對。
 - `server/missions/service.mjs`：串接 refresh、verifier 和結果儲存；沒有發獎邏輯。
-- `server/missions/accounts.mjs`：Renaiss 已驗證信箱與 Surf 查核、結果綁定、機會數計算。
+- `server/missions/accounts.mjs`：Renaiss 已綁定信箱與 Surf 查核、結果綁定、機會數計算。
 - `src/components/RenaissHub/SurfEmailWarning.tsx`：缺少信箱／驗證證據的提醒，連到已確認的官方 `/profile/settings`；完成後重新登入更新身分。
 - `server/missions/surf-config.mjs`、`surf-rate-store.mjs`：私密配置、跨本機程序協調 300 次／分鐘與上游 Retry-After。
 - `server/missions/providers/`：上游請求與 X／Discord 查核。
@@ -111,17 +111,21 @@ Renaiss SSO 已 allowlist localhost callback，127.0.0.1 被拒絕。本機登�
 
 加密 key 不可因重啟而重生，不能刪除／更換 key 後把解密失敗隱藏成訪客或已通過；輪替需明確資料遷移。所有憑證只在 Git 忽略的後端環境檔，未進 bundle、文件、review 截圖或 Git。正式部署前另依 AGENTS.md 完成媒體 R2/CDN、durable volume、build／cache／live header audit；本次沒有配置正式部署的新變數或發布 Hub。
 
-## Surf API 與 Renaiss 已驗證信箱
+## Surf API 與 Renaiss 已綁定信箱
 
 依 Gavin 提供的 2026-10-06 Surf Account Verification API 文件，後端以 `X-Partner-Key` 呼叫 `POST https://api.asksurf.ai/muninn/v1/partner/users/registration-check`，JSON 只有 `email`。HTTP 200 的 `registered` 必須是 boolean；true 代表有效帳號，false 包括未註冊、關閉或停用。400、401、429、500、無效回應與逾時都是無法查核，不能假判未註冊或通過。
 
-Gavin 最終選擇「Renaiss 登入後自動驗證」：只使用經驗證的 Renaiss 身分 `email`，且 `emailVerified === true` 才送 Surf。使用者不可另外輸入／覆寫信箱；不再開放 code、confirm 路由，移除 OTP／Resend 模組與配置需求，不加替代驗證來源。
+2026-10-08 Gavin 指定：只要經驗證的 Renaiss SSO 身分回傳有效 `email`，就自動送 Surf 查核，不論 `emailVerified` 為 true、false 或未提供驗證證據。這是已綁定信箱的查核規則，不宣稱已驗證信箱所有權。使用者不可另外輸入／覆寫信箱；不再開放 code、confirm 路由，移除 OTP／Resend 模組與配置需求，不加替代驗證來源。
 
-首次載入或結果過期時，前端自動查核；通過與否、缺欄位、明確未驗證、上游未提供驗證狀態、Surf 查核失敗分開處理。缺少信箱／驗證證據會自動開啟可關閉的提醒，導向已在官方 UI 確認的 `https://www.renaiss.xyz/profile/settings`。綁定／驗證後回來重新登入，才能取得新資料；已綁定卻缺上游證據時不可聲稱使用者未綁定或假判通過。
+首次載入或結果過期時，前端自動查核；API 用 `emailLinked` 表示 SSO 已回傳有效信箱。缺少信箱或格式錯誤會自動開啟可關閉的提醒，導向已在官方 UI 確認的 `https://www.renaiss.xyz/profile/settings`。綁定後回來重新登入，才能取得新資料。首頁顯示完整信箱與「已綁定」，Surf 仍以 API 的實際 `registered` 結果判定。
 
-Surf 結果仍以 15 分鐘為上限。結果綁定驗證方式版本、信箱 keyed hash 與 Partner Key；舊 OTP 結果、變更信箱、缺少驗證證據或更換 Key 都不保留舊通過資格。查核前後重新檢查 session、sub、信箱及驗證證據，查核途中登出／切換身分不能保存有效結果。活動內同一正規化信箱只能連接一位參加者；API 未提供穩定 Surf user ID，因此不能宣稱已按 Surf user ID 去重。
+Surf 結果仍以 15 分鐘為上限。結果綁定規則版本 `renaiss-linked-email-v2`、信箱 keyed hash 與 Partner Key；舊 OTP／已驗證信箱規則的結果、變更信箱、缺少有效信箱或更換 Key 都不保留舊通過資格。查核前後重新檢查 session、sub 與信箱，查核途中登出／切換身分不能保存有效結果。活動內同一正規化信箱只能連接一位參加者；API 未提供穩定 Surf user ID，因此不能宣稱已按 Surf user ID 去重。
 
-本機真實重登已取得信箱，並確認上游驗證狀態為 `unverified`，對應明確的 `email_verified=false`，不是缺欄位。官方設定顯示信箱已綁定，故仍需 Renaiss 完成驗證或修正驗證狀態；不能把「綁定」視為驗證證據。SSO 正規化另外保留 `emailVerificationStatus`，區分明確 false 與未知欄位。保留既有 SQLite 表資料，不作破壞性刪除；退休的 OTP 表已不再由程式使用。
+2026-10-08 正式 Merch session 已確認回傳信箱與 `unverified`，對應明確的 `email_verified=false`，不是缺欄位；官方設定同時顯示已綁定。依新的已綁定信箱規則，這個旗標不再阻擋 Surf 查核，也不把 false 改為 true。SSO 正規化另外保留 `emailVerificationStatus`，區分明確 false 與未知欄位。保留既有 SQLite 表資料，不作破壞性刪除；退休的 OTP 表已不再由程式使用。
+
+2026-10-08 驗證：使用此次正式 session 已取得的信箱與 false 驗證旗標，透過更新後的 `checkAccounts` 呼叫真實 Surf API，回傳 verified；結果僅存在記憶體 SQLite，沒有寫入正式任務紀錄。HTTP 整合確認 false／缺少／true 旗標均可查核，前端任意信箱不會取代 SSO 信箱；缺少／格式錯誤信箱、重複信箱、途中登出或變更信箱、Demo 仍拒絕，Surf 回傳未註冊仍為 0 次。1512×982／390×844 的本機注入預覽確認地址與已綁定狀態、長地址換行、雙語切換、自動查核與手動重查，沒有 console error。完整 build、媒體檢查及 diff check 通過，未新增永久測試腳本或測試資料庫。
+
+以下保留 2026-10-07 的舊規則實測紀錄，不代表目前要求 `emailVerified === true`。
 
 2026-10-07：SSO-only HTTP 整合測試通過：缺少／未驗證／未知證據、拒絕前端信箱與完成旗標、驗證中登出／換信箱／失去驗證、信箱去重、過期與退休 OTP 結果不通過、退休路由 404、0／1／未確認機會數。簽署 JWT 與本機 JWKS/userinfo 測試確認 true／false／缺欄位各自處理，subject 不符拒絕。使用記憶體 SQLite 與 stdin，沒有永久測試檔案。尚未有真實已驗證信箱 + 有效 Surf 帳號的通過案例。
 
@@ -141,4 +145,4 @@ Surf 結果仍以 15 分鐘為上限。結果綁定驗證方式版本、信箱 k
 - Node 語法檢查、TypeScript、Vite build、`git diff --check` 通過。build 使用明確無效的 CDN origin 作編譯檢查，不能當成正式媒體已發布。沒有新增假驗證 fallback。
 - Aside 實際桌面 1512×870：活動視窗與查核按鈕可操作，頁面與視窗內容沒有水平溢出。review 截圖保留於 `work/reviews/surf-missions-2026-10-06/surf-missions-desktop.png`。本轮没有以手機 viewport 重測；既有手機檢查不能替代新控制項的實機驗收。
 
-仍需：上游 Renaiss 明確回傳信箱驗證證據、真實有效 Surf 帳號通過情境、真實 Surf Discord 成員成功情境、確認正式活動規則與日期、Gavin 核對介面、授權 push 後完整正式部署驗證。標準 production build 目前仍缺 `VITE_STATIC_ASSET_CDN_BASE_URL`；TypeScript 與本機預覽檢查不能替代正式 build／部署。
+仍需：正式部署後完整活動流程驗證、真實 Surf Discord 成員成功情境、確認正式活動規則與日期、Gavin 核對介面。標準 production build 需顯式提供 `MERCH_STOREFRONT_MODE` 與 `VITE_STATIC_ASSET_CDN_BASE_URL`；2026-10-08 已使用 preview 模式與既有公開 CDN origin 完成本地 build 和媒體檢查。

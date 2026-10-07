@@ -6,10 +6,8 @@ import { surfAccountConfig } from './surf-config.mjs';
 import { createSurfRateStore } from './surf-rate-store.mjs';
 import { normalizeSurfEmail, verifySurfRegistration } from './providers/surf-registration.mjs';
 
-function verifiedEmail(user) {
+function linkedEmail(user) {
   if (typeof user?.email !== 'string' || !user.email.trim()) throw new HttpError(409, 'renaiss_email_missing');
-  if (user.emailVerified !== true) throw new HttpError(409, user.emailVerificationStatus === 'unverified' ?
-    'renaiss_email_unverified' : 'renaiss_email_verification_unavailable');
   try { return normalizeSurfEmail(user.email); }
   catch { throw new HttpError(409, 'renaiss_email_invalid'); }
 }
@@ -19,7 +17,7 @@ function emailHash(email) {
 
 function resultBinding(config, email) {
   // A result from the retired email-code flow is not an SSO-email result.
-  return createHmac('sha256', config.partnerKey).update(JSON.stringify(['renaiss-verified-email-v1', emailHash(email)])).digest('hex');
+  return createHmac('sha256', config.partnerKey).update(JSON.stringify(['renaiss-linked-email-v2', emailHash(email)])).digest('hex');
 }
 
 export function readAccountsState(user, { storeFactory }) {
@@ -29,24 +27,24 @@ export function readAccountsState(user, { storeFactory }) {
   const configuration = { configured: Boolean(config) };
   if (!user?.sub || user.isDemo) return { ...configuration, outcome: 'pending', reason: user?.isDemo ? 'demo_missions_disabled' : 'unauthenticated' };
   let email;
-  try { email = verifiedEmail(user); }
-  catch (error) { return { ...configuration, ownershipVerified: false, outcome: 'pending', reason: error.code }; }
-  const ownership = { ...configuration, ownershipVerified: true, email };
-  if (!config) return { ...ownership, outcome: 'unavailable', reason: configurationReason };
+  try { email = linkedEmail(user); }
+  catch (error) { return { ...configuration, emailLinked: false, outcome: 'pending', reason: error.code }; }
+  const linkage = { ...configuration, emailLinked: true, email };
+  if (!config) return { ...linkage, outcome: 'unavailable', reason: configurationReason };
   const result = storeFactory().getResult(surfCampaign.id, user.sub, 'accounts');
-  // Results cannot survive a changed verified email or partner credential.
+  // Results cannot survive a changed linked email, policy or partner credential.
   const binding = resultBinding(config, email);
-  if (!result || result.binding !== binding) return { ...ownership, outcome: 'pending' };
+  if (!result || result.binding !== binding) return { ...linkage, outcome: 'pending' };
   const { binding: _binding, ...safeResult } = result;
-  return { ...ownership, ...safeResult };
+  return { ...linkage, ...safeResult };
 }
 
 export async function checkAccounts(user, { store, fetchImpl = fetch, rateStore = createSurfRateStore(), assertCurrentUser = () => user }) {
-  const email = verifiedEmail(user), config = surfAccountConfig(), hash = emailHash(email);
+  const email = linkedEmail(user), config = surfAccountConfig(), hash = emailHash(email);
   const assertEmailIdentity = () => {
     const current = assertCurrentUser();
     if (current?.sub !== user.sub || current.isDemo) throw new HttpError(401, 'unauthenticated');
-    if (verifiedEmail(current) !== email) throw new HttpError(409, 'renaiss_email_changed');
+    if (linkedEmail(current) !== email) throw new HttpError(409, 'renaiss_email_changed');
   };
   assertEmailIdentity();
   const release = store.acquire(surfCampaign.id, user.sub, 'accounts');
