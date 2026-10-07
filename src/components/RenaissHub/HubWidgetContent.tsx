@@ -24,7 +24,7 @@ export function HubWidgetContent(props: HubWidgetContentProps) {
     case "member": return <HubMember account={account} copy={copy.member} preview={preview} onLogin={props.onLogin} onRetry={props.onRetryAccount} />;
     case "questline": return <HubQuestline copy={copy.questline} preview={preview} />;
     case "merch": return <HubMerch locale={locale} copy={copy.merch} preview={preview} enterRequested={props.enterRequested} loadProgress={props.loadProgress} loadState={props.loadState} onEnter={props.onEnter} />;
-    case "partner": return <HubSurfQuest locale={locale} preview={preview} onOpenCampaign={props.onOpenCampaign} />;
+    case "partner": return <HubSurfQuest key={account.status === 'ready' && account.session.authenticated ? account.session.user.sub : 'guest'} locale={locale} account={account} preview={preview} onOpenCampaign={props.onOpenCampaign} />;
     case "feed": return <HubCommunityWidget settings={widget} feed={props.feed} locale={locale} copy={hubWidgetCopy[locale]} editing={props.editing} preview={preview} onRetry={props.onRetryFeed} />;
   }
 }

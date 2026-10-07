@@ -26,12 +26,15 @@
 .hub-surf-quest__tasks li { display: flex; gap: .65rem; align-items: flex-start; padding: .85rem 0; border-top: 1px solid var(--hub-line); }
 .hub-surf-quest__tasks li:first-child { padding-top: 0; border-top: 0; }
 .hub-surf-quest__number { display: grid; place-items: center; flex: 0 0 1.55rem; height: 1.55rem; border: 1px solid rgba(131,111,153,.15); border-radius: 50%; color: #9989a7; font-size: .5rem; font-variant-numeric: tabular-nums; }
+.hub-surf-quest__number svg { width: .8rem; height: .8rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.hub-surf-quest__tasks li[data-complete="true"] .hub-surf-quest__number { color: #fff; border-color: #8e76a8; background: linear-gradient(145deg, #aa8bb5, #786c99); box-shadow: 0 3px 9px rgba(107, 85, 132, .17); }
+.hub-surf-quest__tasks li[data-complete="true"] .hub-surf-quest__number svg { animation: hub-quest-check-in 280ms ease-out both; }
+.hub-surf-quest__tasks li[data-complete="true"] .hub-surf-quest__weight { color: #75628d; }
+@keyframes hub-quest-check-in { from { opacity: 0; transform: scale(.55); } to { opacity: 1; transform: scale(1); } }
 .hub-surf-quest__task-content { flex: 1; min-width: 0; }
 .hub-surf-quest__task-heading { display: flex; justify-content: space-between; align-items: center; gap: .6rem; flex-wrap: wrap; }
 .hub-surf-quest h3 { margin: 0; font-size: .78rem; font-weight: 530; letter-spacing: -.02em; }
 .hub-surf-quest__weight { font-size: .51rem; color: #8b799e; white-space: nowrap; }
-.hub-surf-quest__weight-compact { display: none; }
-.hub-surf-quest__weight[data-required="true"] { color: #635c78; }
 .hub-surf-quest__task-bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; column-gap: .5rem; margin-top: .3rem; }
 .hub-surf-quest__task-bottom > span { color: #8c8797; font-size: .6rem; }
 .hub-surf-quest a { display: inline-flex; align-items: center; gap: .3rem; padding: .32rem 0; color: #786c8e; text-decoration: none; font-size: .6rem; }
@@ -49,5 +52,6 @@
 .hub-surf-quest__preview-action svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.2; transition: transform 250ms var(--hub-ease); }
 .hub-surf-quest__preview-action:hover svg { transform: translate(2px,-2px); }
 @media (prefers-reduced-motion: reduce) {
+  .hub-surf-quest__tasks li[data-complete="true"] .hub-surf-quest__number svg { animation: none; }
   .hub-surf-quest a svg, .hub-surf-quest__preview-action svg { transition: none; }
 }

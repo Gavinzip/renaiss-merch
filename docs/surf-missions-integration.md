@@ -1,6 +1,6 @@
 # Renaiss × Surf 任務串接
 
-更新：2026-10-08。使用 Renaiss SSO 已綁定信箱自動查 Surf，兩邊必須使用同一信箱；不以 `email_verified` 作為門檻。缺少信箱或格式不正確時顯示提醒並導向官方帳號設定；沒有自行寄碼或寄信服務依賴。X 與 Discord 既有查核保留。未啟動抽獎或發獎。
+更新：2026-10-08。使用 Renaiss SSO 已綁定信箱自動查 Surf，兩邊必須使用同一信箱；不以 `email_verified` 作為門檻。缺少信箱或格式不正確時顯示提醒並導向官方帳號設定；沒有自行寄碼或寄信服務依賴。正式服務已補齊 Surf、X、Discord 查核配置並重新啟動；本人登入後 Surf 帳號查核已通過，X／Discord 尚需本人授權與完成查核。未啟動抽獎或發獎。
 
 ## 活動依據與規則
 
@@ -100,7 +100,7 @@ Discord App 已建立為 `renaiss community`，Client ID `1557039188212326553`�
 | --- | --- |
 | `MISSIONS_TOKEN_ENCRYPTION_KEY` | 穩定的 32-byte key，以標準 base64 保存；社群 token 與 Renaiss 登入 challenge 共用加密模組，正式登入也需配置 |
 | `X_CLIENT_ID`、`X_CLIENT_SECRET` | 現有 Merch App，僅後端 |
-| `DISCORD_CLIENT_ID`、`DISCORD_CLIENT_SECRET` | `renaiss community` App，本機已設定，僅後端；正式環境尚未配置 |
+| `DISCORD_CLIENT_ID`、`DISCORD_CLIENT_SECRET` | `renaiss community` App，本機與正式服務端均已設定，僅後端 |
 | `X_REDIRECT_URI`、`DISCORD_REDIRECT_URI` | 可空白，精確從本站 origin 推導；顯式值必須與本站 origin/path 一致 |
 | `PUBLIC_APP_ORIGIN` | production 必填，HTTPS 正式本站 origin |
 | `SURF_DISCORD_REQUIRE_SCREENING` | 必填 `true` 或 `false` |
@@ -109,7 +109,7 @@ Discord App 已建立為 `renaiss community`，Client ID `1557039188212326553`�
 
 Renaiss SSO 已 allowlist localhost callback，127.0.0.1 被拒絕。本機登入 start 先導向 localhost，再寫 cookie，避免跨主機 cookie 遺失。另查出本機 Renaiss Client Secret 過期／不符正式服務，已只同步本機成現有 Merch 正式值，沒有更換正式金鑰。正式回呼配置與現有 Renaiss OIDC 交換方法保持不變。
 
-加密 key 不可因重啟而重生，不能刪除／更換 key 後把解密失敗隱藏成訪客或已通過；輪替需明確資料遷移。所有憑證只在 Git 忽略的後端環境檔，未進 bundle、文件、review 截圖或 Git。正式部署前另依 AGENTS.md 完成媒體 R2/CDN、durable volume、build／cache／live header audit；本次沒有配置正式部署的新變數或發布 Hub。
+加密 key 不可因重啟而重生，不能刪除／更換 key 後把解密失敗隱藏成訪客或已通過；輪替需明確資料遷移。憑證僅存於 Git 忽略的本機後端環境檔或 Zeabur 服務端環境變數，未進 bundle、文件、review 截圖或 Git。2026-10-08 正式服務補齊 Surf Partner Key、X／Discord OAuth 憑證與 Discord 規則並重啟後，匿名任務 API 的三項配置旗標均為 `true`；已登入頁面的 Surf 帳號自動查核為通過，顯示 1 / 3 次機會。
 
 ## Surf API 與 Renaiss 已綁定信箱
 
@@ -145,4 +145,4 @@ Surf 結果仍以 15 分鐘為上限。結果綁定規則版本 `renaiss-linked-
 - Node 語法檢查、TypeScript、Vite build、`git diff --check` 通過。build 使用明確無效的 CDN origin 作編譯檢查，不能當成正式媒體已發布。沒有新增假驗證 fallback。
 - Aside 實際桌面 1512×870：活動視窗與查核按鈕可操作，頁面與視窗內容沒有水平溢出。review 截圖保留於 `work/reviews/surf-missions-2026-10-06/surf-missions-desktop.png`。本轮没有以手機 viewport 重測；既有手機檢查不能替代新控制項的實機驗收。
 
-仍需：正式部署後完整活動流程驗證、真實 Surf Discord 成員成功情境、確認正式活動規則與日期、Gavin 核對介面。標準 production build 需顯式提供 `MERCH_STOREFRONT_MODE` 與 `VITE_STATIC_ASSET_CDN_BASE_URL`；2026-10-08 已使用 preview 模式與既有公開 CDN origin 完成本地 build 和媒體檢查。
+仍需：由參加者完成 X／Discord OAuth 授權後驗證兩項任務、真實 Surf Discord 成員成功情境、確認正式活動規則與日期、Gavin 核對介面。標準 production build 需顯式提供 `MERCH_STOREFRONT_MODE` 與 `VITE_STATIC_ASSET_CDN_BASE_URL`。

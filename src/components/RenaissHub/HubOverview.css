@@ -41,8 +41,6 @@
   .renaiss-hub[data-density="compact"] .hub-surf-quest__tasks li:first-child { padding-top: 0; }
   .renaiss-hub[data-density="compact"] .hub-surf-quest__task-bottom { display: none; }
   .renaiss-hub[data-density="compact"] .hub-surf-quest__weight { font-size: .6rem; }
-  .renaiss-hub[data-density="compact"] .hub-surf-quest__weight-full { display: none; }
-  .renaiss-hub[data-density="compact"] .hub-surf-quest__weight-compact { display: inline; }
   .renaiss-hub[data-density="compact"] .hub-surf-quest__footer { padding-top: .4rem; }
   .renaiss-hub[data-density="compact"] .hub-surf-quest__footer p { display: none; }
   .renaiss-hub[data-density="compact"] .hub-surf-quest__preview-action { min-height: 44px; padding-block: .5rem; }

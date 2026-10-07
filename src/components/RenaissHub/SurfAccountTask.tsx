@@ -23,7 +23,6 @@ export function SurfAccountTask({ locale, missions, loading, onLogin }: {
       </span>
       {account?.email ? <span className="surf-social-task__username">{account.email}</span> : null}
     </div>
-    <p className="surf-social-task__hint" data-surf-reveal="4">{zh ? '登入後，會使用 Renaiss 綁定的信箱自動查核 Surf 帳號。請確認兩邊使用同一個信箱。' : 'After sign-in, we automatically check Surf using the email linked to Renaiss. Use the same email for both accounts.'}</p>
     {!missions.state?.authenticated ? null : emailWarning ?
       <SurfEmailWarning locale={locale} reason={account?.reason || ''} onLogin={onLogin} disabled={disabled} /> :
       account?.configured && account.emailLinked ? <div className="surf-social-task__controls"><button type="button" disabled={disabled} onClick={missions.verifyAccounts}>

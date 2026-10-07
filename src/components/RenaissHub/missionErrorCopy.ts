@@ -34,6 +34,9 @@ export function missionErrorCopy(code: string, zh: boolean) {
     surf_email_rejected: ['Surf 無法查核此登入信箱，請稍後重試或聯絡支援。', 'Surf could not check this sign-in email. Try again later or contact support.'],
     surf_provider_error: ['Surf 服務暫時無法查核，請稍後重試。', 'Surf verification is temporarily unavailable. Please try again later.'],
     surf_response_invalid: ['Surf 回傳的查核資料不完整，請稍後重試。', 'Surf returned an invalid verification response. Please try again later.'],
+    x_not_configured: ['X 查核暫時無法使用。', 'X verification is currently unavailable.'],
+    discord_not_configured: ['Discord 查核暫時無法使用。', 'Discord verification is currently unavailable.'],
+    discord_rule_not_configured: ['Discord 查核規則尚未設定。', 'Discord verification rules are not configured.'],
   };
   const pair = messages[code];
   return pair ? pair[zh ? 0 : 1] : zh ? '暫時無法完成查核，請稍後重試。' : 'Verification is unavailable. Please try again later.';
