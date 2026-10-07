@@ -1,0 +1,146 @@
+/* Text owns these effects. The outer widget keeps its existing FLIP motion,
+   and the card keeps its edit-mode jiggle. No pointer tracking or new library. */
+.renaiss-hub {
+  --hub-text-in: 240ms;
+  --hub-text-out: 380ms;
+  --hub-text-reveal: 500ms;
+  --hub-text-spectrum: linear-gradient(105deg, #424457 4%, #756ca6 30%, #b57094 57%, #54888e 79%, #424457);
+}
+.renaiss-hub .hub-title-action {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.renaiss-hub .hub-title-action:disabled { cursor: wait; }
+.hub-motion-text {
+  position: relative;
+  display: inline-grid;
+  max-width: 100%;
+  vertical-align: top;
+  transition: transform var(--hub-text-out) var(--hub-ease);
+}
+.hub-motion-text > span { grid-area: 1 / 1; min-width: 0; }
+.hub-motion-text__color {
+  pointer-events: none;
+  color: transparent;
+  background: var(--hub-text-spectrum) 0% 50% / 220% 100%;
+  background-clip: text;
+  opacity: 0;
+  transition: opacity var(--hub-text-out) var(--hub-ease);
+}
+.hub-motion-text::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -.18em;
+  left: 0;
+  height: 1px;
+  border-radius: 1px;
+  background: linear-gradient(90deg, #9ba3d4, #d49bb7 60%, #86bac0);
+  opacity: 0;
+  transform: scaleX(.15);
+  transform-origin: left;
+  transition: transform var(--hub-text-out) var(--hub-ease), opacity var(--hub-text-out) var(--hub-ease);
+}
+.hub-widget:not(.is-editing) .hub-motion-text {
+  animation: hub-title-reveal var(--hub-text-reveal) var(--hub-ease) both;
+  animation-delay: min(calc(var(--widget-index, 0) * 40ms + 80ms), 280ms);
+}
+.hub-widget:not(.is-editing) .renaiss-hub__card:focus-within .hub-motion-text__color {
+  opacity: 1;
+}
+.hub-title-action:is(:focus-visible, :active) .hub-motion-text::after {
+  transform: scaleX(1);
+  opacity: .85;
+}
+.hub-widget:not(.is-editing) :is(.hub-action-label, .renaiss-hub__merch-action-label) {
+  position: relative;
+  display: inline-block;
+  transition: transform var(--hub-text-out) var(--hub-ease);
+}
+.hub-action-label::after {
+  content: "";
+  position: absolute;
+  bottom: -.2em;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: currentColor;
+  opacity: .55;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--hub-text-out) var(--hub-ease);
+}
+.hub-widget:not(.is-editing) :is(a, button):focus-visible .hub-action-label::after { transform: scaleX(1); }
+.hub-widget:not(.is-editing) :is(.renaiss-hub__button, .hub-surf-quest__preview-action):active:not(:disabled) {
+  transform: translateY(1px) scale(.985);
+  transition-duration: 80ms;
+}
+.hub-widget:not(.is-editing) .hub-title-action:active:not(:disabled) .hub-motion-text { transform: translateY(1px); }
+.hub-surf-quest__tasks li,
+.renaiss-hub__account-details div { transition: transform var(--hub-text-out) var(--hub-ease); }
+.hub-surf-quest__tasks h3,
+.renaiss-hub__account-details dd { transition: color var(--hub-text-out) var(--hub-ease); }
+.hub-surf-quest__number { transition: border-color var(--hub-text-out) var(--hub-ease), background-color var(--hub-text-out) var(--hub-ease), color var(--hub-text-out) var(--hub-ease); }
+.hub-feed__posts a { transition: transform var(--hub-text-out) var(--hub-ease); }
+.hub-feed__posts a:active { transform: translateY(1px); transition-duration: 80ms; }
+.hub-feed__post-heading h3 { text-decoration: underline; text-decoration-color: transparent; text-underline-offset: .2em; text-decoration-thickness: 1px; transition: color var(--hub-text-out) var(--hub-ease), text-decoration-color var(--hub-text-out) var(--hub-ease); }
+.hub-feed__posts a:focus-visible h3 { text-decoration-color: #b9a4ca; }
+.hub-feed__website > .hub-action-label { font-size: inherit; }
+.hub-feed__website:is(:hover, :focus-visible) > .hub-action-label { transform: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  .hub-widget:not(.is-editing) .renaiss-hub__card:hover .hub-motion-text__color {
+    opacity: 1;
+    animation: hub-text-spectrum 3.2s var(--hub-ease) both;
+    transition-duration: var(--hub-text-in);
+  }
+  .hub-widget:not(.is-editing) .hub-motion-text:hover,
+  .hub-widget:not(.is-editing) .hub-title-action:hover .hub-motion-text {
+    transform: translateY(-1px);
+    transition-duration: var(--hub-text-in);
+  }
+  .hub-widget:not(.is-editing) .hub-motion-text:hover::after,
+  .hub-widget:not(.is-editing) .hub-title-action:hover .hub-motion-text::after {
+    opacity: .85;
+    transform: scaleX(1);
+    transition-duration: var(--hub-text-in);
+  }
+  .hub-widget:not(.is-editing) :is(a, button):hover .hub-action-label::after { transform: scaleX(1); transition-duration: var(--hub-text-in); }
+  .hub-widget:not(.is-editing) .hub-surf-quest__tasks li:hover,
+  .hub-widget:not(.is-editing) .renaiss-hub__account-details div:hover { transform: translateX(3px); transition-duration: var(--hub-text-in); }
+  .hub-widget:not(.is-editing) .hub-surf-quest__tasks li:hover h3,
+  .hub-widget:not(.is-editing) .renaiss-hub__account-details div:hover dd { color: #78649d; transition-duration: var(--hub-text-in); }
+  .hub-widget:not(.is-editing) .hub-surf-quest__tasks li:hover .hub-surf-quest__number { border-color: #b7a5cc; background-color: #f5edf9; color: #78649d; }
+  .hub-widget:not(.is-editing) .hub-feed__posts a:hover h3 { text-decoration-color: #b9a4ca; transition-duration: var(--hub-text-in); }
+  .hub-widget:not(.is-editing) .hub-feed__posts a:hover .hub-feed__post-heading > svg { transform: translate(3px, -3px); }
+  .hub-widget:not(.is-editing) .hub-surf-quest__preview-action:hover > svg { transform: translate(3px, -3px); }
+}
+@keyframes hub-title-reveal {
+  from { opacity: .15; clip-path: inset(100% 0 0); translate: 0 12px; }
+  to { opacity: 1; clip-path: inset(-5px -5px -5px); translate: 0 0; }
+}
+@keyframes hub-text-spectrum { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
+@media (prefers-reduced-motion: reduce) {
+  .renaiss-hub .hub-motion-text,
+  .renaiss-hub .hub-motion-text__color,
+  .renaiss-hub .hub-motion-text::after,
+  .renaiss-hub .hub-action-label,
+  .renaiss-hub .hub-action-label::after,
+  .renaiss-hub .hub-feed__posts a,
+  .renaiss-hub .hub-surf-quest__tasks li,
+  .renaiss-hub .renaiss-hub__account-details div { animation: none; transition: none; translate: none !important; transform: none !important; }
+  .renaiss-hub .hub-motion-text { opacity: 1; clip-path: none; }
+  .renaiss-hub :is(.hub-title-action, .hub-feed__posts a, .renaiss-hub__button, .hub-surf-quest__preview-action):active { transform: none; }
+  .renaiss-hub .hub-feed__posts a:hover .hub-feed__post-heading > svg,
+  .renaiss-hub .hub-surf-quest__preview-action:hover > svg { transform: none; }
+}

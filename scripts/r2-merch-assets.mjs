@@ -521,6 +521,9 @@ async function assertConfiguration() {
     throw new Error('Publish the media release before a production build.');
   }
 
+  const hubCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/hub-asset-release.json'), 'utf8'));
+  if (hubCatalog.release === 'unpublished') throw new Error('Publish the hidden Hub media release before a production build.');
+
   console.log(
     `Production media configuration: ${base}/${catalog.prefix}/${catalog.release}/`
   );
@@ -531,18 +534,7 @@ async function assertBuild() {
   const files = await collectFiles(distPath);
   const forbiddenMedia = files.filter((filePath) => {
     const extension = extname(filePath).toLowerCase();
-    const fileName = relative(distPath, filePath).toLowerCase();
-
-    return (
-      CONTENT_MEDIA_EXTENSIONS.has(extension) &&
-      (fileName.includes('sealed-drop') ||
-        fileName.includes('store-static-background') ||
-        fileName.includes('store-background') ||
-        fileName.includes('bracelet') ||
-        fileName.includes('shirt-product') ||
-        extension === '.mp4' ||
-        extension === '.avif')
-    );
+    return CONTENT_MEDIA_EXTENSIONS.has(extension);
   });
 
   if (forbiddenMedia.length) {
@@ -559,6 +551,10 @@ async function assertBuild() {
   const combinedText = (
     await Promise.all(textFiles.map((filePath) => readFile(filePath, 'utf8')))
   ).join('\n');
+  const hubCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/hub-asset-release.json'), 'utf8'));
+  if (!combinedText.includes(hubCatalog.release) || /\/api\/hub\/hero-preview\/|["']\/work\//.test(combinedText)) {
+    throw new Error('Hidden Hub build must use its published CDN release, without local authoring URLs.');
+  }
   const configuredBase = String(
     process.env.VITE_STATIC_ASSET_CDN_BASE_URL || ''
   )

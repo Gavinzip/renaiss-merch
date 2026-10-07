@@ -1,0 +1,46 @@
+.hub-account-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: none;
+  height: 44px;
+  padding: 0 17px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: linear-gradient(125deg, #ffffffdc, #f4eff8b8) padding-box,
+    linear-gradient(125deg, #fff, #dfcce8, #cbe2ed) border-box;
+  box-shadow: inset 0 1px 0 #fff, 0 4px 14px #7154750a;
+  color: #5e4c70;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .02em;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: box-shadow 220ms, color 220ms;
+}
+.hub-account-action svg { width: 18px; height: 18px; flex: none; color: #8b779e; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.hub-account-action:hover {
+  background: linear-gradient(125deg, #fff, #f8f5fceb) padding-box,
+    linear-gradient(125deg, #f4d7ca, #d9c3e9, #bddfea) border-box;
+  box-shadow: inset 0 1px 0 #fff, 0 6px 18px #71547512;
+  color: #473752;
+}
+.hub-account-action:active { box-shadow: inset 0 1px 4px #71547512; }
+.hub-account-action:focus-visible { outline: 2px solid #a38db8; outline-offset: 3px; }
+.hub-account-action:disabled, .hub-account-action[aria-disabled="true"] { opacity: .5; cursor: default; }
+@media (max-width:720px) { .hub-account-action { height: 40px; padding: 0 12px; font-size: 11px; gap: 6px; } .hub-account-action svg { width: 16px; height: 16px; } }
+@media (max-width:480px) {
+  .hub-account-action svg { display: none; }
+  .hub-home__controls > :is(.hub-language,.hub-navigation,.hub-home__customize) { flex: none; }
+  .hub-home__controls :is(button,a) { white-space: nowrap; }
+  .hub-home__controls .hub-home__customize { width: 40px; padding: 0; justify-content: center; }
+  .hub-home__customize-label { display: none; }
+}
+@media (max-width:359px) {
+  .hub-home-intro__utility { flex-wrap: wrap; row-gap: 12px; }
+  .hub-home__controls { margin-left: auto; }
+}
+@media (prefers-reduced-motion:reduce) { .hub-account-action { transition: none; } }

@@ -1,5 +1,7 @@
 import {
   useCallback,
+  lazy,
+  Suspense,
   useEffect,
   useMemo,
   useRef,
@@ -68,6 +70,11 @@ import {
 import { merchStoreCopy } from '../../i18n/merchStoreCopy';
 import '../MerchEligibilityEntry/MerchEligibilityEntry.css';
 import './MerchStore.css';
+import { useStorefrontFeatures } from '../../hooks/useStorefrontFeatures';
+
+// Preview cards remain outside the physical-product claim flow. Their temporary
+// visibility comes from the server environment, so it does not require a build.
+const SurfStoreRewards = lazy(() => import('../SurfStoreRewards/SurfStoreRewards'));
 
 type StoreState =
   | 'loading-session'
@@ -95,6 +102,7 @@ type ProductPreparationProgress = {
 };
 
 type MerchStoreProps = {
+  allowPartnerRewards?: boolean;
   initialAuthFailed: boolean;
   onExitStore?: () => void;
   onLogin: () => void;
@@ -102,6 +110,7 @@ type MerchStoreProps = {
 };
 
 export function MerchStore({
+  allowPartnerRewards = false,
   initialAuthFailed,
   onExitStore,
   onLogin,
@@ -109,6 +118,8 @@ export function MerchStore({
 }: MerchStoreProps) {
   const { locale, setLocale } = useLocale();
   const copy = merchStoreCopy[locale];
+  const storefrontFeatures = useStorefrontFeatures(allowPartnerRewards);
+  const showSurfRewards = allowPartnerRewards && storefrontFeatures.state.status === 'ready' && storefrontFeatures.state.surfRewardsVisible;
   const [session, setSession] = useState<RenaissSession>({
     authenticated: false
   });
@@ -836,7 +847,11 @@ export function MerchStore({
             {copy.title}
           </h1>
           <p className="merch-store__lede">
-            {copy.lede}
+            {showSurfRewards
+              ? locale === 'zh-TW'
+                ? '收藏限定周邊，探索 SBT 帶來的合作權益。'
+                : 'Collect limited editions. Discover partner benefits through your SBTs.'
+              : copy.lede}
           </p>
         </div>
 
@@ -867,7 +882,7 @@ export function MerchStore({
         ) : null}
 
         <div
-          className={`merch-store__products merch-store__products--${storeView}`}
+          className={`merch-store__products merch-store__products--${storeView}${showSurfRewards ? ' has-partner-rewards' : ''}`}
         >
           {merchCatalog.map((product) => {
             const accessState = productAccess[product.id];
@@ -910,7 +925,19 @@ export function MerchStore({
               <MerchProductCard key={product.id} {...productProps} />
             );
           })}
+          {showSurfRewards ? (
+            <Suspense>
+              <SurfStoreRewards />
+            </Suspense>
+          ) : null}
         </div>
+
+        {storefrontFeatures.state.status === 'error' ? (
+          <p className="merch-store__status merch-store__status--error" role="alert">
+            {locale === 'zh-TW' ? '無法讀取商店顯示設定。' : 'Store display settings could not be loaded.'}{' '}
+            <button type="button" onClick={storefrontFeatures.retry}>{locale === 'zh-TW' ? '重試' : 'Try again'}</button>
+          </p>
+        ) : null}
 
         <p
           className={`merch-store__status merch-store__status--${storeState}`}

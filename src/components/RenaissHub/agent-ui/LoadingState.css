@@ -1,0 +1,8 @@
+/* ReactSkills / Transitions.dev matrix loader, tied to real request state. */
+.assistant-working { display: flex; align-items: center; gap: 12px; max-width: 720px; min-height: 38px; margin: 28px auto 0; animation: assistant-fade-up 250ms var(--ease-out-strong) both; }
+.assistant-working__grid { display: grid; flex: 0 0 auto; grid-template-columns: repeat(3,5px); gap: 3px; }
+.assistant-working__grid i { width: 5px; height: 5px; border-radius: 50%; background: #d9d9d9; animation: assistant-dot-pulse 1200ms ease-in-out infinite; }
+.assistant-working__label { font-size: 12px; font-weight: 450; color: #81728b; }
+.assistant-working__elapsed { font-size: 10px; color: #9c8caa; font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+@keyframes assistant-dot-pulse { 0%,45%,100% { background-color: #d9d9d9; } 15% { background-color: #85858f; } }
+@media (prefers-reduced-motion: reduce) { .assistant-working,.assistant-working__grid i { animation: none; } }

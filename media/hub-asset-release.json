@@ -1,0 +1,47 @@
+{
+  "access": "public",
+  "bucket": "renaiss-merch-media",
+  "prefix": "merch/next",
+  "release": "r6381c84662e9676e15cc",
+  "assets": {
+    "displayLogo": {
+      "type": "image",
+      "source": "work/generated-images/2026-10-06-renaiss-logo/02-renaiss-logo-transparent.png",
+      "path": "brand/renaiss-display-mark.avif",
+      "contentType": "image/avif"
+    },
+    "wordmark": {
+      "type": "image",
+      "source": "src/assets/brand/website/renaiss-logo-black.png",
+      "path": "brand/renaiss-wordmark.avif",
+      "contentType": "image/avif"
+    },
+    "surfLogo": {
+      "type": "image",
+      "source": "src/assets/brand/partners/surf-ai-avatar.jpg",
+      "path": "brand/surf-logo.avif",
+      "contentType": "image/avif"
+    },
+    "surfBox": {
+      "type": "binary",
+      "source": "work/assets/surf/surf-mystery-box-clear-v1.webp",
+      "path": "surf/mystery-box.webp",
+      "contentType": "image/webp"
+    },
+    "surfProduct": {
+      "type": "binary",
+      "source": "work/research/surf-campaign-2026-10-06/display/surf-product.webp",
+      "path": "surf/pro-product.webp",
+      "contentType": "image/webp"
+    },
+    "sealedBoxHero": {
+      "type": "binary",
+      "source": "work/videos/merch-hub-loop/assets/sealed-box.avif",
+      "path": "store/sealed-box-hero.avif",
+      "contentType": "image/avif"
+    }
+  },
+  "contentHash": "6381c84662e9676e15cc2c76af2c72f8210db1598d4dbe9ac6b6791c06a6babf",
+  "fileCount": 6,
+  "totalBytes": 519466
+}

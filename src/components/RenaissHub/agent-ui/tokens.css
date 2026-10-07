@@ -1,0 +1,16 @@
+/* Agent UI token subset, mapped to the existing Renaiss material system.
+   Plain CSS replaces Tailwind utilities; no global palette/body override. */
+.assistant-dialog {
+  --ink: var(--hub-ink);
+  --ink-2: #767080;
+  --ink-3: #7e7389;
+  --surface: #fff;
+  --field: #ffffffb8;
+  --line: #d8cde343;
+  --line-strong: #bc9fd28c;
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+}
+@keyframes assistant-fade-up {
+  from { opacity: .08; transform: translateY(8px); filter: blur(3px); }
+  to { opacity: 1; transform: translateY(0); filter: none; }
+}

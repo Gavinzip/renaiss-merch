@@ -1,0 +1,71 @@
+@import "./agent-ui/tokens.css";
+@import "./AssistantWelcome.css";
+@import "./AssistantComposer.css";
+@import "./AssistantResponse.css";
+@import "./AssistantDialogMotion.css";
+
+/* Native dialog, ReactSkills recipe 06. */
+.assistant-dialog {
+  width: min(960px,calc(100vw - 64px)); height: min(800px,calc(var(--assistant-viewport-height,100dvh) - 64px));
+  max-width: none; max-height: none; padding: 0; margin: auto; overflow: hidden;
+  border: 1px solid #fffffff2; border-radius: 30px; color: var(--ink); font: inherit;
+  background: radial-gradient(ellipse at 0 0,#d9dbf354,transparent 45%),radial-gradient(ellipse at 100% 90%,#f5d5df42,transparent 43%),#faf9fdf2;
+  box-shadow: 0 45px 130px -30px #61527145,0 8px 40px #9c6aaf18,inset 0 1px 0 #fff;
+  backdrop-filter: blur(30px) saturate(125%);
+}
+.assistant-dialog[open] { display: flex; flex-direction: column; }
+.assistant-dialog.is-expanded { width: min(1180px,calc(100vw - 40px)); height: calc(var(--assistant-viewport-height,100dvh) - 40px); border-radius: 25px; }
+
+/* Shared identity and independent entry. */
+.assistant-mark { display: inline-grid; place-items: center; flex: 0 0 auto; width: 38px; height: 38px; }
+.assistant-mark .hub-brand-logo { display: block; width: 30px; height: 30px; object-fit: contain; }
+.assistant-launch { position: fixed; z-index: 40; right: 28px; bottom: 24px; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 8px 17px 8px 8px; border: 1px solid transparent; border-radius: 999px; background: linear-gradient(120deg,#fffffff2,#ffffffd9) padding-box,linear-gradient(120deg,#d0dff6,#dcc1ed,#f4d1c2,#d3e4dd) border-box; color: var(--hub-ink); font: inherit; font-size: 13px; font-weight: 500; box-shadow: 0 12px 35px #846a9d24,0 2px 5px #7d67960a; backdrop-filter: blur(20px); cursor: pointer; transition: transform 250ms var(--hub-ease),box-shadow 250ms var(--hub-ease),opacity 150ms; }
+.assistant-launch:hover { transform: translateY(-3px); box-shadow: 0 16px 40px #846a9d30; }
+.assistant-launch:active { transform: scale(.97); }
+.assistant-launch:disabled { opacity: .3; pointer-events: none; }
+.assistant-launch small { font-size: 9px; color: #8e759f; letter-spacing: .02em; border-left: 1px solid #ccbada55; padding-left: 9px; }
+
+/* Small toolbar; the conversation owns the rest of the view. */
+.assistant-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 19px 26px; border-bottom: 1px solid #d4cce53b; flex-shrink: 0; }
+.assistant-identity { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.assistant-identity .assistant-mark { width: 40px; height: 40px; }
+.assistant-identity h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 15px; font-weight: 550; letter-spacing: -.03em; }
+.assistant-identity h2 span { font-size: 9px; font-weight: 450; letter-spacing: .02em; color: #9477ab; background: #e7dff54d; border: 1px solid #ccb5e043; padding: 3px 6px; border-radius: 6px; }
+.assistant-identity p { margin: 6px 0 0; font-size: 11px; color: var(--ink-3); line-height: 1.4; }
+.assistant-actions { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+.assistant-actions button { display: flex; justify-content: center; align-items: center; gap: 7px; height: 38px; padding: 0 10px; border: 0; border-radius: 12px; color: var(--ink-2); background: transparent; font: inherit; font-size: 11px; cursor: pointer; transition: background-color 150ms,color 150ms,transform 150ms; }
+.assistant-actions button:hover { background: #e5dcec59; color: var(--ink); }
+.assistant-actions button:active { transform: scale(.95); }
+.assistant-actions button:disabled { opacity: .35; cursor: default; }
+.assistant-actions svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.assistant-actions .assistant-close { width: 38px; padding: 0; border: 1px solid #ffffffd6; background: #ffffff61; border-radius: 50%; }
+.assistant-expand[aria-pressed="true"] { background: #e7def454; }
+.agent-chat { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.assistant-thread { min-height: 0; flex: 1; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #bba1cc44 transparent; padding: 30px 48px; scroll-padding: 24px; }
+.assistant-dialog :is(button,a):focus-visible { outline: 2px solid #a48aba; outline-offset: 3px; }
+.assistant-message:focus { outline: none; }
+@media (max-width: 720px) {
+  .assistant-dialog { width: calc(100vw - 32px); height: calc(var(--assistant-viewport-height,100dvh) - 32px); border-radius: 24px; }
+  .assistant-dialog.is-expanded { width: calc(100vw - 16px); height: calc(var(--assistant-viewport-height,100dvh) - 16px); border-radius: 20px; }
+  .assistant-header { padding: 17px 18px; }
+  .assistant-thread { padding: 24px; }
+  .assistant-new span { display: none; }
+}
+@media (max-width: 560px) {
+  .assistant-dialog,.assistant-dialog.is-expanded { width: 100vw; height: var(--assistant-viewport-height,100dvh); border: 0; border-radius: 0; inset: 0; margin: 0; }
+  .assistant-header { padding: max(14px,env(safe-area-inset-top)) 18px 14px; }
+  .assistant-identity { gap: 9px; }
+  .assistant-identity .assistant-mark { width: 35px; height: 35px; }
+  .assistant-identity h2 { font-size: 14px; }
+  .assistant-identity p { font-size: 10px; max-width: 185px; }
+  .assistant-actions { gap: 4px; }
+  .assistant-actions .assistant-expand { display: none; }
+  .assistant-actions .assistant-close { width: 36px; height: 36px; }
+  .assistant-thread { padding: 22px; }
+  .assistant-launch { right: 16px; bottom: max(16px,env(safe-area-inset-bottom)); min-height: 50px; padding: 6px 13px 6px 6px; font-size: 12px; gap: 8px; }
+  .assistant-launch .assistant-mark { width: 34px; height: 34px; }
+  .renaiss-hub__footer { padding-bottom: 85px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .assistant-dialog.t-modal,.assistant-dialog *, .assistant-launch { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

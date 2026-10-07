@@ -1,0 +1,47 @@
+/* Editing leaves the dashboard's grid untouched. Only Add opens the collection. */
+.hub-editor { position: fixed; z-index: 40; left: 50%; bottom: 22px; width: max-content; max-width: calc(100vw - 32px); margin: 0; padding: 9px 12px; border-radius: 999px; transform: translateX(-50%); background: #fffc; backdrop-filter: blur(24px); box-shadow: 0 12px 38px #68507a1a, inset 0 1px 0 #fff; }
+.hub-editor__heading { gap: 14px; }
+.hub-editor__heading > div:first-child, .hub-editor__preset-notice { display: none; }
+.hub-editor__layout-actions { gap: 8px; }
+.hub-editor__open { background: #292930; color: white; border-color: #292930; padding-inline: 16px; }
+.hub-editor__open:hover { background: #41404c; }
+.hub-editor__open small { color: #d2c9dc; }
+.hub-editor__preset { border-color: transparent; background: transparent; color: #716675; }
+.hub-editor__preset:hover { background: #f2edf7; }
+.hub-library-dialog { --modal-close-dur: 180ms; position: fixed; inset: 0; width: min(1040px, calc(100vw - 40px)); max-height: calc(100svh - 64px); margin: auto; padding: 0; border: 1px solid #fff; border-radius: 30px; color: var(--hub-ink); background: linear-gradient(135deg,#fffaf5,#fbf8ff 60%,#f4fbff); box-shadow: 0 28px 100px #32204438; overflow: auto; overscroll-behavior: contain; opacity: .06; transform: translateY(20px) scale(.975); filter: blur(5px); transition: transform 480ms var(--hub-ease), opacity 320ms var(--hub-ease), filter 380ms var(--hub-ease); }
+.hub-library-dialog[data-phase="open"] { opacity: 1; transform: none; filter: none; }
+.hub-library-dialog[data-phase="closing"] { opacity: .06; transform: translateY(8px) scale(.99); filter: blur(3px); transition-duration: var(--modal-close-dur); }
+.hub-library-dialog::backdrop { background: #30253d38; backdrop-filter: blur(7px); }
+.hub-library-dialog .hub-library { position: relative; border: 0; margin: 0; padding: 30px; animation: none; }
+.hub-library__close { position: absolute; top: 20px; right: 22px; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid #e9e0ed; border-radius: 50%; background: #fff9; color: #716575; font: inherit; font-size: 24px; cursor: pointer; }
+.hub-library__heading { padding-right: 50px; align-items: start; }
+.hub-library__heading h2 { font-size: 22px; letter-spacing: -.04em; outline: none; }
+.hub-library__heading p { max-width: 360px; }
+.renaiss-hub[data-editing="true"] .renaiss-hub__footer { padding-bottom: 110px; }
+.renaiss-hub[data-editing="true"] .assistant-launch { display: none; }
+@media (max-width: 720px) {
+  .hub-editor { bottom: max(16px, env(safe-area-inset-bottom)); padding: 7px; }
+  .hub-editor__heading { flex-direction: row; }
+  .hub-editor__layout-actions { flex-wrap: nowrap; gap: 4px; }
+  .hub-editor__preset, .hub-editor__open { font-size: 11px; padding-inline: 10px; white-space: nowrap; }
+  .hub-editor__open small { margin-left: 2px; }
+  .hub-library-dialog { width: calc(100vw - 20px); max-height: calc(100svh - 24px); border-radius: 24px; }
+  .hub-library-dialog .hub-library { padding: 22px 16px; }
+  .hub-library__close { top: 14px; right: 14px; }
+  .hub-library__heading { padding-right: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hub-library-dialog { transition: none; transform: none; filter: none; }
+  .hub-library-dialog[data-phase="closing"] { transform: none; filter: none; }
+}
+/* Edit chrome floats on the card edge and cannot alter its grid footprint. */
+.renaiss-hub .hub-home__save { height: 44px; min-height: 44px; padding-block: 0; }
+.hub-widget.is-editing .hub-widget__tools button { width: 32px; height: 32px; min-height: 32px; }
+.hub-widget.is-editing .hub-widget__tools .hub-widget__grab { width: 28px; min-height: 32px; padding: 0; }
+.hub-widget.is-editing .hub-widget__tools svg { width: 15px; height: 15px; }
+.hub-widget.is-editing .hub-widget__edit { top: -18px; }
+.hub-widget.is-editing .hub-widget__edit:has(.hub-widget__fill) { top: 12px; }
+.hub-library-dialog::backdrop { transition: background 300ms var(--hub-ease), backdrop-filter 300ms var(--hub-ease); }
+.hub-library-dialog[data-phase="opening"]::backdrop,
+.hub-library-dialog[data-phase="closing"]::backdrop { background: #30253d08; backdrop-filter: blur(0px); }
+@media (prefers-reduced-motion: reduce) { .hub-library-dialog::backdrop { transition: none; backdrop-filter: none; } }

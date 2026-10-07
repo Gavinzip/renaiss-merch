@@ -14,7 +14,7 @@ import {
   parseCookies,
   setCookie
 } from './cookies.mjs';
-import { getAuthConfig, getPublicOrigin } from './config.mjs';
+import { getAuthConfig, getPublicOrigin, developmentLoginLocation } from './config.mjs';
 import {
   canUseDemoSession,
   createDemoUser,
@@ -29,6 +29,12 @@ import {
   saveMerchAccessCheck
 } from './merch-access-state.mjs';
 import { getMerchDatabase } from './merch-database.mjs';
+import { readCommunityFeed } from './hub/community-feed.mjs';
+import { askHubAssistant } from './hub/assistant.mjs';
+import { readHubPreferences, saveHubPreferences } from './hub/preferences.mjs';
+import { handleHubHeroPreview } from './hub/hero-preview.mjs';
+import { createMissionRouteHandler } from './missions/routes.mjs';
+import { readJsonBody } from './shipping-details.mjs';
 import { handleMerchInventory } from './merch-inventory.mjs';
 import { readMerchProductAccess } from './merch-product-access.mjs';
 import {
@@ -79,6 +85,8 @@ import {
   takeChallenge
 } from './session-store.mjs';
 import { serveStatic } from './static.mjs';
+import { getStorefrontFeatures } from './storefront-features.mjs';
+import { isHiddenHubPath } from '../shared/site-routes.js';
 import {
   getStorefrontMode,
   isProductionStorefrontMode,
@@ -90,6 +98,7 @@ loadLocalEnv();
 
 const isProduction = process.env.NODE_ENV === 'production';
 const storefrontMode = getStorefrontMode();
+const storefrontFeatures = getStorefrontFeatures();
 
 if (isProductionStorefrontMode(storefrontMode)) {
   requireSevenElevenStoreMapConfiguration();
@@ -99,6 +108,7 @@ const port = Number(process.env.PORT || 5173);
 const host = process.env.HOST || (process.env.PORT ? '0.0.0.0' : '127.0.0.1');
 const backupTriggerAttempts = [];
 getMerchDatabase(getRuntimeConfig().databasePath);
+const handleMissionRoute = createMissionRouteHandler({ readSession });
 const vite = isProduction
   ? null
   : await createDevelopmentViteServer();
@@ -153,6 +163,47 @@ async function createDevelopmentViteServer() {
 
 async function handleRoute(req, res) {
   const url = new URL(req.url || '/', 'http://localhost');
+
+  if (url.pathname === '/api/storefront/features') {
+    requireMethod(req, 'GET');
+    sendJson(res, 200, storefrontFeatures);
+    return true;
+  }
+
+  if (await handleMissionRoute(req, res, url)) return true;
+
+  if (!isProduction && url.pathname.startsWith('/api/hub/hero-preview/')) {
+    await handleHubHeroPreview(req, res, url.pathname);
+    return true;
+  }
+
+  // The home has a direct-only /next/ review route in the deployed build.
+  if (url.pathname === '/api/hub/feed') {
+    requireMethod(req, 'GET');
+    sendJson(res, 200, await readCommunityFeed(url.searchParams.get('lang') || 'zh-TW'));
+    return true;
+  }
+  if (url.pathname === '/api/hub/preferences') {
+    if (req.method === 'GET') {
+      sendJson(res, 200, { preferences: readHubPreferences(readSession(req)) });
+    } else {
+      requireMethod(req, 'PUT');
+      requireSameOrigin(req);
+      sendJson(res, 200, { preferences: saveHubPreferences(readSession(req), await readJsonBody(req)) });
+    }
+    return true;
+  }
+  if (url.pathname === '/api/hub/assistant') {
+    requireMethod(req, 'POST');
+    requireSameOrigin(req);
+    const input = await readJsonBody(req);
+    const controller = new AbortController();
+    const onClose = () => { if (!res.writableEnded) controller.abort(); };
+    res.on('close', onClose);
+    try { sendJson(res, 200, await askHubAssistant(input, controller.signal)); }
+    finally { res.off('close', onClose); }
+    return true;
+  }
 
   if (url.pathname === '/healthz') {
     requireMethod(req, 'GET');
@@ -420,7 +471,7 @@ async function serveViteHtml(req, res) {
   const templatePath =
     previewName === 'tshirt-physics' || previewName === 'bracelets'
       ? '../dev-preview.html'
-      : isProductionStorefrontMode(storefrontMode) ||
+      : isHiddenHubPath(url.pathname) || isProductionStorefrontMode(storefrontMode) ||
           isVersionedAppRoute(url.pathname)
         ? '../v1.2/index.html'
         : '../index.html';
@@ -432,7 +483,8 @@ async function serveViteHtml(req, res) {
 
   res.writeHead(200, {
     'Cache-Control': 'no-store',
-    'Content-Type': 'text/html; charset=utf-8'
+    'Content-Type': 'text/html; charset=utf-8',
+    ...(isHiddenHubPath(url.pathname) ? { 'X-Robots-Tag': 'noindex, nofollow, noarchive' } : {})
   });
 
   if (req.method === 'HEAD') {
@@ -508,6 +560,9 @@ async function startRenaissLogin(req, res, url) {
 
   try {
     requireMethod(req, 'GET');
+
+    const localLocation = developmentLoginLocation(req, url);
+    if (localLocation) { redirect(res, localLocation); return; }
 
     const config = getAuthConfig(req);
     const discovery = await discoverIssuer(config.issuer);
@@ -768,7 +823,9 @@ function authErrorLocation(error, returnTo = '/') {
 function logRenaissAuthFailure(stage, error) {
   const code = error instanceof HttpError ? error.code : 'server_error';
 
-  console.warn('Renaiss SSO failed:', { stage, code });
+  console.warn('Renaiss SSO failed:', { stage, code,
+    ...(error.providerStatus ? { providerStatus: error.providerStatus, providerError: error.providerError,
+      ...(error.providerDetail ? { providerDetail: error.providerDetail } : {}) } : {}) });
 }
 
 function authReturnLocation(returnTo, authState, reason) {

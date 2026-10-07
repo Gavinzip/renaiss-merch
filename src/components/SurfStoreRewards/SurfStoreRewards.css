@@ -1,0 +1,181 @@
+.merch-store__products.has-partner-rewards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.has-partner-rewards .merch-product-card { display: flex; flex-direction: column; }
+.has-partner-rewards .merch-product-card__visual { flex-shrink: 0; }
+.has-partner-rewards .merch-product-card__body { display: flex; flex-direction: column; flex: 1; }
+.has-partner-rewards .merch-product-card__body h2 { font-size: clamp(1.45rem, 1.9vw, 1.8rem); line-height: 1.12; text-wrap: balance; }
+.has-partner-rewards .merch-product-card__access { margin-top: auto; }
+
+.surf-store-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  color: #202027;
+  background: #f4f0ec;
+  border: 1px solid #ffffffb8;
+  border-radius: clamp(1.35rem, 2.2vw, 2rem);
+  box-shadow: 0 30px 80px #292e362e, inset 0 1px 0 #ffffffeb;
+  transition: transform 250ms cubic-bezier(.22,1,.36,1);
+}
+.surf-store-card:hover { transform: translateY(-4px); }
+.surf-store-card__visual {
+  position: relative;
+  display: grid;
+  height: clamp(13rem, 22vw, 16.5rem);
+  flex-shrink: 0;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 10% 10%, #ceccff, transparent 65%), radial-gradient(ellipse at 100% 90%, #f7c9b2, transparent 60%), #eee7ed;
+}
+.surf-store-card__preview {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1;
+  padding: .5rem .7rem;
+  border: 1px solid #ffffffb8;
+  border-radius: 999px;
+  color: #716575;
+  background: #ffffff70;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+.surf-store-card--pro-month .surf-store-card__visual {
+  background: radial-gradient(ellipse at 10% 10%, #cce8f6, transparent 65%), radial-gradient(ellipse at 100% 90%, #ddd0f8, transparent 60%), #eeedf7;
+}
+.surf-store-card__box { position: absolute; inset: 1.25rem; width: calc(100% - 2.5rem); height: calc(100% - 2.5rem); object-fit: contain; }
+.surf-store-card__credential {
+  display: grid;
+  justify-items: center;
+  width: min(68%, 15rem);
+  padding: 1.05rem 1rem .8rem;
+  background: linear-gradient(135deg,#ffffffc9,#fff5);
+  border: 1px solid #ffffffed;
+  border-radius: 1.3rem;
+  box-shadow: 8px 20px 30px -10px #7460803d, inset 0 1px 0 #fff;
+  transform: rotate(-7deg);
+}
+.surf-store-card__credential img { width: 3.4rem; height: 3.4rem; border-radius: .85rem; object-fit: contain; }
+.surf-store-card__credential strong { margin-top: .4rem; font-size: 1.8rem; line-height: 1.2; letter-spacing: -.04em; }
+.surf-store-card__credential > span { margin-top: .3rem; font-size: .4rem; font-weight: 600; letter-spacing: .15em; color: #766b7c; }
+.surf-store-card__credential > div { width: 100%; margin-top: .8rem; padding-top: .65rem; border-top: 1px solid #b5a7bc42; font-size: .9rem; font-weight: 700; text-align: center; }
+.surf-store-card__body { display: flex; flex-direction: column; flex: 1; gap: .65rem; padding: clamp(1.15rem, 2vw, 1.6rem); }
+.surf-store-card__edition { margin: 0; color: #847586; font-size: .54rem; font-weight: 650; letter-spacing: .12em; }
+.surf-store-card__body h2 { margin: 0; font-size: clamp(1.35rem, 2vw, 2rem); line-height: 1.15; letter-spacing: -.04em; font-weight: 800; }
+.surf-store-card__description { margin: 0 0 .35rem; color: #716772; font-size: .8rem; line-height: 1.5; }
+.surf-reward-facts { display: grid; gap: 12px; margin: 0 0 20px; padding-top: 16px; border-top: 1px solid #e6dfe9; font-size: 11px; }
+.surf-reward-facts > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; }
+.surf-reward-facts dt { color: #75647d; }
+.surf-reward-facts dd { margin: 0; font-weight: 650; }
+.surf-store-card__body button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: auto;
+  padding: .65rem .8rem;
+  color: #28212b;
+  background: transparent;
+  border: 1px solid #28212bbd;
+  border-radius: .25rem;
+  font: inherit;
+  font-size: .7rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.surf-store-card__body button:hover { background: #28212b; color: #fff; }
+.surf-store-card button:focus-visible, .surf-reward-dialog button:focus-visible, .surf-reward-dialog a:focus-visible { outline: 2px solid #7e62ae; outline-offset: 4px; }
+
+.surf-reward-dialog {
+  --modal-open-dur: 250ms;
+  --modal-close-dur: 150ms;
+  --modal-scale: .96;
+  --modal-scale-close: .96;
+  --modal-ease: cubic-bezier(.22,1,.36,1);
+  width: min(620px, calc(100vw - 48px));
+  max-width: none;
+  max-height: min(840px, calc(100dvh - 48px));
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  color: #2b2530;
+  background: radial-gradient(ellipse at 0 0,#e3def84d,transparent 60%),radial-gradient(ellipse at 100% 100%,#f6d9d54d,transparent 60%),#fcfafc;
+  border: 1px solid #fff;
+  border-radius: 26px;
+  box-shadow: 0 40px 100px -20px #51435a66;
+  font: inherit;
+}
+.surf-reward-dialog[open] { display: flex; flex-direction: column; }
+.surf-reward-dialog::backdrop { background: #2f253343; backdrop-filter: blur(10px); }
+
+/* ReactSkills / Transitions.dev: modal recipe, scoped by its single owner. */
+.surf-reward-dialog.t-modal {
+  transform-origin: center;
+  transform: scale(var(--modal-scale));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--modal-open-dur) var(--modal-ease),
+    opacity   var(--modal-open-dur) var(--modal-ease);
+  will-change: transform, opacity;
+}
+.surf-reward-dialog.t-modal.is-open { transform: scale(1); opacity: 1; pointer-events: auto; }
+.surf-reward-dialog.t-modal.is-closing {
+  transform: scale(var(--modal-scale-close));
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--modal-close-dur) var(--modal-ease),
+    opacity   var(--modal-close-dur) var(--modal-ease);
+}
+.surf-reward-dialog__toolbar { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; padding: 10px 24px; border-bottom: 1px solid #bdb0ca36; }
+.surf-reward-dialog__toolbar > span { color: #95849f; font-size: 10px; letter-spacing: .17em; }
+.surf-reward-dialog__toolbar button { display: grid; place-items: center; width: 38px; height: 38px; padding: 0; color: #807089; border: 1px solid #e7e0ec; border-radius: 50%; background: #ffffff7d; cursor: pointer; }
+.surf-reward-dialog__toolbar svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.3; }
+.surf-reward-dialog__content { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 26px 30px; }
+.surf-reward-dialog__intro { display: flex; gap: 18px; align-items: center; margin-bottom: 26px; }
+.surf-reward-dialog__intro img { width: 64px; height: 64px; flex-shrink: 0; object-fit: contain; border-radius: 16px; }
+.surf-reward-dialog__intro p { margin: 0; color: #928099; font-size: 10px; font-weight: 600; letter-spacing: .14em; }
+.surf-reward-dialog__intro h2 { margin: 8px 0; font-size: clamp(24px,3vw,32px); line-height: 1.2; letter-spacing: -.04em; font-weight: 750; }
+.surf-reward-dialog__intro h2:focus { outline: none; }
+.surf-reward-dialog__intro .surf-reward-dialog__description { color: #75647d; font-size: 12px; font-weight: 400; line-height: 1.6; letter-spacing: 0; }
+.surf-reward { min-width: 0; overflow: hidden; background: #ffffffa6; border: 1px solid #e6e0e9; border-radius: 18px; box-shadow: 0 10px 24px -20px #72607c80; }
+.surf-reward__visual { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; height: 140px; background: radial-gradient(ellipse at 20% 0,#dedaffaa,transparent 80%),radial-gradient(ellipse at 90% 100%,#fad5cbdd,transparent 75%),#f8edf4; }
+.surf-reward--pro-month .surf-reward__visual { background: radial-gradient(ellipse at 10% 0,#d7eafaaa,transparent 80%),radial-gradient(ellipse at 90% 100%,#e5d5f8bb,transparent 75%),#f3f0fa; }
+.surf-reward__visual span:first-child { color: #8e7a99; font-size: 9px; letter-spacing: .17em; }
+.surf-reward__visual strong { font-size: 36px; font-weight: 650; letter-spacing: -.05em; line-height: 1.1; }
+.surf-reward__visual span:last-child { color: #8b7a95; font-size: 12px; }
+.surf-reward__body { padding: 20px; }
+.surf-reward__body > p { min-height: 3.4em; margin: 10px 0 16px; color: #75647d; font-size: 12px; line-height: 1.7; }
+.surf-reward__body button { width: 100%; min-height: 38px; color: #a89bb1; background: #eee9f280; border: 1px solid #e8e0ec; border-radius: 10px; font: inherit; font-size: 11px; }
+.surf-reward-dialog__footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; flex-shrink: 0; gap: 12px; padding: 16px 30px; border-top: 1px solid #e5deea; background: #fcfafccc; }
+.surf-reward-dialog__footer p { margin: 0; color: #7b6885; font-size: 10px; }
+.surf-reward-dialog__footer a { color: #756280; text-decoration: none; font-size: 11px; white-space: nowrap; }
+
+@media (max-width: 980px) {
+  .merch-store__products.has-partner-rewards { grid-template-columns: 1fr; }
+  .surf-store-card__visual { height: clamp(18rem,55vw,28rem); }
+  .surf-store-card__credential { width: 200px; padding: 1.8rem 1.2rem; }
+  .surf-store-card__credential img { width: 4rem; height: 4rem; }
+}
+@media (max-width: 560px) {
+  .surf-reward-dialog { width: 100vw; height: 100dvh; max-height: none; border: 0; border-radius: 0; }
+  .surf-reward-dialog__toolbar { padding: 10px 18px; }
+  .surf-reward-dialog__content { padding: 24px 18px; }
+  .surf-reward-dialog__intro { align-items: flex-start; gap: 14px; }
+  .surf-reward-dialog__intro img { width: 46px; height: 46px; border-radius: 12px; }
+  .surf-reward-dialog__intro h2 { font-size: 24px; }
+  .surf-reward__visual { height: 120px; }
+  .surf-reward__body > p { min-height: 0; }
+  .surf-reward-dialog__footer { padding: 16px 18px calc(16px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .surf-reward-dialog.t-modal { transition: none !important; }
+  .surf-store-card { transition: none; }
+  .surf-store-card:hover { transform: none; }
+}

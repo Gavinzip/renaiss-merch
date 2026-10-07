@@ -1,42 +1,21 @@
 import { randomBytes } from 'node:crypto';
+import { authSessionDatabase, sessionIdHash } from './auth-session-database.mjs';
+import { createAuthChallengeStore } from './auth-challenge-database.mjs';
 
 export const CHALLENGE_MAX_AGE_SECONDS = 10 * 60;
 export const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
 
-const challenges = new Map();
-const sessions = new Map();
-
 export function saveChallenge(challenge) {
-  cleanup(challenges);
-
-  const id = randomId();
-  const expiresAt = Date.now() + CHALLENGE_MAX_AGE_SECONDS * 1000;
-
-  challenges.set(id, {
-    ...challenge,
-    expiresAt
-  });
-
-  return id;
+  return createAuthChallengeStore().save(challenge, CHALLENGE_MAX_AGE_SECONDS * 1000);
 }
 
 export function takeChallenge(id) {
-  if (!id) {
-    return null;
-  }
-
-  const challenge = challenges.get(id);
-  challenges.delete(id);
-
-  if (!challenge || challenge.expiresAt <= Date.now()) {
-    return null;
-  }
-
-  return challenge;
+  return createAuthChallengeStore().take(id);
 }
 
 export function createSession(user) {
-  cleanup(sessions);
+  const db = authSessionDatabase();
+  db.prepare('DELETE FROM renaiss_identity_sessions WHERE expires_at<=?').run(Date.now());
 
   const id = randomId();
   const session = {
@@ -45,7 +24,9 @@ export function createSession(user) {
     expiresAt: Date.now() + SESSION_MAX_AGE_SECONDS * 1000
   };
 
-  sessions.set(id, session);
+  db.prepare('INSERT INTO renaiss_identity_sessions VALUES(?,?,?,?)').run(
+    sessionIdHash(id), JSON.stringify(user), session.createdAt, session.expiresAt,
+  );
 
   return {
     id,
@@ -58,10 +39,12 @@ export function getSession(id) {
     return null;
   }
 
-  const session = sessions.get(id);
+  const db = authSessionDatabase();
+  const row = db.prepare('SELECT * FROM renaiss_identity_sessions WHERE id_hash=?').get(sessionIdHash(id));
+  const session = row ? { user: JSON.parse(row.user_json), createdAt: row.created_at, expiresAt: row.expires_at } : null;
 
   if (!session || session.expiresAt <= Date.now()) {
-    sessions.delete(id);
+    db.prepare('DELETE FROM renaiss_identity_sessions WHERE id_hash=?').run(sessionIdHash(id));
     return null;
   }
 
@@ -70,17 +53,7 @@ export function getSession(id) {
 
 export function deleteSession(id) {
   if (id) {
-    sessions.delete(id);
-  }
-}
-
-function cleanup(store) {
-  const now = Date.now();
-
-  for (const [id, value] of store) {
-    if (value.expiresAt <= now) {
-      store.delete(id);
-    }
+    authSessionDatabase().prepare('DELETE FROM renaiss_identity_sessions WHERE id_hash=?').run(sessionIdHash(id));
   }
 }
 

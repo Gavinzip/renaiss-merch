@@ -1,0 +1,8 @@
+.hub-brand-wordmark {
+  display: block;
+  flex-shrink: 0;
+  width: auto;
+  height: 1.8rem;
+  max-width: 100%;
+  object-fit: contain;
+}

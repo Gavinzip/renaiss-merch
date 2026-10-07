@@ -87,7 +87,7 @@ function readSbtBalance(payload: EligibilityPayload) {
 
 export async function checkMerchEligibility(
   productId: MerchProductId = 'shirt',
-  options: { forceRefresh?: boolean } = {}
+  options: { forceRefresh?: boolean; signal?: AbortSignal } = {}
 ): Promise<MerchEligibilityResult> {
   const endpoint =
     import.meta.env.VITE_MERCH_ELIGIBILITY_ENDPOINT || '/api/merch-eligibility';
@@ -97,6 +97,7 @@ export async function checkMerchEligibility(
 
   const response = await fetch(url, {
     cache: 'no-store',
+    signal: options.signal,
     headers: { Accept: 'application/json' }
   });
   const payload = (await response.json()) as EligibilityPayload;
@@ -133,9 +134,8 @@ export function getVerifiedSbtCount(result: MerchEligibilityResult) {
 }
 
 function readOptionalNumber(value: unknown) {
-  const numberValue = Number(value);
-
-  return Number.isFinite(numberValue) ? numberValue : undefined;
+  // An absent/null badge count must not be coerced to a real zero holding.
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
 export function parseMerchEligibilityPayload(

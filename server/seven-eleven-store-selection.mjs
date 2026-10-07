@@ -6,6 +6,7 @@ import {
   runWithSqliteBusyRetry
 } from './merch-database.mjs';
 import { readJsonBody } from './shipping-details.mjs';
+import { isHiddenHubPath } from '../shared/site-routes.js';
 
 const ECPAY_STAGE_MAP_URL =
   'https://logistics-stage.ecpay.com.tw/Express/map';
@@ -428,7 +429,8 @@ function isStorefrontPath(pathname) {
   return (
     pathname === '/' ||
     pathname === '/v1.2' ||
-    pathname === '/v1.2/'
+    pathname === '/v1.2/' ||
+    isHiddenHubPath(pathname)
   );
 }
 

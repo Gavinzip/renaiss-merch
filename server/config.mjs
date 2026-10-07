@@ -55,6 +55,21 @@ export function getPublicOrigin(req) {
   return trimTrailingSlash(`${proto}://${host}`);
 }
 
+// The Renaiss development callback is allowlisted for localhost. Redirect the
+// start request before writing the challenge cookie so the callback can read it.
+export function developmentLoginLocation(req, url) {
+  const value = process.env.DEV_RENAISS_LOGIN_ORIGIN?.trim();
+  if (process.env.NODE_ENV === 'production' || !value) return null;
+  const target = new URL(value);
+  if (!['localhost', '127.0.0.1'].includes(target.hostname) || target.protocol !== 'http:' ||
+      target.pathname !== '/' || target.search || target.hash)
+    throw new HttpError(500, 'development_login_origin_invalid');
+  const current = new URL(getPublicOrigin(req));
+  if (!['localhost', '127.0.0.1'].includes(current.hostname))
+    throw new HttpError(500, 'development_login_origin_invalid');
+  return current.origin === target.origin ? null : `${target.origin}${url.pathname}${url.search}`;
+}
+
 function readOptionalEnv(name) {
   const value = process.env[name]?.trim();
 

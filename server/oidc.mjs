@@ -89,7 +89,16 @@ export async function exchangeAuthorizationCode(discovery, config, challenge, co
   });
 
   if (!response.ok) {
-    throw new HttpError(502, 'token_exchange_failed');
+    const body = await response.json().catch(() => null);
+    const error = new HttpError(502, 'token_exchange_failed');
+    error.providerStatus = response.status;
+    const safeErrors = ['invalid_client', 'invalid_grant', 'invalid_request', 'unauthorized_client', 'unsupported_grant_type'];
+    error.providerError = safeErrors.includes(body?.error) ? body.error : 'unclassified';
+    // Log only known protocol diagnostics, never arbitrary provider text or tokens.
+    const safeDetails = ['invalid code', 'code expired', 'code already used', 'invalid client', 'invalid client secret',
+      'redirect_uri mismatch', 'invalid redirect_uri', 'invalid code_verifier', 'PKCE verification failed'];
+    if (safeDetails.includes(body?.error_description)) error.providerDetail = body.error_description;
+    throw error;
   }
 
   const tokens = await response.json();
@@ -171,6 +180,9 @@ function normalizeClaims(claims) {
     picture: optionalString(claims.picture),
     email: normalizeEmail(claims.email),
     emailVerified: claims.email_verified === true,
+    // Missing provider evidence is different from an explicit unverified email.
+    emailVerificationStatus: claims.email_verified === true ? 'verified' :
+      claims.email_verified === false ? 'unverified' : 'unknown',
     safeWalletAddress: normalizeWalletClaim(claims.safe_wallet_address, 'safe_wallet_address'),
     legacyWalletAddress: normalizeWalletClaim(
       claims.legacy_wallet_address,

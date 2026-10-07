@@ -1,9 +1,12 @@
+export const RENAISS_ACCOUNT_SETTINGS_URL = 'https://www.renaiss.xyz/profile/settings';
+
 export type RenaissUser = {
   sub: string;
   name: string | null;
   picture: string | null;
   email: string | null;
   emailVerified: boolean;
+  emailVerificationStatus?: 'verified' | 'unverified' | 'unknown';
   safeWalletAddress: string | null;
   legacyWalletAddress: string | null;
   chainId: string | null;
@@ -37,12 +40,16 @@ export async function readRenaissSession(): Promise<RenaissSession> {
   return (await response.json()) as RenaissSession;
 }
 
-export function startRenaissLogin(
+export function readRenaissLoginUrl(
   returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`
 ) {
   const loginUrl = new URL('/api/auth/renaiss/start', window.location.origin);
   loginUrl.searchParams.set('returnTo', returnTo);
-  window.location.assign(`${loginUrl.pathname}${loginUrl.search}`);
+  return `${loginUrl.pathname}${loginUrl.search}`;
+}
+
+export function startRenaissLogin(returnTo?: string) {
+  window.location.assign(readRenaissLoginUrl(returnTo));
 }
 
 export function readRenaissLogoutReturnUrl() {

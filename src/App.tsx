@@ -1,8 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useStorePageTransition } from './components/StorePageTransition/useStorePageTransition';
+import { staticMerchAssetCssUrl } from './lib/staticAssets';
+import './components/StorePageTransition/StorePageTransition.css';
 import { MerchLanding } from './components/MerchLanding/MerchLanding';
 import { MerchStore } from './components/MerchStore/MerchStore';
 import { StoreAccessResult } from './components/MerchStore/StoreAccessResult';
 import { QualifiedResult } from './components/QualifiedResult/QualifiedResult';
+import { isHiddenHubPath } from '../shared/site-routes.js';
 import type {
   EligibleMerchEligibilityResult,
   MerchEligibilityResult
@@ -14,6 +18,7 @@ import { preloadStoreAssets } from './lib/storePreload';
 
 const STORE_ADMISSION_QUERY = 'storeAdmission';
 const STORE_ADMISSION_SESSION_KEY = 'renaiss-merch-store-admitted';
+const RenaissHub = lazy(() => import('./components/RenaissHub/RenaissHub').then(module => ({ default: module.RenaissHub })));
 
 const previewQualifiedResult: EligibleMerchEligibilityResult = {
   minimumSbtBalance: 40,
@@ -54,6 +59,9 @@ export default function App() {
   const [view, setView] = useState<AppView>(() =>
     entryContext.shouldResumeStore ? 'store' : 'landing'
   );
+  const isHubPreview = isHiddenHubPath(window.location.pathname) ||
+    (import.meta.env.DEV && new URLSearchParams(window.location.search).get('preview') === 'hub');
+  const storePageMotion = useStorePageTransition(view, isHubPreview);
   const [storeLoadProgress, setStoreLoadProgress] = useState(0);
   const [storeLoadState, setStoreLoadState] =
     useState<StoreLoadState>('loading');
@@ -118,6 +126,7 @@ export default function App() {
 
     try {
       await prepareStoreAssets();
+      if (!(await storePageMotion.leave())) return;
 
       storeEntryAdmittedRef.current = true;
       rememberStoreAdmission();
@@ -128,7 +137,7 @@ export default function App() {
     } finally {
       storeAdmissionInFlightRef.current = false;
     }
-  }, [prepareStoreAssets]);
+  }, [prepareStoreAssets, storePageMotion.leave]);
 
   const invalidateStoreAdmission = useCallback(() => {
     storeEntryAdmittedRef.current = false;
@@ -222,16 +231,30 @@ export default function App() {
     );
   }
 
-  if (view === 'store') {
-    return (
-      <MerchStore
-        initialAuthFailed={storeAuthFailed}
-        onExitStore={invalidateStoreAdmission}
-        onLogin={() => startRenaissLogin(buildStoreAdmissionReturnTo())}
-        revealMediaController={revealMediaController}
-      />
-    );
+  const store = <MerchStore
+    allowPartnerRewards={isHubPreview}
+    initialAuthFailed={storeAuthFailed}
+    onExitStore={invalidateStoreAdmission}
+    onLogin={() => startRenaissLogin(buildStoreAdmissionReturnTo())}
+    revealMediaController={revealMediaController}
+  />;
+
+  if (isHubPreview) {
+    return <div className="store-page-transition" ref={storePageMotion.ref}
+      data-page={view} data-page-busy={storePageMotion.busy} inert={storePageMotion.busy}
+      style={{ '--store-page-background': staticMerchAssetCssUrl('storeBackground') } as CSSProperties}>
+      {view === 'store' ? store : <Suspense><RenaissHub
+        loadProgress={storeLoadProgress}
+        loadState={storeLoadState}
+        onEnterMerch={() => {
+          setStoreAuthFailed(false);
+          void enterStore();
+        }}
+      /></Suspense>}
+    </div>;
   }
+
+  if (view === 'store') return store;
 
   return (
     <MerchLanding

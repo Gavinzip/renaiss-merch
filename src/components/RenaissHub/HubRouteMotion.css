@@ -1,0 +1,11 @@
+/* WAAPI owns the actual route pieces, including the outgoing mounted page.
+   CSS entry never competes with that owner. Content is readable without JS. */
+.hub-route-motion { min-height: 100svh; }
+.hub-route-motion[data-route-motion="true"] .renaiss-hub__introduction,
+/* First-load cards arrive asynchronously and keep their own entry. After a
+   page transition, the route coordinator owns their entry instead. */
+.hub-route-motion[data-route-transitioned="true"] .hub-widget__surface { animation: none; }
+.hub-route-motion[data-route-busy="true"] { cursor: progress; }
+@media (prefers-reduced-motion: reduce) {
+  .hub-route-motion .surf-page h1 > span { transform: none; filter: none; }
+}

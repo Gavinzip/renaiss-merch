@@ -6,6 +6,7 @@ dist/
 .secrets/
 .git/
 outputs/
+work/
 private/
 tmp/
 .media-assets/

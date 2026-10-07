@@ -1,0 +1,37 @@
+/* Drafting stays available during the real request. */
+.assistant-composer-area { position: relative; flex-shrink: 0; padding: 12px 48px 20px; background: linear-gradient(0deg,#faf9fd,#faf9fd00); }
+.assistant-composer { position: relative; isolation: isolate; max-width: 720px; margin: auto; padding: 15px 14px 10px 19px; border: 1px solid transparent; border-radius: 22px; background: #fefdfef5; box-shadow: 0 5px 30px -15px #84659d35,inset 0 1px 0 #fff; }
+.assistant-composer__input,.assistant-composer__footer { position: relative; }
+.assistant-composer__input { display: flex; align-items: flex-start; gap: 8px; }
+.assistant-composer textarea { display: block; flex: 1; width: 100%; min-width: 0; padding: 0; min-height: 27px; max-height: 144px; border: 0; outline: 0; resize: none; background: transparent; color: #66586e; font: inherit; font-size: 14px; line-height: 1.8; scrollbar-width: thin; }
+.assistant-composer textarea::placeholder { color: #9a89a6; }
+.assistant-clear { display: grid; place-items: center; flex: 0 0 auto; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%; background: #f1ecf54a; color: #a391b0; cursor: pointer; transition: background-color 150ms,transform 150ms; }
+.assistant-clear:hover { background: #e9dfef91; }
+.assistant-clear:active { transform: scale(.9); }
+.assistant-clear svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; }
+.assistant-composer__footer { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 10px; }
+.assistant-composer__controls { display: flex; align-items: center; gap: 12px; margin-left: auto; flex-shrink: 0; }
+.assistant-character-count { font-size: 10px; color: #93819f; font-variant-numeric: tabular-nums; }
+.assistant-character-count > span { color: #b5a7bf; }
+.assistant-character-count.is-near-limit { color: #a76f8c; }
+.assistant-send { position: relative; display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border: 1px solid #ffffffd9; border-radius: 14px; background: linear-gradient(135deg,#7aace1,#a084cc 50%,#d693b1); color: #fff; cursor: pointer; box-shadow: 0 4px 12px #9670ae2a,inset 0 1px 0 #ffffff2e; transition: transform 150ms,box-shadow 150ms,opacity 150ms; }
+.assistant-send:hover { box-shadow: 0 6px 17px #9670ae42,inset 0 1px 0 #ffffff2e; transform: translateY(-1px); }
+.assistant-send:active { transform: scale(.94); }
+.assistant-send:disabled { opacity: .3; cursor: default; box-shadow: none; transform: none; }
+.assistant-send svg { position: absolute; width: 19px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; transition: opacity 150ms,transform 150ms var(--ease-out-strong); }
+.assistant-send__stop { opacity: 0; transform: scale(.5); }
+.assistant-send__arrow { opacity: 1; transform: scale(1); }
+.assistant-send.is-stop .assistant-send__stop { opacity: 1; transform: scale(1); fill: currentColor; stroke: none; }
+.assistant-send.is-stop .assistant-send__arrow { opacity: 0; transform: scale(.5); }
+.assistant-beta-note { margin: 12px 0 0; text-align: center; color: #8e7f99; font-size: 10px; line-height: 1.8; }
+.assistant-new-reply { position: absolute; left: 50%; bottom: calc(100% + 2px); transform: translateX(-50%); display: flex; align-items: center; gap: 9px; min-height: 35px; padding: 0 13px; border: 1px solid #fff; border-radius: 999px; background: #fcfaffee; box-shadow: 0 5px 25px #7d649f20; color: #846394; font: inherit; font-size: 11px; cursor: pointer; backdrop-filter: blur(16px); }
+.assistant-new-reply:hover { background: #fff; }
+@media (max-width: 720px) { .assistant-composer-area { padding: 12px 24px 18px; } }
+@media (max-width: 560px) {
+  .assistant-composer-area { padding: 10px 16px max(16px,env(safe-area-inset-bottom)); }
+  .assistant-composer { padding: 13px 12px 9px 16px; border-radius: 19px; }
+  .assistant-composer textarea { font-size: 16px; }
+  .assistant-composer__footer { margin-top: 4px; }
+  .assistant-clear { width: 28px; height: 28px; }
+  .assistant-beta-note { margin-top: 10px; font-size: 9px; }
+}

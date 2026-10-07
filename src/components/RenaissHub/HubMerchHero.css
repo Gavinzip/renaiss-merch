@@ -1,0 +1,45 @@
+/* Runtime of the reviewed composition; authoring files stay out of deployment. */
+.hub-merch-hero {
+  background: #f0e6d7;
+}
+.hub-merch-hero__scene {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 960px;
+  height: 540px;
+  border: 0;
+  transform: translate(-50%, -50%) scale(var(--hero-scale, 1));
+  transform-origin: center;
+  pointer-events: none;
+}
+.hub-merch-hero__camera { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 47%; }
+.hub-merch-hero[data-phase="loading"] .hub-merch-hero__scene,
+.hub-merch-hero[data-phase="error"] .hub-merch-hero__scene {
+  visibility: hidden;
+}
+.hub-merch-hero__message {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  position: absolute;
+  left: 1.6rem;
+  bottom: 1.5rem;
+  color: #75685a;
+  font-size: 0.75rem;
+}
+.hub-merch-hero__message button {
+  min-height: 2.75rem;
+  border: 1px solid #b4aa9b;
+  padding: 0.45rem 0.75rem;
+  border-radius: 0.5rem;
+  background: #faf7ee;
+  color: #594e40;
+  cursor: pointer;
+}
+@media (max-width: 720px) {
+  .hub-merch-hero__message {
+    left: 1.35rem;
+    bottom: 1.35rem;
+  }
+}

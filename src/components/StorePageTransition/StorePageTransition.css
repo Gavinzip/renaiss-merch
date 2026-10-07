@@ -1,0 +1,18 @@
+/* Page slide tokens from transitions.dev, shared by exit and entry orchestration. */
+.store-page-transition {
+  --page-slide-dur: 250ms;
+  --page-fade-dur: 250ms;
+  --page-slide-distance: 8px;
+  --page-blur: 3px;
+  --page-stagger: 0ms;
+  --page-exit-enabled: 1;
+  --page-slide-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --page-fade-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  min-height: 100svh;
+  background: var(--store-page-background) center / cover fixed no-repeat;
+}
+.store-page-transition[data-page-busy="true"] { cursor: progress; }
+/* The coordinator honors this preference before starting WAAPI animations. */
+@media (prefers-reduced-motion: reduce) {
+  .store-page-transition { --page-slide-dur: 0ms; --page-fade-dur: 0ms; --page-blur: 0px; --page-slide-distance: 0px; }
+}

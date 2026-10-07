@@ -1,0 +1,19 @@
+.surf-social-task { margin-top: 14px; padding: 0; border: 0; background: transparent; }
+.surf-social-task__identity { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.surf-social-task__status { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; color: #9e8593; }
+.surf-social-task__status i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+.surf-social-task__status.is-verified { color: #607f70; }
+.surf-social-task__status svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+.surf-social-task__username { font-size: 11px; color: #68565f; overflow-wrap: anywhere; }
+.surf-social-task__controls { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 5px; }
+.surf-page .surf-social-task__controls button, .surf-page .surf-email-warning__inline button, .surf-page .surf-social-task__error button { min-height: 44px; padding: 8px 0; border: 0; background: transparent; color: #87566f; font: inherit; font-size: 11px; cursor: pointer; text-decoration: underline; text-decoration-color: #c9aebd; text-underline-offset: 5px; transition: color 180ms ease, text-decoration-color 180ms ease; }
+.surf-page .surf-social-task__controls button:hover, .surf-page .surf-email-warning__inline button:hover, .surf-page .surf-social-task__error button:hover { color: var(--surf-pink); text-decoration-color: currentColor; }
+.surf-social-task__controls button:disabled { opacity: .5; cursor: wait; }
+.surf-page .surf-social-task__controls .surf-social-task__change { color: #9e8b95; text-decoration-color: transparent; }
+.surf-social-task__detail { font-size: 10px; line-height: 1.7; color: #9c818e; margin: 10px 0 0; }
+.surf-social-task__hint { font-size: 11px; line-height: 1.8; color: #95848d; margin: 8px 0 0; }
+.surf-social-task__time { display: block; font-size: 9px; color: #ae9ca5; margin-top: 7px; }
+.surf-social-task__error { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 16px; padding-block: 8px; color: #98506e; }
+.surf-social-task__error p { font-size: 11px; line-height: 1.8; margin: 0; }
+.surf-social-task__error button { flex-shrink: 0; }
+@media (prefers-reduced-motion: reduce) { .surf-social-task__controls button, .surf-email-warning__inline button, .surf-social-task__error button { transition: none; } }

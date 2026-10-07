@@ -1,0 +1,60 @@
+/* One motion owner for native-dialog entry, exit, and reading-window resize. */
+.assistant-dialog {
+  --modal-open-dur: 420ms;
+  --modal-close-dur: 200ms;
+  --modal-ease: cubic-bezier(.22,1,.36,1);
+  --dialog-resize-dur: 380ms;
+  --dialog-resize-ease: cubic-bezier(.4,0,.2,1);
+}
+.assistant-dialog.t-modal {
+  transform-origin: center;
+  transform: translateY(14px) scale(.97);
+  opacity: .08;
+  filter: blur(4px);
+  pointer-events: none;
+  transition:
+    transform var(--modal-open-dur) var(--modal-ease),
+    opacity var(--modal-open-dur) var(--modal-ease),
+    filter var(--modal-open-dur) var(--modal-ease),
+    width var(--dialog-resize-dur) var(--dialog-resize-ease),
+    height var(--dialog-resize-dur) var(--dialog-resize-ease),
+    border-radius var(--dialog-resize-dur) var(--dialog-resize-ease);
+}
+.assistant-dialog.is-open {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  filter: none;
+  pointer-events: auto;
+}
+.assistant-dialog.is-closing {
+  --modal-open-dur: var(--modal-close-dur);
+  transform: translateY(8px) scale(.98);
+}
+.assistant-dialog::backdrop {
+  background-color: #3c334500;
+  backdrop-filter: blur(0) saturate(1);
+  transition: background-color var(--modal-open-dur) var(--modal-ease),backdrop-filter var(--modal-open-dur) var(--modal-ease);
+}
+.assistant-dialog.is-open::backdrop {
+  background-color: #3c33452d;
+  backdrop-filter: blur(10px) saturate(1.05);
+}
+.assistant-dialog.is-open > .assistant-header,
+.assistant-dialog.is-open > .agent-chat > .assistant-thread,
+.assistant-dialog.is-open > .agent-chat > .assistant-composer-area {
+  animation: assistant-dialog-content-entry 300ms var(--modal-ease) both;
+}
+.assistant-dialog.is-open > .assistant-header { animation-delay: 40ms; }
+.assistant-dialog.is-open > .agent-chat > .assistant-thread { animation-delay: 90ms; }
+.assistant-dialog.is-open > .agent-chat > .assistant-composer-area { animation-delay: 140ms; }
+@keyframes assistant-dialog-content-entry {
+  from { opacity: .08; transform: translateY(8px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .assistant-dialog.t-modal,.assistant-dialog::backdrop { transition: none !important; }
+  .assistant-dialog.t-modal { transform: none; filter: none; }
+  .assistant-dialog.is-open > .assistant-header,
+  .assistant-dialog.is-open > .agent-chat > .assistant-thread,
+  .assistant-dialog.is-open > .agent-chat > .assistant-composer-area { animation: none; }
+}

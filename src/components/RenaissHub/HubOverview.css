@@ -1,0 +1,83 @@
+/* Five-card desktop preset: account, quest and events above Merch and news.
+   Custom layouts and smaller screens keep their natural flow. */
+.hub-editor__layout-actions { display: flex; align-items: center; gap: .8rem; }
+.hub-editor__preset { display: flex; align-items: center; gap: .6rem; min-height: 44px; padding: .5rem .9rem; border: 1px solid #ffffffd9; border-radius: 999px; background: #ffffff66; color: #756583; font: inherit; font-size: .73rem; cursor: pointer; }
+.hub-editor__preset:hover { background: #ffffffbb; }
+.hub-editor__preset[aria-pressed="true"] { background: #ffffffb3; border-color: #e2d3ed; color: #695077; }
+.hub-editor__preset-notice { margin: .8rem 0 0; color: #8c7399; font-size: .73rem; line-height: 1.7; }
+@media (min-width: 1101px) {
+  .renaiss-hub[data-density="compact"] .renaiss-hub__content { width: min(calc(100% - 5rem),1320px); }
+  .renaiss-hub[data-density="compact"] .hub-home-intro__utility { padding-top: 1.1rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__introduction { padding: .9rem 0 1.1rem; align-items: center; }
+  .renaiss-hub[data-density="compact"] .hub-home-intro__eyebrow { margin-bottom: .4rem; font-size: .56rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__introduction h1 { font-size: clamp(2rem,2.7vw,2.7rem); }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__dashboard {
+    gap: 1rem;
+    grid-template-rows: minmax(272px,auto) minmax(326px,auto);
+  }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__card { padding: 1.1rem; min-height: 0; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__member { justify-content: flex-start; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__identity { margin-top: 1.4rem; gap: .7rem; align-items: center; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__identity-mark { width: 2.4rem; height: 2.85rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__identity strong { font-size: .9rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__identity p { font-size: .73rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__account-details { margin: 1.3rem 0 1rem; gap: .65rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__account-action { margin-top: auto; gap: .65rem; white-space: nowrap; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__merch { padding: 0; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__merch-visual { min-height: 210px; }
+  .renaiss-hub[data-density="compact"] .hub-merch-hero { background: linear-gradient(110deg,#fae1bc,#fff0c9 45%,#f4d6c4); }
+  .renaiss-hub[data-density="compact"] .hub-merch-hero__scene { transform: translate(-50%,-50%) scale(var(--hero-fit-scale)); mask-image: linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__merch-content { display: grid; grid-template-columns: minmax(0,1fr) auto; padding: 1rem 1.2rem; gap: .8rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__merch-content h2 { font-size: 1.25rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__merch-content p { font-size: .74rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__merch-content .renaiss-hub__button[data-preparing="true"],
+  .renaiss-hub[data-density="compact"] .renaiss-hub__merch-content .renaiss-hub__error { grid-column: 1 / -1; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__brands { position: absolute; top: 3.05rem; left: 1.1rem; gap: .65rem; margin: 0; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__brands :is(.hub-brand-logo,.hub-surf-logo) { width: 1.65rem; height: 1.65rem; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest h2 { margin-top: .7rem; margin-left: 96px; min-height: 26px; font-size: 1.2rem; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__description { display: none; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__tasks { margin: .7rem 0 .7rem; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__tasks li { align-items: center; padding: .35rem 0; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__tasks li:first-child { padding-top: 0; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__task-bottom { display: none; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__weight { font-size: .6rem; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__weight-full { display: none; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__weight-compact { display: inline; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__footer { padding-top: .4rem; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__footer p { display: none; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__preview-action { min-height: 44px; padding-block: .5rem; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__preview-action small { display: none; }
+  .renaiss-hub[data-density="compact"] .hub-feed { min-height: 0; }
+  .renaiss-hub[data-density="compact"] .hub-feed__state { min-height: 5rem; padding: .6rem 0; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__footer { padding: 1.15rem 0 1rem; padding-right: 190px; }
+  .renaiss-hub[data-density="compact"] .assistant-launch { min-height: 46px; bottom: 14px; font-size: 12px; }
+  .renaiss-hub[data-density="compact"] .assistant-launch .assistant-mark { width: 28px; height: 28px; }
+}
+@media (min-width: 1101px) and (max-height: 820px) {
+  .renaiss-hub[data-density="compact"] .hub-home-intro__utility { padding-top: .65rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__introduction { padding: .25rem 0 .4rem; }
+  .renaiss-hub[data-density="compact"] .hub-home-intro__eyebrow { display: none; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__preview { display: none; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__introduction h1 { font-size: 1.7rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__dashboard { grid-template-rows: minmax(248px,auto) minmax(274px,auto); gap: .8rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__card { padding: .9rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__merch { padding: 0; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__merch-visual { min-height: 170px; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__merch-content { padding-block: .75rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__identity { margin-top: 1rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__identity-mark { width: 2.2rem; height: 2.4rem; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__account-details { margin: 1rem 0 .7rem; gap: .5rem; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__brands { top: 2.85rem; left: .9rem; gap: .5rem; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__brands :is(.hub-brand-logo,.hub-surf-logo) { width: 22px; height: 22px; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest h2 { margin-top: .7rem; margin-left: 78px; min-height: 24px; font-size: 1.1rem; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__tasks { margin-block: .5rem; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__tasks li { padding-block: .2rem; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__number { width: 24px; height: 24px; flex-basis: 24px; }
+  .renaiss-hub[data-density="compact"] .renaiss-hub__footer { padding-block: .9rem; }
+}
+@media (min-width: 1101px) and (max-width: 1320px) and (min-height: 821px) {
+  .renaiss-hub[data-density="compact"] .renaiss-hub__introduction { padding-top: .5rem; }
+}
+@media (max-width: 720px) {
+  .hub-editor__layout-actions { flex-wrap: wrap; justify-content: flex-start; }
+}
