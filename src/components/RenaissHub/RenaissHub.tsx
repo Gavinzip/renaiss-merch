@@ -177,7 +177,7 @@ export function RenaissHub({
       className="renaiss-hub"
       data-initial-ready={initialReadiness === 'ready'}
       id="portal-top"
-      aria-label={locale === "en" ? "Renaiss dashboard" : "Renaiss 總覽"}
+      aria-label={inlineCopy[locale].renaissDashboard}
       data-layout={preferences.layout}
       data-density={preferences.density || "comfortable"}
       data-editing={editing}
@@ -190,7 +190,7 @@ export function RenaissHub({
     >
       <div className="renaiss-hub__content">
         <HubHomeIntro
-      accountAction={<><HubAccountAction account={account} locale={locale} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} disabled={editing || settings.saving} />{logoutError ? <span className="hub-site-header__error" role="alert">{locale === 'zh-TW' ? '登出失敗，請重試' : 'Sign out failed. Try again.'}</span> : null}</>}
+      accountAction={<><HubAccountAction account={account} locale={locale} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} disabled={editing || settings.saving} />{logoutError ? <span className="hub-site-header__error" role="alert">{inlineCopy[locale].signOutFailedTryAgain}</span> : null}</>}
           navigation={<HubNavigation locale={locale} onOpenCampaign={campaignRoute.open} onEnterMerch={enterMerch} preparing={enterRequested && loadState === "loading"} disabled={editing || settings.saving} />}
           locale={locale}
           setLocale={setLocale}
@@ -333,3 +333,18 @@ export function RenaissHub({
     </div>
   );
 }
+
+const inlineCopy = {
+  "en": {
+    renaissDashboard: "Renaiss dashboard",
+    signOutFailedTryAgain: "Sign out failed. Try again."
+  },
+  "zh-TW": {
+    renaissDashboard: "Renaiss 總覽",
+    signOutFailedTryAgain: "登出失敗，請重試"
+  },
+  "ko": {
+    renaissDashboard: "Renaiss 홈",
+    signOutFailedTryAgain: "로그아웃하지 못했습니다. 다시 시도해 주세요."
+  }
+} as const;

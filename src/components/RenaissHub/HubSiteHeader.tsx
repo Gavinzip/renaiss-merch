@@ -16,7 +16,7 @@ export function HubSiteHeader({ locale, setLocale, location, onBack, navigation,
 }) {
   return <header className="hub-site-header">
     <div className="hub-site-header__identity">
-      {onBack ? <button className="hub-site-header__back" type="button" onClick={onBack} aria-label={locale === 'zh-TW' ? '返回總覽' : 'Back to overview'}>←</button> : null}
+      {onBack ? <button className="hub-site-header__back" type="button" onClick={onBack} aria-label={inlineCopy[locale].backToOverview}>←</button> : null}
       <a className="renaiss-hub__brand" href="#portal-top" onClick={location && onBack ? event => { event.preventDefault(); onBack(); } : undefined} aria-label="Renaiss"><HubWordmark /></a>
       {location ? <span className="hub-site-header__location">/ {location}</span> : null}
     </div>
@@ -29,3 +29,15 @@ export function HubSiteHeader({ locale, setLocale, location, onBack, navigation,
     </div>
   </header>;
 }
+
+const inlineCopy = {
+  "en": {
+    backToOverview: "Back to overview"
+  },
+  "zh-TW": {
+    backToOverview: "返回總覽"
+  },
+  "ko": {
+    backToOverview: "홈으로 돌아가기"
+  }
+} as const;

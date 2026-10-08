@@ -135,16 +135,16 @@ export function FulfillmentConsole({ onClose, initialSection = 'shipping' }: Ful
         <header className="fulfillment-console__header">
           <div>
             <p className="fulfillment-console__eyebrow">RENAISS MERCH</p>
-            <h2 id="fulfillment-title">{section === 'surf' ? locale === 'zh-TW' ? 'Surf 抽獎名單' : 'Surf raffle participants' : copy.title}</h2>
-            <p>{section === 'surf' ? locale === 'zh-TW' ? '查看每位參加者的驗證結果與抽獎票數。' : 'Review verification results and ticket counts for each participant.' : copy.intro}</p>
+            <h2 id="fulfillment-title">{section === 'surf' ? inlineCopy[locale].surfRaffleParticipants : copy.title}</h2>
+            <p>{section === 'surf' ? inlineCopy[locale].reviewVerificationResultsAndTicketCountsFor : copy.intro}</p>
           </div>
           <button className="fulfillment-console__close" type="button" onClick={onClose}>
             {copy.close}
           </button>
         </header>
-        <nav className="fulfillment-console__sections" aria-label={locale === 'zh-TW' ? '管理項目' : 'Management sections'}>
-          <button type="button" aria-pressed={section === 'shipping'} onClick={() => setSection('shipping')}>{locale === 'zh-TW' ? '出貨資料' : 'Shipping'}</button>
-          <button type="button" aria-pressed={section === 'surf'} onClick={() => setSection('surf')}>{locale === 'zh-TW' ? 'Surf 抽獎名單' : 'Surf participants'}</button>
+        <nav className="fulfillment-console__sections" aria-label={inlineCopy[locale].managementSections}>
+          <button type="button" aria-pressed={section === 'shipping'} onClick={() => setSection('shipping')}>{inlineCopy[locale].shipping}</button>
+          <button type="button" aria-pressed={section === 'surf'} onClick={() => setSection('surf')}>{inlineCopy[locale].surfParticipants}</button>
         </nav>
         {section === 'surf' ? <SurfParticipants /> : <>
         {loadState === 'loading' ? (
@@ -313,6 +313,34 @@ function readErrorMessage(error: unknown, locale: AppLocale) {
 }
 
 const fulfillmentCopy = {
+  ko: {
+    accessDenied: "이 Renaiss 계정에는 배송 관리 권한이 없습니다.",
+    allProducts: "모든 상품",
+    close: "닫기",
+    empty: "아직 내보낸 기록이 없습니다.",
+    exportCsv: "CSV 내보내기",
+    exportHistory: "내보내기 기록",
+    exportProduct: "내보낼 상품",
+    exported: (count: number, product: string) =>
+      `${product} 수령인 정보 ${count}건을 내보냈습니다.`,
+    exporting: "내보내는 중",
+    exportingNow: "이번 내보내기",
+    intro: "배송을 위해 작성이 완료된 수령인 정보만 내보냅니다.",
+    latestInScope: "선택 범위 최근 내보내기",
+    loading: "배송 기록을 불러오고 있습니다.",
+    none: "없음",
+    notExported: "내보내지 않음",
+    previousInScope: "선택 범위 이전 수량",
+    readyForExport: (count: number) =>
+      `작성 완료된 수령인 정보 ${count}건을 CSV로 내보낼 수 있습니다.`,
+    readyInScope: "선택 범위 내보내기 가능",
+    recipientCount: (count: number) =>
+      `수령인 정보 ${count}건`,
+    recorded: (count: number) => `기록 ${count}건`,
+    title: "배송 관리",
+    unauthenticated: "권한이 있는 Renaiss 계정으로 로그인해 주세요.",
+    unavailable: "현재 배송 기록을 확인할 수 없습니다."
+  },
   en: {
     accessDenied: 'This Renaiss account is not approved for fulfilment access.',
     allProducts: 'All products',
@@ -367,5 +395,29 @@ const fulfillmentCopy = {
     title: '出貨管理',
     unauthenticated: '請登入已核准的 Renaiss 帳號以繼續。',
     unavailable: '目前無法取得出貨資料。'
+  }
+} as const;
+
+const inlineCopy = {
+  "en": {
+    surfRaffleParticipants: "Surf raffle participants",
+    reviewVerificationResultsAndTicketCountsFor: "Review verification results and ticket counts for each participant.",
+    managementSections: "Management sections",
+    shipping: "Shipping",
+    surfParticipants: "Surf participants"
+  },
+  "zh-TW": {
+    surfRaffleParticipants: "Surf 抽獎名單",
+    reviewVerificationResultsAndTicketCountsFor: "查看每位參加者的驗證結果與抽獎票數。",
+    managementSections: "管理項目",
+    shipping: "出貨資料",
+    surfParticipants: "Surf 抽獎名單"
+  },
+  "ko": {
+    surfRaffleParticipants: "Surf 추첨 참가자",
+    reviewVerificationResultsAndTicketCountsFor: "참가자별 인증 결과와 응모권 수를 확인하세요.",
+    managementSections: "관리 메뉴",
+    shipping: "배송",
+    surfParticipants: "Surf 참가자"
   }
 } as const;

@@ -1,12 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import type { AppLocale } from '../../i18n/LocaleContext';
+import { appLanguages as languages, type AppLocale } from '../../i18n/LocaleContext';
 import './HubLanguageMenu.css';
-
-const languages: { value: AppLocale; label: string }[] = [
-  { value: 'en', label: 'English' },
-  { value: 'zh-TW', label: '繁體中文' },
-];
 
 export function HubLanguageMenu({ locale, setLocale }: {
   locale: AppLocale; setLocale: (locale: AppLocale) => void;
@@ -18,7 +13,8 @@ export function HubLanguageMenu({ locale, setLocale }: {
   const [phase, setPhase] = useState<'closed' | 'open' | 'closing'>('closed');
   const [active, setActive] = useState(0);
   const open = phase === 'open';
-  const label = locale === 'en' ? 'Language' : '語言';
+  const language = languages.find(language => language.value === locale)!;
+  const label = language.menuLabel;
 
   function show() {
     setActive(languages.findIndex(language => language.value === locale));
@@ -62,7 +58,7 @@ export function HubLanguageMenu({ locale, setLocale }: {
   }}>
     <button className="hub-language__trigger" ref={trigger} type="button" aria-label={label}
       aria-haspopup="listbox" aria-expanded={open} aria-controls={id} onClick={() => open ? close(true) : show()}>
-      <span>{locale === 'en' ? 'EN' : '中文'}</span>
+      <span>{language.shortLabel}</span>
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m5 6 3 3 3-3" /></svg>
     </button>
     <div id={id} className={`hub-language__list t-dropdown${open ? ' is-open' : phase === 'closing' ? ' is-closing' : ''}`}

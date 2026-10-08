@@ -93,6 +93,21 @@ export function UnqualifiedResult({
 }
 
 const unqualifiedCopy = {
+  ko: {
+    checkAnotherWallet: "다른 지갑 확인",
+    closed: "이용 불가",
+    current: "현재 보유",
+    description: (minimum: number) =>
+      `이 지갑은 상품 수령에 필요한 ${minimum} SBT 조건을 충족하지 않습니다.`,
+    gate: "상품 자격",
+    missing: "부족 수량",
+    note:
+      "연결된 지갑의 SBT 보유량이 조건을 충족하면 수령 신청이 가능합니다.",
+    panelLabel: "SBT 확인 결과",
+    required: "필요 수량",
+    title: "자격 미충족",
+    verified: "인증된 SBT"
+  },
   en: {
     checkAnotherWallet: 'Check another wallet',
     closed: 'Closed',

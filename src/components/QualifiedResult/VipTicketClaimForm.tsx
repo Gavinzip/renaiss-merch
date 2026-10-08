@@ -4,7 +4,7 @@ import {
   submitVipTicketClaim,
   VipTicketClaimError
 } from '../../lib/vipTicketClaim';
-import { useLocale } from '../../i18n/LocaleContext';
+import { useLocale, type AppLocale } from '../../i18n/LocaleContext';
 
 const emailInputPattern = '[^\\s@]+@[^\\s@]+\\.[^\\s@]+';
 const generalTicketUrl = 'https://luma.com/event/evt-ZDncLzQG00j3dqY';
@@ -183,12 +183,39 @@ function readClaimErrorCode(error: unknown): TicketClaimErrorCode {
 
 function readClaimErrorMessage(
   errorCode: TicketClaimErrorCode,
-  locale: 'en' | 'zh-TW'
+  locale: AppLocale
 ) {
   return ticketCopy[locale].errors[errorCode];
 }
 
 const ticketCopy = {
+  ko: {
+    description: (minimum: number) =>
+      `${minimum} SBT 자격이 확인되었습니다. 일반 입장권 신청에 사용한 이메일을 입력해 주세요.`,
+    emailLabel: "일반 입장권 신청에 사용한 이메일",
+    emailTitle: "완전한 이메일 주소를 입력해 주세요. 예: name@example.com",
+    errors: {
+      email_invalid: "완전한 이메일 주소를 입력해 주세요. 예: name@example.com",
+      read_failed: "VIP 티켓 신청 상태를 확인할 수 없습니다. 나중에 다시 시도해 주세요.",
+      unknown: "VIP 티켓 신청에 실패했습니다. 나중에 다시 시도해 주세요.",
+      vip_ticket_claim_already_submitted: "이 지갑은 이미 VIP 티켓 신청을 완료했습니다.",
+      wallet_not_eligible: "이 지갑은 현재 VIP 티켓 수령 자격을 충족하지 않습니다."
+    },
+    eyebrow: "VIP 티켓 신청",
+    formLabel: (_claimName: string) => "VIP 티켓 이메일 등록",
+    generalTicketLink: "일반 입장권을 신청해 주세요",
+    instructionPrefix: "일반 입장권을 아직 신청하지 않았다면 먼저 ",
+    instructionSuffix:
+      ". 신청 후 이곳으로 돌아와 동일한 이메일로 VIP 티켓을 신청하세요.",
+    instructionTitle: "VIP 티켓 신청 전에 일반 입장권을 신청해 주세요",
+    loading: "신청 상태를 불러오고 있습니다.",
+    registered: (email: string) => `등록 완료: ${email}`,
+    submit: "VIP 티켓 수령 확인",
+    submittedDescription:
+      "VIP 티켓 신청이 제출되어 이메일을 변경할 수 없습니다.",
+    submitting: "제출 중",
+    title: "VIP 티켓 수령"
+  },
   en: {
     description: (minimum: number) =>
       `${minimum} SBT access approved. Enter the email used for your general admission registration.`,

@@ -38,7 +38,7 @@ export function StoreAccessResult({
         onClick={onBack}
         type="button"
       >
-        {locale === 'zh-TW' ? '返回商店' : 'Back to store'}
+        {inlineCopy[locale].backToStore}
       </button>
 
       {result.status === 'unqualified' ? (
@@ -54,3 +54,15 @@ export function StoreAccessResult({
     </div>
   );
 }
+
+const inlineCopy = {
+  "en": {
+    backToStore: "Back to store"
+  },
+  "zh-TW": {
+    backToStore: "返回商店"
+  },
+  "ko": {
+    backToStore: "스토어로 돌아가기"
+  }
+} as const;

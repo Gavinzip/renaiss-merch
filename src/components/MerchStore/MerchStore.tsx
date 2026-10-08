@@ -736,7 +736,7 @@ export function MerchStore({
             } as CSSProperties
           }
         >
-      {integratedHub ? <HubSiteHeader locale={locale} setLocale={setLocale} location={locale === 'zh-TW' ? '周邊商店' : 'Merch'} onBack={handleExitStore}
+      {integratedHub ? <HubSiteHeader locale={locale} setLocale={setLocale} location={copy.storeName} onBack={handleExitStore}
         navigation={<HubNavigation locale={locale} current="store" onGoHome={handleExitStore} onOpenCampaign={onOpenCampaign || handleExitStore} onEnterMerch={() => {}} preparing={false} disabled={false} />}
         actions={session.authenticated ? <div className="hub-site-header__actions">
           {session.user.canManageFulfillment ? <button className="hub-site-header__action" type="button" onClick={openFulfillment}>{copy.fulfillment}</button> : null}
@@ -788,6 +788,7 @@ export function MerchStore({
             >
               中文
             </button>
+            <button aria-pressed={locale === 'ko'} className={locale === 'ko' ? 'is-active' : ''} onClick={() => setLocale('ko')} type="button">한국어</button>
           </div>
           {session.authenticated ? (
             <>
@@ -877,12 +878,10 @@ export function MerchStore({
         aria-hidden={showFulfillment || showSettings}
       >
         <div className="merch-store__intro">
-          {integratedHub ? <div><span className="merch-store__eyebrow">{copy.title}</span><h1 id="merch-store-title" className="sr-only">{locale === 'zh-TW' ? '周邊商店' : 'Merch Store'}</h1></div> : <h1 className="merch-store__eyebrow" id="merch-store-title">{copy.title}</h1>}
+          {integratedHub ? <div><span className="merch-store__eyebrow">{copy.title}</span><h1 id="merch-store-title" className="sr-only">{copy.storeName}</h1></div> : <h1 className="merch-store__eyebrow" id="merch-store-title">{copy.title}</h1>}
           <p className="merch-store__lede">
             {showSurfRewards
-              ? locale === 'zh-TW'
-                ? '收藏限定周邊，探索 SBT 帶來的合作權益。'
-                : 'Collect limited editions. Discover partner benefits through your SBTs.'
+              ? copy.surfLede
               : copy.lede}
           </p>
         </div>
@@ -966,8 +965,8 @@ export function MerchStore({
 
         {storefrontFeatures.state.status === 'error' ? (
           <p className="merch-store__status merch-store__status--error" role="alert">
-            {locale === 'zh-TW' ? '無法讀取商店顯示設定。' : 'Store display settings could not be loaded.'}{' '}
-            <button type="button" onClick={storefrontFeatures.retry}>{locale === 'zh-TW' ? '重試' : 'Try again'}</button>
+            {copy.featuresError}{' '}
+            <button type="button" onClick={storefrontFeatures.retry}>{copy.retry}</button>
           </p>
         ) : null}
 

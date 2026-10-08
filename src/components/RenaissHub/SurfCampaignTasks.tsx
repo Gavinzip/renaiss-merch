@@ -14,7 +14,6 @@ export function SurfCampaignTasks({ locale, account, missions, onLogin, onRetry 
 }) {
   const copy = surfCampaignCopy[locale];
   const user = account.status === 'ready' && account.session.authenticated ? account.session.user : null;
-  const zh = locale === 'zh-TW';
   const tasks = [
     { title: copy.accounts, entries: copy.entry, url: surfCampaign.surfUrl, action: copy.surf },
     { title: copy.follow, entries: copy.bonus, url: surfCampaign.xUrl, action: copy.x },
@@ -26,12 +25,12 @@ export function SurfCampaignTasks({ locale, account, missions, onLogin, onRetry 
   return <section id="surf-campaign-tasks" className="surf-page__participation" aria-labelledby="surf-tasks-title">
     <div className="surf-page__participation-intro">
       <div>
-        <span className="surf-page__section-number" data-surf-reveal="0">02 / YOUR QUEST</span>
+        <span className="surf-page__section-number" data-surf-reveal="0">{copy.questSection}</span>
         <h2 id="surf-tasks-title" tabIndex={-1} data-surf-reveal="1">{copy.tasks}</h2>
       </div>
       <div className="surf-page__participation-summary" data-surf-reveal="2">
         <span>{copy.total}</span>
-        {missions.loading && !participation ? <strong role="status">{zh ? '讀取驗證紀錄…' : 'Loading verification records…'}</strong> : null}
+        {missions.loading && !participation ? <strong role="status">{inlineCopy[locale].loadingVerificationRecords}</strong> : null}
       </div>
       {!user || user.isDemo ? <button className="surf-page__primary" data-surf-reveal="3" type="button" onClick={onLogin}>{copy.account}<span aria-hidden="true">↗</span></button> : null}
     </div>
@@ -43,7 +42,7 @@ export function SurfCampaignTasks({ locale, account, missions, onLogin, onRetry 
       return <li key={task.title} data-verified={verified}>
       <span className="surf-page__task-index" data-surf-reveal="0" aria-hidden="true">{verified ? <svg viewBox="0 0 16 16"><path d="m3 8 3 3 7-7" /></svg> : `0${index + 1}`}</span>
       <div className="surf-page__task-content">
-        <div className="surf-page__task-heading" data-surf-reveal="1"><h3>{task.title}</h3><span className={awarded ? 'is-recorded' : ''}>{awarded ? (zh ? '已取得 1 張票' : '1 ticket recorded') : task.entries}</span></div>
+        <div className="surf-page__task-heading" data-surf-reveal="1"><h3>{task.title}</h3><span className={awarded ? 'is-recorded' : ''}>{awarded ? (inlineCopy[locale].ticketRecorded) : task.entries}</span></div>
         <div className="surf-page__task-bottom" data-surf-reveal="2">
           {index > 0 ? <SurfSocialTask provider={index === 1 ? 'x' : 'discord'} linkedXUsername={user?.twitterUsername} authorizationError={index === 1 ? xIdentityError : null} recorded={participation?.tasks[index === 1 ? 'x' : 'discord']} task={missions.state?.providers[index === 1 ? 'x' : 'discord']} locale={locale} authenticated={missions.state?.authenticated === true} loading={account.status === 'loading' || missions.loading} busy={missions.busy !== null} working={missions.busy === (index === 1 ? 'x' : 'discord')} act={missions.act} /> : <SurfAccountTask locale={locale} missions={missions} loading={account.status === 'loading' || missions.loading} onLogin={onLogin} />}
           <div className="surf-page__task-actions">
@@ -53,7 +52,22 @@ export function SurfCampaignTasks({ locale, account, missions, onLogin, onRetry 
         </div>
       </div>
     </li>; })}</ol>
-      {missions.error && !xIdentityError ? <div className="surf-social-task__error" role="alert"><p>{missionErrorCopy(missions.error, zh)}</p><button type="button" onClick={missions.reload}>{copy.retry}</button></div> : null}
+      {missions.error && !xIdentityError ? <div className="surf-social-task__error" role="alert"><p>{missionErrorCopy(missions.error, locale)}</p><button type="button" onClick={missions.reload}>{copy.retry}</button></div> : null}
     </div>
   </section>;
 }
+
+const inlineCopy = {
+  "en": {
+    loadingVerificationRecords: "Loading verification records…",
+    ticketRecorded: "1 ticket recorded"
+  },
+  "zh-TW": {
+    loadingVerificationRecords: "讀取驗證紀錄…",
+    ticketRecorded: "已取得 1 張票"
+  },
+  "ko": {
+    loadingVerificationRecords: "인증 기록을 불러오고 있습니다…",
+    ticketRecorded: "응모권 1장 획득"
+  }
+} as const;

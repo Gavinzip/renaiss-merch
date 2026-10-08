@@ -10,6 +10,17 @@ export const surfQuestCopy = {
     openSurf: "前往 Surf", openX: "前往 X", openDiscord: "前往 Discord",
     notOpen: "在活動內連接與驗證", notice: "登入 Renaiss，驗證 Surf 與社群任務。",
   },
+  ko: {
+    eyebrow: "협업 미션", stage: "활동 미리보기", title: "Renaiss × Surf",
+    description: "Surf와 새로운 커뮤니티를 만나보세요.",
+    completeTasks: "미션 완료하기", taskSummary: "계정 · X · Discord",
+    viewCampaign: "활동 둘러보기", prizeSummary: "Mystery Box · Pro 체험",
+    entry: "응모권 1장", completed: "완료",
+    accounts: "양쪽 계정 보유", accountsMeta: "Renaiss + Surf",
+    follow: "X에서 Surf 팔로우", join: "Surf Discord 참여",
+    openSurf: "Surf로 이동", openX: "X로 이동", openDiscord: "Discord로 이동",
+    notOpen: "활동 페이지에서 연결 및 인증", notice: "Renaiss에 로그인하고 Surf 계정과 소셜 미션을 인증하세요.",
+  },
   en: {
     eyebrow: "Partner quest", stage: "Campaign preview", title: "Renaiss × Surf",
     description: "Discover Surf. Meet a new community.",

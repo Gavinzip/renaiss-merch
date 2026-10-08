@@ -31,7 +31,6 @@
   .renaiss-hub[data-density="compact"] .hub-feed--official[data-size] .hub-feed__posts li:not(:first-child) .hub-feed__image img { max-height: 58px; }
   .renaiss-hub[data-density="compact"] .hub-feed__post-meta { font-size: .64rem; gap: .35rem; }
   .renaiss-hub[data-density="compact"] .hub-feed__post-heading > svg { width: .75rem; height: .75rem; }
-  .renaiss-hub[data-density="compact"] .hub-feed__website { padding-top: .75rem; font-size: .72rem; }
   .renaiss-hub[data-density="compact"] .hub-feed--events > .renaiss-hub__card-heading { display: none; }
   .renaiss-hub[data-density="compact"] .hub-feed--events .hub-feed__posts { display: block; margin: .9rem 0; }
   .renaiss-hub[data-density="compact"] .hub-feed--events .hub-feed__posts a { padding-block: .7rem; }
@@ -48,7 +47,6 @@
   .renaiss-hub[data-density="compact"] .hub-feed--official[data-size] .hub-feed__posts li:first-child p { display: none; }
   .renaiss-hub[data-density="compact"] .hub-feed--official[data-size] .hub-feed__posts li:not(:first-child) { padding-top: .7rem; }
   .renaiss-hub[data-density="compact"] .hub-feed--official[data-size] .hub-feed__posts li:not(:first-child) .hub-feed__image img { max-height: 50px; }
-  .renaiss-hub[data-density="compact"] .hub-feed__website { padding-top: .4rem; }
   .renaiss-hub[data-density="compact"] .hub-feed--events .hub-feed__posts { margin-block: .6rem; }
   .renaiss-hub[data-density="compact"] .hub-feed--events .hub-feed__posts a { padding-block: .45rem; }
   .renaiss-hub[data-density="compact"] .hub-feed--events .hub-feed__posts h3 { line-height: 1.5; }

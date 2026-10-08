@@ -53,7 +53,7 @@ export function HubWidgetLibrary({ preferences, copy, onAdd, onUpdate, onRestore
       <div className="hub-library__workspace">
         <nav className="hub-library__catalog" aria-label={copy.library}>
           {(["feed", "core"] as const).map(group => <div key={group} className="hub-library__group">
-            <span>{group === "feed" ? "Community" : copy.essentials}</span>
+            <span>{group === "feed" ? copy.communityCategory : copy.essentials}</span>
             <div>{hubWidgetPresets.filter(item => group === "feed" ? item.type === "feed" : item.type !== "feed").map(item => {
               const current = item.type !== "feed" ? preferences.widgets.find(widget => widget.type === item.type) : undefined;
               const label = item.type === "feed" ? copy.sources[item.id] : copy.widgets[item.type];

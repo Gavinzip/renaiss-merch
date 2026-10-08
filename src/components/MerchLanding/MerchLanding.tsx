@@ -129,6 +129,18 @@ export function MerchLanding({
 }
 
 const landingCopy = {
+  ko: {
+    enterStore: "스토어 입장",
+    errorTitle: "로딩 중단",
+    footerAccess: "Renaiss 자격",
+    footerPrivate: "한정 컬렉션",
+    footerStore: "굿즈 스토어",
+    intro: "Renaiss 한정 굿즈 스토어에 입장하세요.",
+    loadError: "스토어 콘텐츠를 불러올 수 없습니다.",
+    loadingTitle: "스토어 로딩 중",
+    progressLabel: "스토어 로딩 진행률",
+    tryAgain: "다시 시도"
+  },
   en: {
     enterStore: 'Enter store',
     errorTitle: 'LOAD INTERRUPTED',
@@ -156,6 +168,14 @@ const landingCopy = {
 } as const;
 
 const communityCopy = {
+  ko: {
+    ...landingCopy.ko,
+    enterStore: "Renaiss Community 입장",
+    footerAccess: "나의 공간",
+    footerPrivate: "연결",
+    footerStore: "둘러보기",
+    intro: "커뮤니티 소식부터 협업 미션, 회원 한정 컬렉션까지 여기서 시작하세요."
+  },
   en: {
     ...landingCopy.en,
     enterStore: 'Enter Renaiss Community',

@@ -81,6 +81,23 @@ export function MerchInventoryBadge({
 }
 
 const inventoryCopy = {
+  ko: {
+    checking: "수량 확인 중",
+    checkingLive: "실시간 수량 확인 중",
+    fullyClaimed: "모든 수령이 마감되었습니다",
+    lastKnown: "최근 확인 수량",
+    lastKnownAria: (remaining: number, limit: number) =>
+      `최근 확인 수량: 팔찌 ${limit}개 중 ${remaining}개 남음`,
+    left: (remaining: number, limit: number) => (
+      <>{limit}개 중 <b>{remaining}</b>개 남음</>
+    ),
+    limitedRelease: "한정 발매",
+    liveUnavailable: "실시간 수량을 확인할 수 없습니다",
+    remainingAria: (remaining: number, limit: number) =>
+      `팔찌 ${limit}개 중 ${remaining}개 남음`,
+    soldOut: "수령 마감",
+    unavailable: "확인 불가"
+  },
   en: {
     checking: 'Checking availability',
     checkingLive: 'Checking live availability',

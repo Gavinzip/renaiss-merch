@@ -8,7 +8,14 @@ import {
 } from 'react';
 import type { MerchProductId } from '../lib/merchProducts';
 
-export type AppLocale = 'en' | 'zh-TW';
+export const APP_LOCALES = ['en', 'zh-TW', 'ko'] as const;
+export type AppLocale = (typeof APP_LOCALES)[number];
+
+export const appLanguages: { value: AppLocale; label: string; shortLabel: string; menuLabel: string }[] = [
+  { value: 'en', label: 'English', shortLabel: 'EN', menuLabel: 'Language' },
+  { value: 'zh-TW', label: '繁體中文', shortLabel: '中文', menuLabel: '語言' },
+  { value: 'ko', label: '한국어', shortLabel: '한국어', menuLabel: '언어' },
+];
 
 type LocaleContextValue = {
   locale: AppLocale;
@@ -62,7 +69,7 @@ export function formatLocalizedDate(value: string, locale: AppLocale) {
 function readStoredLocale(): AppLocale {
   try {
     const storedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-    return storedLocale === 'zh-TW' ? 'zh-TW' : defaultLocale;
+    return APP_LOCALES.includes(storedLocale as AppLocale) ? storedLocale as AppLocale : defaultLocale;
   } catch {
     return defaultLocale;
   }
@@ -89,5 +96,10 @@ const productNames: Record<
     bracelet: 'Renaiss 手鍊',
     shirt: 'Renaiss 限量 T 恤',
     ticket: '旗艦卡展台灣站 VIP 票券'
+  },
+  ko: {
+    bracelet: 'Renaiss 팔찌',
+    shirt: 'Renaiss 한정 티셔츠',
+    ticket: 'Flagship 대만 VIP 티켓'
   }
 };

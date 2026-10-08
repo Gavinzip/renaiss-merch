@@ -95,9 +95,6 @@
 .hub-feed__posts a:active { transform: translateY(1px); transition-duration: 80ms; }
 .hub-feed__post-heading h3 { text-decoration: underline; text-decoration-color: transparent; text-underline-offset: .2em; text-decoration-thickness: 1px; transition: color var(--hub-text-out) var(--hub-ease), text-decoration-color var(--hub-text-out) var(--hub-ease); }
 .hub-feed__posts a:focus-visible h3 { text-decoration-color: #b9a4ca; }
-.hub-feed__website > .hub-action-label { font-size: inherit; }
-.hub-feed__website:is(:hover, :focus-visible) > .hub-action-label { transform: none; }
-
 @media (hover: hover) and (pointer: fine) {
   .hub-widget:not(.is-editing) .renaiss-hub__card:hover .hub-motion-text__color {
     opacity: 1;

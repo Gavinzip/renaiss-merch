@@ -164,6 +164,13 @@ export function CatalogProductTile({
 }
 
 const catalogCopy = {
+  ko: {
+    claimForm: "수령 신청서",
+    privateDrop: "한정 발매",
+    release: "컬렉션",
+    sealedAria: "자격 확인이 완료될 때까지 상품은 봉인된 상태로 유지됩니다.",
+    soldOut: "수령 마감"
+  },
   en: {
     claimForm: 'Claim form',
     privateDrop: 'Private drop',

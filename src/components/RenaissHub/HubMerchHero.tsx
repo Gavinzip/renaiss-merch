@@ -103,7 +103,6 @@ export function HubMerchHero({
     }
   }
 
-  const zh = locale === "zh-TW";
   return (
     <div
       className="renaiss-hub__merch-visual hub-merch-hero"
@@ -119,7 +118,7 @@ export function HubMerchHero({
           src={hubAssetUrl('sealedBoxHero')}
           width={960}
           height={540}
-          alt={zh ? "Renaiss 封盒循環展示" : "Renaiss sealed edition loop"}
+          alt={inlineCopy[locale].renaissSealedEditionLoop}
           decoding="async"
           onLoad={() => { void prepare(); }}
           onError={() => setPhase("error")}
@@ -128,11 +127,11 @@ export function HubMerchHero({
       <span className="hub-widget-title hub-merch-hero__title"><HubMotionText>{eyebrow}</HubMotionText></span>
       {phase === "loading" ? (
         <span className="hub-merch-hero__message" role="status">
-          {zh ? "準備展示…" : "Preparing the edition…"}
+          {inlineCopy[locale].preparingTheEdition}
         </span>
       ) : phase === "error" ? (
         <div className="hub-merch-hero__message" role="alert">
-          <span>{zh ? "展示無法載入" : "The hero could not be loaded"}</span>
+          <span>{inlineCopy[locale].theHeroCouldNotBeLoaded}</span>
           <button
             type="button"
             onClick={() => {
@@ -140,10 +139,31 @@ export function HubMerchHero({
               setAttempt((value) => value + 1);
             }}
           >
-            {zh ? "再試一次" : "Try again"}
+            {inlineCopy[locale].tryAgain}
           </button>
         </div>
       ) : null}
     </div>
   );
 }
+
+const inlineCopy = {
+  "en": {
+    renaissSealedEditionLoop: "Renaiss sealed edition loop",
+    preparingTheEdition: "Preparing the edition…",
+    theHeroCouldNotBeLoaded: "The hero could not be loaded",
+    tryAgain: "Try again"
+  },
+  "zh-TW": {
+    renaissSealedEditionLoop: "Renaiss 封盒循環展示",
+    preparingTheEdition: "準備展示…",
+    theHeroCouldNotBeLoaded: "展示無法載入",
+    tryAgain: "再試一次"
+  },
+  "ko": {
+    renaissSealedEditionLoop: "Renaiss 미개봉 컬렉션 영상",
+    preparingTheEdition: "컬렉션을 준비하고 있습니다…",
+    theHeroCouldNotBeLoaded: "컬렉션 화면을 불러올 수 없습니다",
+    tryAgain: "다시 시도"
+  }
+} as const;

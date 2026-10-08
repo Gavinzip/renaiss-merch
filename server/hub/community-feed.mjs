@@ -32,7 +32,7 @@ const regions = new Set([
 ]);
 
 export async function readCommunityFeed(locale) {
-  if (!["en", "zh-TW"].includes(locale))
+  if (!["en", "zh-TW", "ko"].includes(locale))
     throw new HttpError(400, "invalid_hub_language");
   const cached = cache.get(locale);
   if (cached && Date.now() - cached.fetchedAt < 60_000) return cached.feed;
@@ -50,7 +50,7 @@ export async function readCommunityFeed(locale) {
 async function fetchCommunityFeed(locale) {
   try {
     const url = new URL("/api/intel/feed", WEBSITE_ORIGIN);
-    url.searchParams.set("lang", locale === "zh-TW" ? "zh-Hant" : "en");
+    url.searchParams.set("lang", locale === "zh-TW" ? "zh-Hant" : locale);
     const response = await fetch(url, {
       headers: { Accept: "application/json" },
       signal: AbortSignal.timeout(15_000),

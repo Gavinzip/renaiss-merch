@@ -17,13 +17,13 @@ export function normalizeAssistantSources(sources) {
 }
 
 export function normalizeAssistantRequest(value) {
-  if (!value || typeof value.question !== "string" || !value.question.trim() || value.question.length > 1200 || !["en", "zh-TW"].includes(value.locale)) {
+  if (!value || typeof value.question !== "string" || !value.question.trim() || value.question.length > 1200 || !["en", "zh-TW", "ko"].includes(value.locale)) {
     throw new HttpError(400, "invalid_assistant_question");
   }
   if (!Array.isArray(value.history) || value.history.length > 8 || value.history.some(row => !row || !["user", "assistant"].includes(row.role) || typeof row.content !== "string" || !row.content.trim() || row.content.length > 6000)) {
     throw new HttpError(400, "invalid_assistant_history");
   }
-  return { question: value.question.trim(), lang: value.locale === "en" ? "en" : "zh-Hant", history: value.history, top_k: 4 };
+  return { question: value.question.trim(), lang: value.locale === "zh-TW" ? "zh-Hant" : value.locale, history: value.history, top_k: 4 };
 }
 
 export async function askHubAssistant(value, signal) {

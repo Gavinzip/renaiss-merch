@@ -3,8 +3,9 @@ import type { AppLocale } from "../../i18n/LocaleContext";
 import './HubNavigation.css';
 
 const navigationCopy = {
-  "zh-TW": { open: "開啟導覽", close: "收起導覽", label: "探索", current: "目前頁面", home: "總覽", homeHint: "帳號、收藏與動態", quest: "Partner Quest", questHint: "合作活動與獎品", merch: "Renaiss Merch", merchHint: "會員限定收藏", community: "Community Hub", preparing: "準備商店中…" },
-  en: { open: "Open navigation", close: "Close navigation", label: "Explore", current: "You’re here", home: "Overview", homeHint: "Account, collections & updates", quest: "Partner Quest", questHint: "Campaigns & prizes", merch: "Renaiss Merch", merchHint: "Members’ editions", community: "Community Hub", preparing: "Preparing Store…" },
+  "zh-TW": { open: "開啟導覽", close: "收起導覽", label: "探索", current: "目前頁面", home: "總覽", homeHint: "帳號、收藏與動態", quest: "Partner Quest", questHint: "合作活動與獎品", merch: "Renaiss Merch", merchHint: "會員限定收藏", preparing: "準備商店中…" },
+  ko: { open: "메뉴 열기", close: "메뉴 닫기", label: "둘러보기", current: "현재 페이지", home: "홈", homeHint: "계정, 컬렉션과 소식", quest: "협업 미션", questHint: "활동과 경품", merch: "Renaiss Merch", merchHint: "회원 한정 컬렉션", preparing: "스토어 준비 중…" },
+  en: { open: "Open navigation", close: "Close navigation", label: "Explore", current: "You’re here", home: "Overview", homeHint: "Account, collections & updates", quest: "Partner Quest", questHint: "Campaigns & prizes", merch: "Renaiss Merch", merchHint: "Members’ editions", preparing: "Preparing Store…" },
 };
 
 export function HubNavigation({ locale, onOpenCampaign, onEnterMerch, onGoHome, current = 'home', preparing, disabled }: {
@@ -79,9 +80,6 @@ export function HubNavigation({ locale, onOpenCampaign, onEnterMerch, onGoHome, 
           {current === 'store' ? <span className="hub-navigation__current">{copy.current}</span> : <NavigationIcon kind="arrow" />}
         </button>
       </div>
-      <a className="hub-navigation__footer" href="https://renaiss.zeabur.app/community-hub/" target="_blank" rel="noopener noreferrer" onClick={close}>
-        <NavigationIcon kind="community" /><span>{copy.community}</span><NavigationIcon kind="external" />
-      </a>
     </nav>
   </div>;
 }

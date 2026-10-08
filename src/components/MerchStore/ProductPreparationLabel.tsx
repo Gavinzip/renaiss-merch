@@ -49,6 +49,10 @@ export function ProductPreparationLabel({
 }
 
 const preparationCopy = {
+  ko: {
+    checking: "자격 확인 중",
+    making: "상품 준비 중"
+  },
   en: {
     checking: 'Checking Access',
     making: 'Making Your Merch'

@@ -15,6 +15,22 @@ export const surfStoreCopy = {
       'pro-month': { name: 'Surf Pro 一個月會員', label: 'PRO MEMBERSHIP', value: '1 個月', unit: 'Surf Pro', view: '查看會員權益', description: '探索 Surf Pro，一個月的 AI 研究體驗。' },
     },
   },
+  ko: {
+    preview: "미리보기",
+    dialogDescription: "Renaiss SBT 보유자를 위한 Surf 협업 혜택.",
+    close: "Surf 혜택 닫기",
+    allocation: "한정 수량",
+    quantity: (amount: number, approximate: boolean) => `${approximate ? '약 ' : ''}${amount}개`,
+    threshold: "SBT 보유 조건",
+    pending: "추후 발표",
+    unavailable: "교환 준비 중",
+    note: "SBT 조건은 보유 수량 기준입니다. 교환 일정은 추후 발표됩니다.",
+    site: "Surf 알아보기",
+    benefits: {
+      'mystery-box': { name: 'Surf Mystery Box', label: "Mystery Box", value: "1년", unit: 'Surf Pro', view: "Mystery Box 보기", description: "Surf Pro 1년 이용권과 무작위 주식 토큰 보상이 포함됩니다. 최종 구성은 공식 발표를 확인해 주세요." },
+      'pro-month': { name: "Surf Pro · 1개월", label: "Pro 멤버십", value: "1개월", unit: 'Surf Pro', view: "멤버십 혜택 보기", description: "Surf Pro 1개월 이용권으로 AI 리서치를 경험하세요." },
+    },
+  },
   en: {
     preview: 'Preview',
     dialogDescription: 'Surf partner benefits for Renaiss SBT collectors.',

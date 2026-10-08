@@ -9,14 +9,6 @@ import {
   type CommunityFeedState,
 } from "./useCommunityFeed";
 
-const routes = {
-  all: "feed",
-  official: "official",
-  community: "feed",
-  events: "events",
-  products: "future",
-};
-
 export function HubCommunityWidget({
   settings,
   feed,
@@ -38,28 +30,22 @@ export function HubCommunityWidget({
     feed.status === "ready"
       ? selectCommunityCards(feed.cards, settings)
       : [];
-  const websiteUrl =
-    feed.status === "ready"
-      ? feed.websiteUrl
-      : "https://renaiss.zeabur.app/community-hub/";
   const newestPost = feed.status === "ready" ? new Date(feed.cards[0]?.publishedAt) : null;
   const latestLabel = newestPost && !Number.isNaN(newestPost.valueOf())
-    ? `${locale === "en" ? "Latest post" : "最新收錄"} ${newestPost.toLocaleDateString(locale, { month: "2-digit", day: "2-digit" })}`
-    : locale === "en" ? "Community Hub" : "Community Hub";
+    ? `${inlineCopy[locale].latestPost} ${newestPost.toLocaleDateString(locale, { month: "2-digit", day: "2-digit" })}`
+    : "Community Hub";
   return (
     <article className={`renaiss-hub__card hub-feed hub-feed--${settings.source}`} data-size={hubWidgetSize(settings)}>
       <div className="renaiss-hub__card-heading">
         <span className="renaiss-hub__eyebrow">Community Hub</span>
         {feed.status === "ready" ? (
-          <button className="hub-feed__live" type="button" onClick={onRetry} aria-label={locale === "en" ? "Refresh updates" : "重新整理動態"} title={locale === "en" ? "Latest source post; click to refresh" : "來源最新貼文日期；點擊重新整理"}>
+          <button className="hub-feed__live" type="button" onClick={onRetry} aria-label={inlineCopy[locale].refreshUpdates} title={inlineCopy[locale].latestSourcePostClickToRefresh}>
             <i />{settings.source === "official" && settings.project === "tcg" ? "@renaissxyz · " : ""}{latestLabel}
           </button>
         ) : null}
       </div>
       <h2>
-        <a className="hub-title-action" href={`${websiteUrl}#${routes[settings.source]}`} target="_blank" rel="noopener noreferrer">
-          <HubMotionText>{copy.sources[settings.source]}</HubMotionText>
-        </a>
+        <HubMotionText>{copy.sources[settings.source]}</HubMotionText>
       </h2>
       <div className="hub-feed__filters">
         <span>{copy.projects[settings.project]}</span>
@@ -80,7 +66,7 @@ export function HubCommunityWidget({
           </button>
         </div>
       ) : cards.length === 0 ? (
-        <p className="hub-feed__state">{settings.source === 'events' ? locale === 'zh-TW' ? '目前沒有已確認可參與的活動，請查看官方活動頁取得最新消息。' : 'No confirmed upcoming events. Check the official events page for updates.' : copy.empty}</p>
+        <p className="hub-feed__state">{settings.source === 'events' ? inlineCopy[locale].noConfirmedUpcomingEventsCheckTheOfficial : copy.empty}</p>
       ) : settings.source === "events" ? (
         <HubEventHero cards={cards} locale={locale} enabled={!editing && !preview} />
       ) : (
@@ -107,8 +93,8 @@ export function HubCommunityWidget({
                       {card.account ? `@${card.account}` : "Community Hub"}
                     </span>
                     {!Number.isNaN(date.valueOf()) ? (
-                      <time dateTime={displayedDate} title={locale === "en" ? eventDate ? "Event date" : "Published date" : eventDate ? "活動日期" : "貼文日期"}>
-                        {settings.source === "events" && !eventDate ? locale === "en" ? "Posted " : "公告 " : ""}
+                      <time dateTime={displayedDate} title={eventDate ? inlineCopy[locale].eventDate : inlineCopy[locale].publishedDate}>
+                        {settings.source === "events" && !eventDate ? inlineCopy[locale].posted : ""}
                         {date.toLocaleDateString(locale, {
                           month: "2-digit",
                           day: "2-digit",
@@ -130,16 +116,36 @@ export function HubCommunityWidget({
           })}
         </ul>
       )}
-      <a
-        className="hub-feed__website"
-        href={`${websiteUrl}#${routes[settings.source]}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        title={feed.status === "ready" ? feed.generatedAt : undefined}
-      >
-        <span className="hub-action-label">{copy.website}</span>
-        <span aria-hidden="true">↗</span>
-      </a>
     </article>
   );
 }
+
+const inlineCopy = {
+  "en": {
+    eventDate: 'Event date',
+    publishedDate: 'Published date',
+    latestPost: "Latest post",
+    refreshUpdates: "Refresh updates",
+    latestSourcePostClickToRefresh: "Latest source post; click to refresh",
+    noConfirmedUpcomingEventsCheckTheOfficial: "No confirmed upcoming events. Check the official events page for updates.",
+    posted: "Posted "
+  },
+  "zh-TW": {
+    eventDate: '活動日期',
+    publishedDate: '貼文日期',
+    latestPost: "最新收錄",
+    refreshUpdates: "重新整理動態",
+    latestSourcePostClickToRefresh: "來源最新貼文日期；點擊重新整理",
+    noConfirmedUpcomingEventsCheckTheOfficial: "目前沒有已確認可參與的活動，請查看官方活動頁取得最新消息。",
+    posted: "公告 "
+  },
+  "ko": {
+    eventDate: '활동 날짜',
+    publishedDate: '게시일',
+    latestPost: "최근 게시물",
+    refreshUpdates: "소식 새로고침",
+    latestSourcePostClickToRefresh: "최근 원본 게시물 날짜 · 클릭해 새로고침",
+    noConfirmedUpcomingEventsCheckTheOfficial: "예정된 활동이 아직 확인되지 않았습니다. 공식 활동 페이지에서 최신 소식을 확인해 주세요.",
+    posted: "게시일 "
+  }
+} as const;

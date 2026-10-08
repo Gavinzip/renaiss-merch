@@ -21,7 +21,6 @@
 .hub-event-hero__buttons button { display: grid; place-items: center; width: 36px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #6f617b; cursor: pointer; transition: transform 300ms var(--hub-ease), background 200ms; }
 .hub-event-hero__buttons svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .hub-event-hero__missing { display: grid; place-items: center; height: 140px; font-size: .75rem; color: var(--hub-muted); }
-.hub-feed--events > .hub-feed__website { display: none; }
 @media (hover:hover) and (pointer:fine) {
   .hub-event-hero__slide a:hover img { transform: scale(1.06); }
   .hub-event-hero__slide a:hover .hub-event-hero__open { transform: rotate(5deg) translate(1px,-1px); }

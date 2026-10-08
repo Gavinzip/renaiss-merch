@@ -10,7 +10,6 @@ export function HubPageLoading({ error = false, onRetry, locale = 'en', ready = 
   ready?: boolean;
   className?: string;
 }) {
-  const zh = locale === 'zh-TW';
   const rootRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(!ready);
 
@@ -32,15 +31,36 @@ export function HubPageLoading({ error = false, onRetry, locale = 'en', ready = 
 
   if (!visible) return null;
 
-  return <div ref={rootRef} className={`hub-page-loading ${className}`.trim()} data-revealed={ready} role={error ? 'alert' : 'status'} aria-label={!error ? zh ? '正在載入 Renaiss Community' : 'Loading Renaiss Community' : undefined} aria-hidden={ready}>
+  return <div ref={rootRef} className={`hub-page-loading ${className}`.trim()} data-revealed={ready} role={error ? 'alert' : 'status'} aria-label={!error ? inlineCopy[locale].loadingRenaissCommunity : undefined} aria-hidden={ready}>
     <div className="hub-page-loading__brand" aria-hidden="true"><HubWordmark /></div>
     {error ? <>
-      <p className="hub-page-loading__error">{zh ? '頁面暫時無法載入' : 'This page could not load'}</p>
-      {onRetry ? <button type="button" onClick={onRetry}>{zh ? '重新載入' : 'Reload'}</button> : null}
+      <p className="hub-page-loading__error">{inlineCopy[locale].thisPageCouldNotLoad}</p>
+      {onRetry ? <button type="button" onClick={onRetry}>{inlineCopy[locale].reload}</button> : null}
     </> : <>
       <span className="hub-page-loading__label t-shimmer" data-text="LOADING" aria-hidden="true">LOADING</span>
       <span className="hub-page-loading__trace" aria-hidden="true"><span /></span>
-      <p className="hub-page-loading__support">{zh ? '正在為你準備 Renaiss Community' : 'Preparing your Renaiss Community'}</p>
+      <p className="hub-page-loading__support">{inlineCopy[locale].preparingYourRenaissCommunity}</p>
     </>}
   </div>;
 }
+
+const inlineCopy = {
+  "en": {
+    loadingRenaissCommunity: "Loading Renaiss Community",
+    thisPageCouldNotLoad: "This page could not load",
+    reload: "Reload",
+    preparingYourRenaissCommunity: "Preparing your Renaiss Community"
+  },
+  "zh-TW": {
+    loadingRenaissCommunity: "正在載入 Renaiss Community",
+    thisPageCouldNotLoad: "頁面暫時無法載入",
+    reload: "重新載入",
+    preparingYourRenaissCommunity: "正在為你準備 Renaiss Community"
+  },
+  "ko": {
+    loadingRenaissCommunity: "Renaiss Community 로딩 중",
+    thisPageCouldNotLoad: "페이지를 불러올 수 없습니다",
+    reload: "새로고침",
+    preparingYourRenaissCommunity: "Renaiss Community를 준비하고 있습니다"
+  }
+} as const;

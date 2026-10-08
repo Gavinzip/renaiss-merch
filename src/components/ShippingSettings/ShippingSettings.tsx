@@ -681,6 +681,55 @@ function readSettingsStatus(
 }
 
 const settingsCopy = {
+  ko: {
+    addressLine1: "주소 1",
+    addressLine1Placeholder: "도로명 주소 또는 사서함",
+    addressLine2: "주소 2",
+    addressLine2Placeholder: "동·호수, 층, 건물명 (선택)",
+    changeStore: "수령 매장 변경",
+    chineseNoticeChinaBody:
+      "중국 배송의 수령인 이름과 주소에는 중국어 한자가 포함되어야 합니다.",
+    chineseNoticeChinaTitle: "중국어 주소가 필요합니다",
+    chineseNoticeTaiwanBody:
+      "대만 주문은 7-ELEVEN 매장에서 수령합니다. 수령인 이름에는 중국어 한자가 포함되어야 하며 대만 휴대전화 번호가 필요합니다.",
+    chineseNoticeTaiwanTitle: "중국어 이름과 대만 휴대전화 번호가 필요합니다",
+    city: "도시",
+    close: "닫기",
+    countryRegion: "국가 / 지역",
+    deliveryNotes: "배송 요청 사항",
+    deliveryNotesPlaceholder:
+      "공동현관 비밀번호 또는 배송 요청 사항 (선택)",
+    email: "이메일",
+    eyebrow: "계정 기본 정보",
+    firstName: "이름",
+    firstNameChinese: "이름 (중국어)",
+    introPrimary:
+      "자주 사용하는 수령인 정보를 저장하세요. 새 상품 수령 신청에 자동으로 입력됩니다.",
+    introSecondary:
+      "각 수령 신청은 독립적으로 관리됩니다. 기본 정보를 바꾸지 않고 개별 배송 주소를 수정할 수 있으며, 사이즈 등 옵션도 해당 상품에만 적용됩니다.",
+    lastName: "성",
+    lastNameChinese: "성 (중국어)",
+    noStoreSelected: "수령 매장을 선택하지 않았습니다.",
+    phone: "전화번호",
+    pickupStore: "수령 매장",
+    postalCode: "우편번호",
+    region: "주 / 도",
+    saveDefaults: "기본 정보 저장",
+    saving: "저장 중",
+    selectStore: "매장 선택",
+    statusDirty: "변경 사항이 아직 저장되지 않았습니다.",
+    statusEmpty: "저장된 기본 정보가 없습니다.",
+    statusError: "기본 정보를 불러오거나 저장할 수 없습니다. 다시 시도해 주세요.",
+    statusInvalid: "표시된 이름과 주소를 수정한 후 저장해 주세요.",
+    statusLoading: "저장된 기본 정보를 불러오고 있습니다.",
+    statusSaved: "기본 정보가 저장되었습니다. 다음 수령 신청에 자동으로 입력됩니다.",
+    statusSavedAt: (date: string) => `${date} 저장됨.`,
+    statusSaving: "기본 수령인 정보를 저장하고 있습니다.",
+    statusStoreDirty: "매장과 수령인 정보가 아직 저장되지 않았습니다.",
+    statusStoreRequired: "먼저 7-ELEVEN 수령 매장을 선택해 주세요.",
+    statusTaiwanInvalid: "표시된 중국어 이름과 대만 휴대전화 번호를 수정해 주세요.",
+    title: "배송 주소"
+  },
   en: {
     addressLine1: 'Address line 1',
     addressLine1Placeholder: 'Street address or PO box',

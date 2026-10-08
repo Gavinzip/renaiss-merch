@@ -1,5 +1,67 @@
 export const merchStoreCopy = {
+  ko: {
+    storeName: '굿즈 스토어',
+    surfLede: '한정 컬렉션을 모으고 SBT로 협업 혜택을 만나보세요.',
+    featuresError: '스토어 표시 설정을 불러올 수 없습니다.',
+    retry: '다시 시도',
+    address: "주소",
+    addressStatusUnavailable: "주소 상태를 확인할 수 없습니다. 다시 확인해 주세요.",
+    addressUpdateRequired: "배송 주소 수정 필요",
+    backgroundMediaError:
+      "일부 상품 이미지를 준비하지 못했습니다. 상품을 선택해 다시 시도해 주세요.",
+    brand: "renaiss 굿즈 스토어",
+    cards: "카드",
+    catalog: "카탈로그",
+    demoAccess: "데모 체험",
+    demoMember: "데모 회원",
+    display: "보기 방식",
+    footerPrivate: "한정 발매",
+    footerWallet: "지갑 인증 완료",
+    footerWorldwide: "전 세계 배송",
+    fulfillment: "배송 관리",
+    helper: {
+      authRequired: "Renaiss에 로그인한 후 상품 자격을 확인해 주세요.",
+      checkUnavailable: "자격을 확인할 수 없습니다. 다시 시도해 주세요.",
+      checking: "인증된 SBT 자격을 확인하고 있습니다.",
+      eligibilityPending: "자격 조건이 아직 준비되지 않았습니다.",
+      itemUnavailable: "상품을 준비할 수 없습니다. 다시 시도해 주세요.",
+      making: "공개 영상을 준비하고 있습니다.",
+      walletPending: "Safe 지갑이 아직 준비되지 않았습니다."
+    },
+    languageLabel: "언어",
+    lede:
+      "봉인된 세 가지 상품. 지갑 자격 인증을 완료하면 상품이 공개됩니다.",
+    login: "로그인",
+    authPrompt: {
+      message: "오른쪽 위에서 로그인한 후 자격을 확인해 주세요.",
+      title: "로그인해 주세요"
+    },
+    opening: "여는 중",
+    productDisplay: "상품 보기 방식",
+    renaissAccount: "Renaiss 계정",
+    safeWalletPending: "Safe 지갑 준비 중",
+    signOut: "로그아웃",
+    status: {
+      authenticated: "Renaiss가 연결되었습니다. 인증할 상품을 선택해 주세요.",
+      'auth-error': "Renaiss 로그인이 완료되지 않았습니다. 다시 시도할 수 있습니다.",
+      'auth-required': "Renaiss에 로그인한 후 상품 자격을 확인해 주세요.",
+      checking: "Safe 지갑으로 상품 자격을 인증하고 있습니다.",
+      'eligibility-pending': "자격 조건이 아직 설정되지 않았습니다.",
+      idle: "한정 상품을 둘러본 후 로그인해 주세요.",
+      'loading-session': "Renaiss 로그인 상태를 확인하고 있습니다.",
+      making: "상품을 준비하고 있습니다.",
+      'opening-demo': "데모 회원 세션을 시작하고 있습니다.",
+      'signing-in': "Renaiss 로그인 화면을 열고 있습니다.",
+      'source-error': "자격 확인을 완료하지 못했습니다.",
+      'wallet-pending': "Safe 지갑이 아직 준비되지 않았습니다."
+    },
+    title: "Renaiss Protocol / 한정 컬렉션"
+  },
   en: {
+    storeName: 'Merch Store',
+    surfLede: 'Collect limited editions. Discover partner benefits through your SBTs.',
+    featuresError: 'Store display settings could not be loaded.',
+    retry: 'Try again',
     address: 'Address',
     addressStatusUnavailable: 'Address status unavailable, review required',
     addressUpdateRequired: 'Address, shipping update required',
@@ -54,6 +116,10 @@ export const merchStoreCopy = {
     title: 'Renaiss Protocol / Private editions'
   },
   'zh-TW': {
+    storeName: '周邊商店',
+    surfLede: '收藏限定周邊，探索 SBT 帶來的合作權益。',
+    featuresError: '無法讀取商店顯示設定。',
+    retry: '重試',
     address: '地址',
     addressStatusUnavailable: '無法取得地址狀態，請重新確認',
     addressUpdateRequired: '地址需要更新',

@@ -136,26 +136,6 @@
 .hub-feed--products .hub-feed__posts li { position: relative; border-top: 0; border-left: 1px solid #c7d6d780; padding-left: 1.1rem; }
 .hub-feed--products .hub-feed__posts li::before { content: ""; position: absolute; left: -4px; top: 1.25rem; width: 7px; height: 7px; border: 2px solid #ffffffd9; box-sizing: border-box; border-radius: 50%; background: #a7bbcb; }
 .hub-feed--products .hub-feed__posts li:last-child { border-left-color: transparent; }
-.hub-feed__website {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-top: 1.1rem;
-  margin-top: auto;
-  border-top: 1px solid var(--hub-line);
-  color: #7f699c;
-  text-decoration: none;
-  font-size: 0.73rem;
-  font-weight: 500;
-}
-.hub-feed__website > span {
-  font-size: 0.9rem;
-  transition: transform 250ms var(--hub-ease);
-}
-.hub-feed__website:is(:hover, :focus-visible) > span {
-  transform: translate(1px, -1px);
-}
 .hub-feed__state {
   display: flex;
   flex: 1;
@@ -224,9 +204,6 @@
   }
   .hub-feed__post-meta {
     font-size: 0.63rem;
-  }
-  .hub-feed__website {
-    min-height: 2.75rem;
   }
 }
 @media (prefers-reduced-motion: reduce) {

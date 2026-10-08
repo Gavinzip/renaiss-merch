@@ -88,6 +88,30 @@ export function readClaimStatus(
 }
 
 const presentationCopy = {
+  ko: {
+    accessNotMet: "자격 미충족",
+    accessRequired: "자격 인증 필요",
+    categories: {
+      bracelet: "한정 액세서리",
+      shirt: "의류",
+      ticket: "VIP 입장"
+    },
+    checkAccess: "자격 확인",
+    checkAgain: "다시 확인",
+    draftSaved: "임시 저장 완료",
+    eligibleDescription: (productId: MerchProductId, minimum: number) =>
+      `${eligibleDescriptions.ko[productId]} ${minimum} SBT 수령 조건을 충족했습니다.`,
+    notEligible: "자격 미충족",
+    privateDrop: "한정 발매",
+    sealed: "미공개",
+    sealedDescription:
+      "첫 자격 확인 전에는 모든 상품 정보가 봉인된 상태로 유지됩니다.",
+    startClaim: "수령 신청",
+    submitted: "제출 완료",
+    unqualifiedDescription: (missing: number) =>
+      `상품을 공개하려면 SBT ${missing}개가 더 필요합니다.`,
+    viewItem: "상품 보기"
+  },
   en: {
     accessNotMet: 'Access not met',
     accessRequired: 'Access required',
@@ -141,6 +165,11 @@ const eligibleDescriptions: Record<
   AppLocale,
   Record<MerchProductId, string>
 > = {
+  ko: {
+    bracelet: "정교한 광택이 돋보이는 Renaiss 한정 팔찌.",
+    shirt: "전 세계 배송이 가능한 Renaiss 한정 의류.",
+    ticket: "등록된 이메일로 VIP 행사 입장 자격이 전달됩니다."
+  },
   en: {
     bracelet: 'A private Renaiss object edition with a polished finish.',
     shirt: 'A private Renaiss edition with worldwide fulfilment.',

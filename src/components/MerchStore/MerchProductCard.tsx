@@ -148,6 +148,11 @@ export function MerchProductCard({
 }
 
 const cardCopyByLocale = {
+  ko: {
+    claimForm: "수령 신청서",
+    sealedAria: "자격 확인이 완료될 때까지 상품은 봉인된 상태로 유지됩니다.",
+    soldOut: "수령 마감"
+  },
   en: {
     claimForm: 'Claim form',
     sealedAria: 'This release remains sealed until access is checked.',
