@@ -190,8 +190,28 @@ export function RenaissHub({
     >
       <div className="renaiss-hub__content">
         <HubHomeIntro
-      accountAction={<><HubAccountAction account={account} locale={locale} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} disabled={editing || settings.saving} />{logoutError ? <span className="hub-site-header__error" role="alert">{inlineCopy[locale].signOutFailedTryAgain}</span> : null}</>}
-          navigation={<HubNavigation locale={locale} onOpenCampaign={campaignRoute.open} onEnterMerch={enterMerch} preparing={enterRequested && loadState === "loading"} disabled={editing || settings.saving} />}
+          accountAction={editing ? undefined : (
+            <>
+              <HubAccountAction
+                account={account}
+                locale={locale}
+                onRetry={retryAccount}
+                onLogout={() => void logout()}
+                loggingOut={loggingOut}
+                disabled={settings.saving}
+              />
+              {logoutError ? <span className="hub-site-header__error" role="alert">{inlineCopy[locale].signOutFailedTryAgain}</span> : null}
+            </>
+          )}
+          navigation={editing ? undefined : (
+            <HubNavigation
+              locale={locale}
+              onOpenCampaign={campaignRoute.open}
+              onEnterMerch={enterMerch}
+              preparing={enterRequested && loadState === "loading"}
+              disabled={settings.saving}
+            />
+          )}
           locale={locale}
           setLocale={setLocale}
           copy={copy}
