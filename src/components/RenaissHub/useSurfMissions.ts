@@ -7,12 +7,26 @@ export type MissionResult = {
 };
 export type SocialTaskState = {
   configured: boolean; configurationReason: string | null;
+  identityLocked: boolean;
   connection: { username: string; userId: string } | null; result: MissionResult | null;
+};
+export type RecordedMissionTask = {
+  verified: boolean; verifiedAt: string | null; checkedAt: string | null;
+  outcome: MissionResult['outcome']; reason: string | null;
+};
+export type SurfParticipation = {
+  campaignId: string; ruleVersion: string; userSub: string; name: string | null;
+  walletAddress: string | null; email: string | null; renaissXUsername: string | null;
+  xUserId: string | null; xUsername: string | null; discordUserId: string | null; discordUsername: string | null;
+  ticketCount: number; status: 'eligible' | 'wallet_required' | 'accounts_required' | 'wallet_already_registered';
+  tasks: Record<'accounts' | SocialProvider, RecordedMissionTask>;
+  createdAt: string; updatedAt: string;
 };
 export type SurfMissionState = {
   authenticated: boolean; demo: boolean; entries: number | null;
   accounts: MissionResult & { configured: boolean; email?: string; emailLinked?: boolean };
   providers: Record<SocialProvider, SocialTaskState>;
+  participation: SurfParticipation | null;
 };
 
 class MissionRequestError extends Error { constructor(public code: string) { super(code); } }
@@ -23,7 +37,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-export function useSurfMissions(active: boolean) {
+export function useSurfMissions(active: boolean, userSub: string | null) {
   const [state, setState] = useState<SurfMissionState | null>(null);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState<SocialProvider | 'accounts' | null>(null);
@@ -32,7 +46,7 @@ export function useSurfMissions(active: boolean) {
   const [retry, setRetry] = useState(0);
   const reload = useCallback(() => { setError(null); setRetry(n => n + 1); }, []);
   useEffect(() => {
-    if (!active) return;
+    if (!active) { setState(null); return; }
     let cancelled = false; setLoading(true);
     void (async () => {
       try {
@@ -52,7 +66,7 @@ export function useSurfMissions(active: boolean) {
       }
     })();
     return () => { cancelled = true; };
-  }, [active, retry]);
+  }, [active, userSub, retry]);
   useEffect(() => {
     if (!resume) return;
     const url = new URL(location.href);
@@ -82,5 +96,6 @@ export function useSurfMissions(active: boolean) {
     catch (error) { setError(error instanceof MissionRequestError ? error.code : 'mission_verification_failed'); }
     finally { setBusy(null); }
   }
-  return { state, loading, busy, error, resume, reload, act, verifyAccounts };
+  const currentState = state?.participation && state.participation.userSub !== userSub ? null : state;
+  return { state: active ? currentState : null, loading, busy, error, resume, reload, act, verifyAccounts };
 }

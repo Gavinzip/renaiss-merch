@@ -3,6 +3,7 @@ import { getMerchDatabase } from '../merch-database.mjs';
 import { HttpError } from '../http.mjs';
 import { missionEncryptionKey } from './config.mjs';
 import { createSecretBox } from '../auth-secret-box.mjs';
+import { createXIdentityLock } from './x-identity-lock.mjs';
 
 export const missionHash = value => createHash('sha256').update(value).digest('hex');
 export const MISSION_RULE_VERSION = 'surf-social-v1';
@@ -26,6 +27,10 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
       result_json TEXT NOT NULL, checked_at INTEGER NOT NULL,
       PRIMARY KEY(campaign, rule_version, user_sub, provider)
     );
+    CREATE TABLE IF NOT EXISTS mission_result_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, campaign TEXT NOT NULL, rule_version TEXT NOT NULL,
+      user_sub TEXT NOT NULL, provider TEXT NOT NULL, result_json TEXT NOT NULL, checked_at INTEGER NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS mission_operation_leases (
       operation_key TEXT PRIMARY KEY, owner TEXT NOT NULL, expires_at INTEGER NOT NULL, next_check_at INTEGER NOT NULL
     );
@@ -35,8 +40,12 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
     );
   `);
   const { seal, unseal } = createSecretBox(key);
+  const xIdentityLock = createXIdentityLock(db);
   const connectionContext = (campaign, sub, provider, id) => JSON.stringify([campaign, sub, provider, id]);
   return {
+    database: db,
+    getXIdentityLock: (campaign, sub) => xIdentityLock.read(campaign, sub),
+    assertXIdentity: (campaign, sub, userId) => xIdentityLock.assertIdentity(campaign, sub, userId),
     assertAccountAvailable(campaign, sub, emailHash) {
       const row = db.prepare('SELECT user_sub FROM mission_surf_accounts WHERE campaign=? AND email_hash=?').get(campaign, emailHash);
       if (row && row.user_sub !== sub) throw new HttpError(409, 'surf_account_already_connected');
@@ -75,12 +84,18 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
       const secret = seal(connection, connectionContext(campaign, sub, provider, connection.userId));
       try {
         db.transaction(() => {
+          if (provider === 'x') xIdentityLock.assertIdentity(campaign, sub, connection.userId);
+          const previous = db.prepare('SELECT user_id FROM mission_connections WHERE campaign=? AND user_sub=? AND provider=?')
+            .get(campaign, sub, provider);
           db.prepare(`INSERT INTO mission_connections VALUES(?,?,?,?,?,?,?) ON CONFLICT(campaign,user_sub,provider)
             DO UPDATE SET user_id=excluded.user_id,username=excluded.username,secret=excluded.secret,updated_at=excluded.updated_at`).run(
             campaign, sub, provider, connection.userId, connection.username, secret, Date.now(),
           );
-          db.prepare('DELETE FROM mission_results WHERE campaign=? AND user_sub=? AND provider=?').run(campaign, sub, provider);
-        })();
+          // Token renewal for the same provider identity must not erase a pass
+          // while a new network check is pending. A new identity invalidates it.
+          if (previous?.user_id !== connection.userId)
+            db.prepare('DELETE FROM mission_results WHERE campaign=? AND user_sub=? AND provider=?').run(campaign, sub, provider);
+        }).immediate();
       } catch (error) {
         if (error.code?.startsWith('SQLITE_CONSTRAINT')) throw new HttpError(409, 'social_account_already_connected');
         throw error;
@@ -88,16 +103,28 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
     },
     deleteConnection(campaign, sub, provider) {
       db.transaction(() => {
+        if (provider === 'x') xIdentityLock.assertDisconnectAllowed(campaign, sub);
         db.prepare('DELETE FROM mission_connections WHERE campaign=? AND user_sub=? AND provider=?').run(campaign, sub, provider);
         db.prepare('DELETE FROM mission_results WHERE campaign=? AND user_sub=? AND provider=?').run(campaign, sub, provider);
         db.prepare('DELETE FROM mission_oauth_challenges WHERE user_sub=? AND provider=?').run(sub, provider);
-      })();
+      }).immediate();
     },
     saveResult(campaign, sub, provider, result) {
-      db.prepare(`INSERT INTO mission_results VALUES(?,?,?,?,?,?) ON CONFLICT(campaign,rule_version,user_sub,provider)
-        DO UPDATE SET result_json=excluded.result_json,checked_at=excluded.checked_at`).run(
-        campaign, MISSION_RULE_VERSION, sub, provider, JSON.stringify(result), Date.now(),
-      );
+      const payload = JSON.stringify(result), checkedAt = Date.now();
+      db.transaction(() => {
+        if (provider === 'x' && result.outcome === 'verified') {
+          const identity = db.prepare('SELECT user_id FROM mission_connections WHERE campaign=? AND user_sub=? AND provider=?')
+            .get(campaign, sub, provider);
+          if (!identity) throw new HttpError(409, 'connection_required');
+          xIdentityLock.lock(campaign, sub, identity.user_id, result.checkedAt || new Date(checkedAt).toISOString());
+        }
+        db.prepare(`INSERT INTO mission_results VALUES(?,?,?,?,?,?) ON CONFLICT(campaign,rule_version,user_sub,provider)
+          DO UPDATE SET result_json=excluded.result_json,checked_at=excluded.checked_at`).run(
+          campaign, MISSION_RULE_VERSION, sub, provider, payload, checkedAt,
+        );
+        db.prepare(`INSERT INTO mission_result_history(campaign,rule_version,user_sub,provider,result_json,checked_at)
+          VALUES(?,?,?,?,?,?)`).run(campaign, MISSION_RULE_VERSION, sub, provider, payload, checkedAt);
+      }).immediate();
     },
     getResult(campaign, sub, provider) {
       const row = db.prepare('SELECT * FROM mission_results WHERE campaign=? AND rule_version=? AND user_sub=? AND provider=?').get(campaign, MISSION_RULE_VERSION, sub, provider);

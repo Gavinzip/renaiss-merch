@@ -1,7 +1,15 @@
 .fulfillment-console {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  box-sizing: border-box;
+  background: transparent;
+  z-index: 40;
   display: grid;
   place-items: center;
   padding: clamp(1rem, 4vw, 3rem);
@@ -35,6 +43,10 @@
   padding-bottom: 1.35rem;
   border-bottom: 1px solid rgba(20, 21, 24, 0.14);
 }
+.fulfillment-console__panel--participants { width: min(100%, 1050px); }
+.fulfillment-console__sections { display: flex; gap: 9px; padding-top: 20px; }
+.fulfillment-console__sections button { min-height: 40px; padding: 8px 15px; border: 1px solid #dbd4e0; background: transparent; color: #8e7a9d; font-weight: 500; letter-spacing: 0; }
+.fulfillment-console__sections button[aria-pressed="true"] { background: #ede7f2; color: #635171; border-color: #cbbdd9; }
 
 .fulfillment-console__eyebrow,
 .fulfillment-console__action-label {

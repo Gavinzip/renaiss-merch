@@ -1,7 +1,13 @@
+export function isXIdentityError(code?: string | null) {
+  return ['renaiss_x_mismatch', 'renaiss_x_not_linked', 'identity_mismatch', 'x_verified_account_locked'].includes(code || '');
+}
+
 export function missionErrorCopy(code: string, zh: boolean) {
   const messages: Record<string, [string, string]> = {
     renaiss_x_not_linked: ['請先在 Renaiss 綁定 X，再重新登入。', 'Link X in Renaiss, then sign in again.'],
-    renaiss_x_mismatch: ['請授權與 Renaiss 綁定相同的 X 帳號。', 'Authorize the X account linked to Renaiss.'],
+    renaiss_x_mismatch: ['無法驗證：此 X 帳號與 Renaiss 綁定的帳號不同。請使用與 Renaiss 綁定相同的 X 帳號。', 'Cannot verify: this X account differs from the one linked to Renaiss. Use the same linked X account.'],
+    identity_mismatch: ['無法驗證：授權帳號與已連接的帳號不同。請重新授權 Renaiss 綁定的 X 帳號。', 'Cannot verify: the authorized identity differs from the connected account. Reauthorize the X account linked to Renaiss.'],
+    x_verified_account_locked: ['此 X 帳號已通過驗證，無法更換。請重新授權原本驗證通過的 X 帳號。', 'Your verified X account is locked. Reauthorize the original verified X account.'],
     social_account_already_connected: ['此帳號已連接另一位參加者。', 'This account is linked to another participant.'],
     social_authorization_cancelled: ['授權已取消，可再次連接。', 'Authorization cancelled. You can reconnect.'],
     invalid_social_oauth_state: ['授權已失效，請重新連接。', 'Authorization expired. Please reconnect.'],

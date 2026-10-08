@@ -9,9 +9,12 @@ import { createMissionStore } from './store.mjs';
 import { checkMission, readMissionState, requireMissionUser } from './service.mjs';
 import { checkAccounts } from './accounts.mjs';
 import { createSurfRateStore } from './surf-rate-store.mjs';
+import { createParticipationAdminHandler } from './participation-admin.mjs';
 
 export function createMissionRouteHandler({ readSession, storeFactory = createMissionStore, rateStoreFactory = createSurfRateStore, fetchImpl = fetch }) {
+  const handleAdmin = createParticipationAdminHandler({ readSession, storeFactory });
   return async function handleMissionRoute(req, res, url) {
+    if (handleAdmin(req, res, url)) return true;
     if (url.pathname === '/api/missions/surf') {
       method(req, 'GET'); sendJson(res, 200, readMissionState(req, readSession(req), { storeFactory })); return true;
     }
@@ -62,7 +65,11 @@ export function createMissionRouteHandler({ readSession, storeFactory = createMi
       } else if (action === 'verify') sendJson(res, 200, await checkMission(req, session, provider, { store, fetchImpl }));
       else {
         const release = store.acquire(surfCampaign.id, user.sub, provider);
-        try { store.deleteConnection(surfCampaign.id, user.sub, provider); clearCookie(req, res, cookieName(provider)); sendNoContent(res); }
+        try {
+          store.deleteConnection(surfCampaign.id, user.sub, provider);
+          readMissionState(req, session, { storeFactory: () => store });
+          clearCookie(req, res, cookieName(provider)); sendNoContent(res);
+        }
         finally { release(); }
       }
       return true;

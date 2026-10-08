@@ -6,21 +6,22 @@ import { SurfLogo } from "./SurfLogo";
 import { HubMotionText } from "./HubMotionText";
 import type { AccountState } from "./RenaissHubFeatures";
 import { useSurfMissions } from "./useSurfMissions";
+import "./SurfQuestBrand.css";
 
 export function HubSurfQuest({ locale, account, onOpenCampaign, preview = false }: {
   locale: AppLocale; account: AccountState; onOpenCampaign: (target?: 'tasks') => void; preview?: boolean;
 }) {
   const copy = surfQuestCopy[locale];
   const signedIn = !preview && account.status === 'ready' && account.session.authenticated && !account.session.user.isDemo;
-  const missions = useSurfMissions(signedIn);
+  const missions = useSurfMissions(signedIn, account.status === 'ready' && account.session.authenticated ? account.session.user.sub : null);
   const mission = signedIn ? missions.state : null;
   const tasks = [
     { id: "accounts", title: copy.accounts, meta: copy.accountsMeta, action: copy.openSurf, url: surfCampaign.surfUrl,
-      complete: mission?.accounts.configured === true && mission.accounts.outcome === 'verified' && !mission.accounts.stale },
+      complete: mission?.participation?.tasks.accounts.verified === true },
     { id: "x-follow", title: copy.follow, meta: `@${surfCampaign.xHandle}`, action: copy.openX, url: surfCampaign.xUrl,
-      complete: mission?.providers.x.configured === true && Boolean(mission.providers.x.connection) && mission.providers.x.result?.outcome === 'verified' && !mission.providers.x.result.stale },
+      complete: mission?.participation?.tasks.x.verified === true },
     { id: "discord-join", title: copy.join, meta: "Surf Community", action: copy.openDiscord, url: surfCampaign.discordUrl,
-      complete: mission?.providers.discord.configured === true && Boolean(mission.providers.discord.connection) && mission.providers.discord.result?.outcome === 'verified' && !mission.providers.discord.result.stale },
+      complete: mission?.participation?.tasks.discord.verified === true },
   ];
   const allComplete = tasks.every(task => task.complete);
   return (

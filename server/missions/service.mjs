@@ -6,6 +6,7 @@ import { createMissionStore } from './store.mjs';
 import { verifyXFollow } from './providers/x-follow.mjs';
 import { verifyDiscordMembership } from './providers/discord-membership.mjs';
 import { readAccountsState, missionEntries } from './accounts.mjs';
+import { createParticipationStore } from './participation-store.mjs';
 
 export function requireMissionUser(session) {
   if (!session?.user?.sub) throw new HttpError(401, 'unauthenticated');
@@ -15,32 +16,35 @@ export function requireMissionUser(session) {
 
 export function readMissionState(req, session, { storeFactory = createMissionStore } = {}) {
   const authenticated = Boolean(session?.user?.sub && !session.user.isDemo);
+  const store = authenticated ? storeFactory() : null;
   const providers = {};
   for (const provider of ['x', 'discord']) {
     let configured = false, configurationReason = null, requireScreening = false;
     try { providerConfig(req, provider); if (provider === 'discord') requireScreening = discordScreeningPolicy(); configured = true; }
     catch (error) { configurationReason = error instanceof HttpError ? error.code : 'mission_configuration_invalid'; }
     let connection = null, result = null;
-    if (authenticated && configured) {
-      const store = storeFactory();
+    if (store) {
       connection = store.getConnection(surfCampaign.id, session.user.sub, provider);
       result = store.getResult(surfCampaign.id, session.user.sub, provider);
-      if (provider === 'discord' && result && result.screeningRequired !== requireScreening) result = null;
+      const targetId = provider === 'x' ? surfCampaign.xUserId : surfCampaign.discordGuildId;
+      if (result && result.targetId !== targetId) result = null;
+      if (provider === 'discord' && configured && result && result.screeningRequired !== requireScreening) result = null;
       if (connection && provider === 'x') {
-        try { assertLinkedX(session.user, connection.username); }
+        try { store.assertXIdentity(surfCampaign.id, session.user.sub, connection.userId); assertLinkedX(session.user, connection.username); }
         catch (error) { result = { outcome: 'reauthorize', reason: error.code }; }
       }
     }
     providers[provider] = {
       configured, configurationReason,
+      identityLocked: provider === 'x' && Boolean(store?.getXIdentityLock(surfCampaign.id, session.user.sub)),
       connection: connection ? { username: connection.username, userId: connection.userId } : null,
       result,
     };
   }
-  const accounts = readAccountsState(session?.user, { storeFactory });
+  const accounts = readAccountsState(session?.user, { storeFactory: () => store });
+  const participation = store ? createParticipationStore(store.database).sync(surfCampaign.id, session.user, accounts, providers) : null;
   return { campaignId: surfCampaign.id, authenticated, demo: session?.user?.isDemo === true,
-    // This is a current task tally, not an issued ticket or reward entitlement.
-    accounts, entries: missionEntries(accounts, providers), providers };
+    accounts, entries: missionEntries(accounts, providers), providers, participation };
 }
 
 export async function checkMission(req, session, provider, { store = createMissionStore(), fetchImpl = fetch, connectionToSave } = {}) {
@@ -48,10 +52,20 @@ export async function checkMission(req, session, provider, { store = createMissi
   const requireScreening = provider === 'discord' ? discordScreeningPolicy() : false;
   const release = store.acquire(surfCampaign.id, user.sub, provider);
   try {
+    // Reject an OAuth identity mismatch before storing credentials or replacing
+    // an existing connection. The verified Renaiss profile owns the X identity.
+    if (provider === 'x' && connectionToSave) assertLinkedX(user, connectionToSave.username);
     if (connectionToSave) store.saveConnection(surfCampaign.id, user.sub, provider, connectionToSave);
     let connection = store.getConnection(surfCampaign.id, user.sub, provider);
     let result;
-    if (connection && connection.expiresAt <= Date.now() + 30_000) {
+    if (provider === 'x') {
+      if (!user.twitterUsername) result = { outcome: 'reauthorize', reason: 'renaiss_x_not_linked' };
+      else if (connection) {
+        try { store.assertXIdentity(surfCampaign.id, user.sub, connection.userId); assertLinkedX(user, connection.username); }
+        catch (error) { result = { outcome: 'reauthorize', reason: error.code }; }
+      }
+    }
+    if (!result && connection && connection.expiresAt <= Date.now() + 30_000) {
       if (!connection.refreshToken) result = { outcome: 'reauthorize', reason: 'authorization_expired' };
       else {
         try {
@@ -68,7 +82,8 @@ export async function checkMission(req, session, provider, { store = createMissi
       : await verifyDiscordMembership({ connection, guildId: surfCampaign.discordGuildId, inviteUrl: surfCampaign.discordUrl, requireScreening, fetchImpl });
     result = { provider, ...(provider === 'discord' ? { screeningRequired: requireScreening } : {}), targetId: provider === 'x' ? surfCampaign.xUserId : surfCampaign.discordGuildId,
       checkedAt: new Date().toISOString(), ...result };
-    // A failed recheck replaces the previous pass; historical success cannot act as a current entitlement.
+    // Keep the latest provider response and its history. The participation
+    // ledger separately distinguishes a confirmed failure from an unavailable check.
     store.saveResult(surfCampaign.id, user.sub, provider, result);
     return readMissionState(req, session, { storeFactory: () => store });
   } finally { release(); }

@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { FulfillmentConsole } from '../FulfillmentConsole/FulfillmentConsole';
 import { surfCampaign } from '../../../shared/surf-campaign.js';
 import type { AppLocale } from '../../i18n/LocaleContext';
 import type { AccountState } from './RenaissHubFeatures';
@@ -10,6 +11,7 @@ import { SurfCampaignRewards } from './SurfCampaignRewards';
 import { SurfCampaignTasks } from './SurfCampaignTasks';
 import { useSurfMissions } from './useSurfMissions';
 import { useSurfCampaignMotion } from './useSurfCampaignMotion';
+import './SurfQuestBrand.css';
 
 export function SurfCampaignPage({ locale, setLocale, account, motionRevision, onBack, onLogin, onRetry, onLogout, loggingOut }: {
   locale: AppLocale; setLocale: (locale: AppLocale) => void; account: AccountState;
@@ -18,7 +20,9 @@ export function SurfCampaignPage({ locale, setLocale, account, motionRevision, o
 }) {
   const copy = surfCampaignCopy[locale];
   const motionRoot = useSurfCampaignMotion(locale, motionRevision);
-  const missions = useSurfMissions(account.status === 'ready');
+  const missions = useSurfMissions(account.status === 'ready', account.status === 'ready' && account.session.authenticated ? account.session.user.sub : null);
+  const [showParticipants, setShowParticipants] = useState(false);
+  const administrator = account.status === 'ready' && account.session.authenticated && account.session.user.canManageFulfillment && !account.session.user.isDemo;
   useEffect(() => {
     const previous = document.title;
     document.title = 'Renaiss × Surf | Partner Campaign';
@@ -42,6 +46,7 @@ export function SurfCampaignPage({ locale, setLocale, account, motionRevision, o
         <div className="surf-page__location"><button className="surf-page__back" type="button" onClick={onBack}><span aria-hidden="true">←</span><HubLogo /><span>{copy.back}</span></button><span className="surf-page__location-label">{copy.pageLabel}</span></div>
         <nav aria-label={copy.pageNavigation}><button type="button" onClick={() => goTo('surf-campaign-rewards')}>{copy.viewRewards}</button><button type="button" onClick={() => goTo('surf-campaign-tasks')}>{copy.viewTasks}</button></nav>
         <div className="surf-page__account-controls"><HubLanguageMenu locale={locale} setLocale={setLocale} />
+          {administrator ? <button className="surf-page__logout" type="button" onClick={() => setShowParticipants(true)}>{locale === 'zh-TW' ? '抽獎名單' : 'Participants'}</button> : null}
           {account.status === 'ready' && account.session.authenticated ? <button className="surf-page__logout" type="button" onClick={onLogout} disabled={loggingOut}>{loggingOut ? locale === 'zh-TW' ? '登出中' : 'Signing out' : locale === 'zh-TW' ? '登出' : 'Sign out'}</button> : null}
         </div>
       </header>
@@ -57,5 +62,6 @@ export function SurfCampaignPage({ locale, setLocale, account, motionRevision, o
       </section>
       <footer className="surf-page__footer"><div data-surf-reveal="0"><strong>Renaiss × Surf</strong><p>{copy.previewNote}</p></div><a data-surf-reveal="1" href={surfCampaign.campaignUrl ?? surfCampaign.xUrl} target="_blank" rel="noopener noreferrer">{surfCampaign.campaignUrl ? copy.openCampaign : copy.announcement}<span aria-hidden="true">↗</span></a></footer>
     </div>
+    {showParticipants && administrator ? <FulfillmentConsole initialSection="surf" onClose={() => setShowParticipants(false)} /> : null}
   </main>;
 }

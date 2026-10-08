@@ -1,0 +1,12 @@
+/* Shared Renaiss prism accents for the campaign and dashboard quest. */
+.surf-page,
+.hub-surf-quest {
+  --quest-ink: #29312f;
+  --quest-muted: #707571;
+  --quest-subtle: #969b97;
+  --quest-prism-edge: linear-gradient(115deg, #efaa96, #efce84 28%, #9fceb4 56%, #8ac9d9 78%, #9cabdd);
+  --quest-prism-wash: linear-gradient(115deg, #fff4ed, #fff9e5 30%, #eef8ee 58%, #edf7fc 85%, #f2f4fc);
+  --quest-prism-action: linear-gradient(115deg, #ffded4, #ffebbc 30%, #ccebdc 58%, #d3eef8 85%, #dce2fb);
+  --quest-check: #356f5d;
+  --quest-focus: #438297;
+}

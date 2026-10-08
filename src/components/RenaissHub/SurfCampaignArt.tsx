@@ -37,8 +37,6 @@ export function SurfCampaignArt({ locale }: { locale: AppLocale }) {
         image.current?.style.setProperty('--box-rotate-y', `${x * 6}deg`);
       });
     }}>
-    <span className="surf-page__art-label" aria-hidden="true">MYSTERY BOX / SURF</span>
     <img ref={image} src={surfCampaignAssets().box} alt={copy.boxAlt} width={800} height={800} fetchPriority="high" />
-    <figcaption><span>SURF ORIGINAL</span><span>{copy.officialVisual}</span></figcaption>
   </figure>;
 }

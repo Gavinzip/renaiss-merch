@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   exportFulfillmentCsv,
   FulfillmentError,
@@ -17,15 +17,26 @@ import {
   useLocale,
   type AppLocale
 } from '../../i18n/LocaleContext';
+import { SurfParticipants } from './SurfParticipants';
 
 type FulfillmentConsoleProps = {
   onClose: () => void;
+  initialSection?: 'shipping' | 'surf';
 };
 
 type LoadState = 'loading' | 'ready' | 'error';
 
-export function FulfillmentConsole({ onClose }: FulfillmentConsoleProps) {
+export function FulfillmentConsole({ onClose, initialSection = 'shipping' }: FulfillmentConsoleProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const { locale } = useLocale();
+  const [section, setSection] = useState(initialSection);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    dialog?.showModal();
+    return () => { dialog?.close(); document.body.style.overflow = overflow; };
+  }, []);
   const copy = fulfillmentCopy[locale];
   const productScopeOptions: ReadonlyArray<{
     id: FulfillmentProductScope;
@@ -51,6 +62,7 @@ export function FulfillmentConsole({ onClose }: FulfillmentConsoleProps) {
   ) || null;
 
   useEffect(() => {
+    if (section !== 'shipping') return;
     let active = true;
 
     async function loadOverview() {
@@ -74,7 +86,7 @@ export function FulfillmentConsole({ onClose }: FulfillmentConsoleProps) {
     return () => {
       active = false;
     };
-  }, [locale]);
+  }, [locale, section]);
 
   async function handleExport() {
     setIsExporting(true);
@@ -116,20 +128,25 @@ export function FulfillmentConsole({ onClose }: FulfillmentConsoleProps) {
   }
 
   return (
-    <section className="fulfillment-console" aria-labelledby="fulfillment-title">
+    <dialog ref={dialogRef} className="fulfillment-console" aria-labelledby="fulfillment-title"
+      onCancel={event => { event.preventDefault(); onClose(); }}>
       <div className="fulfillment-console__backdrop" aria-hidden="true" />
-      <div className="fulfillment-console__panel">
+      <div className={`fulfillment-console__panel${section === 'surf' ? ' fulfillment-console__panel--participants' : ''}`}>
         <header className="fulfillment-console__header">
           <div>
             <p className="fulfillment-console__eyebrow">RENAISS MERCH</p>
-            <h2 id="fulfillment-title">{copy.title}</h2>
-            <p>{copy.intro}</p>
+            <h2 id="fulfillment-title">{section === 'surf' ? locale === 'zh-TW' ? 'Surf 抽獎名單' : 'Surf raffle participants' : copy.title}</h2>
+            <p>{section === 'surf' ? locale === 'zh-TW' ? '查看每位參加者的驗證結果與抽獎票數。' : 'Review verification results and ticket counts for each participant.' : copy.intro}</p>
           </div>
           <button className="fulfillment-console__close" type="button" onClick={onClose}>
             {copy.close}
           </button>
         </header>
-
+        <nav className="fulfillment-console__sections" aria-label={locale === 'zh-TW' ? '管理項目' : 'Management sections'}>
+          <button type="button" aria-pressed={section === 'shipping'} onClick={() => setSection('shipping')}>{locale === 'zh-TW' ? '出貨資料' : 'Shipping'}</button>
+          <button type="button" aria-pressed={section === 'surf'} onClick={() => setSection('surf')}>{locale === 'zh-TW' ? 'Surf 抽獎名單' : 'Surf participants'}</button>
+        </nav>
+        {section === 'surf' ? <SurfParticipants /> : <>
         {loadState === 'loading' ? (
           <p className="fulfillment-console__loading" role="status">{copy.loading}</p>
         ) : null}
@@ -221,8 +238,9 @@ export function FulfillmentConsole({ onClose }: FulfillmentConsoleProps) {
             </section>
           </>
         ) : null}
+        </>}
       </div>
-    </section>
+    </dialog>
   );
 }
 
