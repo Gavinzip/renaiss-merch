@@ -58,7 +58,7 @@ export function HubSurfQuest({ locale, account, onOpenCampaign, preview = false 
           </li>
         ))}
       </ol>
-      <button type="button" data-campaign-entry="details" className="hub-surf-quest__preview-action" onClick={() => onOpenCampaign(allComplete ? undefined : 'tasks')}>
+      <button type="button" data-campaign-entry="details" className="hub-surf-quest__preview-action" onClick={() => onOpenCampaign()}>
         <span><span className="hub-action-label">{allComplete ? copy.viewCampaign : copy.completeTasks}</span><small>{allComplete ? copy.prizeSummary : copy.taskSummary}</small></span><ExternalArrow />
       </button>
       <footer className="hub-surf-quest__footer"><span>{copy.notOpen}</span><p>{copy.notice}</p></footer>
