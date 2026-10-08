@@ -32,9 +32,9 @@
   .renaiss-hub[data-density="compact"] .renaiss-hub__merch-content p { font-size: .74rem; }
   .renaiss-hub[data-density="compact"] .renaiss-hub__merch-content .renaiss-hub__button[data-preparing="true"],
   .renaiss-hub[data-density="compact"] .renaiss-hub__merch-content .renaiss-hub__error { grid-column: 1 / -1; }
-  .renaiss-hub[data-density="compact"] .hub-surf-quest__brands { position: absolute; top: 3.05rem; left: 1.1rem; gap: .65rem; margin: 0; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__brand-row { margin-top: .7rem; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__brands { gap: .65rem; }
   .renaiss-hub[data-density="compact"] .hub-surf-quest__brands :is(.hub-brand-logo,.hub-surf-logo) { width: 1.65rem; height: 1.65rem; }
-  .renaiss-hub[data-density="compact"] .hub-surf-quest h2 { margin-top: .7rem; margin-left: 96px; min-height: 26px; }
   .renaiss-hub[data-density="compact"] .hub-surf-quest__description { display: none; }
   .renaiss-hub[data-density="compact"] .hub-surf-quest__tasks { margin: .7rem 0 .7rem; }
   .renaiss-hub[data-density="compact"] .hub-surf-quest__tasks li { align-items: center; padding: .35rem 0; }
@@ -66,9 +66,8 @@
   .renaiss-hub[data-density="compact"] .renaiss-hub__identity { margin-top: 1rem; }
   .renaiss-hub[data-density="compact"] .renaiss-hub__identity-mark { width: 2.2rem; height: 2.4rem; }
   .renaiss-hub[data-density="compact"] .renaiss-hub__account-details { margin: 1rem 0 .7rem; gap: .5rem; }
-  .renaiss-hub[data-density="compact"] .hub-surf-quest__brands { top: 2.85rem; left: .9rem; gap: .5rem; }
+  .renaiss-hub[data-density="compact"] .hub-surf-quest__brands { gap: .5rem; }
   .renaiss-hub[data-density="compact"] .hub-surf-quest__brands :is(.hub-brand-logo,.hub-surf-logo) { width: 22px; height: 22px; }
-  .renaiss-hub[data-density="compact"] .hub-surf-quest h2 { margin-top: .7rem; margin-left: 78px; min-height: 24px; }
   .renaiss-hub[data-density="compact"] .hub-surf-quest__tasks { margin-block: .5rem; }
   .renaiss-hub[data-density="compact"] .hub-surf-quest__tasks li { padding-block: .2rem; }
   .renaiss-hub[data-density="compact"] .hub-surf-quest__number { width: 24px; height: 24px; flex-basis: 24px; }

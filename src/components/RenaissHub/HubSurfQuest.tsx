@@ -30,16 +30,18 @@ export function HubSurfQuest({ locale, account, onOpenCampaign, preview = false 
         <span className="hub-widget-title"><HubMotionText>{copy.eyebrow}</HubMotionText></span>
         <button type="button" data-campaign-entry="stage" className="hub-surf-quest__stage" onClick={() => onOpenCampaign()}>{copy.stage}<span aria-hidden="true"> ↗</span></button>
       </div>
-      <div className="hub-surf-quest__brands" aria-hidden="true">
-        <HubLogo />
-        <span className="hub-surf-quest__cross">×</span>
-        <SurfLogo />
+      <div className="hub-surf-quest__brand-row">
+        <div className="hub-surf-quest__brands" aria-hidden="true">
+          <HubLogo />
+          <span className="hub-surf-quest__cross">×</span>
+          <SurfLogo />
+        </div>
+        <h2>
+          <button className="hub-title-action" data-campaign-entry="title" type="button" onClick={() => onOpenCampaign()}>
+            <HubMotionText>{copy.title}</HubMotionText>
+          </button>
+        </h2>
       </div>
-      <h2>
-        <button className="hub-title-action" data-campaign-entry="title" type="button" onClick={() => onOpenCampaign()}>
-          <HubMotionText>{copy.title}</HubMotionText>
-        </button>
-      </h2>
       <p className="hub-surf-quest__description">{copy.description}</p>
       <ol className="hub-surf-quest__tasks">
         {tasks.map((task, index) => (
