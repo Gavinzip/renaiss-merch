@@ -49,7 +49,7 @@ export function HubCommunityWidget({
   return (
     <article className={`renaiss-hub__card hub-feed hub-feed--${settings.source}`} data-size={hubWidgetSize(settings)}>
       <div className="renaiss-hub__card-heading">
-        <span className="renaiss-hub__eyebrow">COMMUNITY HUB</span>
+        <span className="renaiss-hub__eyebrow">Community Hub</span>
         {feed.status === "ready" ? (
           <button className="hub-feed__live" type="button" onClick={onRetry} aria-label={locale === "en" ? "Refresh updates" : "重新整理動態"} title={locale === "en" ? "Latest source post; click to refresh" : "來源最新貼文日期；點擊重新整理"}>
             <i />{settings.source === "official" && settings.project === "tcg" ? "@renaissxyz · " : ""}{latestLabel}

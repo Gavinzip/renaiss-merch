@@ -27,7 +27,7 @@ export function HubSurfQuest({ locale, account, onOpenCampaign, preview = false 
   return (
     <article className="renaiss-hub__card hub-surf-quest" id={preview ? undefined : "portal-partner"}>
       <div className="renaiss-hub__card-heading">
-        <span className="renaiss-hub__eyebrow">{copy.eyebrow}</span>
+        <span className="hub-widget-title"><HubMotionText>{copy.eyebrow}</HubMotionText></span>
         <button type="button" data-campaign-entry="stage" className="hub-surf-quest__stage" onClick={() => onOpenCampaign()}>{copy.stage}<span aria-hidden="true"> ↗</span></button>
       </div>
       <div className="hub-surf-quest__brands" aria-hidden="true">

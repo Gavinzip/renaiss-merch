@@ -1,7 +1,7 @@
 /* The collection expands in-page; a selected template gets a real, sized card. */
 .hub-editor { margin: .3rem 0 2rem; padding: 1.4rem 1.6rem; border: 1px solid #ffffffe6; border-radius: var(--hub-radius); background: linear-gradient(115deg,#ffffffb3,#ffffff70); box-shadow: inset 0 1px 0 #ffffff80,0 12px 40px -24px #79559926; }
 .hub-editor__heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.hub-editor h2 { margin: 0; font-size: 1rem; font-weight: 550; letter-spacing: -.03em; }
+.hub-editor__heading h2 { margin: 0; font-size: 1rem; font-weight: 550; letter-spacing: -.03em; }
 .hub-editor__heading p { margin: .4rem 0 0; color: #7f728b; font-size: .76rem; line-height: 1.65; }
 .hub-editor__open { display: flex; align-items: center; justify-content: center; gap: .55rem; flex-shrink: 0; min-height: 44px; padding: .55rem .9rem; border: 1px solid #ffffffed; border-radius: 999px; color: #54475e; background: #ffffffb3; font: inherit; font-size: .76rem; cursor: pointer; transition: background 150ms,transform 250ms var(--hub-ease); }
 .hub-editor__open:hover { background: #fff; transform: translateY(-1px); }

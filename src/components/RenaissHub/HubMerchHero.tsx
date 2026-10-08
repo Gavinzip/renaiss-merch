@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { AppLocale } from "../../i18n/LocaleContext";
 import { hubAssetUrl } from "../../lib/hubAssets";
+import { HubMotionText } from "./HubMotionText";
 
 export function HubMerchHero({
   locale,
@@ -124,7 +125,7 @@ export function HubMerchHero({
           onError={() => setPhase("error")}
         />
       </div>
-      <span className="renaiss-hub__eyebrow">{eyebrow}</span>
+      <span className="hub-widget-title hub-merch-hero__title"><HubMotionText>{eyebrow}</HubMotionText></span>
       {phase === "loading" ? (
         <span className="hub-merch-hero__message" role="status">
           {zh ? "準備展示…" : "Preparing the edition…"}

@@ -5,12 +5,12 @@ export const renaissHubCopy = {
     dashboardLabel: "Your home widgets",
     preview: "Design preview",
     introduction: {
-      eyebrow: "MEMBER SPACE",
+      eyebrow: "Member space",
       title: "Your Renaiss",
       description: "Your account, community quests, and members’ editions.",
     },
     member: {
-      eyebrow: "ACCOUNT",
+      eyebrow: "Account",
       title: "Your identity",
       disconnected: "Welcome to Renaiss.",
       description: "Connect your Renaiss account to get started.",
@@ -44,7 +44,7 @@ export const renaissHubCopy = {
       copyError: "Could not copy. Try again.",
     },
     questline: {
-      eyebrow: "QUESTLINE",
+      eyebrow: "Questline",
       title: "Explore community quests.",
       stage: "Coming soon",
       description:
@@ -58,7 +58,7 @@ export const renaissHubCopy = {
       note: "A quest checks the connected account’s action and records the result. Tasks and rewards are not active in this preview.",
     },
     merch: {
-      eyebrow: "MEMBERS’ EDITIONS",
+      eyebrow: "Members’ editions",
       title: "Renaiss Merch",
       description: "Limited objects. Something to carry with you.",
       action: "Explore Merch",
@@ -67,7 +67,7 @@ export const renaissHubCopy = {
       imageAlt: "Sealed Renaiss merchandise edition",
     },
     community: {
-      eyebrow: "COMMUNITY",
+      eyebrow: "Community",
       title: "Community updates",
       channel: "Renaiss Community",
       description:
@@ -81,12 +81,12 @@ export const renaissHubCopy = {
     dashboardLabel: "你的首頁小工具",
     preview: "設計預覽",
     introduction: {
-      eyebrow: "MEMBER SPACE",
+      eyebrow: "Member space",
       title: "你的 Renaiss",
       description: "帳號、社群任務與限定周邊，一起探索。",
     },
     member: {
-      eyebrow: "ACCOUNT",
+      eyebrow: "Account",
       title: "你的身分",
       disconnected: "歡迎來到 Renaiss。",
       description: "連接帳號，開始你的參與旅程。",
@@ -120,7 +120,7 @@ export const renaissHubCopy = {
       copyError: "複製失敗，請再試一次。",
     },
     questline: {
-      eyebrow: "QUESTLINE",
+      eyebrow: "Questline",
       title: "探索社群任務。",
       stage: "即將推出",
       description: "認識新的社群，參與合作活動，讓每一次連結成為你的故事。",
@@ -133,7 +133,7 @@ export const renaissHubCopy = {
       note: "任務會查核已連接帳號的實際動作，並記錄結果。這個預覽尚未開放任務或獎勵。",
     },
     merch: {
-      eyebrow: "MEMBERS’ EDITIONS",
+      eyebrow: "Members’ editions",
       title: "Renaiss Merch",
       description: "把收藏的故事，帶進日常。",
       action: "探索 Merch",
@@ -142,7 +142,7 @@ export const renaissHubCopy = {
       imageAlt: "尚未開封的 Renaiss 限定周邊",
     },
     community: {
-      eyebrow: "COMMUNITY",
+      eyebrow: "Community",
       title: "社群最新動態。",
       channel: "Renaiss Community",
       description: "新的合作、社群故事，以及值得分享的消息。",

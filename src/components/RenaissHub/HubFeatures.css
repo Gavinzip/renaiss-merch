@@ -114,9 +114,6 @@
 }
 .renaiss-hub__quest h2.renaiss-hub__quest-title {
   margin-top: 1rem;
-  font-size: 1.8rem;
-  font-weight: 500;
-  letter-spacing: -0.045em;
 }
 .renaiss-hub__quest > .renaiss-hub__description {
   margin-top: 0.5rem;
@@ -204,12 +201,10 @@
   min-height: 300px;
   overflow: hidden;
 }
-.renaiss-hub__merch-visual > .renaiss-hub__eyebrow {
+.renaiss-hub__merch-visual > .hub-merch-hero__title {
   position: absolute;
   top: 1.55rem;
   left: 1.55rem;
-  font-size: 0.53rem;
-  color: #554a3e;
 }
 .renaiss-hub__merch-content {
   display: flex;
@@ -220,11 +215,6 @@
   padding: 1.6rem;
   background: rgba(255, 255, 255, 0.58);
   border-top: 1px solid rgba(255, 255, 255, 0.85);
-}
-.renaiss-hub__merch-content h2 {
-  font-size: 1.45rem;
-  font-weight: 500;
-  letter-spacing: -0.05em;
 }
 .renaiss-hub__merch-content p {
   margin-top: 0.4rem;
@@ -265,9 +255,6 @@
   .renaiss-hub__quest {
     min-height: 300px;
   }
-  .renaiss-hub__quest h2.renaiss-hub__quest-title {
-    font-size: 1.65rem;
-  }
   .renaiss-hub__journey {
     gap: 0.6rem;
     margin-block: 1.75rem;
@@ -293,7 +280,7 @@
     min-height: 0;
     height: clamp(224px, 72vw, 290px);
   }
-  .renaiss-hub__merch-visual > .renaiss-hub__eyebrow {
+  .renaiss-hub__merch-visual > .hub-merch-hero__title {
     top: 1.3rem;
     left: 1.35rem;
   }

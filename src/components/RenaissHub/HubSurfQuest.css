@@ -20,7 +20,7 @@
 .hub-surf-quest__brands { display: flex; align-items: center; gap: .85rem; margin: 1.25rem 0 1.1rem; }
 .hub-surf-quest__brands .hub-brand-logo { width: 2.25rem; height: 2.25rem; object-fit: contain; }
 .hub-surf-quest__cross { color: var(--quest-subtle); font-size: .8rem; font-weight: 300; }
-.hub-surf-quest h2 { margin: 0; font-size: 1.28rem; font-weight: 560; letter-spacing: -.04em; }
+.hub-surf-quest h2 { margin: 0; }
 .hub-surf-quest__description { margin: .45rem 0 0; color: var(--hub-muted); font-size: .75rem; line-height: 1.65; }
 .hub-surf-quest__tasks { padding: 0; margin: 1.3rem 0 1.1rem; list-style: none; }
 .hub-surf-quest__tasks li { display: flex; gap: .65rem; align-items: flex-start; padding: .85rem 0; border-top: 1px solid var(--hub-line); }

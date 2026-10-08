@@ -5,6 +5,7 @@
   --hub-line: rgba(57, 56, 74, 0.11);
   --hub-paper: rgba(255, 255, 255, 0.61);
   --hub-radius: 22px;
+  --hub-widget-title-size: 1.4rem;
   --hub-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --acc-expand: 250ms;
   --acc-collapse: 250ms;
@@ -173,10 +174,12 @@
   backdrop-filter: blur(24px) saturate(120%);
   scroll-margin-top: 1.5rem;
 }
-.renaiss-hub__card h2 {
+.renaiss-hub__card h2,
+.renaiss-hub__card .hub-widget-title {
   margin: 0;
-  font-weight: 550;
-  letter-spacing: -0.035em;
+  font-size: var(--hub-widget-title-size);
+  font-weight: 500;
+  letter-spacing: -0.05em;
   line-height: 1.35;
 }
 .renaiss-hub__card-heading {
@@ -184,10 +187,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
-}
-.renaiss-hub__card-heading h2 {
-  font-size: 0.82rem;
-  letter-spacing: -0.015em;
 }
 .renaiss-hub__eyebrow {
   margin: 0;

@@ -1,6 +1,6 @@
 export const surfQuestCopy = {
   "zh-TW": {
-    eyebrow: "PARTNER QUEST", stage: "活動預覽", title: "Renaiss × Surf",
+    eyebrow: "Partner quest", stage: "活動預覽", title: "Renaiss × Surf",
     description: "探索 Surf，也認識新的社群。",
     completeTasks: "完成任務", taskSummary: "帳號 · X · Discord",
     viewCampaign: "查看活動與獎品", prizeSummary: "Mystery Box · Pro 體驗",
@@ -11,7 +11,7 @@ export const surfQuestCopy = {
     notOpen: "在活動內連接與驗證", notice: "登入 Renaiss，驗證 Surf 與社群任務。",
   },
   en: {
-    eyebrow: "PARTNER QUEST", stage: "Campaign preview", title: "Renaiss × Surf",
+    eyebrow: "Partner quest", stage: "Campaign preview", title: "Renaiss × Surf",
     description: "Discover Surf. Meet a new community.",
     completeTasks: "Complete quests", taskSummary: "Accounts · X · Discord",
     viewCampaign: "Explore the campaign", prizeSummary: "Mystery Box · Pro trials",
