@@ -1,13 +1,15 @@
 import { missionErrorCopy } from './missionErrorCopy';
+import { RENAISS_ACCOUNT_SETTINGS_URL } from '../../lib/renaissAuth';
 import type { AppLocale } from '../../i18n/LocaleContext';
 import type { RecordedMissionTask, SocialProvider, SocialTaskState } from './useSurfMissions';
 
-export function SurfSocialTask({ provider, task, recorded, linkedXUsername, authorizationError, authenticated, busy, working, loading, locale, act }: {
+export function SurfSocialTask({ provider, task, recorded, linkedXUsername, authorizationError, authenticated, busy, working, loading, locale, act, onLogin }: {
   recorded?: RecordedMissionTask;
   linkedXUsername?: string | null;
   authorizationError?: string | null;
   provider: SocialProvider; task?: SocialTaskState; authenticated: boolean; busy: boolean; working: boolean; loading: boolean;
   locale: AppLocale; act: (provider: SocialProvider, action: 'connect' | 'verify') => void;
+  onLogin: () => void;
 }) {
   const verified = recorded?.verified === true;
   const outcome = task?.result?.stale ? 'stale' : task?.result?.outcome;
@@ -47,9 +49,16 @@ export function SurfSocialTask({ provider, task, recorded, linkedXUsername, auth
       </button>
       {task.connection && !connect && !identityLocked ? <button type="button" className="surf-social-task__change" disabled={busy || loading} onClick={() => act(provider, 'connect')}>{inlineCopy[locale].changeAccount}</button> : null}
     </div> : null}
-    {provider === 'x' ? <p className="surf-social-task__detail surf-social-task__account-rule">
-      {xMissing ? missionErrorCopy('renaiss_x_not_linked', locale) : inlineCopy[locale].sameXAccount(linkedX)}
-    </p> : null}
+    {provider === 'x' && !verified ? <>
+      <p className="surf-social-task__detail surf-social-task__account-rule">{inlineCopy[locale].sameXAccount(linkedX)}</p>
+      {authenticated ? <>
+        <p className="surf-social-task__detail">{inlineCopy[locale].signInAgainAfterLinking}</p>
+        <div className="surf-social-task__sync-actions">
+          <a href={RENAISS_ACCOUNT_SETTINGS_URL} target="_blank" rel="noopener noreferrer">{inlineCopy[locale].openRenaissSettings}<span aria-hidden="true">↗</span></a>
+          <button type="button" disabled={busy || loading} onClick={onLogin}>{inlineCopy[locale].linkedSignInAgain}</button>
+        </div>
+      </> : null}
+    </> : null}
     {xLocked && !verified ? <p className="surf-social-task__detail">{inlineCopy[locale].thisVerifiedXAccountIsLockedAnd}</p> : null}
     {authenticated && !task?.configured && task?.configurationReason ? <p className="surf-social-task__detail">{missionErrorCopy(task.configurationReason, locale)}</p> : null}
     {reason && !verified && !(xMissing && reason === 'renaiss_x_not_linked') ? <p className="surf-social-task__detail" role={xMismatch ? 'alert' : undefined}>{missionErrorCopy(reason, locale)}</p> : null}
@@ -63,6 +72,9 @@ const inlineCopy = {
   "en": {
     connectService: (service: string) => `Connect & verify ${service}`,
     sameXAccount: (username?: string) => `Verify with the same X account linked to Renaiss${username ? ` (@${username})` : ''}.`,
+    signInAgainAfterLinking: "After linking X in Renaiss, return here and sign in again to sync the new account. Refreshing this page alone will not update it.",
+    openRenaissSettings: "Link X in Renaiss",
+    linkedSignInAgain: "Linked X? Sign in again",
     verificationPassed: "Verification passed",
     verifying: "Verifying…",
     checking: "Checking",
@@ -87,6 +99,9 @@ const inlineCopy = {
   "zh-TW": {
     connectService: (service: string) => service === 'X' ? '授權並驗證 X' : `連接並驗證 ${service}`,
     sameXAccount: (username?: string) => `驗證帳號須與 Renaiss 綁定的 X 帳號相同${username ? `（@${username}）` : ''}。`,
+    signInAgainAfterLinking: "在 Renaiss 綁定 X 後，請回到此頁重新登入，系統才會取得剛綁定的帳號；只刷新頁面不會同步。",
+    openRenaissSettings: "前往 Renaiss 綁定 X",
+    linkedSignInAgain: "已綁定，重新登入",
     verificationPassed: "驗證通過",
     verifying: "驗證中…",
     checking: "確認中",
@@ -111,6 +126,9 @@ const inlineCopy = {
   "ko": {
     connectService: (service: string) => `${service} 연결 및 인증`,
     sameXAccount: (username?: string) => `Renaiss에 연결된 동일한 X 계정${username ? ` (@${username})` : ''}으로 인증해 주세요.`,
+    signInAgainAfterLinking: "Renaiss에서 X 계정을 연결한 뒤 이 페이지로 돌아와 다시 로그인해야 새 계정 정보가 반영됩니다. 새로고침만으로는 동기화되지 않습니다.",
+    openRenaissSettings: "Renaiss에서 X 연결",
+    linkedSignInAgain: "연결 완료 · 다시 로그인",
     verificationPassed: "인증 완료",
     verifying: "인증 중…",
     checking: "확인 중",

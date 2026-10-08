@@ -5,6 +5,7 @@ import type { AppLocale } from '../../i18n/LocaleContext';
 import type { AccountState } from './RenaissHubFeatures';
 import { HubLogo } from './HubLogo';
 import { HubLanguageMenu } from './HubLanguageMenu';
+import { HubAccountAction } from './HubAccountAction';
 import { surfCampaignCopy } from './SurfCampaignCopy';
 import { SurfCampaignHero } from './SurfCampaignHero';
 import { SurfCampaignRewards } from './SurfCampaignRewards';
@@ -47,6 +48,7 @@ export function SurfCampaignPage({ locale, setLocale, account, motionRevision, o
         <nav aria-label={copy.pageNavigation}><button type="button" onClick={() => goTo('surf-campaign-rewards')}>{copy.viewRewards}</button><button type="button" onClick={() => goTo('surf-campaign-tasks')}>{copy.viewTasks}</button></nav>
         <div className="surf-page__account-controls"><HubLanguageMenu locale={locale} setLocale={setLocale} />
           {administrator ? <button className="surf-page__logout" type="button" onClick={() => setShowParticipants(true)}>{inlineCopy[locale].participants}</button> : null}
+          {account.status === 'error' || (account.status === 'ready' && !account.session.authenticated) ? <HubAccountAction account={account} locale={locale} onRetry={onRetry} onLogin={loginForMission} disabled={false} /> : null}
           {account.status === 'ready' && account.session.authenticated ? <button className="surf-page__logout" type="button" onClick={onLogout} disabled={loggingOut}>{loggingOut ? inlineCopy[locale].signingOut : inlineCopy[locale].signOut}</button> : null}
         </div>
       </header>

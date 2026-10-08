@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import { checkMerchEligibility } from '../../lib/merchEligibility';
-import { readMemberBadgeCount } from '../../lib/memberSbt';
+import { readMemberBadgeCount, readMemberSbt } from '../../lib/memberSbt';
 import type { RenaissUser } from '../../lib/renaissAuth';
 
 type SbtState =
   | { status: 'loading' | 'error' | 'wallet-pending' | 'preview' | 'demo' }
-  | { status: 'ready'; count: number };
+  | { status: 'ready'; count: number; checkedAt: string };
 type Snapshot = { identity: string; state: SbtState };
 const REQUEST_TIMEOUT_MS = 40_000;
 
@@ -27,11 +26,12 @@ export function useMemberSbt(user: RenaissUser | null, preview: boolean) {
       setSnapshot({ identity, state: { status: 'error' } });
     }, REQUEST_TIMEOUT_MS);
 
-    void checkMerchEligibility('shirt', { signal: controller.signal })
+    void readMemberSbt(request > 0, controller.signal)
       .then(result => {
         if (controller.signal.aborted) return;
         const count = readMemberBadgeCount(result, wallet);
-        setSnapshot({ identity, state: { status: 'ready', count } });
+        if (!Number.isFinite(Date.parse(result.checkedAt))) throw new Error('SBT check time is invalid.');
+        setSnapshot({ identity, state: { status: 'ready', count, checkedAt: result.checkedAt } });
       })
       .catch(() => {
         if (!controller.signal.aborted) setSnapshot({ identity, state: { status: 'error' } });

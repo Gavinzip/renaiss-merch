@@ -5,12 +5,14 @@ import { HubMemberEmail } from './HubMemberEmail';
 import { HubWalletCopy } from './HubWalletCopy';
 import { HubMotionText } from './HubMotionText';
 import { useMemberSbt } from './useMemberSbt';
+import type { AppLocale } from '../../i18n/LocaleContext';
 import type { AccountState } from './RenaissHubFeatures';
 import type { RenaissHubCopy } from './RenaissHubCopy';
 import './HubMember.css';
 
-export function HubMember({ account, copy, onLogin, onRetry, preview = false }: {
+export function HubMember({ account, copy, locale, onLogin, onRetry, preview = false }: {
   account: AccountState; copy: RenaissHubCopy['member'];
+  locale: AppLocale;
   onLogin: () => void; onRetry: () => void; preview?: boolean;
 }) {
   const user = account.status === 'ready' && account.session.authenticated ? account.session.user : null;
@@ -36,8 +38,7 @@ export function HubMember({ account, copy, onLogin, onRetry, preview = false }: 
     </div>
     {user ? <div className="hub-member__sbt" aria-live="polite" aria-busy={sbt.status === 'loading'}>
       {sbt.status === 'ready' ? <><strong className="hub-member__sbt-count" key={sbt.count}>{sbt.count.toLocaleString()}</strong><span>{copy.sbt}</span></> :
-        <><div className="hub-member__sbt-pending"><span className="hub-member__sbt-label">{copy.sbt}</span><span>{sbtMessage}</span></div>
-          {sbt.status === 'error' ? <button type="button" className="hub-member__retry" onClick={retrySbt}>{copy.retry}<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 7a6 6 0 1 0 0 6M16 3v4h-4" /></svg></button> : null}</>}
+        <div className="hub-member__sbt-pending"><span className="hub-member__sbt-label">{copy.sbt}</span><span>{sbtMessage}</span></div>}
     </div> : null}
     <dl className="renaiss-hub__account-details">
       <div><dt>{copy.wallet}</dt><dd>{user?.safeWalletAddress ? <HubWalletCopy key={user.safeWalletAddress} address={user.safeWalletAddress} copy={copy} /> : user ? copy.missingWallet : copy.unavailable}</dd></div>
@@ -45,6 +46,16 @@ export function HubMember({ account, copy, onLogin, onRetry, preview = false }: 
       <div><dt>{copy.x}</dt><dd>{user?.twitterUsername ? <a className="hub-member__settings is-linked" href={`https://x.com/${encodeURIComponent(user.twitterUsername.replace(/^@/, ''))}`} target="_blank" rel="noopener noreferrer">@{user.twitterUsername.replace(/^@/, '')}<ExternalArrow /></a> : user ?
         <a className="hub-member__settings" href={RENAISS_ACCOUNT_SETTINGS_URL} target="_blank" rel="noopener noreferrer" title={copy.xSettings}>{copy.missingX}<ExternalArrow /></a> : copy.unavailable}</dd></div>
     </dl>
+    {user && user.safeWalletAddress && !user.isDemo && !preview ?
+      <div className="hub-member__sbt-actions">
+        {sbt.status === 'ready' ? <time dateTime={sbt.checkedAt}>{copy.sbtCheckedAt} {new Intl.DateTimeFormat(locale, {
+          month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+        }).format(new Date(sbt.checkedAt))}</time> : null}
+        <button type="button" onClick={retrySbt} disabled={sbt.status === 'loading'}>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 7a6 6 0 1 0 0 6M16 3v4h-4" /></svg>
+          {sbt.status === 'loading' ? copy.sbtLoading : copy.sbtRefresh}
+        </button>
+      </div> : null}
     {needsSync ? <div className="hub-member__sync"><span>{copy.syncHint}</span><button type="button" onClick={onLogin}>{copy.syncAccount}<ExternalArrow /></button></div> : null}
     {!user && account.status !== 'loading' ? <button className="renaiss-hub__button renaiss-hub__account-action t-learn" onClick={account.status === 'error' ? onRetry : onLogin} type="button">
       <span className="hub-action-label">{account.status === 'error' ? copy.retry : copy.login}</span><span className="t-learn-chevron" aria-hidden="true"><svg className="renaiss-hub__arrow" viewBox="0 0 16 16"><path className="t-learn-arm t-learn-arm-top" d="M6 4L10 8" /><path className="t-learn-arm t-learn-arm-bot" d="M10 8L6 12" /></svg></span>

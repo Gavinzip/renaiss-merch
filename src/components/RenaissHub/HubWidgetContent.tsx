@@ -21,7 +21,7 @@ export function HubWidgetContent(props: HubWidgetContentProps) {
   const { widget, locale, preview, account } = props;
   const copy = renaissHubCopy[locale];
   switch (widget.type) {
-    case "member": return <HubMember account={account} copy={copy.member} preview={preview} onLogin={props.onLogin} onRetry={props.onRetryAccount} />;
+    case "member": return <HubMember account={account} copy={copy.member} locale={locale} preview={preview} onLogin={props.onLogin} onRetry={props.onRetryAccount} />;
     case "questline": return <HubQuestline copy={copy.questline} preview={preview} />;
     case "merch": return <HubMerch locale={locale} copy={copy.merch} preview={preview} enterRequested={props.enterRequested} loadProgress={props.loadProgress} loadState={props.loadState} onEnter={props.onEnter} />;
     case "partner": return <HubSurfQuest key={account.status === 'ready' && account.session.authenticated ? account.session.user.sub : 'guest'} locale={locale} account={account} preview={preview} onOpenCampaign={props.onOpenCampaign} />;

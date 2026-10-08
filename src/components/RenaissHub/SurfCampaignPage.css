@@ -28,8 +28,9 @@
 .surf-page__header nav button { border: 0; background: transparent; color: var(--surf-muted); padding: 10px 0; min-height: 44px; font-size: 12px; transition: color 160ms ease; }
 .surf-page__header nav button:hover { color: var(--surf-pink); }
 .surf-page__account-controls { display: flex; align-items: center; gap: 12px; }
-.surf-page__logout { min-height: 34px; padding: 0 12px; border: 1px solid #e5dce6; border-radius: 999px; background: #fff9; color: #6b5966; font-size: 11px; }
+.surf-page__logout { min-height: 34px; padding: 0 12px; border: 1px solid #e5dce6; border-radius: 999px; background: #fff9; color: #6b5966; font-size: 11px; white-space: nowrap; }
 .surf-page__logout:hover { border-color: #d4bdcd; color: #302731; }
+.surf-page .hub-account-action { font-size: 12px; font-weight: 500; }
 .surf-page .hub-language { --hub-ink: var(--surf-ink); }
 .surf-page__hero { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 36px; padding-block: 66px 55px; }
 .surf-page__brand-pair { display: flex; align-items: center; gap: 24px; margin-bottom: 45px; }
@@ -183,6 +184,13 @@
   .surf-page__task-actions { justify-content: flex-start; margin-top: 2px; }
   .surf-page__facts { gap: 22px; }
   .surf-page__footer { align-items: start; flex-direction: column; gap: 12px; padding-block: 23px; }
+}
+@media (max-width: 480px) {
+  .surf-page__header { gap: 8px; }
+  .surf-page__location-label { display: none; }
+  .surf-page__account-controls { gap: 6px; }
+  .surf-page__logout { padding-inline: 9px; font-size: 10px; }
+  .surf-page .hub-account-action { font-size: 11px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .surf-page [data-surf-reveal] { opacity: 1 !important; transform: none !important; filter: none !important; }

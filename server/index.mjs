@@ -30,6 +30,7 @@ import {
 } from './merch-access-state.mjs';
 import { getMerchDatabase } from './merch-database.mjs';
 import { readCommunityFeed } from './hub/community-feed.mjs';
+import { readHubMemberSbt } from './hub/member-sbt.mjs';
 import { askHubAssistant } from './hub/assistant.mjs';
 import { readHubPreferences, saveHubPreferences } from './hub/preferences.mjs';
 import { handleHubHeroPreview } from './hub/hero-preview.mjs';
@@ -259,6 +260,15 @@ async function handleRoute(req, res) {
     // check or grant/reveal any item before the user explicitly checks it.
     await readMerchEligibility(readSession(req), { productId: 'shirt' });
     sendNoContent(res);
+    return true;
+  }
+
+  if (url.pathname === '/api/hub/member-sbt') {
+    requireMethod(req, 'GET');
+    const result = await readHubMemberSbt(readSession(req), {
+      forceRefresh: url.searchParams.get('refresh') === '1'
+    });
+    sendJson(res, 200, result);
     return true;
   }
 

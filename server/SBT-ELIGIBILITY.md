@@ -38,6 +38,11 @@ Renaiss BSC SBT collection, not arbitrary ERC-1155 contracts.
 
 Successful paired results are cached server-side by wallet, contract, chain and
 source endpoints for 60 seconds by default, with concurrent requests coalesced.
+The Hub profile reads `/api/hub/member-sbt` directly from this paired count,
+without using the Store's reusable eligibility proof or saving a product access
+check. Its SBT refresh button sends `refresh=1` to bypass the 60-second count
+cache and returns the new check time. This refresh does not grant or change a
+claim entitlement.
 After the Store resolves an authenticated wallet, it calls
 `/api/merch-eligibility/prepare` in the background after the first paint. This
 warms the shared count cache only: it does not persist product access or change

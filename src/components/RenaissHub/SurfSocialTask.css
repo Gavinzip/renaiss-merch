@@ -16,6 +16,10 @@
 .surf-social-task__controls button:disabled { opacity: .5; cursor: wait; }
 .surf-page .surf-social-task__controls .surf-social-task__change { color: var(--quest-muted); text-decoration-color: transparent; }
 .surf-social-task__detail { grid-column: 1 / -1; font-size: 11px; line-height: 1.7; color: var(--quest-muted); margin: 6px 0 0; }
+.surf-social-task__sync-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; margin-top: 2px; }
+.surf-page .surf-social-task__sync-actions :is(a,button) { display: inline-flex; align-items: center; gap: 5px; min-height: 38px; padding: 5px 0; border: 0; background: transparent; color: var(--quest-ink); font: inherit; font-size: 11px; text-decoration: underline; text-decoration-color: #b6c4bd; text-underline-offset: 4px; }
+.surf-page .surf-social-task__sync-actions :is(a,button):hover { color: var(--quest-focus); text-decoration-color: currentColor; }
+.surf-page .surf-social-task__sync-actions button:disabled { opacity: .5; cursor: wait; }
 .surf-social-task__time { grid-column: 1 / -1; display: block; font-size: 9px; color: var(--quest-muted); margin-top: 2px; }
 .surf-social-task__error { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 16px; padding-block: 8px; color: #a44d43; }
 .surf-social-task__error p { font-size: 11px; line-height: 1.8; margin: 0; }

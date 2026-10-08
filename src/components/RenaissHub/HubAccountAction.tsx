@@ -4,8 +4,8 @@ import { readRenaissLoginUrl, RENAISS_ACCOUNT_SETTINGS_URL } from '../../lib/ren
 import type { AccountState } from './RenaissHubFeatures';
 import './HubAccountAction.css';
 
-export function HubAccountAction({ account, locale, onRetry, onLogout, disabled, loggingOut = false }: {
-  account: AccountState; locale: AppLocale; onRetry: () => void; onLogout?: () => void; disabled: boolean; loggingOut?: boolean;
+export function HubAccountAction({ account, locale, onRetry, onLogin, onLogout, disabled, loggingOut = false }: {
+  account: AccountState; locale: AppLocale; onRetry: () => void; onLogin?: () => void; onLogout?: () => void; disabled: boolean; loggingOut?: boolean;
 }) {
   const disabledLink = {
     'aria-disabled': disabled, tabIndex: disabled ? -1 : undefined,
@@ -18,6 +18,9 @@ export function HubAccountAction({ account, locale, onRetry, onLogout, disabled,
     aria-label={inlineCopy[locale].myRenaissAccount} title={account.session.user.name || (inlineCopy[locale].myAccount)}>
     {icon}<span>{account.session.user.isDemo ? (inlineCopy[locale].demoAccount) : (inlineCopy[locale].myAccount)}</span>
   </a>{onLogout ? <button className="hub-account-action__logout" type="button" onClick={onLogout} disabled={disabled || loggingOut} aria-label={inlineCopy[locale].signOutOfRenaiss}>{loggingOut ? (inlineCopy[locale].signingOut) : (inlineCopy[locale].signOut)}</button> : null}</div>;
+  if (onLogin) return <button className="hub-account-action is-sign-in" type="button" onClick={onLogin} disabled={disabled} aria-label={inlineCopy[locale].signInToRenaiss}>
+    {icon}<span>{inlineCopy[locale].signIn}</span>
+  </button>;
   return <a {...disabledLink} className="hub-account-action is-sign-in" href={readRenaissLoginUrl()} aria-label={inlineCopy[locale].signInToRenaiss}>
     {icon}<span>{inlineCopy[locale].signIn}</span>
   </a>;
