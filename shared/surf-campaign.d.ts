@@ -1,6 +1,9 @@
 export const surfCampaign: Readonly<{
   id: "surf-renaiss-v1";
   phase: "integration";
+  startsAt: string;
+  endsAt: string;
+  timeZone: "Asia/Taipei";
   surfUrl: string;
   xUrl: string;
   xHandle: string;

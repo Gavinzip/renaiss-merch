@@ -17,9 +17,6 @@
   color: #8d8796;
   font-size: 0.6rem;
 }
-.renaiss-hub__member .renaiss-hub__status {
-  border-color: rgba(255, 255, 255, 0.9);
-}
 .renaiss-hub__identity {
   display: flex;
   align-items: center;

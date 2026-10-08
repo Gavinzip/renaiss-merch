@@ -13,22 +13,21 @@ wallets, email addresses, task flags and ticket counts cannot issue tickets.
 Names, wallet and linked X profile come from SSO; social IDs and usernames come
 from authenticated X/Discord connections. No Demo participant enters the ledger.
 
-X verification must use the X account in the trusted Renaiss profile. The task
-allows an account change before the first successful check. A successful check
-permanently locks the provider user ID for this campaign, including after
-refresh, token expiry, a failed recheck or a changed Renaiss binding. Renewing
-authorization for that same provider identity remains possible; replacing or
-disconnecting it is rejected on the server. OAuth callbacks reject a
-different X account before saving credentials, and verification checks reject
-an existing mismatch before refreshing credentials or calling the follow API.
-An identity mismatch cannot retain the X task's ticket. Missing X bindings must
-first be completed in Renaiss, followed by a fresh Renaiss sign-in.
+X verification must use the X account in the trusted Renaiss profile. X and
+Discord may each change accounts until their first successful check. At that
+point the verified provider user ID is locked for the campaign, including
+after refresh, token expiry or a failed check. The UI no longer offers recheck
+or account replacement for a recorded pass; repeat verification requests
+return the saved result without calling the provider. The server rejects a
+different provider identity and disconnection. Renewing authorization for the
+same identity remains possible when needed. OAuth callbacks reject a different
+identity before storing credentials. Missing X bindings must first be completed
+in Renaiss, followed by a fresh Renaiss sign-in.
 
-Provider checks have a 15-minute freshness window. A cached result expiring does
-not erase previously recorded tickets. A provider outage or expired authorization
-is recorded as an unsuccessful recheck, with the previous confirmed grant kept
-for the same identity. Renewing an X or Discord token for the same provider ID
-also retains the previous result while the next network check is pending.
+Pending provider checks have a 15-minute freshness window. A cached result
+expiring does not erase previously recorded tickets. A provider outage or
+expired authorization on an unfinished task may be retried. Renewing an X or
+Discord token for the same provider ID also retains a saved pass.
 A definitive failed task, identity change, disconnection
 or changed verification target/policy removes that task's grant. Failure of the
 mandatory accounts task sets total tickets to zero. Every change is audited.
@@ -44,7 +43,8 @@ These tables share the existing SQLite database configured by
 | Table | Contents |
 | --- | --- |
 | `mission_participants` | SSO user ID, name, Safe wallet, email, Renaiss X profile, verified social IDs/usernames, three task records, total tickets, timestamps and rule version |
-| `mission_x_identity_locks` | First successfully verified X provider user ID and verification time; retained when check status changes |
+| `mission_social_identity_locks` | First successfully verified X or Discord provider user ID and verification time; retained when check status changes |
+| `mission_x_identity_locks` | Legacy X lock records, preserved and migrated into the shared lock table |
 | `mission_result_history` | Provider response/evidence for every new check, including failed checks |
 | `mission_participation_events` | Participant record before and after each change |
 | `mission_participant_exports` | Export ID, administrator, scope, participant/ticket totals and the complete immutable JSON snapshot |

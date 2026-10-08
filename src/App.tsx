@@ -63,8 +63,12 @@ export default function App() {
     entryContext.shouldResumeStore ? 'store' : 'landing'
   );
   const preview = new URLSearchParams(window.location.search).get('preview');
-  // Keep the public Merch entry in place until the Community launch is approved.
-  const isCommunityEntry = import.meta.env.DEV && preview === 'community-entry';
+  // In a production build the server only serves this app at / when the
+  // storefront is in production mode. Preview mode keeps its legacy / entry.
+  const isPublicCommunityEntry = import.meta.env.PROD &&
+    (window.location.pathname === '/' || window.location.pathname === '/index.html');
+  const isCommunityEntry = isPublicCommunityEntry ||
+    (import.meta.env.DEV && preview === 'community-entry');
   const isHubExperience = isCommunityEntry || isHiddenHubPath(window.location.pathname) ||
     (import.meta.env.DEV && preview === 'hub');
   useEffect(() => {

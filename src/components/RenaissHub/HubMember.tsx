@@ -26,7 +26,7 @@ export function HubMember({ account, copy, onLogin, onRetry, preview = false }: 
     id={preview ? undefined : 'portal-member'}>
     <div className="renaiss-hub__card-heading">
       <h2><HubMotionText>{copy.title}</HubMotionText></h2>
-      {user ? <span className="renaiss-hub__status"><i />{copy.connected}</span> :
+      {user ? <span className="hub-member__connection-status">{copy.connected}</span> :
         <span className="renaiss-hub__eyebrow">{copy.eyebrow}</span>}
     </div>
     <div className="renaiss-hub__identity">

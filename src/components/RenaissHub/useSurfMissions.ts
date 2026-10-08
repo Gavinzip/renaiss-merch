@@ -53,7 +53,7 @@ export function useSurfMissions(active: boolean, userSub: string | null) {
         const value = await request<SurfMissionState>('/api/missions/surf');
         if (cancelled) return;
         setState(value);
-        if (value.authenticated && value.accounts.configured && value.accounts.emailLinked &&
+        if (value.authenticated && !value.participation?.tasks.accounts.verified && value.accounts.configured && value.accounts.emailLinked &&
             (value.accounts.outcome === 'pending' || value.accounts.stale)) {
           setBusy('accounts');
           const checked = await request<SurfMissionState>('/api/missions/surf/accounts/verify', { method: 'POST' });

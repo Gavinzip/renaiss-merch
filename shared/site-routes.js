@@ -1,4 +1,4 @@
-// The unpublished home is reachable directly, without changing the public entry.
+// Keep the former review URL as a direct, noindex alias for existing links.
 export const hiddenHubPath = '/next/';
 
 export function isHiddenHubPath(pathname) {

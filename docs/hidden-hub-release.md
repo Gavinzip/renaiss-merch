@@ -1,4 +1,7 @@
-# Hidden Hub verification release
+# Hidden Hub verification release (historical)
+
+The public Community launch supersedes the entry routing described below.
+See [community-launch.md](./community-launch.md) for the current release mode.
 
 The deployed public entry stays in its current `MERCH_STOREFRONT_MODE=production`
 mode. `/` keeps the existing Merch landing and Store, and `/v1.2/` keeps its

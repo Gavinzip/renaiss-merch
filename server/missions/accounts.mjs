@@ -47,6 +47,7 @@ export async function checkAccounts(user, { store, fetchImpl = fetch, rateStore 
     if (linkedEmail(current) !== email) throw new HttpError(409, 'renaiss_email_changed');
   };
   assertEmailIdentity();
+  if (readAccountsState(user, { storeFactory: () => store }).outcome === 'verified') return;
   const release = store.acquire(surfCampaign.id, user.sub, 'accounts');
   try {
     store.assertAccountAvailable(surfCampaign.id, user.sub, hash);

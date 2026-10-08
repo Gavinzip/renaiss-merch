@@ -30,7 +30,9 @@ export function createMissionRouteHandler({ readSession, storeFactory = createMi
         return current.user;
       };
       // Use the linked email from the verified Renaiss session, never JSON input.
-      await checkAccounts(user, { store, fetchImpl, rateStore: rateStoreFactory(), assertCurrentUser });
+      const recorded = readMissionState(req, session, { storeFactory: () => store });
+      if (!recorded.participation?.tasks.accounts.verified)
+        await checkAccounts(user, { store, fetchImpl, rateStore: rateStoreFactory(), assertCurrentUser });
       const current = readSession(req);
       if (current?.user?.sub !== user.sub || current.user.isDemo) throw new HttpError(401, 'unauthenticated');
       sendJson(res, 200, readMissionState(req, current, { storeFactory: () => store }));
@@ -44,6 +46,8 @@ export function createMissionRouteHandler({ readSession, storeFactory = createMi
       if (provider === 'discord') discordScreeningPolicy();
       const store = storeFactory();
       if (action === 'connect') {
+        const recorded = readMissionState(req, session, { storeFactory: () => store });
+        if (recorded.participation?.tasks[provider]?.verified) throw new HttpError(409, `${provider}_verified_account_locked`);
         if (provider === 'x' && !user.twitterUsername) throw new HttpError(409, 'renaiss_x_not_linked');
         const release = store.acquire(surfCampaign.id, user.sub, provider, 'connect');
         try {

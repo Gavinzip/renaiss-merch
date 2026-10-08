@@ -23,10 +23,10 @@ export function SurfAccountTask({ locale, missions, loading, onLogin }: {
       </span>
       {account?.email ? <span className="surf-social-task__username">{account.email}</span> : null}
     </div>
-    {!missions.state?.authenticated ? null : emailWarning ?
+    {!missions.state?.authenticated || verified ? null : emailWarning ?
       <SurfEmailWarning locale={locale} reason={account?.reason || ''} onLogin={onLogin} disabled={disabled} /> :
       account?.configured && account.emailLinked ? <div className="surf-social-task__controls"><button type="button" disabled={disabled} onClick={missions.verifyAccounts}>
-        {missions.busy === 'accounts' ? (zh ? '查核中…' : 'Checking…') : verified || stale ? (zh ? '重新驗證' : 'Recheck') : (zh ? '驗證 Surf 帳號' : 'Verify Surf account')}
+        {missions.busy === 'accounts' ? (zh ? '查核中…' : 'Checking…') : stale ? (zh ? '重新驗證' : 'Recheck') : (zh ? '驗證 Surf 帳號' : 'Verify Surf account')}
       </button></div> : null}
     {missions.state?.authenticated && account?.reason && !emailWarning ? <p className="surf-social-task__detail">{missionErrorCopy(account.reason, zh)}</p> : null}
     {account?.retryAfterSeconds ? <p className="surf-social-task__detail">{zh ? `請於 ${account.retryAfterSeconds} 秒後重試。` : `Retry after ${account.retryAfterSeconds} seconds.`}</p> : null}

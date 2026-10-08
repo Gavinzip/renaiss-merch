@@ -1,3 +1,11 @@
+import { surfCampaign } from '../../../shared/surf-campaign.js';
+
+const campaignDate = (value: string) => new Intl.DateTimeFormat('en-CA', {
+  timeZone: surfCampaign.timeZone, month: '2-digit', day: '2-digit',
+  hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+}).format(new Date(value)).replace(',', '');
+const campaignWindow = `${campaignDate(surfCampaign.startsAt)} — ${campaignDate(surfCampaign.endsAt)}`;
+
 export const surfCampaignCopy = {
   "zh-TW": {
     close: "關閉活動詳情", eyebrow: "PARTNER CAMPAIGN", stage: "活動預覽",
@@ -6,7 +14,7 @@ export const surfCampaignCopy = {
     back: "返回總覽", pageLabel: "合作活動", pageNavigation: "活動導覽", language: "語言", viewTasks: "查看任務", viewRewards: "探索獎品",
     boxAlt: "Surf 官方 Mystery Box：黑色盒身、粉色燈邊與股票代幣", proAlt: "Surf 官方 AI 研究產品介面",
     productView: "Surf 產品畫面", entriesPending: "待查核", entriesVerified: "已確認",
-    details: "活動資訊", sbtValue: "設計與領取方式待公布",
+    details: "活動資訊", sbtValue: "完成上述任務即可獲得",
     rewards: "這次有哪些獎品？", planned: "規劃獎池", box: "Surf Mystery Box",
     boxDescription: "內含 1 年 Surf Pro 會員；完整內容依正式公告。",
     trial: "Surf Pro 體驗", trialDescription: "1 個月 Pro 會員，探索美股與加密資產的 AI 研究工具。",
@@ -17,8 +25,8 @@ export const surfCampaignCopy = {
     entry: "1 張票", bonus: "+1 張票", total: "每個任務 1 張，最多 3 張票",
     surf: "前往 Surf", x: "前往 X", join: "前往 Discord", account: "登入 Renaiss",
     error: "無法確認帳號，請再試一次。", retry: "重試",
-    schedule: "活動時間", scheduleValue: "待正式公告", scheduleDescription: "開放時間、截止日與抽獎日期確認後，會更新在這裡。",
-    sbt: "聯名 SBT", sbtDescription: "方案包含聯名 SBT；設計、領取方式與開放時間待公布。",
+    schedule: "活動時間", scheduleValue: campaignWindow, scheduleDescription: "台灣時間（UTC+8）・抽獎日期尚未公告。",
+    sbt: "聯名 SBT", sbtDescription: "需通過任務驗證。",
     linkPending: "正式活動連結待公布", announcement: "查看 Surf 官方 X", openCampaign: "前往正式活動",
     previewNote: "任務查核與領獎分開；獎品依正式活動公告。",
   },
@@ -29,7 +37,7 @@ export const surfCampaignCopy = {
     back: "Overview", pageLabel: "Collaboration", pageNavigation: "Campaign navigation", language: "Language", viewTasks: "View quests", viewRewards: "Explore rewards",
     boxAlt: "Official Surf Mystery Box with a black case, pink lighting and tokenized equities", proAlt: "The official Surf AI research interface",
     productView: "Surf product view", entriesPending: "Pending", entriesVerified: "Confirmed",
-    details: "Campaign details", sbtValue: "Design & claims to be announced",
+    details: "Campaign details", sbtValue: "Complete the quests above to earn it",
     rewards: "What’s in the prize pool?", planned: "Planned rewards", box: "Surf Mystery Box",
     boxDescription: "Includes one year of Surf Pro. Full contents to be announced.",
     trial: "Surf Pro trial", trialDescription: "One month of Pro. Explore AI research tools for equities and crypto.",
@@ -40,8 +48,8 @@ export const surfCampaignCopy = {
     entry: "1 ticket", bonus: "+1 ticket", total: "1 ticket per task · up to 3 tickets",
     surf: "Open Surf", x: "Open X", join: "Open Discord", account: "Sign in to Renaiss",
     error: "Your account could not be checked.", retry: "Try again",
-    schedule: "Campaign dates", scheduleValue: "To be announced", scheduleDescription: "Launch, deadline and draw dates will appear here once confirmed.",
-    sbt: "Collaboration SBT", sbtDescription: "The plan includes a collaboration SBT. Design and claim details are still to be announced.",
+    schedule: "Campaign dates", scheduleValue: campaignWindow, scheduleDescription: "Taiwan time (UTC+8) · Draw date to be announced.",
+    sbt: "Collaboration SBT", sbtDescription: "Quest verification is required.",
     linkPending: "Campaign link to be announced", announcement: "Visit Surf’s official X", openCampaign: "Open the campaign",
     previewNote: "Task verification and reward claims are separate. Rewards follow the final announcement.",
   },

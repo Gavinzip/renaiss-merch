@@ -4,6 +4,7 @@ import { HttpError } from '../http.mjs';
 import { missionEncryptionKey } from './config.mjs';
 import { createSecretBox } from '../auth-secret-box.mjs';
 import { createXIdentityLock } from './x-identity-lock.mjs';
+import { createSocialIdentityLock } from './social-identity-lock.mjs';
 
 export const missionHash = value => createHash('sha256').update(value).digest('hex');
 export const MISSION_RULE_VERSION = 'surf-social-v1';
@@ -41,11 +42,14 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
   `);
   const { seal, unseal } = createSecretBox(key);
   const xIdentityLock = createXIdentityLock(db);
+  const identityLocks = { x: xIdentityLock, discord: createSocialIdentityLock(db, 'discord') };
   const connectionContext = (campaign, sub, provider, id) => JSON.stringify([campaign, sub, provider, id]);
   return {
     database: db,
     getXIdentityLock: (campaign, sub) => xIdentityLock.read(campaign, sub),
     assertXIdentity: (campaign, sub, userId) => xIdentityLock.assertIdentity(campaign, sub, userId),
+    getSocialIdentityLock: (campaign, sub, provider) => identityLocks[provider]?.read(campaign, sub) || null,
+    assertSocialIdentity: (campaign, sub, provider, userId) => identityLocks[provider]?.assertIdentity(campaign, sub, userId),
     assertAccountAvailable(campaign, sub, emailHash) {
       const row = db.prepare('SELECT user_sub FROM mission_surf_accounts WHERE campaign=? AND email_hash=?').get(campaign, emailHash);
       if (row && row.user_sub !== sub) throw new HttpError(409, 'surf_account_already_connected');
@@ -84,7 +88,7 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
       const secret = seal(connection, connectionContext(campaign, sub, provider, connection.userId));
       try {
         db.transaction(() => {
-          if (provider === 'x') xIdentityLock.assertIdentity(campaign, sub, connection.userId);
+          identityLocks[provider]?.assertIdentity(campaign, sub, connection.userId);
           const previous = db.prepare('SELECT user_id FROM mission_connections WHERE campaign=? AND user_sub=? AND provider=?')
             .get(campaign, sub, provider);
           db.prepare(`INSERT INTO mission_connections VALUES(?,?,?,?,?,?,?) ON CONFLICT(campaign,user_sub,provider)
@@ -103,7 +107,7 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
     },
     deleteConnection(campaign, sub, provider) {
       db.transaction(() => {
-        if (provider === 'x') xIdentityLock.assertDisconnectAllowed(campaign, sub);
+        identityLocks[provider]?.assertDisconnectAllowed(campaign, sub);
         db.prepare('DELETE FROM mission_connections WHERE campaign=? AND user_sub=? AND provider=?').run(campaign, sub, provider);
         db.prepare('DELETE FROM mission_results WHERE campaign=? AND user_sub=? AND provider=?').run(campaign, sub, provider);
         db.prepare('DELETE FROM mission_oauth_challenges WHERE user_sub=? AND provider=?').run(sub, provider);
@@ -112,11 +116,11 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
     saveResult(campaign, sub, provider, result) {
       const payload = JSON.stringify(result), checkedAt = Date.now();
       db.transaction(() => {
-        if (provider === 'x' && result.outcome === 'verified') {
+        if (identityLocks[provider] && result.outcome === 'verified') {
           const identity = db.prepare('SELECT user_id FROM mission_connections WHERE campaign=? AND user_sub=? AND provider=?')
             .get(campaign, sub, provider);
           if (!identity) throw new HttpError(409, 'connection_required');
-          xIdentityLock.lock(campaign, sub, identity.user_id, result.checkedAt || new Date(checkedAt).toISOString());
+          identityLocks[provider].lock(campaign, sub, identity.user_id, result.checkedAt || new Date(checkedAt).toISOString());
         }
         db.prepare(`INSERT INTO mission_results VALUES(?,?,?,?,?,?) ON CONFLICT(campaign,rule_version,user_sub,provider)
           DO UPDATE SET result_json=excluded.result_json,checked_at=excluded.checked_at`).run(

@@ -36,7 +36,7 @@ export function readMissionState(req, session, { storeFactory = createMissionSto
     }
     providers[provider] = {
       configured, configurationReason,
-      identityLocked: provider === 'x' && Boolean(store?.getXIdentityLock(surfCampaign.id, session.user.sub)),
+      identityLocked: Boolean(store?.getSocialIdentityLock(surfCampaign.id, session.user.sub, provider)),
       connection: connection ? { username: connection.username, userId: connection.userId } : null,
       result,
     };
@@ -48,7 +48,22 @@ export function readMissionState(req, session, { storeFactory = createMissionSto
 }
 
 export async function checkMission(req, session, provider, { store = createMissionStore(), fetchImpl = fetch, connectionToSave } = {}) {
-  const user = requireMissionUser(session), config = providerConfig(req, provider);
+  const user = requireMissionUser(session);
+  if (connectionToSave) {
+    if (provider === 'x') assertLinkedX(user, connectionToSave.username);
+    store.assertSocialIdentity(surfCampaign.id, user.sub, provider, connectionToSave.userId);
+  }
+  const recorded = readMissionState(req, session, { storeFactory: () => store });
+  if (recorded.participation?.tasks[provider]?.verified) {
+    // Completion is durable. Repeated requests must not recheck the provider,
+    // consume a rate limit, or replace an already issued ticket.
+    if (connectionToSave) {
+      store.saveConnection(surfCampaign.id, user.sub, provider, connectionToSave);
+      return readMissionState(req, session, { storeFactory: () => store });
+    }
+    return recorded;
+  }
+  const config = providerConfig(req, provider);
   const requireScreening = provider === 'discord' ? discordScreeningPolicy() : false;
   const release = store.acquire(surfCampaign.id, user.sub, provider);
   try {

@@ -93,7 +93,7 @@ function recordTask(result, identity, previous) {
   // Provider/network/authorization errors do not prove an unfollow or departure.
   // Preserve the recorded pass and expose the failed recheck. A confirmed
   // failure, changed identity, disconnection or changed policy revokes it.
-  const identityInvalid = ['identity_mismatch', 'renaiss_x_mismatch', 'renaiss_x_not_linked', 'x_verified_account_locked', 'discord_target_mismatch'].includes(result?.reason);
+  const identityInvalid = ['identity_mismatch', 'renaiss_x_mismatch', 'renaiss_x_not_linked', 'x_verified_account_locked', 'discord_verified_account_locked', 'discord_target_mismatch'].includes(result?.reason);
   const retained = !identityInvalid && identityMatches && previous?.verified && ['unavailable', 'reauthorize'].includes(outcome);
   const verified = Boolean(identity) && (outcome === 'verified' || retained);
   return {

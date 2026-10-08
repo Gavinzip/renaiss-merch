@@ -1,8 +1,11 @@
-// Public targets confirmed from @SurfAIHQ on 2026-10-06. This is a preview,
-// not a published campaign: dates and final rules remain unset.
+// Public targets confirmed from @SurfAIHQ on 2026-10-06. The announced
+// activity window is Taiwan time; the draw date remains unannounced.
 export const surfCampaign = Object.freeze({
   id: "surf-renaiss-v1",
   phase: "integration",
+  startsAt: "2026-10-08T17:00:00+08:00",
+  endsAt: "2026-10-18T17:00:00+08:00",
+  timeZone: "Asia/Taipei",
   surfUrl: "https://asksurf.ai/chat",
   xUrl: "https://x.com/SurfAIHQ",
   xHandle: "SurfAIHQ",
