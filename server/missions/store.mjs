@@ -9,7 +9,7 @@ import { createSocialIdentityLock } from './social-identity-lock.mjs';
 export const missionHash = value => createHash('sha256').update(value).digest('hex');
 export const MISSION_RULE_VERSION = 'surf-social-v1';
 export const RESULT_MAX_AGE_MS = 15 * 60_000;
-// Covers refresh + identity + the bounded following scan and its final request.
+// Covers token refresh and the identity/relationship requests.
 const OPERATION_LEASE_MS = 120_000;
 
 export function createMissionStore(db = getMerchDatabase(), key = missionEncryptionKey()) {

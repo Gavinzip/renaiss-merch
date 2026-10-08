@@ -93,7 +93,8 @@ export async function checkMission(req, session, provider, { store = createMissi
       }
     }
     if (!result) result = provider === 'x'
-      ? await verifyXFollow({ connection, targetUserId: surfCampaign.xUserId, expectedUsername: user.twitterUsername || '', fetchImpl })
+      ? await verifyXFollow({ connection, targetUserId: surfCampaign.xUserId, targetHandle: surfCampaign.xHandle,
+        expectedUsername: user.twitterUsername || '', fetchImpl })
       : await verifyDiscordMembership({ connection, guildId: surfCampaign.discordGuildId, inviteUrl: surfCampaign.discordUrl, requireScreening, fetchImpl });
     result = { provider, ...(provider === 'discord' ? { screeningRequired: requireScreening } : {}), targetId: provider === 'x' ? surfCampaign.xUserId : surfCampaign.discordGuildId,
       checkedAt: new Date().toISOString(), ...result };

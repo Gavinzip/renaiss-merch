@@ -101,7 +101,7 @@ X callback challenge 綁定當前 Renaiss session 與 user sub，使用 PKCE/sta
 
 2026-09-30 時 `/auth/x/callback` 尚無 handler。2026-10-06 已掛接 handler、配置本機 OAuth 2.0 憑證並實際完成授權／查核；正式部署環境仍未配置此次新增變數。
 
-當時建議的 `connection_status` 在 2026-10-06 真實 Surf 查詢會被省略，目前改用完整官方 following 清單作唯一查核來源。詳見最新串接文件；不能用 app-only token 代表參加者，也不能把欄位缺席判成未追蹤。
+當時建議的 `connection_status` 在 2026-10-06 真實 Surf 查詢會被省略，曾改用完整官方 following 清單。2026-10-08 依 Gavin 指示改回單次 `connection_status` 查詢以控制費用；缺欄位顯示無法驗證，不查完整清單。詳見最新串接文件；不能用 app-only token 代表參加者，也不能把欄位缺席判成未追蹤。
 
 重複查核可合併同一 user/target 的同時請求，並使用短期有效結果降低成本；每個任務另外記錄自身規則版本。API 請求數和回傳資源費用是不同計量，正式預算以實際 X app 的方案及用量確認。[X Developer Platform](https://docs.x.com/overview)
 

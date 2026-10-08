@@ -34,6 +34,7 @@ type RenaissHubProps = {
   loadState: "idle" | "loading" | "error";
   onEnterMerch: () => void;
   showPreviewNote?: boolean;
+  showAssistant?: boolean;
 };
 
 export function RenaissHub({
@@ -41,6 +42,7 @@ export function RenaissHub({
   loadState,
   onEnterMerch,
   showPreviewNote = true,
+  showAssistant = false,
 }: RenaissHubProps) {
   const { locale, setLocale } = useLocale();
   const copy = renaissHubCopy[locale];
@@ -325,7 +327,7 @@ export function RenaissHub({
           <span>RENAISS / 2026</span>
         </footer>
       </div>
-      <HubAssistant locale={locale} disabled={editing || settings.saving} />
+      {showAssistant ? <HubAssistant locale={locale} disabled={editing || settings.saving} /> : null}
       <HubPageLoading className="renaiss-hub__initial-overlay" locale={locale} ready={initialReadiness === 'ready'} error={initialReadiness === 'error'} onRetry={() => window.location.reload()} />
     </main>}
     </div>

@@ -1,3 +1,18 @@
+.merch-landing--community .merch-entry__content {
+  width: min(100%, 64rem);
+  padding-inline: 0;
+}
+
+.merch-landing--community .merch-landing__community-title {
+  max-width: none;
+  font-size: clamp(1.75rem, 12vw, 7.4rem);
+}
+
+.merch-landing__community-title span {
+  display: block;
+  white-space: nowrap;
+}
+
 .merch-landing__action {
   display: block;
   width: min(100%, 18rem);

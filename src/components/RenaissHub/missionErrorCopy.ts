@@ -16,6 +16,8 @@ export function missionErrorCopy(code: string, zh: boolean) {
     provider_rate_limited: ['平台暫時限流，請稍後重試。', 'The platform is rate limiting requests. Try again later.'],
     provider_access_denied: ['平台未允許查核，請稍後重試。', 'The platform did not permit this check. Try again later.'],
     following_check_incomplete: ['追蹤清單尚未查完，請稍後重新驗證。', 'The following list check did not finish. Please try again.'],
+    x_relation_unavailable: ['X 未提供追蹤關係，這次無法驗證。請稍後再試。', 'X did not provide the follow relationship, so this check could not be completed. Try again later.'],
+    invalid_x_target_response: ['X 回傳的 Surf 帳號資料不正確，這次無法驗證。', 'X returned unexpected Surf account data, so this check could not be completed.'],
     not_following: ['尚未追蹤 Surf，追蹤後按驗證。', 'Follow Surf, then verify again.'],
     not_a_member: ['尚未加入 Surf，加入後按驗證。', 'Join Surf, then verify again.'],
     membership_screening_pending: ['請先完成 Surf 伺服器的規則確認。', 'Complete Surf’s server membership screening.'],

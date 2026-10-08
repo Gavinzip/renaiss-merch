@@ -30,6 +30,7 @@ export function MerchLanding({
       className={[
         'merch-entry',
         'merch-landing',
+        kind === 'community' ? 'merch-landing--community' : '',
         isLoading ? 'is-loading' : '',
         loadState === 'error' ? 'has-load-error' : ''
       ]
@@ -63,7 +64,12 @@ export function MerchLanding({
                 alt="Renaiss Protocol"
               />
             </p>
-            <h1 id="merch-entry-title">{kind === 'community' ? 'RENAISS COMMUNITY' : 'RENAISS MERCH'}</h1>
+            {kind === 'community' ? (
+              <h1 id="merch-entry-title" className="merch-landing__community-title" aria-label="Renaiss Community">
+                <span>RENAISS</span>
+                <span>COMMUNITY</span>
+              </h1>
+            ) : <h1 id="merch-entry-title">RENAISS MERCH</h1>}
             <p className="merch-entry__copy">
               {copy.intro}
             </p>

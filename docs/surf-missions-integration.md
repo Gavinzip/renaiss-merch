@@ -12,10 +12,10 @@
 | 任務 | 判定來源 | 規劃抽獎機會 |
 | --- | --- | --- |
 | 擁有 Renaiss + Surf 帳號 | 有效 Renaiss SSO + 回傳有效信箱 + Surf 帳號 API | 必做，1 次 |
-| Follow Surf X | 參加者的 X OAuth token + 官方 following 清單 | 選做，+1 次 |
+| Follow Surf X | 參加者的 X OAuth token + Surf 帳號的 `connection_status` | 選做，+1 次 |
 | Join Surf Discord | 參加者的 Discord OAuth token + 官方 Guild member API | 選做，+1 次 |
 
-既有帳號、已追蹤與已加入者可查核；沒有增加「追蹤 Renaiss」條件。帳號通過後，以有效且未過期的三項任務計算 1–3 次；已確認 Surf 無有效帳號為 0 次，尚未確認／無法查核／過期為 `null`。`entries` 是任務對應的機會數，不是已發行的抽獎票、SBT、商品權益或獎品。
+既有帳號、已追蹤與已加入者可查核；沒有增加「追蹤 Renaiss」條件。抽獎票以持久化的 `participation.ticketCount` 為準：有效錢包且帳號任務通過後，每項完成任務 1 張，最多 3 張。已通過任務不會因查核快取過期而失去票數；尚未通過且無法查核的任務不給票。`entries` 是查核快取的摘要，不能取代持久化參加者表格，也不是 SBT、商品權益或獎品。
 
 文件的截止日與「實際上線順延」描述存在未定資訊，因此活動仍為 integration，不用未確認日期自動啟動。活動池 7 個 Mystery Box + 20 個月 Pro Trial，與商店池 3 個 Mystery Box + 20 個月 Pro Trial 分開；兌換門檻、活動時間與聯名 SBT 領取仍待正式公告。
 
@@ -26,7 +26,7 @@
 3. 服務端建立一次性 OAuth challenge，綁定 session ID、sub、provider、cookie、到期時間與精確 callback；X 使用 PKCE S256。
 4. callback 消耗 challenge，交換 token，讀取平台的目前使用者；再次確認 Renaiss session 仍有效，再連接和查核。
 5. token 加密留在服務端，結果存入 SQLite。頁面显示已驗證、尚未完成、待確認規則、需重授權或無法查核，以及最近查核時間。
-6. 重新驗證會取代先前結果；取消追蹤或離開伺服器不保留舊的成功狀態。結果超過 15 分鐘標示需重新驗證，不能視為永久資格。
+6. 完成紀錄、身分與票數保存到參加者表格。已通過任務不再查詢上游，也不能更換帳號或解除連接；刷新與查核快取過期不會清除完成狀態。尚未通過者才可重新驗證。
 
 | HTTP route | 用途 |
 | --- | --- |
@@ -39,17 +39,19 @@
 
 POST 檢查同源 Origin 和 Renaiss session，Demo 被拒絕。前端不能提交可信任的完成旗標、access token、任意參加者 ID 或驗證目標。callback 的取消、session 不符、過期、重播與登入途中登出均不建立有效連接。
 
-## X：採官方 following 清單
+## X：單次查詢 `connection_status`
 
 沿用 `renaiss-merch` App（`33484488`），Web App confidential client，Read 權限。OAuth scope 為 `tweet.read users.read follows.read offline.access`，沒有寫入追蹤、貼文或私訊的權限。
 
-實測同一個使用者 token 查 Surf 的 `connection_status` 時，上游回應省略該欄位；查另一個已追蹤帳號會回傳 `following`。因此不能從欄位缺席推論未追蹤。目前唯一查核來源改為官方 following API，不使用缺欄位時的 runtime fallback：
+2026-10-08 依 Gavin 指示，改成與 football 相同的單次目標帳號查詢，降低回傳資源數與 X API 成本。2026-10-06 曾實測 Surf 回應省略 `connection_status`，因此欄位缺席仍不能推論未追蹤：
 
 - 先查 `/2/users/me`，確認 numeric ID 與連接紀錄、X username 與 Renaiss 綁定一致。
-- 分頁查 `/2/users/{授權者 ID}/following?max_results=1000`。
-- 找到固定 Surf ID 才算完成；走到完整清單最後一頁仍未找到，才算未追蹤。
-- 每次 API timeout 10 秒，查核最多 20 頁、分頁迴圈 60 秒；超限、重複 cursor、partial errors、缺少必要 metadata、401、403、429 都不通過。超限表示查核未完成，不是未追蹤。
-- 只保存結果與查核證據，不保存或回傳整份追蹤名單。
+- 只查一次 `/2/users/by/username/SurfAIHQ?user.fields=connection_status,username`，並確認回傳 ID 與固定 Surf ID 相同。
+- 有效 `connection_status` 陣列包含 `following` 才通過；有效陣列未包含 `following` 才判為未追蹤。
+- 缺欄位、格式錯誤、目標不符、partial errors、401、403、429 都不通過。缺欄位顯示「X 未提供追蹤關係，這次無法驗證」。沒有 following 清單查詢或其他 runtime fallback。
+- 未完成者一次查核最多讀取兩個使用者物件：本人身分與 Surf 目標。每次 API timeout 10 秒。OAuth callback 另有平台身分查詢。
+- 已通過者直接沿用持久化的完成紀錄，不重新呼叫 X；沒有更改既有票數或已鎖定的身分。
+- 本次本機測試使用注入回應，沒有呼叫付費 X API；不能據此宣稱目前 Surf 上游一定提供關係欄位。
 
 X App 已保存並讀回確認三個 callback：
 
@@ -57,7 +59,7 @@ X App 已保存並讀回確認三個 callback：
 - `http://localhost:5173/auth/x/callback`
 - `http://127.0.0.1:5173/auth/x/callback`
 
-官方依據：[X OAuth PKCE](https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code)、[Following API](https://docs.x.com/x-api/users/get-following)。
+官方依據：[X OAuth PKCE](https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code)、[目標帳號查詢與 connection_status 欄位](https://docs.x.com/x-api/users/get-user-by-username)、[X API 計費](https://docs.x.com/x-api/getting-started/pricing)。
 
 ## Discord：使用者 OAuth，不需 bot
 

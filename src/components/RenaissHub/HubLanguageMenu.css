@@ -31,7 +31,7 @@
   top: calc(100% + 6px);
   right: -10px;
   box-sizing: border-box;
-  width: 156px;
+  width: min(156px, calc(100vw - 32px));
   padding: 5px;
   border: 1px solid #ffffffcf;
   border-radius: 14px;
@@ -88,6 +88,13 @@
 }
 .hub-language__list:is(.is-open,.is-closing) { visibility: visible; }
 @media (max-width: 720px) { .hub-language .hub-language__trigger { font-size: .65rem; } }
+@media (max-width: 760px) {
+  .hub-site-header .hub-language__list[data-origin] {
+    left: 0;
+    right: auto;
+    transform-origin: top left;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .t-dropdown, .hub-language__trigger, .hub-language__trigger svg, .hub-language__option { transition: none !important; }
 }
