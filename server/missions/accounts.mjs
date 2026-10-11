@@ -26,6 +26,14 @@ export function readAccountsState(user, { storeFactory }) {
   catch (error) { configurationReason = error.code; }
   const configuration = { configured: Boolean(config) };
   if (!user?.sub || user.isDemo) return { ...configuration, outcome: 'pending', reason: user?.isDemo ? 'demo_missions_disabled' : 'unauthenticated' };
+  const wallet = typeof user.safeWalletAddress === 'string' ? user.safeWalletAddress.toLowerCase() : null;
+  const override = storeFactory().getManualAccountOverride?.(surfCampaign.id, user.sub);
+  if (wallet && override?.walletAddress === wallet) {
+    return { ...configuration, emailLinked: Boolean(user.email),
+      ...(user.email ? { email: user.email } : {}),
+      outcome: 'verified', checkedAt: override.approvedAt, stale: false,
+      manualOverride: true, walletAddress: wallet };
+  }
   let email;
   try { email = linkedEmail(user); }
   catch (error) { return { ...configuration, emailLinked: false, outcome: 'pending', reason: error.code }; }

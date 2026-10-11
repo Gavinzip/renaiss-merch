@@ -46,7 +46,8 @@ export function createParticipationStore(db = getMerchDatabase()) {
         const wallet = typeof user.safeWalletAddress === 'string' && walletPattern.test(user.safeWalletAddress)
           ? user.safeWalletAddress.toLowerCase() : null;
         const tasks = {
-          accounts: recordTask(accounts, accounts.email || user.email || null, previous?.tasks.accounts),
+          accounts: recordTask(accounts, accounts.manualOverride ? accounts.walletAddress : accounts.email || user.email || null,
+            previous?.tasks.accounts),
           x: recordTask(providers.x.result, providers.x.connection?.userId || null, previous?.tasks.x),
           discord: recordTask(providers.discord.result, providers.discord.connection?.userId || null, previous?.tasks.discord),
         };

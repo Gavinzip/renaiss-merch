@@ -5,6 +5,7 @@ import { missionEncryptionKey } from './config.mjs';
 import { createSecretBox } from '../auth-secret-box.mjs';
 import { createXIdentityLock } from './x-identity-lock.mjs';
 import { createSocialIdentityLock } from './social-identity-lock.mjs';
+import { createManualAccountOverrideStore } from './manual-account-override.mjs';
 
 export const missionHash = value => createHash('sha256').update(value).digest('hex');
 export const MISSION_RULE_VERSION = 'surf-social-v1';
@@ -43,9 +44,12 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
   const { seal, unseal } = createSecretBox(key);
   const xIdentityLock = createXIdentityLock(db);
   const identityLocks = { x: xIdentityLock, discord: createSocialIdentityLock(db, 'discord') };
+  const manualAccounts = createManualAccountOverrideStore(db);
   const connectionContext = (campaign, sub, provider, id) => JSON.stringify([campaign, sub, provider, id]);
   return {
     database: db,
+    getManualAccountOverride: manualAccounts.read,
+    approveManualAccount: manualAccounts.approve,
     getXIdentityLock: (campaign, sub) => xIdentityLock.read(campaign, sub),
     assertXIdentity: (campaign, sub, userId) => xIdentityLock.assertIdentity(campaign, sub, userId),
     getSocialIdentityLock: (campaign, sub, provider) => identityLocks[provider]?.read(campaign, sub) || null,
