@@ -23,10 +23,13 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
   const canvas = useRef<HTMLCanvasElement>(null);
   const { box, card, images, logos, retry } = useSurfDrawMotionAssets();
   const media = prize.kind === 'mystery-box' ? box : card;
+  // Both ceremonies need the partner logos. Surface that shared failure even
+  // while the box artwork itself has already reached 99%.
+  const artworkError = media.error || card.error;
   const isBox = prize.kind === 'mystery-box';
   const revealing = phase === 'identity' || phase === 'revealed';
   const flight = useSurfBatchFlight({ root, canvas, phase, revision, kind: prize.kind, duration: surfProCopy[locale].duration, progress, images, logos, onSettled, onRevealed });
-  useEffect(() => { onStatus({ stage: 'render', percent: flight.ready ? 100 : Math.min(99, media.percent), ready: media.ready && flight.ready, error: media.error || Boolean(flight.error) }); }, [media, flight.ready, flight.error, onStatus]);
+  useEffect(() => { onStatus({ stage: 'render', percent: flight.ready ? 100 : Math.min(99, media.percent), ready: media.ready && flight.ready, error: artworkError || Boolean(flight.error) }); }, [media, artworkError, flight.ready, flight.error, onStatus]);
   const title = locale === 'zh-TW' ? revealing ? '幸運，一起揭曉。' : isBox && amount === 7 ? '一箱期待，七份幸運。' : '幸運，即將一起登場。'
     : locale === 'ko' ? revealing ? '행운을 함께 공개합니다.' : '행운이 곧 펼쳐집니다.'
     : revealing ? 'A little luck, shared.' : isBox ? 'Good things come together.' : 'Your next chapter, sealed.';
@@ -59,9 +62,9 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
       {phase === 'spinning' ? <div className="surf-batch-progress"><span>{locale === 'zh-TW' ? '等待這批獎項確認' : locale === 'ko' ? '이번 추첨 확인 대기 중' : 'AWAITING DRAW CONFIRMATION'}</span>
         <div className="surf-batch-progress__transaction" aria-hidden="true"><i data-confirmed={(progress?.current ?? 0) === total} /></div>
         <p>{locale === 'zh-TW' ? '確認後一起揭曉' : locale === 'ko' ? '확인 후 함께 공개' : 'Revealing together after confirmation'}</p></div> : null}
-    {!media.ready || !flight.ready ? <div className="surf-batch-loading" role={media.error || flight.error ? 'alert' : 'status'}>
+    {!media.ready || !flight.ready ? <div className="surf-batch-loading" role={artworkError || flight.error ? 'alert' : 'status'}>
       {flight.error ? <><span>{locale === 'zh-TW' ? '立體開獎場景準備失敗' : 'The 3D ceremony could not prepare'}</span><small>{flight.error}</small><button type="button" onClick={() => window.location.reload()}>{locale === 'zh-TW' ? '重新載入' : 'Reload'}</button></>
-        : media.error ? <><span>{locale === 'zh-TW' ? '獎品動畫載入失敗' : 'Prize motion could not load'}</span><button onClick={retry} type="button">{locale === 'zh-TW' ? '重試' : 'Retry'}</button></>
+        : artworkError ? <><span>{locale === 'zh-TW' ? '獎品動畫載入失敗' : 'Prize motion could not load'}</span><button onClick={retry} type="button">{locale === 'zh-TW' ? '重試' : 'Retry'}</button></>
         : <span>{locale === 'zh-TW' ? '準備立體開獎場景' : 'Preparing the 3D ceremony'} · {Math.min(99, media.percent)}%</span>}
     </div> : null}
     <ol className="surf-batch-gallery" aria-label={locale === 'zh-TW' ? '本批得獎者' : 'Batch winners'} aria-live="polite" aria-busy={phase === 'idle' || phase === 'spinning' || phase === 'settling' || phase === 'ticket'}>

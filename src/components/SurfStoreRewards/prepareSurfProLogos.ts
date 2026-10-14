@@ -10,8 +10,18 @@ export function artworkAborted(signal: AbortSignal) {
   });
 }
 
+function textureUrl(url: string) {
+  if (import.meta.env.DEV) return url;
+  // The same CDN artwork is also rendered by ordinary <img> tags. R2 omits
+  // Vary: Origin on those no-Origin responses, so an HTTP cache may reuse one
+  // for a later CORS fetch. Give canvas/WebGL artwork its own cache key.
+  const texture = new URL(url);
+  texture.searchParams.set('gpu-artwork', '1');
+  return texture.href;
+}
+
 export async function prepareSurfProLogos(signal: AbortSignal, onProgress: (progress: SurfProArtworkProgress) => void): Promise<SurfProLogoUrls> {
-  const assets = [surfPreviewLogoUrl(), hubPreviewWordmarkUrl()];
+  const assets = [surfPreviewLogoUrl(), hubPreviewWordmarkUrl()].map(textureUrl);
   const objectUrls: string[] = [];
   try {
     const responses = await Promise.all(assets.map(url => fetch(url, { signal })));
