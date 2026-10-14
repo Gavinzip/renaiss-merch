@@ -1,0 +1,48 @@
+.surf-pro-booster-interaction { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.surf-pro-booster-hit { position: absolute; z-index: 5; left: var(--pro-pack-x); top: var(--pro-pack-y); width: var(--pro-pack-width); height: var(--pro-pack-height); transform: translate(-50%,-50%); pointer-events: auto; touch-action: none; cursor: grab; border: 0; background: transparent; padding: 0; border-radius: 8px; }
+.surf-pro-booster-hit:active { cursor: grabbing; }
+.surf-pro-booster-hit:focus-visible { outline: 2px solid #527565; outline-offset: 15px; }
+/* The hit targets follow the same layout as the physical pouches. */
+.surf-pro-booster-browse { position: absolute; inset: var(--surf-batch-gallery-top) 0 85px; pointer-events: auto; touch-action: pan-y; cursor: ew-resize; }
+.surf-pro-booster-choice { position: absolute; left: calc(50% + var(--pack-distance) * var(--pro-pack-spacing)); top: calc(var(--pro-pack-y) + var(--pack-lower)); width: calc(var(--pro-pack-width) * var(--pack-scale)); height: calc(var(--pro-pack-height) * var(--pack-scale)); transform: translate(-50%,-50%); border: 0; background: transparent; pointer-events: auto; touch-action: pan-y; cursor: pointer; }
+.surf-pro-booster-choice:focus-visible { outline: 1px solid #527565; outline-offset: 8px; }
+.surf-pro-booster-picker { position: absolute; z-index: 6; bottom: -71px; left: 0; right: 0; text-align: center; pointer-events: none; }
+.surf-pro-booster-interaction[data-focused=true] .surf-pro-booster-picker { left: calc(50% + var(--pro-pack-width) / 2 + 31px); right: auto; bottom: 54px; width: 240px; text-align: left; }
+.surf-pro-booster-interaction[data-focused=true] .surf-pro-booster-picker__controls { justify-content: flex-start; }
+.surf-pro-booster-picker p { margin: 0 0 12px; color: #77817c; font-size: 10px; letter-spacing: .025em; }
+.surf-pro-booster-picker__controls { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.surf-pro-booster-picker button { display: inline-flex; align-items: center; justify-content: center; gap: 18px; border: 1px solid #fff; border-radius: 30px; min-width: 36px; height: 36px; color: #365648; background: #ffffff90; cursor: pointer; pointer-events: auto; transition: background .18s, transform .18s; font-size: 13px; }
+.surf-pro-booster-picker button:hover { background: #fff; transform: translateY(-2px); }
+.surf-pro-booster-picker button:focus-visible { outline: 2px solid #527565; outline-offset: 3px; }
+.surf-pro-booster-picker__controls > span { font-size: 12px; color: #365648; font-variant-numeric: tabular-nums; }
+.surf-pro-booster-picker__controls > span i { margin-left: 6px; font-size: 9px; font-style: normal; color: #9caaa1; }
+.surf-pro-booster-picker .surf-pro-booster-select,.surf-pro-booster-picker .surf-pro-booster-open { padding: 0 18px; background: #fff9; font-size: 11px; }
+.surf-pro-booster-picker .surf-pro-booster-back { border-color: transparent; background: transparent; padding: 0 10px; font-size: 10px; }
+/* The draw controls used to sit over the open-pack button and steal its click.
+   Keep the simulation exit reachable while the physical pack owns the stage. */
+.surf-reveal-stage[data-kind=surf-pro-month][data-phase=settling] > .surf-reveal-controls { top: 8px; right: 0; bottom: auto; left: auto; width: auto; opacity: 1; pointer-events: none; }
+.surf-reveal-stage[data-kind=surf-pro-month][data-phase=settling] > .surf-reveal-controls > :not(.surf-reveal-preview-links) { display: none; }
+.surf-reveal-stage[data-kind=surf-pro-month][data-phase=settling] .surf-reveal-preview-links { margin: 0; pointer-events: auto; }
+.surf-reveal-stage[data-kind=surf-pro-month][data-phase=settling] .surf-reveal-preview-kind { display: none; }
+.surf-batch-heading .surf-batch-quota { display: block; margin: 10px 0 0; color: #526f60; font-size: 10px; letter-spacing: .07em; }
+.surf-batch-heading .surf-batch-quota b { font-weight: 550; }
+.surf-batch-heading .surf-batch-quota i { display: inline-block; margin: 0 12px; vertical-align: -1px; }
+.surf-batch-scene[data-kind=surf-pro-month] .surf-batch-progress { left: 0; right: 0; bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+.surf-batch-scene[data-kind=surf-pro-month] .surf-batch-progress > strong { margin: 0; font-size: 19px; }
+.surf-batch-scene[data-kind=surf-pro-month] .surf-batch-progress__passes { display: none; }
+@media(max-width:700px) {
+ .surf-pro-booster-picker p { font-size: 8px; }
+ .surf-pro-booster-picker__controls { gap: 7px; }
+ .surf-pro-booster-picker,.surf-pro-booster-interaction[data-focused=true] .surf-pro-booster-picker { left: 0; right: 0; bottom: -76px; width: auto; text-align: center; }
+ .surf-pro-booster-interaction[data-focused=true] .surf-pro-booster-picker__controls { justify-content: center; }
+ .surf-batch-heading .surf-batch-quota { font-size: 8px; margin-top: 7px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .surf-pro-booster-hit { background: linear-gradient(130deg,#eff4ee,#fffaf0,#dee9e3); border: 1px solid #fff; }
+ .surf-pro-booster-hit::after { content: 'Surf Pro'; color: #244c3b; font-size: 44px; letter-spacing: -.04em; }
+}
+
+/* Membership tickets keep a real card proportion while the same mesh travels
+   through the pouch and hands off to its parked DOM face. */
+.surf-batch-scene[data-kind=surf-pro-month] .surf-batch-card__face { aspect-ratio: 1.6; }
+.surf-batch-scene[data-kind=surf-pro-month][data-phase=settling] .surf-batch-webgl { mask-image: linear-gradient(to bottom,#000 calc(100% - 32px),transparent); }

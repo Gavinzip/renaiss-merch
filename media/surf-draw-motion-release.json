@@ -1,0 +1,41 @@
+{
+  "access": "public",
+  "bucket": "renaiss-merch-media",
+  "prefix": "merch/next/surf-draw",
+  "release": "r5c403b37e7a6f466e320",
+  "assets": {
+    "boxFrameAtlas01": {
+      "type": "binary",
+      "source": "work/derived-media/surf-draw-box-alpha-v2/box-alpha-01-9a8cd9a4feb4.webp",
+      "contentType": "image/webp",
+      "path": "box-alpha-01-9a8cd9a4feb4.webp"
+    },
+    "boxFrameAtlas02": {
+      "type": "binary",
+      "source": "work/derived-media/surf-draw-box-alpha-v2/box-alpha-02-6400108af638.webp",
+      "contentType": "image/webp",
+      "path": "box-alpha-02-6400108af638.webp"
+    },
+    "boxFrameAtlas03": {
+      "type": "binary",
+      "source": "work/derived-media/surf-draw-box-alpha-v2/box-alpha-03-cd3a495daefb.webp",
+      "contentType": "image/webp",
+      "path": "box-alpha-03-cd3a495daefb.webp"
+    },
+    "boxFrameAtlas04": {
+      "type": "binary",
+      "source": "work/derived-media/surf-draw-box-alpha-v2/box-alpha-04-48be3e00741a.webp",
+      "contentType": "image/webp",
+      "path": "box-alpha-04-48be3e00741a.webp"
+    },
+    "boxFrameAtlas05": {
+      "type": "binary",
+      "source": "work/derived-media/surf-draw-box-alpha-v2/box-alpha-05-0d24b2458db2.webp",
+      "contentType": "image/webp",
+      "path": "box-alpha-05-0d24b2458db2.webp"
+    }
+  },
+  "contentHash": "5c403b37e7a6f466e3207a4b619baada6eee82ce631a26eb3d9bdbc744e0e735",
+  "fileCount": 5,
+  "totalBytes": 4031270
+}

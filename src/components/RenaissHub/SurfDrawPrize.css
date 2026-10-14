@@ -1,0 +1,30 @@
+.surf-draw-prize-object { isolation: isolate; }
+.surf-draw-prize-layer { position: absolute; inset: 0; display: grid; place-items: center; transition: transform 600ms var(--hub-ease), opacity 600ms var(--hub-ease), filter 600ms var(--hub-ease), visibility 0s; }
+.surf-draw-prize-layer--box { opacity: 1; transform: translateY(0); }
+.surf-draw-prize-layer--membership { opacity: 0; transform: translateX(65px); filter: blur(3px); visibility: hidden; }
+.surf-draw-prize-object[data-kind=surf-pro-month] .surf-draw-prize-layer--box { opacity: 0; transform: translateY(55px) scale(.96); filter: blur(3px); visibility: hidden; transition: transform 600ms var(--hub-ease), opacity 600ms var(--hub-ease), filter 600ms var(--hub-ease), visibility 0s 600ms; }
+.surf-draw-prize-object[data-kind=surf-pro-month] .surf-draw-prize-layer--membership { opacity: 1; transform: translateX(0); filter: blur(0); visibility: visible; }
+.surf-draw-prize-object[data-kind=mystery-box] .surf-draw-prize-layer--membership { transition: transform 600ms var(--hub-ease), opacity 600ms var(--hub-ease), filter 600ms var(--hub-ease), visibility 0s 600ms; }
+.surf-draw-box-media { height: var(--surf-prize-height); width: var(--surf-prize-height); max-width: 100%; position: relative; }
+.surf-draw-box-media canvas { display: block; width: 100%; height: auto; filter: drop-shadow(0 12px 10px #53415b24); }
+.surf-draw-box-media[data-prepared=false] canvas { visibility: hidden; }
+.surf-draw-membership { width: min(100%,calc(var(--surf-prize-height) * 1.24)); transform: rotate(-7deg) rotateY(-13deg); filter: drop-shadow(0 25px 20px #4c3d5622); perspective: 1400px; }
+.surf-draw-membership__turn { position: relative; aspect-ratio: 720 / 472; transform-style: preserve-3d; transform: rotateY(180deg); transition: transform 900ms cubic-bezier(.16,1,.3,1); }
+.surf-draw-membership[data-open=true] .surf-draw-membership__turn { transform: rotateY(0); }
+.surf-draw-membership__face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.surf-draw-membership__back { transform: rotateY(180deg); }
+.surf-draw-membership__face > .surf-pro-credential { position: absolute; inset: 0; pointer-events: none; }
+.surf-draw-membership[data-prepared=false] { visibility: hidden; }
+.surf-draw-membership[data-prepared=false] .surf-draw-membership__turn { transition: none; transform: rotateY(180deg); }
+.surf-draw-membership[data-open=true] .surf-pro-credential__light { transform: translateX(770px) skewX(-12deg); transition: transform 850ms var(--hub-ease); }
+.surf-draw-prize-loading { position: absolute; z-index: 3; width: min(220px,80%); color: #8e7d9b; font-size: 10px; text-align: center; }
+.surf-draw-prize-loading span { display: block; }
+.surf-draw-prize-loading b { margin-left: 12px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.surf-draw-prize-loading progress { appearance: none; width: 100%; height: 2px; border: 0; margin-top: 12px; }
+.surf-draw-prize-loading progress::-webkit-progress-bar { background: #a08db320; }
+.surf-draw-prize-loading progress::-webkit-progress-value { background: #a08db3; }
+.surf-draw-prize-loading progress::-moz-progress-bar { background: #a08db3; }
+.surf-draw-prize-loading button { border: 0; padding: 8px; margin-top: 8px; background: transparent; color: inherit; text-decoration: underline; font-size: inherit; }
+@media(prefers-reduced-motion:reduce) {
+  .surf-draw-prize-layer,.surf-draw-membership__turn,.surf-draw-membership .surf-pro-credential__light { transition: none !important; }
+}

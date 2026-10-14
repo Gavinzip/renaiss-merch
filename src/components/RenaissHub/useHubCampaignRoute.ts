@@ -1,13 +1,14 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 export const surfCampaignHash = '#campaign/surf';
+export const surfDrawHash = '#draw/surf';
 const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
 const campaignPieces = '.surf-page__header, .surf-page__brand-pair, .surf-page__eyebrow, .surf-page h1 > span, .surf-page__hero-description, .surf-page__hero-actions, .surf-page__hero-footnote, .surf-page__hero-art, .surf-page__section-heading, .surf-page__reward-grid > article, .surf-page__participation-intro, .surf-page__task-list > ol > li, .surf-page__details, .surf-page__footer';
 const overviewPieces = '.hub-home-intro__utility, .renaiss-hub__introduction, .hub-widget__surface, .renaiss-hub__footer';
 
 function isCampaignLocation() {
   const url = new URL(location.href);
-  return url.hash === surfCampaignHash || ['x', 'discord', 'resume'].includes(url.searchParams.get('mission') || '');
+  return url.hash === surfCampaignHash || url.hash === surfDrawHash || ['x', 'discord', 'resume'].includes(url.searchParams.get('mission') || '');
 }
 
 // One motion owner for history, mounted content, focus and scroll. The outgoing
@@ -100,8 +101,11 @@ export function useHubCampaignRoute() {
     cancelMotion();
     if (active) {
       const url = new URL(location.href);
-      if (url.hash !== surfCampaignHash) history.replaceState(history.state, '', `${url.pathname}${url.search}${surfCampaignHash}`);
-      if (landingTarget.current === 'tasks') {
+      if (url.hash !== surfCampaignHash && url.hash !== surfDrawHash) history.replaceState(history.state, '', `${url.pathname}${url.search}${surfCampaignHash}`);
+      if (url.hash === surfDrawHash) {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        ref.current?.querySelector<HTMLElement>('#surf-draw-title')?.focus({ preventScroll: true });
+      } else if (landingTarget.current === 'tasks') {
         ref.current?.querySelector<HTMLElement>('#surf-campaign-tasks')?.scrollIntoView({ behavior: 'instant', block: 'start' });
         ref.current?.querySelector<HTMLElement>('#surf-tasks-title')?.focus({ preventScroll: true });
       } else {

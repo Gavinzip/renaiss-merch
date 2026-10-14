@@ -19,7 +19,9 @@
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",
-    "jose": "^6.2.3"
+    "ethers": "^6.17.0",
+    "jose": "^6.2.3",
+    "shaders": "4.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

@@ -1,0 +1,16 @@
+.surf-draw-access { min-height: min(690px,calc(100vh - 190px)); display: grid; grid-template-columns: minmax(0,1fr) minmax(290px,400px); align-items: center; gap: clamp(32px,8vw,150px); padding: clamp(55px,9vh,130px) clamp(16px,5vw,84px); color: #262831; }
+.surf-draw-access__eyebrow { display: block; margin-bottom: 25px; color: #9a90a8; font-size: 11px; letter-spacing: .16em; }
+.surf-draw-access h1 { margin: 0; font-size: clamp(42px,5.4vw,82px); font-weight: 560; letter-spacing: -.065em; line-height: 1.04; }
+.surf-draw-access__copy p { max-width: 420px; margin: 24px 0 0; color: #817d89; font-size: clamp(14px,1.4vw,18px); line-height: 1.75; }
+.surf-draw-access__panel { padding: 38px; border: 1px solid #fff; border-radius: 25px; background: linear-gradient(135deg,#ffffffc9,#f9f8f4b0 65%,#eaf0efa6); box-shadow: 0 20px 70px #54516b12, inset 0 1px #fff; backdrop-filter: blur(18px); }
+.surf-draw-access form { display: grid; gap: 23px; }
+.surf-draw-access label { display: grid; gap: 10px; color: #777281; font-size: 12px; letter-spacing: .04em; }
+.surf-draw-access input { width: 100%; height: 48px; padding: 0 15px; border: 1px solid #dad8df; border-radius: 10px; outline: none; background: #fff9; color: #27252e; font: inherit; font-size: 16px; letter-spacing: 0; transition: border-color .2s, box-shadow .2s; }
+.surf-draw-access input:focus-visible { border-color: #87809a; box-shadow: 0 0 0 3px #aba1c224; }
+.surf-draw-access form > button { display: flex; justify-content: space-between; align-items: center; width: 100%; height: 52px; margin-top: 5px; padding: 0 20px; border: 0; border-radius: 30px; background: #2d2b35; color: #fff; font: inherit; font-size: 14px; cursor: pointer; transition: transform .2s, background .2s; }
+.surf-draw-access form > button:hover:not(:disabled) { transform: translateY(-2px); background: #4d455b; }
+.surf-draw-access form > button:disabled { opacity: .55; cursor: wait; }
+.surf-draw-access__error { margin: -6px 0 0; color: #a74c55; font-size: 12px; }
+.surf-draw-access__status p { margin: 0; color: #817d89; line-height: 1.6; }
+.surf-draw-access__status button { margin-top: 20px; border: 0; background: transparent; color: #38313f; cursor: pointer; }
+@media(max-width:700px) { .surf-draw-access { grid-template-columns: 1fr; gap: 36px; min-height: 0; padding: 60px 12px 90px; } .surf-draw-access__panel { padding: 25px; } }

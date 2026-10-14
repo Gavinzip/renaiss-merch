@@ -1,0 +1,156 @@
+/* One stable WebGPU optical scene fills the viewport. Page content and the
+   original ticket remain above it; only the environment changes at draw time. */
+.surf-draw-cinema { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; opacity: 0; transition: opacity 1100ms ease; }
+.surf-draw-page[data-theater=true] .surf-draw-cinema { opacity: 1; }
+.surf-draw-cinema__canvas { display: block; width: 100%; height: 100%; }
+.surf-draw-cinema__pro-lightfield { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: 0; background: radial-gradient(ellipse 75% 48% at 50% 62%,#e1f1e66b,transparent 70%),linear-gradient(105deg,transparent 12%,#eef3f559 43%,#fff8e76b 55%,transparent 80%); }
+.surf-draw-cinema__pro-lightfield i { position: absolute; display: block; top: -12%; bottom: -12%; transform: translateX(-130vw) skewX(-18deg); }
+.surf-draw-cinema__pro-lightfield i:nth-child(1) { width: min(32vw,500px); left: 15%; background: linear-gradient(90deg,transparent,#ffffff80 25%,#d8efe594 48%,#fff9edaa 68%,transparent); }
+.surf-draw-cinema__pro-lightfield i:nth-child(2) { width: 2px; left: 33%; background: linear-gradient(180deg,transparent 7%,#d7e7ea9c 34%,#fff 54%,#dccbdd8c 74%,transparent 95%); box-shadow: 0 0 22px 8px #f7fffca3; }
+.surf-draw-cinema__pro-lightfield i:nth-child(3) { width: min(15vw,240px); left: 46%; background: linear-gradient(90deg,transparent,#e8dcf46b 48%,#fff7e971 68%,transparent); }
+.surf-draw-cinema[data-pro-batch=true][data-phase=spinning] .surf-draw-cinema__pro-lightfield { opacity: .68; background: radial-gradient(ellipse 52% 57% at 40% 49%,#fff9e6c4,transparent 84%),radial-gradient(ellipse 38% 50% at 70% 61%,#c9e2d2a1,transparent 86%),linear-gradient(110deg,#fffaf207,#f3f6ed3d 51%,#f8ecec08); }
+.surf-draw-cinema[data-pro-batch=true][data-phase=spinning] .surf-draw-cinema__pro-lightfield i { opacity: 0; }
+.surf-draw-cinema[data-pro-batch=true][data-phase=settling] .surf-draw-cinema__pro-lightfield { animation: surf-pro-field 3.45s ease-out both; }
+.surf-draw-cinema[data-pro-batch=true][data-phase=settling] .surf-draw-cinema__pro-lightfield i { animation: surf-pro-foil-sweep 2.65s cubic-bezier(.16,.67,.28,1) .32s both; }
+.surf-draw-cinema[data-pro-batch=true][data-phase=settling] .surf-draw-cinema__pro-lightfield i:nth-child(2) { animation-delay: .43s; }
+.surf-draw-cinema[data-pro-batch=true][data-phase=settling] .surf-draw-cinema__pro-lightfield i:nth-child(3) { animation-delay: .52s; }
+@keyframes surf-pro-field { 0% { opacity: .68; } 18% { opacity: .76; } 53% { opacity: .92; } 78% { opacity: .35; } 100% { opacity: 0; } }
+@keyframes surf-pro-foil-sweep { from { transform: translateX(-130vw) skewX(-18deg); } to { transform: translateX(120vw) skewX(-18deg); } }
+.surf-draw-cinema__top-light { position: absolute; inset: 0 0 auto; height: calc(var(--surf-theater-header-height,85px) + 48px); background: linear-gradient(#faf8f4f5,#faf8f4b8 65%,transparent); }
+.surf-reveal-scene-error { display: block !important; color: #8a3f53 !important; }
+.surf-reveal-scene-error small { display: block; margin-top: 3px; font-size: 9px; }
+.surf-reveal-scene-retry { display: inline-block; margin-top: 8px; padding: 5px 12px; border: 1px solid currentColor; border-radius: 999px; color: inherit; background: transparent; font: inherit; cursor: pointer; }
+.surf-reveal-preview-links { flex: 0 0 100%; display: flex; align-items: center; justify-content: center; gap: 20px; }
+.surf-reveal-preview-links .surf-reveal-exit { flex-basis: auto; padding: 0; }
+.surf-reveal-preview-links .surf-reveal-preview-kind { min-height: 30px; padding: 5px 12px; border: 1px solid #ffffffd9; border-radius: 999px; background: #ffffff75; box-shadow: inset 0 1px 0 #fff,0 3px 12px #877f9710; font-size: 11px !important; transition: background 180ms ease,box-shadow 180ms ease; }
+.surf-reveal-preview-links .surf-reveal-preview-kind:hover:not(:disabled) { background: #ffffffe6; box-shadow: inset 0 1px 0 #fff,0 4px 14px #877f9720; }
+.surf-reveal-preview-links .surf-reveal-exit:disabled { opacity: .35; cursor: wait; }
+
+.surf-draw-masthead,.surf-draw-results,.surf-draw-proof,.surf-draw-feedback,.surf-draw-page__footer { position: relative; z-index: 2; }
+.surf-reveal-stage-slot { position: relative; z-index: 3; }
+.surf-draw-masthead,.surf-draw-results,.surf-draw-proof,.surf-draw-page__footer { transition: opacity 650ms ease,transform 1000ms var(--hub-ease),filter 650ms ease; }
+.surf-draw-page[data-theater=true] :is(.surf-draw-masthead,.surf-draw-results,.surf-draw-proof,.surf-draw-page__footer) { opacity: .01 !important; filter: blur(6px); transform: translateY(25px); pointer-events: none; }
+.surf-draw-page[data-theater=true] .hub-site-header {
+  position: fixed; top: 0; width: min(calc(100% - 6rem),1320px); left: 50%; transform: translateX(-50%);
+}
+.surf-draw-page[data-theater=true] .surf-reveal-stage {
+  position: fixed; inset: calc(var(--surf-theater-header-height,85px) + 20px) max(28px,calc((100vw - 1320px) / 2)) 20px;
+  min-height: 0; padding: 0 2% 105px; grid-template-columns: .95fr 1.05fr;
+  align-items: center; perspective: 1800px;
+}
+.surf-draw-page[data-theater=true] .surf-reveal-prize__object {
+  --surf-prize-height: clamp(270px,54svh,480px); width: min(100%,520px);
+}
+.surf-draw-page[data-theater=true] .surf-reveal-prize__caption { font-size: 9px; margin-bottom: 14px; }
+.surf-draw-page[data-theater=true] .surf-reveal-prize__name h2 { margin-top: 14px; font-size: clamp(28px,3vw,40px); }
+.surf-draw-page[data-theater=true] .surf-reveal-prize__name p { font-size: 12px; }
+.surf-draw-page[data-theater=true] .surf-reveal-prize__caption { color: #82758e; }
+.surf-draw-page[data-theater=true] .surf-reveal-prize__name h2 { color: var(--hub-ink); }
+.surf-draw-page[data-theater=true] .surf-reveal-prize__name p { color: #737480; }
+.surf-draw-page[data-theater=true] .surf-reveal-winner { color: var(--hub-ink); }
+.surf-draw-page[data-theater=true] .surf-reveal-winner > span,.surf-draw-page[data-theater=true] .surf-reveal-winner small { color: #7b7186; }
+.surf-draw-page[data-theater=true] .surf-reveal-stage:is([data-phase=identity],[data-phase=revealed]) :is(.surf-reveal-prize__name h2,.surf-reveal-winner h2) { color: var(--hub-ink); }
+.surf-draw-page[data-theater=true] .surf-reveal-stage:is([data-phase=identity],[data-phase=revealed]) :is(.surf-reveal-prize__name p,.surf-reveal-prize__caption,.surf-reveal-winner > span) { color: #737480; }
+.surf-draw-page[data-theater=true] .surf-reveal-ticket-scene { padding: 0 0 0 3%; }
+.surf-draw-page[data-theater=true] .surf-draw-ticket {
+  width: min(100%,580px); padding: 30px 32px 25px; border-color: #fff;
+  background: linear-gradient(120deg,#fffdf9f2,#eef0f3ed 22%,#fffaf3f5 54%,#e9e5eff2);
+  box-shadow: inset 0 1px 0 #fff,inset 0 -2px 3px #71677b16,1px 3px 0 #c1bac666,0 38px 65px -25px #776b8a3d;
+}
+.surf-draw-ticket { transform-origin: center; transition: transform 900ms var(--hub-ease),box-shadow 900ms ease; }
+.surf-draw-page[data-theater=true] .surf-draw-ticket__body { height: 190px; margin-block: 25px 19px; }
+.surf-draw-page[data-theater=true] .surf-draw-ticket__reels { top: 28px; }
+.surf-draw-page[data-theater=true] .surf-draw-reels { --reel-cell: 110px; font-size: clamp(64px,8vw,112px); }
+.surf-draw-page[data-theater=true] .surf-draw-ticket[data-identity=true] .surf-draw-ticket__caption { transform: translateY(135px); }
+.surf-draw-page[data-theater=true] .surf-draw-ticket[data-identity=true] .surf-draw-ticket__reels { transform: translateY(104px) scale(.26); }
+.surf-draw-page[data-theater=true] .surf-draw-ticket__identity { bottom: 56px; gap: 15px; }
+.surf-draw-page[data-theater=true] .surf-draw-ticket__identity > strong { font-size: clamp(38px,5.3vw,70px); }
+.surf-draw-page[data-theater=true] .surf-draw-ticket__identity > strong[data-size=medium] { font-size: clamp(30px,3.5vw,46px); }
+.surf-draw-page[data-theater=true] .surf-draw-ticket__identity > strong[data-size=long] { font-size: clamp(20px,2.3vw,30px); }
+.surf-draw-page[data-theater=true] .surf-reveal-winner { margin-top: 35px; }
+.surf-draw-page[data-theater=true] .surf-reveal-winner h2 { font-size: 22px; }
+.surf-draw-page[data-theater=true] .surf-reveal-controls { bottom: 0; opacity: .8; transition: opacity 500ms ease; }
+.surf-draw-page[data-theater=true] .surf-reveal-controls p,.surf-draw-page[data-theater=true] .surf-reveal-exit { color: #796e85; }
+.surf-draw-page[data-theater=true] .surf-draw-batch { color: #796e85; }
+.surf-draw-page[data-theater=true] .surf-reveal-controls:focus-within { opacity: 1; }
+
+/* One forward camera move, then the actual stops straighten the ticket.
+   None of these animations restart during the stop callbacks. */
+.surf-draw-page[data-theater=true] .surf-reveal-stage[data-phase=spinning] .surf-draw-ticket { animation: surf-ceremony-ticket 4500ms var(--hub-ease) both; }
+@keyframes surf-ceremony-ticket { from { transform: rotateY(-11deg) rotateX(5deg) scale(.96); } to { transform: rotateY(-3deg) rotateX(1deg) scale(1.035); } }
+.surf-draw-page[data-theater=true] .surf-reveal-stage[data-phase=settling] .surf-draw-ticket { transform: rotateY(calc(-3deg * (1 - var(--surf-stop-progress)))) rotateX(calc(1deg * (1 - var(--surf-stop-progress)))) scale(1.035); transition-duration: 400ms; }
+.surf-draw-page[data-theater=true] .surf-reveal-stage[data-phase=ticket] .surf-draw-ticket { transform: scale(1.035); }
+.surf-draw-page[data-theater=true] .surf-reveal-stage:is([data-phase=identity],[data-phase=revealed]) .surf-draw-ticket { transform: scale(1.015); }
+.surf-draw-box-media { transition: transform 1100ms var(--hub-ease); }
+.surf-draw-page[data-theater=true] .surf-reveal-stage[data-phase=spinning] .surf-draw-box-media { animation: surf-ceremony-box 4500ms var(--hub-ease) both; }
+@keyframes surf-ceremony-box { from { transform: translateY(10px) scale(.97); } to { transform: translateY(-8px) scale(1.04); } }
+.surf-draw-page[data-theater=true] .surf-reveal-stage:is([data-phase=settling],[data-phase=ticket]) .surf-draw-box-media { transform: translateY(-8px) scale(1.04); }
+.surf-draw-page[data-theater=true] .surf-reveal-stage:is([data-phase=identity],[data-phase=revealed]) .surf-draw-box-media { transform: translateY(-8px) scale(1.07); }
+.surf-draw-membership { transition: transform 1600ms var(--hub-ease); }
+.surf-draw-page[data-theater=true] .surf-reveal-stage:is([data-phase=spinning],[data-phase=settling],[data-phase=ticket]) .surf-draw-membership { transform: translateY(-8px) rotate(-4deg) rotateY(-8deg) scale(1.04); transition-duration: 4500ms; }
+.surf-draw-page[data-theater=true] .surf-reveal-stage:is([data-phase=identity],[data-phase=revealed]) .surf-draw-membership { transform: translateY(-8px) rotate(-3deg) rotateY(-5deg) scale(1.07); }
+
+@media(max-width:1000px) {
+  .surf-draw-page[data-theater=true] .hub-site-header { width: calc(100% - 2rem); }
+  .surf-draw-page[data-theater=true] .surf-reveal-stage { inset: calc(var(--surf-theater-header-height,70px) + 16px) 18px 12px; padding-inline: 1%; }
+  .surf-draw-page[data-theater=true] .surf-reveal-prize__object { --surf-prize-height: clamp(250px,43svh,360px); }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket { padding: 23px 22px 20px; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket__body { height: 155px; margin-block: 21px 16px; }
+  .surf-draw-page[data-theater=true] .surf-draw-reels { --reel-cell: 90px; font-size: 8vw; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket__reels { top: 20px; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket[data-identity=true] .surf-draw-ticket__caption { transform: translateY(108px); }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket[data-identity=true] .surf-draw-ticket__reels { transform: translateY(85px) scale(.3); }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket__identity { bottom: 43px; }
+}
+@media(max-width:820px) {
+  .surf-draw-page[data-theater=true] .surf-reveal-stage { inset: calc(var(--surf-theater-header-height,100px) + 12px) 16px 8px; padding: 0 0 78px; grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; gap: 10px; }
+  .surf-draw-page[data-theater=true] .surf-reveal-prize__object { --surf-prize-height: clamp(135px,27svh,240px); width: min(75%,280px); }
+  .surf-draw-page[data-theater=true] .surf-reveal-prize__caption { font-size: 7px; margin-bottom: 0; }
+  .surf-draw-page[data-theater=true] .surf-reveal-prize__name h2 { margin: 0 0 4px; font-size: 24px; }
+  .surf-draw-page[data-theater=true] .surf-reveal-prize__name p { font-size: 9px; }
+  .surf-draw-page[data-theater=true] .surf-reveal-ticket-scene { width: min(100%,400px); margin: auto; padding: 0; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket { padding: 18px 21px 16px; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket__body { height: 115px; margin-block: 16px 12px; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket__reels { top: 15px; }
+  .surf-draw-page[data-theater=true] .surf-draw-reels { --reel-cell: 68px; font-size: 60px; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket[data-identity=true] .surf-draw-ticket__caption { transform: translateY(76px); }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket[data-identity=true] .surf-draw-ticket__reels { transform: translateY(56px) scale(.32); }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket__identity { bottom: 39px; gap: 8px; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket__identity > strong { font-size: 37px; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket__identity > strong[data-size=medium] { font-size: 27px; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket__identity > strong[data-size=long] { font-size: 19px; }
+  .surf-draw-page[data-theater=true] .surf-reveal-winner { margin-top: 14px; min-height: 40px; }
+  .surf-draw-page[data-theater=true] .surf-reveal-winner > span,.surf-draw-page[data-theater=true] .surf-reveal-winner small { display: none; }
+  .surf-draw-page[data-theater=true] .surf-reveal-winner h2 { margin: 0; font-size: 15px; }
+  .surf-draw-page[data-theater=true] .surf-reveal-controls { gap: 6px; }
+  .surf-draw-page[data-theater=true] .surf-reveal-controls p:not(.surf-reveal-scene-error) { display: none; }
+  .surf-draw-page[data-theater=true] .surf-reveal-exit { font-size: 9px !important; }
+}
+@media(max-height:650px) and (min-width:821px) {
+  .surf-draw-page[data-theater=true] .surf-reveal-stage { inset: calc(var(--surf-theater-header-height,60px) + 12px) 24px 8px; padding-bottom: 60px; }
+  .surf-draw-page[data-theater=true] .surf-reveal-prize__object { --surf-prize-height: 43svh; }
+  .surf-draw-page[data-theater=true] .surf-reveal-controls p:not(.surf-reveal-scene-error),.surf-draw-page[data-theater=true] .surf-reveal-winner { display: none; }
+}
+@media(max-height:760px) and (max-width:820px) {
+  .surf-draw-page[data-theater=true] .surf-reveal-stage { gap: 6px; }
+  .surf-draw-page[data-theater=true] .surf-reveal-prize__object { --surf-prize-height: clamp(100px,21svh,160px); }
+  .surf-draw-page[data-theater=true] .surf-reveal-prize__name h2 { font-size: 21px; }
+  .surf-draw-page[data-theater=true] .surf-reveal-prize__name p { display: none; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket { padding-block: 15px 12px; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket__body { height: 95px; margin-block: 12px 10px; }
+  .surf-draw-page[data-theater=true] .surf-draw-reels { --reel-cell: 58px; font-size: 52px; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket__identity { bottom: 31px; gap: 5px; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket__identity > strong { font-size: 30px; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket__identity > strong[data-size=medium] { font-size: 24px; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket__identity > strong[data-size=long] { font-size: 17px; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket[data-identity=true] .surf-draw-ticket__caption { transform: translateY(61px); }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket[data-identity=true] .surf-draw-ticket__reels { transform: translateY(41px) scale(.32); }
+  .surf-draw-page[data-theater=true] .surf-reveal-winner { margin-top: 8px; min-height: 25px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .surf-draw-cinema { transition: none; }
+  .surf-draw-cinema__pro-lightfield { display: none; }
+  .surf-draw-page .hub-site-header,.surf-draw-masthead,.surf-draw-results,.surf-draw-proof,.surf-draw-page__footer,
+  .surf-draw-ticket,.surf-draw-box-media,.surf-draw-membership { animation: none !important; transition: none !important; }
+  .surf-draw-page[data-theater=true] .surf-draw-ticket,.surf-draw-page[data-theater=true] .surf-draw-box-media { transform: none !important; }
+}

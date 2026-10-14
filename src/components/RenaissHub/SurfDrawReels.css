@@ -1,0 +1,30 @@
+/* ReactSkills → Transitions.dev / Spinning counter, with continuous stops. */
+.surf-draw-reels { --reel-cell: 86px; --reel-dur: 650ms; --reel-spin-blur: 2.5px; --reel-stagger: 190ms; --reel-ease: cubic-bezier(0.16,1,0.3,1); position: relative; display: flex; justify-content: center; gap: 2px; height: var(--reel-cell); font-size: clamp(45px,5.2vw,76px); font-weight: 480; letter-spacing: -.07em; line-height: 1; font-variant-numeric: tabular-nums; }
+.t-reel { display: inline-flex; align-items: center; height: var(--reel-cell); font-variant-numeric: tabular-nums; }
+.t-reel-col {
+  position: relative; height: var(--reel-cell); overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 78%, transparent 100%);
+}
+.t-reel-strip { display: flex; flex-direction: column; will-change: transform, filter; }
+.t-reel-digit { height: var(--reel-cell); display: flex; align-items: center; justify-content: center; }
+.surf-draw-reels .t-reel-col { width: .65em; }
+.surf-draw-reels__rail {
+  position: absolute; top: calc(100% + 8px); left: 50%; width: calc(3.9em + 10px); height: 1px;
+  transform: translateX(-50%); background: #ac91c22b; opacity: 0;
+  transition: opacity 350ms ease;
+}
+.surf-draw-reels:is([data-phase=spinning],[data-phase=settling],[data-phase=ticket]) .surf-draw-reels__rail { opacity: 1; }
+.surf-draw-reels__rail-fill {
+  position: absolute; inset: 0; background: linear-gradient(90deg,#c4a4df,#b4c9e2);
+  box-shadow: 0 0 8px #b48bd2aa; transform: scaleX(calc(var(--locked,0) / 6)); transform-origin: left; transition: transform 250ms ease;
+}
+.surf-draw-reels[data-empty=true] .t-reel-col { visibility: hidden; }
+.surf-draw-reels__word { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 430; letter-spacing: -.06em; background: linear-gradient(125deg,#a899b0,#81738d 35%,#b6a7c0 54%,#746682 85%); background-clip: text; -webkit-text-fill-color: transparent; text-shadow: none; }
+@media(max-width:720px) { .surf-draw-reels { --reel-cell: 65px; font-size: 52px; } .surf-draw-reels__word { font-size: 39px; } }
+@media (prefers-reduced-motion: reduce) {
+  .surf-draw-reels__rail { display: none; }
+  .t-reel-strip { transition: none !important; filter: none !important; }
+  .surf-draw-reels[data-phase=spinning] .t-reel-col { display: none; }
+  .surf-draw-reels[data-phase=spinning]::after { content: '···'; align-self: center; }
+}

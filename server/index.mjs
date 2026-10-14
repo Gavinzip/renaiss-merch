@@ -88,6 +88,8 @@ import {
 import { serveStatic } from './static.mjs';
 import { getStorefrontFeatures } from './storefront-features.mjs';
 import { isHiddenHubPath } from '../shared/site-routes.js';
+import { createSurfDrawHandler } from './surf-draw/routes.mjs';
+import { handleSurfDrawAccessRoute } from './surf-draw/access.mjs';
 import {
   getStorefrontMode,
   isProductionStorefrontMode,
@@ -110,6 +112,7 @@ const host = process.env.HOST || (process.env.PORT ? '0.0.0.0' : '127.0.0.1');
 const backupTriggerAttempts = [];
 getMerchDatabase(getRuntimeConfig().databasePath);
 const handleMissionRoute = createMissionRouteHandler({ readSession });
+const handleSurfDrawRoute = createSurfDrawHandler({ readSession });
 const vite = isProduction
   ? null
   : await createDevelopmentViteServer();
@@ -172,6 +175,8 @@ async function handleRoute(req, res) {
   }
 
   if (await handleMissionRoute(req, res, url)) return true;
+  if (await handleSurfDrawAccessRoute(req, res, url)) return true;
+  if (await handleSurfDrawRoute(req, res, url)) return true;
 
   if (!isProduction && url.pathname.startsWith('/api/hub/hero-preview/')) {
     await handleHubHeroPreview(req, res, url.pathname);

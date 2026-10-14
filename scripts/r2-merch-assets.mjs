@@ -524,6 +524,14 @@ async function assertConfiguration() {
   const hubCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/hub-asset-release.json'), 'utf8'));
   if (hubCatalog.release === 'unpublished') throw new Error('Publish the hidden Hub media release before a production build.');
 
+  const drawCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/surf-draw-motion-release.json'), 'utf8'));
+  if (drawCatalog.release === 'unpublished') throw new Error('Publish the Surf draw motion release before a production build.');
+  const drawBase = normalizeBase(String(process.env.VITE_SURF_DRAW_MOTION_CDN_BASE_URL || ''));
+  const expectedDrawBase = `${base}/${drawCatalog.prefix}/${drawCatalog.release}`;
+  if (drawBase !== expectedDrawBase) {
+    throw new Error(`Surf draw motion CDN must be ${expectedDrawBase}.`);
+  }
+
   console.log(
     `Production media configuration: ${base}/${catalog.prefix}/${catalog.release}/`
   );
@@ -554,6 +562,11 @@ async function assertBuild() {
   const hubCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/hub-asset-release.json'), 'utf8'));
   if (!combinedText.includes(hubCatalog.release) || /\/api\/hub\/hero-preview\/|["']\/work\//.test(combinedText)) {
     throw new Error('Hidden Hub build must use its published CDN release, without local authoring URLs.');
+  }
+  const drawCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/surf-draw-motion-release.json'), 'utf8'));
+  const drawBase = String(process.env.VITE_SURF_DRAW_MOTION_CDN_BASE_URL || '').trim().replace(/\/+$/, '');
+  if (!drawBase || !combinedText.includes(drawBase) || !combinedText.includes(drawCatalog.release)) {
+    throw new Error('Surf draw build must use its published motion CDN release.');
   }
   const configuredBase = String(
     process.env.VITE_STATIC_ASSET_CDN_BASE_URL || ''

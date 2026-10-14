@@ -1,5 +1,5 @@
 import "./RenaissHubStyles";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { lazy, useEffect, useRef, useState, type CSSProperties } from "react";
 import { useLocale } from "../../i18n/LocaleContext";
 import { readRenaissSession, signOutRenaiss, startRenaissLogin } from "../../lib/renaissAuth";
 import { staticMerchAssetCssUrl } from "../../lib/staticAssets";
@@ -23,11 +23,12 @@ import { HubAssistant } from "./HubAssistant";
 import { HubNavigation } from "./HubNavigation";
 import { HubAccountAction } from "./HubAccountAction";
 import { SurfCampaignPage } from "./SurfCampaignPage";
-import { useHubCampaignRoute } from "./useHubCampaignRoute";
+import { surfDrawHash, useHubCampaignRoute } from "./useHubCampaignRoute";
 import { useHubInitialReadiness } from './useHubInitialReadiness';
 import { HubPageLoading } from './HubPageLoading';
 import { editableHubLayout, visibleHubLayout } from "./hubLayout";
 
+const SurfDrawPage = lazy(() => import('./SurfDrawPage').then(module => ({ default: module.SurfDrawPage })));
 
 type RenaissHubProps = {
   loadProgress: number;
@@ -47,6 +48,13 @@ export function RenaissHub({
   const { locale, setLocale } = useLocale();
   const copy = renaissHubCopy[locale];
   const campaignRoute = useHubCampaignRoute();
+  const [drawActive, setDrawActive] = useState(() => window.location.hash === surfDrawHash);
+  useEffect(() => {
+    const sync = () => setDrawActive(window.location.hash === surfDrawHash);
+    window.addEventListener('hashchange', sync);
+    window.addEventListener('popstate', sync);
+    return () => { window.removeEventListener('hashchange', sync); window.removeEventListener('popstate', sync); };
+  }, []);
   const [account, setAccount] = useState<AccountState>({ status: "loading" });
   const [accountRequest, setAccountRequest] = useState(0);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -172,7 +180,9 @@ export function RenaissHub({
 
   return (
     <div className="hub-route-motion" ref={campaignRoute.ref} data-route-motion="true" data-route-transitioned={campaignRoute.hasTransitioned} data-route-busy={campaignRoute.busy} inert={campaignRoute.busy}>
-    {campaignRoute.active ? <SurfCampaignPage locale={locale} setLocale={setLocale} account={account} motionRevision={campaignRoute.revision} onBack={campaignRoute.back} onLogin={() => startRenaissLogin()} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} /> : <main
+    {campaignRoute.active ? drawActive
+      ? <SurfDrawPage locale={locale} setLocale={setLocale} account={account} onBack={() => { window.location.hash = '#campaign/surf'; }} onHome={campaignRoute.back} onEnterMerch={enterMerch} onLogin={() => startRenaissLogin()} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} />
+      : <SurfCampaignPage locale={locale} setLocale={setLocale} account={account} motionRevision={campaignRoute.revision} onBack={campaignRoute.back} onLogin={() => startRenaissLogin()} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} /> : <main
       ref={overviewRef}
       className="renaiss-hub"
       data-initial-ready={initialReadiness === 'ready'}

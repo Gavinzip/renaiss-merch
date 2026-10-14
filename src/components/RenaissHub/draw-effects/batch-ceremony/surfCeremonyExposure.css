@@ -1,0 +1,27 @@
+.surf-ceremony-tension,
+.surf-ceremony-light,
+.surf-ceremony-whiteout {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.surf-ceremony-tension {
+  z-index: 9997;
+  background: radial-gradient(ellipse 65% 70% at 50% 62%, transparent 12%, #77718424 70%, #68627242);
+}
+
+.surf-ceremony-light {
+  z-index: 9998;
+  background: radial-gradient(ellipse var(--light-width) var(--light-height) at var(--light-x) var(--light-y),
+    #fffef9 0%, #fffef3e8 16%, #fff9e991 36%, #fff8e52b 64%, #fff8e500 100%);
+}
+
+.surf-ceremony-whiteout { z-index: 9999; background: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  .surf-ceremony-tension,
+  .surf-ceremony-light,
+  .surf-ceremony-whiteout { display: none; }
+}

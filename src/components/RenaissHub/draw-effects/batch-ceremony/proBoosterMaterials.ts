@@ -1,0 +1,41 @@
+import * as THREE from 'three';
+import { canvasTexture, type CeremonyArtwork } from './ceremonyArtwork';
+import { proBoosterArtwork } from './proBoosterArtwork';
+
+// Long photographic softboxes and dark gaps illuminate only the foil. The
+// bright page and Mystery Box keep their own existing lighting.
+export function createProBoosterMaterials(renderer: THREE.WebGLRenderer, art: CeremonyArtwork) {
+  const studio = new THREE.Scene(); studio.background = new THREE.Color('#262d30');
+  const plane = new THREE.PlaneGeometry(1, 1);
+  const lights: THREE.MeshBasicMaterial[] = [];
+  for (const [position, size, intensity] of [
+    [[-2.5, 1, 4], [1.1, 7, 1], 3],
+    [[2.5, 1.5, 4], [.7, 6, 1], 2.4],
+    [[0, 4, 2], [6, 1.3, 1], 3.4],
+    [[0, -3, 3], [5, .8, 1], 1.3],
+    [[0, 0, -4], [5, 5, 1], 1.2],
+  ] as const) {
+    const material = new THREE.MeshBasicMaterial({ color: new THREE.Color(intensity, intensity, intensity), side: THREE.DoubleSide });
+    lights.push(material);
+    const light = new THREE.Mesh(plane, material);
+    light.position.set(position[0], position[1], position[2]); light.scale.set(size[0], size[1], size[2]); light.lookAt(0, 0, 0); studio.add(light);
+  }
+  const pmrem = new THREE.PMREMGenerator(renderer), environment = pmrem.fromScene(studio, .035);
+  pmrem.dispose(); plane.dispose(); lights.forEach(light => light.dispose());
+  const frontTexture = canvasTexture(proBoosterArtwork(art));
+  const backTexture = canvasTexture(proBoosterArtwork(art, true));
+  const material = (map: THREE.Texture, side: THREE.Side) => new THREE.MeshPhysicalMaterial({
+    map, side, metalness: .84, roughness: .25, clearcoat: .5, clearcoatRoughness: .22,
+    envMap: environment.texture, envMapIntensity: 1.15,
+  });
+  const front = material(frontTexture, THREE.FrontSide), back = material(backTexture, THREE.BackSide);
+  const insideFront = new THREE.MeshStandardMaterial({ color: '#d1d6d7', metalness: 1, roughness: .3,
+    envMap: environment.texture, envMapIntensity: .8, side: THREE.BackSide });
+  const insideBack = insideFront.clone(); insideBack.side = THREE.FrontSide;
+  return { front, back, insideFront, insideBack,
+    dispose() {
+      front.dispose(); back.dispose(); insideFront.dispose(); insideBack.dispose();
+      frontTexture.dispose(); backTexture.dispose(); environment.dispose();
+    },
+  };
+}

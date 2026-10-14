@@ -1,0 +1,64 @@
+/* ReactSkills → Transitions.dev / Texts reveal. */
+.surf-draw-ticket { --stagger-dur: 500ms; --stagger-distance: 12px; --stagger-stagger: 40ms; --stagger-blur: 3px; --stagger-ease: cubic-bezier(.22,1,.36,1); }
+.surf-reveal-ticket.surf-draw-ticket { aspect-ratio: auto; }
+.t-stagger-line {
+  display: block;
+  opacity: 0;
+  transform: translateY(var(--stagger-distance));
+  filter: blur(var(--stagger-blur));
+  transition:
+    opacity var(--stagger-dur) var(--stagger-ease),
+    transform var(--stagger-dur) var(--stagger-ease),
+    filter var(--stagger-dur) var(--stagger-ease);
+  will-change: transform, opacity, filter;
+}
+.t-stagger-line--2 { transition-delay: var(--stagger-stagger); }
+.t-stagger.is-shown .t-stagger-line { opacity: 1; transform: translateY(0); filter: blur(0); }
+.t-stagger.is-hiding .t-stagger-line {
+  opacity: 0;
+  transform: translateY(0);
+  filter: blur(0);
+  transition: opacity 200ms ease, transform 0s linear, filter 0s linear;
+  transition-delay: 0s;
+}
+.surf-draw-ticket__brands { display: flex; align-items: center; gap: 9px; }
+.surf-draw-ticket__brands .hub-brand-wordmark { width: 86px; height: auto; }
+.surf-draw-ticket__brands b { font-size: 12px; font-weight: 400; color: #aaa1b1; }
+.surf-draw-ticket__brands .hub-surf-logo { width: 19px; height: 19px; border-radius: 4px; }
+.surf-draw-ticket__brands > span { margin-left: -4px; font-size: 10px; font-weight: 550; letter-spacing: .1em; }
+.surf-draw-ticket__body { position: relative; height: 144px; margin: 17px 0 16px; color: #514658; text-align: center; }
+.surf-draw-ticket__reels { position: absolute; top: 15px; left: 0; right: 0; transform-origin: center; transition: transform 540ms var(--stagger-ease); }
+.surf-draw-ticket__caption { position: absolute; inset: 0 0 auto; color: #a18eaa; font-size: 8px; font-weight: 550; letter-spacing: .16em; transition: transform 540ms var(--stagger-ease); }
+.surf-draw-ticket[data-identity=true] .surf-draw-ticket__caption { transform: translateY(92px); }
+.surf-draw-ticket[data-identity=true] .surf-draw-ticket__reels { transform: translateY(62px) scale(.3); }
+.surf-draw-ticket__identity { position: absolute; inset: 0 0 58px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.surf-draw-ticket__identity > span { font-size: 8px; font-weight: 550; letter-spacing: .18em; color: #9b87a6; }
+.surf-draw-ticket__identity > strong { width: 100%; font-size: clamp(28px,3.25vw,43px); font-weight: 480; letter-spacing: -.05em; line-height: 1.15; overflow-wrap: anywhere; }
+.surf-draw-ticket__identity > strong[data-size=medium] { font-size: 27px; }
+.surf-draw-ticket__identity > strong[data-size=long] { font-size: 17px; letter-spacing: -.02em; }
+/* Only the new name enters; the ticket and its original reels stay visible. */
+.surf-draw-ticket__identity .t-stagger-line { opacity: .08; }
+.surf-draw-ticket__identity.is-shown .t-stagger-line { opacity: 1; }
+@media(max-width:720px) {
+  .surf-draw-ticket__body { height: 122px; margin-block: 18px 13px; }
+  .surf-draw-ticket[data-identity=true] .surf-draw-ticket__caption { transform: translateY(80px); }
+  .surf-draw-ticket[data-identity=true] .surf-draw-ticket__reels { transform: translateY(57px) scale(.32); }
+  .surf-draw-ticket__identity { bottom: 41px; gap: 8px; }
+  .surf-draw-ticket__identity > strong { font-size: 32px; }
+  .surf-draw-ticket__identity > strong[data-size=medium] { font-size: 21px; }
+  .surf-draw-ticket__identity > strong[data-size=long] { font-size: 15px; }
+}
+@media(max-width:430px) {
+  .surf-draw-ticket__brands { gap: 7px; }
+  .surf-draw-ticket__brands .hub-brand-wordmark { width: 74px; }
+  .surf-draw-ticket__brands .hub-surf-logo { width: 17px; height: 17px; }
+  .surf-draw-ticket__brands > span { font-size: 9px; }
+  .surf-draw-ticket__body { height: 114px; margin-block: 16px 12px; }
+  .surf-draw-ticket__identity { bottom: 39px; }
+  .surf-draw-ticket[data-identity=true] .surf-draw-ticket__caption { transform: translateY(76px); }
+  .surf-draw-ticket[data-identity=true] .surf-draw-ticket__reels { transform: translateY(57px) scale(.34); }
+}
+@media(prefers-reduced-motion:reduce) {
+  .t-stagger-line { transition: none !important; }
+  .surf-draw-ticket__reels, .surf-draw-ticket__caption { transition: none; }
+}

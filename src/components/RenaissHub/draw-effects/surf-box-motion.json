@@ -1,0 +1,48 @@
+{
+  "frames": 65,
+  "tile": 768,
+  "columns": 5,
+  "rows": 3,
+  "cellWidth": 661,
+  "cellHeight": 631,
+  "offsetX": 54,
+  "offsetY": 81,
+  "durationMs": 1600,
+  "atlases": [
+    {
+      "file": "box-alpha-01-9a8cd9a4feb4.webp",
+      "frames": 15,
+      "columns": 5,
+      "rows": 3,
+      "bytes": 604912
+    },
+    {
+      "file": "box-alpha-02-6400108af638.webp",
+      "frames": 15,
+      "columns": 5,
+      "rows": 3,
+      "bytes": 866106
+    },
+    {
+      "file": "box-alpha-03-cd3a495daefb.webp",
+      "frames": 15,
+      "columns": 5,
+      "rows": 3,
+      "bytes": 1084578
+    },
+    {
+      "file": "box-alpha-04-48be3e00741a.webp",
+      "frames": 15,
+      "columns": 5,
+      "rows": 3,
+      "bytes": 1115150
+    },
+    {
+      "file": "box-alpha-05-0d24b2458db2.webp",
+      "frames": 5,
+      "columns": 5,
+      "rows": 1,
+      "bytes": 360524
+    }
+  ]
+}
