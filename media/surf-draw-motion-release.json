@@ -2,7 +2,7 @@
   "access": "public",
   "bucket": "renaiss-merch-media",
   "prefix": "merch/next/surf-draw",
-  "release": "r5c403b37e7a6f466e320",
+  "release": "ra96b1c011fbcbf4a2ed8",
   "assets": {
     "boxFrameAtlas01": {
       "type": "binary",
@@ -33,9 +33,15 @@
       "source": "work/derived-media/surf-draw-box-alpha-v2/box-alpha-05-0d24b2458db2.webp",
       "contentType": "image/webp",
       "path": "box-alpha-05-0d24b2458db2.webp"
+    },
+    "filmBoxUv": {
+      "type": "binary",
+      "source": "work/assets/surf/film-box-uv-v2/surf-film-box-uv-46b9cb44c74d.webp",
+      "contentType": "image/webp",
+      "path": "surf-film-box-uv-46b9cb44c74d.webp"
     }
   },
-  "contentHash": "5c403b37e7a6f466e3207a4b619baada6eee82ce631a26eb3d9bdbc744e0e735",
-  "fileCount": 5,
-  "totalBytes": 4031270
+  "contentHash": "a96b1c011fbcbf4a2ed87d8d86792d5fa09a2e965f0a0474f1e0e3925b9d14ec",
+  "fileCount": 6,
+  "totalBytes": 4361914
 }

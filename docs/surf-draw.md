@@ -188,14 +188,15 @@ Visual acceptance remains with the user; this is a local preview, not a release.
 ### Draw motion release gate
 
 The derived atlases load from `work/derived-media/` in development. The five
-content-hashed WebP files listed in `draw-effects/surf-box-motion.json` were
-published as the public release in `media/surf-draw-motion-release.json`.
+content-hashed WebP atlases listed in `draw-effects/surf-box-motion.json` and
+the 3D box UV texture are published together as the public release in
+`media/surf-draw-motion-release.json`.
 Set `VITE_SURF_DRAW_MOTION_CDN_BASE_URL` to that versioned HTTPS directory
 for production builds. Missing CDN
 configuration fails visibly. Do not bundle `work/`, the original film, the RGB
 intermediate or matte review into public/dist, and do not weaken the private
 Merch reveal route. Verify CDN bytes, MIME, immutable cache and load timing
-before release. This local review does not authorize uploading or deployment.
+before release. The release recorded above is the versioned production source.
 
 ## Rules and contract
 
@@ -222,6 +223,10 @@ stores an immutable canonical JSON ledger and its keccak256 hash. Every
 eligible participant gets a contiguous, deterministic ticket range ordered by
 SSO subject. The snapshot includes identities for private prize fulfillment;
 it is never sent by the public API or bundled into frontend assets.
+An eligible participant can lack an email in their Renaiss record; their
+verified tickets remain in the ledger, and fulfillment must use the private
+SSO subject or wallet to contact them if they win. Present emails are still
+checked for duplicates.
 `surf_draw_transactions` records the signed raw transaction and hash before
 broadcast, preventing a second signature for the same action after an uncertain
 response. `surf_draw_action_locks` reserves the round before asynchronous gas

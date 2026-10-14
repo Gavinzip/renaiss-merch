@@ -17,14 +17,14 @@ export function filmBoxUV(face: FilmBoxFace, u: number, v: number) {
   return [(x + .5 + u * (w - 1)) / FILM_BOX_ATLAS.size, 1 - (y + .5 + (1 - v) * (h - 1)) / FILM_BOX_ATLAS.size];
 }
 
-// The local derivative is served by Vite from work/. Production has no local
-// media fallback: this exact version must be published directly to the CDN.
+// The local derivative is served by Vite from work/. Production uses the same
+// versioned Surf draw release as the box motion atlases.
 export async function loadFilmBoxAtlas(signal: AbortSignal) {
-  const cdn = String(import.meta.env.VITE_STATIC_ASSET_CDN_BASE_URL || '').replace(/\/+$/, '');
-  if (!import.meta.env.DEV && !cdn) throw new Error('Surf box UV CDN is not configured.');
+  const cdn = String(import.meta.env.VITE_SURF_DRAW_MOTION_CDN_BASE_URL || '').trim().replace(/\/+$/, '');
+  if (!import.meta.env.DEV && !cdn.startsWith('https://')) throw new Error('Surf box UV CDN is not configured.');
   const url = import.meta.env.DEV
     ? `/work/assets/surf/film-box-uv-v2/${FILM_BOX_ATLAS.file}`
-    : `${cdn}/merch/surf-draw/film-box-uv-v2/${FILM_BOX_ATLAS.file}`;
+    : `${cdn}/${FILM_BOX_ATLAS.file}`;
   const response = await fetch(url, { signal });
   if (!response.ok || !response.headers.get('content-type')?.startsWith('image/webp')) throw new Error('Surf box UV artwork is unavailable.');
   const blob = await response.blob(); signal.throwIfAborted();

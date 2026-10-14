@@ -77,8 +77,13 @@ export function buildCandidateLedger(db) {
       throw new Error(`Participant ${row.userSub} has inconsistent eligibility or tickets`);
     }
     const wallet = row.walletAddress.toLowerCase(), email = row.email?.trim().toLowerCase();
-    if (wallets.has(wallet) || !email || emails.has(email)) throw new Error('Surf draw contains a duplicate wallet or email');
-    wallets.add(wallet); emails.add(email);
+    if (wallets.has(wallet)) throw new Error('Surf draw contains a duplicate wallet');
+    // Eligibility is decided by the recorded tasks and wallet. Some verified
+    // Renaiss accounts have no email, so keep their tickets in the ledger and
+    // use the SSO subject or wallet to arrange private prize fulfillment.
+    if (email && emails.has(email)) throw new Error('Surf draw contains a duplicate email');
+    wallets.add(wallet);
+    if (email) emails.add(email);
     const entry = {
       start: nextTicket, end: nextTicket + row.ticketCount - 1,
       userSub: row.userSub, name: row.name || '', walletAddress: row.walletAddress,
