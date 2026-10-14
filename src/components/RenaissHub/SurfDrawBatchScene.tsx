@@ -36,7 +36,7 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
   const total = amount;
   return <div ref={root} className="surf-batch-scene" data-phase={phase} data-kind={prize.kind} data-count={total} data-prepared={flight.ready}>
     <div className="surf-batch-heading">
-      <span>RENAISS × SURF <i />{simulation ? 'LOCAL SIMULATION' : 'ON-CHAIN REVEAL'}</span>
+      <span>RENAISS × SURF <i />{simulation ? 'DEMO MODE' : 'ON-CHAIN REVEAL'}</span>
       <h2>{title}</h2>
       <p>{phase === 'identity'
         ? locale === 'zh-TW' ? `點擊卡片翻開 · ${flight.revealed.length} / ${total}`
@@ -45,7 +45,7 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
         : <>{String(total).padStart(2, '0')} {isBox ? 'MYSTERY BOXES' : 'PRO MEMBERSHIPS'} <b>·</b> {String(start + 1).padStart(2, '0')}—{String(start + total).padStart(2, '0')}</>}</p>
       {!isBox ? <div className="surf-batch-quota"><b>{locale === 'zh-TW' ? `會員共 ${surfCampaign.plannedRewards.proMonthTrials} 份` : locale === 'ko' ? `총 멤버십 ${surfCampaign.plannedRewards.proMonthTrials}개` : `${surfCampaign.plannedRewards.proMonthTrials} MEMBERSHIPS TOTAL`}</b><i />
         {locale === 'zh-TW' ? `本批 ${total} 份` : locale === 'ko' ? `이번 팩 ${total}개` : `${total} IN THIS BATCH`}</div> : null}
-      <div className="surf-batch-prize-picker" role="group" aria-label={locale === 'zh-TW' ? '選擇正式開獎獎項' : 'Choose prize group'}>
+      <div className="surf-batch-prize-picker" role="group" aria-label={locale === 'zh-TW' ? simulation ? '選擇 Demo 獎項' : '選擇正式開獎獎項' : simulation ? 'Choose demo prize group' : 'Choose prize group'}>
         {(['mystery-box', 'surf-pro-month'] as const).map(kind => {
           const drawn = visibleWinners.filter(winner => prizes[winner.slot]?.kind === kind).length;
           const totalPrizes = prizes.filter(item => item.kind === kind).length;

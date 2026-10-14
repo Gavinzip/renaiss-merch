@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { AppLocale } from '../../i18n/LocaleContext';
 import { SurfLogo } from './SurfLogo';
 import { actionName } from './SurfDrawCopy';
@@ -23,7 +23,7 @@ type Props = {
   busy: DrawAction | null; chainState?: number; revealedCount: number; administrator: boolean;
   unavailable: string | null; myTickets: DrawStatus['myTickets'];
   onAction: () => void; onSimulate: () => void; onExitSimulation?: () => void; onRestartSimulation?: (kind?: Prize['kind']) => void;
-  onPresentationReady?: () => void; executionError?: string | null;
+  executionError?: string | null;
 };
 
 export function SurfDrawStage(props: Props) {
@@ -31,7 +31,7 @@ export function SurfDrawStage(props: Props) {
     selectedKind, onSelectKind, prizes, visibleWinners,
     revealedCount, administrator, unavailable, onAction, onSimulate, onExitSimulation, onRestartSimulation,
     settlingWinner, onSettled, onIdentityRevealed, batchAmount, batchLimit, batchActive, batchProgress, onBatchAmount, nextPrize,
-    batchStart, batchSize, batchWinners, onPresentationReady, executionError } = props;
+    batchStart, batchSize, batchWinners, executionError } = props;
   const copy = surfDrawSceneCopy(locale);
   const motionAssets = useSurfDrawMotionAssets();
   const [mediaReady, setMediaReady] = useState(false);
@@ -43,7 +43,6 @@ export function SurfDrawStage(props: Props) {
   const slot = useRef<HTMLDivElement>(null);
   const nextMedia = nextPrize?.kind === 'surf-pro-month' ? motionAssets.card : motionAssets.box;
   const ready = mediaReady && (!nextPrize || nextMedia.ready) && sceneReady && !sceneError;
-  useEffect(() => { if (ready) onPresentationReady?.(); }, [ready, onPresentationReady]);
   const locked = isSurfRevealRunning(phase) || batchActive;
   const readingBatch = multiple && phase === 'revealed' && dismissedBatch !== revision;
   useSurfDrawTheater(stage, slot, locked || readingBatch);
@@ -73,17 +72,17 @@ export function SurfDrawStage(props: Props) {
         phase={phase} revision={revision} simulation={simulation} progress={batchProgress} onStatus={onPrizeStatus}
         onSettled={onSettled} onRevealed={onIdentityRevealed} />
       <div className="surf-reveal-controls">
-        {administrator || import.meta.env.DEV ? <SurfDrawBatchControl locale={locale} amount={batchAmount} limit={batchLimit}
+        {administrator || simulation ? <SurfDrawBatchControl locale={locale} amount={batchAmount} limit={batchLimit}
           disabled={locked || Boolean(busy)} onChange={onBatchAmount} /> : null}
         {administrator ? <button className="surf-reveal-button" type="button" disabled={!canAct || locked || !ready || (nextAction === 'reveal' && !batchLimit)} onClick={onAction}>
           <span>{busy ? locale === 'zh-TW' ? '確認交易中' : 'Confirming' : nextAction ? `${actionName(nextAction, locale)}${nextAction === 'reveal' ? ` · ${batchAmount}` : ''}` : copy.phase[chainState ?? 0]}</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
         </button> : null}
-        {import.meta.env.DEV ? <button className={`surf-reveal-button ${administrator ? 'surf-reveal-button--secondary' : ''}`} type="button"
-          disabled={locked || !ready || !batchLimit || revealedCount >= 27} onClick={onSimulate}><span>{locked && simulation ? copy.simulating : revealedCount >= 27 ? copy.simulationComplete : simulationLabel}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7Z" /></svg></button> : null}
-        {simulation || readingBatch || import.meta.env.DEV ? <div className="surf-reveal-preview-links">
-          {import.meta.env.DEV && onRestartSimulation ? <button className="surf-reveal-exit surf-reveal-preview-kind" type="button" disabled={!simulation && (locked || Boolean(busy))} onClick={() => onRestartSimulation()}>{locale === 'zh-TW' ? '預覽寶箱' : locale === 'ko' ? 'Mystery Boxes 미리 보기' : 'Preview Mystery Boxes'} ↺</button> : null}
-          {import.meta.env.DEV && onRestartSimulation ? <button className="surf-reveal-exit surf-reveal-preview-kind" type="button" disabled={!simulation && (locked || Boolean(busy))} onClick={() => onRestartSimulation('surf-pro-month')}>{locale === 'zh-TW' ? '預覽會員' : locale === 'ko' ? '멤버십 팩 미리 보기' : 'Preview Memberships'} ↺</button> : null}
+        <button className={`surf-reveal-button ${administrator && !simulation ? 'surf-reveal-button--secondary' : ''}`} type="button"
+          disabled={locked || !ready || (simulation && (!batchLimit || revealedCount >= 27))} onClick={onSimulate}><span>{simulation ? locked ? copy.simulating : revealedCount >= 27 ? copy.simulationComplete : simulationLabel : copy.demoEntry}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7Z" /></svg></button>
+        {simulation || readingBatch ? <div className="surf-reveal-preview-links">
+          {simulation && onRestartSimulation ? <button className="surf-reveal-exit surf-reveal-preview-kind" type="button" onClick={() => onRestartSimulation()}>{locale === 'zh-TW' ? '重播寶箱' : locale === 'ko' ? 'Mystery Boxes 다시 보기' : 'Replay Mystery Boxes'} ↺</button> : null}
+          {simulation && onRestartSimulation ? <button className="surf-reveal-exit surf-reveal-preview-kind" type="button" onClick={() => onRestartSimulation('surf-pro-month')}>{locale === 'zh-TW' ? '重播會員' : locale === 'ko' ? '멤버십 팩 다시 보기' : 'Replay Memberships'} ↺</button> : null}
           {readingBatch ? <button className="surf-reveal-exit" type="button" onClick={() => setDismissedBatch(revision)}>{locale === 'zh-TW' ? '返回開獎頁' : locale === 'ko' ? '추첨 페이지로' : 'Back to draw page'} ↙</button> : null}
           {simulation ? <button className="surf-reveal-exit" type="button" onClick={onExitSimulation}>{copy.simulationExit} ↗</button> : null}
         </div> : null}

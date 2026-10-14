@@ -38,11 +38,13 @@ winner count before signing. The UI waits for the confirmed results before
 running the box or foil-pack ceremony. No per-prize 0-to-7 receipt counter is
 shown. Cards still reveal their winner names only when manually turned.
 
-The development-only local simulation uses separate demo tickets and the same
-group and batch controls. It does not call the draw API or sign a transaction;
-it can start with either full prize group and can restart either group at any point.
-Closing it discards its local results. Existing on-chain results appear directly
-on first load. Reduced-motion handling stays with the existing ceremony scene.
+The password-protected draw room also offers Demo mode online. It mounts a
+separate local fixture using the published 7-box and 20-membership prize plan,
+without mounting the live draw hook or calling the draw API. Operators can
+choose either group, reduce the default full batch, and start or restart its
+ceremony. Demo tickets and names never become draw results, ledger entries or
+transactions. Leaving Demo discards its in-memory results and loads the live
+status again. Reduced-motion handling stays with the existing ceremony scene.
 
 ## Page choreography
 
@@ -114,13 +116,11 @@ the selected group's latest winner, or its waiting state when that group has
 no results. Starting a draw synchronizes the scene to the actual next slot and
 locks prize tabs until the batch finishes; browsing never changes prize order.
 
-The development-only simulation has separate `Preview Mystery Boxes` and
-`Preview Memberships` actions. Each remounts only local simulation state with
-the full selected group by default; the operator can then choose either group
-and reduce the batch size. Decoded media stays in the page provider. Preview is
-disabled during a draw/batch, and never calls a reset,
-ledger, signing or chain API. It lets local reviewers return from memberships to
-the box animation without consuming a real prize or refreshing the whole site.
+Demo mode has `Replay Mystery Boxes` and `Replay Memberships` actions. Each
+remounts only its local fixture with the full selected group by default; the
+operator can choose either group and reduce the batch size before starting.
+Decoded media stays in the page provider. Demo never calls a reset, ledger,
+signing or chain API, and does not consume a real prize.
 
 ## Prize animation
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AppLocale } from '../../i18n/LocaleContext';
 import { SurfDrawBoard } from './SurfDrawBoard';
-import type { Prize, Winner } from './useSurfDraw';
+import { publicPrizes, type Prize, type Winner } from './useSurfDraw';
 import { useSurfDrawPresentation } from './useSurfDrawPresentation';
 import { useSurfDrawBatch } from './useSurfDrawBatch';
 
@@ -15,10 +15,10 @@ export function simulatedSurfWinner(slot: number): Winner {
     walletAddress: '', email: '', ticketRange: [person * 3 - 2, person * 3] } };
 }
 
-export function SurfDrawSimulation({ locale, prizes, onExit, initialAmount, initialKind }: { locale: AppLocale; prizes: Prize[]; onExit: () => void; initialAmount: number; initialKind: Prize['kind'] }) {
+export function SurfDrawSimulation({ locale, onExit, initialAmount, initialKind }: { locale: AppLocale; onExit: () => void; initialAmount: number; initialKind: Prize['kind'] }) {
   const [run, setRun] = useState({ revision: 0, kind: initialKind });
-  return <SurfDrawSimulationRun key={run.revision} locale={locale} prizes={prizes} onExit={onExit}
-    initialAmount={run.revision === 0 ? initialAmount : prizes.filter(prize => prize.kind === run.kind).length} initialKind={run.kind}
+  return <SurfDrawSimulationRun key={run.revision} locale={locale} prizes={publicPrizes} onExit={onExit}
+    initialAmount={run.revision === 0 ? initialAmount : publicPrizes.filter(prize => prize.kind === run.kind).length} initialKind={run.kind}
     onRestart={(kind = 'mystery-box') => setRun(value => ({ revision: value.revision + 1, kind }))} />;
 }
 
@@ -29,11 +29,8 @@ function SurfDrawSimulationRun({ locale, prizes, onExit, initialAmount, initialK
 }) {
   const [results, setResults] = useState<Winner[]>([]);
   const [selectedKind, setSelectedKind] = useState(initialKind);
-  const [prepared, setPrepared] = useState(false);
-  const onPrepared = useCallback(() => setPrepared(true), []);
   const presentation = useSurfDrawPresentation(results);
   const pending = useRef<number | null>(null);
-  const started = useRef(false);
   const execute = useCallback(async (slots: number[]) => {
     if (pending.current !== null || !slots.length || results.length >= prizes.length) return false;
     pending.current = window.setTimeout(() => {
@@ -47,10 +44,6 @@ function SurfDrawSimulationRun({ locale, prizes, onExit, initialAmount, initialK
     execute, begin: presentation.begin, cancel: presentation.cancel, initialAmount });
 
   useEffect(() => {
-    if (prepared && !started.current) { started.current = true; batch.start(initialAmount); }
-  }, [prepared, batch.start, initialAmount]);
-
-  useEffect(() => {
     return () => {
       if (pending.current !== null) window.clearTimeout(pending.current);
       pending.current = null;
@@ -60,7 +53,6 @@ function SurfDrawSimulationRun({ locale, prizes, onExit, initialAmount, initialK
   return <SurfDrawBoard locale={locale} status={null} chain={null} prizes={prizes}
     selectedKind={selectedKind} onSelectKind={setSelectedKind} batchSlots={batch.slots}
     administrator={false} simulation onExitSimulation={onExit} onRestartSimulation={onRestart}
-    onPresentationReady={onPrepared}
     visibleWinners={presentation.visibleWinners} phase={presentation.phase} elapsed={presentation.elapsed}
     settlingWinner={presentation.settlingWinner} onSettled={presentation.complete} onIdentityRevealed={presentation.revealIdentity}
     batchStart={presentation.batchStart} batchSize={presentation.batchSize} batchWinners={presentation.batchWinners}

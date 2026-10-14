@@ -9,7 +9,7 @@ import { SurfDrawBoard } from './SurfDrawBoard';
 import { SurfDrawSimulation } from './SurfDrawSimulation';
 import { SurfDrawMotionAssets } from './SurfDrawMotionAssets';
 import { actionName, prizeName, surfDrawCopy } from './SurfDrawCopy';
-import { useSurfDraw, type Prize } from './useSurfDraw';
+import { publicPrizes, useSurfDraw, type Prize } from './useSurfDraw';
 import { useSurfDrawAccess } from './useSurfDrawAccess';
 import { isSurfRevealRunning, useSurfDrawPresentation } from './useSurfDrawPresentation';
 import { useSurfDrawBatch } from './useSurfDrawBatch';
@@ -30,6 +30,18 @@ type PageProps = {
 };
 
 function SurfDrawContent({ locale, account }: Pick<PageProps, 'locale' | 'account'>) {
+  const [simulation, setSimulation] = useState<{ kind: Prize['kind']; amount: number } | null>(null);
+  return <SurfDrawMotionAssets>
+    {simulation ? <SurfDrawSimulation locale={locale} initialAmount={simulation.amount} initialKind={simulation.kind}
+      onExit={() => setSimulation(null)} /> :
+      <SurfDrawLive locale={locale} account={account} onSimulate={(kind, amount) => setSimulation({ kind,
+        amount: amount && amount > 0 ? amount : publicPrizes.filter(prize => prize.kind === kind).length })} />}
+  </SurfDrawMotionAssets>;
+}
+
+function SurfDrawLive({ locale, account, onSimulate }: Pick<PageProps, 'locale' | 'account'> & {
+  onSimulate: (kind: Prize['kind'], amount?: number) => void;
+}) {
   const administrator = account.status === 'ready' && account.session.authenticated &&
     account.session.user.canManageFulfillment && !account.session.user.isDemo;
   const draw = useSurfDraw(administrator);
@@ -46,7 +58,6 @@ function SurfDrawContent({ locale, account }: Pick<PageProps, 'locale' | 'accoun
     failed: draw.unavailable === 'Previous transaction failed', execute: slots => draw.act('reveal', slots),
     begin: presentation.begin, cancel: presentation.cancel });
   const copy = surfDrawCopy(locale);
-  const [simulation, setSimulation] = useState<{ kind: Prize['kind']; amount: number } | null>(null);
 
   function confirmAction() {
     if (!draw.status || !draw.nextAction || !draw.canAct) return;
@@ -62,21 +73,17 @@ function SurfDrawContent({ locale, account }: Pick<PageProps, 'locale' | 'accoun
     else void draw.act(action);
   }
 
-  return <SurfDrawMotionAssets>
-      {import.meta.env.DEV && simulation ? <SurfDrawSimulation locale={locale} prizes={draw.prizes} initialAmount={simulation.amount} initialKind={simulation.kind} onExit={() => setSimulation(null)} /> :
-      <SurfDrawBoard locale={locale} status={draw.status} chain={draw.chain} prizes={draw.prizes}
+  return <SurfDrawBoard locale={locale} status={draw.status} chain={draw.chain} prizes={draw.prizes}
         selectedKind={selectedKind} onSelectKind={setSelectedKind} batchSlots={batch.slots}
         administrator={administrator}
         visibleWinners={presentation.visibleWinners} phase={presentation.phase} elapsed={presentation.elapsed}
         settlingWinner={presentation.settlingWinner} onSettled={presentation.complete} onIdentityRevealed={presentation.revealIdentity}
         batchStart={presentation.batchStart} batchSize={presentation.batchSize} batchWinners={presentation.batchWinners}
         batchAmount={batch.amount} batchLimit={batch.limit} batchActive={batch.active} batchProgress={batch.progress} onBatchAmount={batch.setAmount}
-        revision={presentation.revision} onSimulate={(kind, amount) => setSimulation({ kind,
-          amount: amount ?? draw.prizes.filter(prize => prize.kind === kind).length })}
+        revision={presentation.revision} onSimulate={onSimulate}
         nextAction={draw.nextAction} pendingTx={draw.pendingTx} busy={draw.busy} canAct={draw.canAct}
         unavailable={draw.unavailable} now={draw.now} error={draw.error} notice={draw.notice}
-        onAction={confirmAction} onRefresh={() => void draw.refresh()} />}
-    </SurfDrawMotionAssets>;
+        onAction={confirmAction} onRefresh={() => void draw.refresh()} />;
 }
 
 export function SurfDrawPage({ locale, setLocale, account, onBack, onHome, onEnterMerch, onLogin, onRetry, onLogout, loggingOut }: PageProps) {

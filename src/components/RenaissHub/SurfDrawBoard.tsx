@@ -19,7 +19,6 @@ type BoardProps = {
   batchProgress: { current: number; total: number } | null; onBatchAmount: (amount: number) => void;
   simulation?: boolean; onExitSimulation?: () => void; onRestartSimulation?: (kind?: Prize['kind']) => void;
   onAction: () => void; onRefresh: () => void; onSimulate: (kind: Prize['kind'], amount?: number) => void;
-  onPresentationReady?: () => void;
 };
 
 export function SurfDrawBoard(props: BoardProps) {
@@ -28,7 +27,7 @@ export function SurfDrawBoard(props: BoardProps) {
     unavailable, now, error, notice, visibleWinners, settlingWinner, phase, elapsed, revision, simulation = false,
     batchAmount, batchLimit, batchActive, batchProgress, onBatchAmount, onSettled, onIdentityRevealed,
     batchStart, batchSize, batchWinners,
-    onExitSimulation, onRestartSimulation, onAction, onRefresh, onSimulate, onPresentationReady } = props;
+    onExitSimulation, onRestartSimulation, onAction, onRefresh, onSimulate } = props;
   const copy = surfDrawCopy(locale);
   const scene = surfDrawSceneCopy(locale);
   const moving = isSurfRevealRunning(phase);
@@ -55,7 +54,7 @@ export function SurfDrawBoard(props: BoardProps) {
       revealedCount={visibleWinners.length} administrator={administrator} unavailable={reason} myTickets={status?.myTickets ?? null}
       onAction={onAction} onSimulate={() => onSimulate(selectedKind, batchAmount)} onExitSimulation={onExitSimulation}
       onRestartSimulation={onRestartSimulation ?? (kind => onSimulate(kind ?? 'mystery-box'))}
-      onPresentationReady={onPresentationReady} executionError={error} />
+      executionError={error} />
 
     {error ? <div className="surf-draw-feedback" role="alert"><span>{error}</span><button type="button" onClick={onRefresh}>{copy.reload} ↻</button></div> : null}
     {notice && administrator ? <p className="surf-draw-feedback" role="status">{notice}</p> : null}
@@ -63,7 +62,7 @@ export function SurfDrawBoard(props: BoardProps) {
     {pendingTx && administrator ? <p className="surf-draw-feedback"><span>{copy.transactionConfirming} · {Math.max(0, Math.floor((now - Date.parse(pendingTx.createdAt)) / 1000))}s</span><a href={`https://bscscan.com/tx/${pendingTx.txHash}`} target="_blank" rel="noopener noreferrer">{short(pendingTx.txHash)} ↗</a></p> : null}
 
     <section className="surf-draw-results draw-entry" aria-labelledby="surf-draw-results-title">
-      <div className="surf-draw-results__heading"><div><span>{simulation ? 'LOCAL SIMULATION' : 'THE REVEALS'}</span><h2 id="surf-draw-results-title">{simulation ? scene.simulationResults : scene.results}</h2></div>
+      <div className="surf-draw-results__heading"><div><span>{simulation ? 'DEMO MODE' : 'THE REVEALS'}</span><h2 id="surf-draw-results-title">{simulation ? scene.simulationResults : scene.results}</h2></div>
         {status?.myTickets ? <p>{scene.tickets} <strong>#{status.myTickets.start}{status.myTickets.end > status.myTickets.start ? `–#${status.myTickets.end}` : ''}</strong></p> : <p>{scene.rule}</p>}
       </div>
       <div className="surf-draw-results__tabs" role="tablist" aria-label={copy.prizeBoard}>

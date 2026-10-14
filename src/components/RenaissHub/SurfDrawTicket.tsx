@@ -59,6 +59,6 @@ export function SurfDrawTicket({ locale, winner, phase, simulation, revision, sl
         </> : null}
       </div>
     </div>
-    <div className="surf-reveal-ticket__bottom"><span>{simulation ? 'LOCAL SIMULATION' : phase === 'spinning' || phase === 'settling' ? 'VERIFYING THE MOMENT' : winner ? 'ON-CHAIN VERIFIED' : 'EVERY TICKET COUNTS'}</span><i>01—27</i><b className="surf-reveal-ticket__barcode" /></div>
+    <div className="surf-reveal-ticket__bottom"><span>{simulation ? 'DEMO MODE' : phase === 'spinning' || phase === 'settling' ? 'VERIFYING THE MOMENT' : winner ? 'ON-CHAIN VERIFIED' : 'EVERY TICKET COUNTS'}</span><i>01—27</i><b className="surf-reveal-ticket__barcode" /></div>
   </div>;
 }
