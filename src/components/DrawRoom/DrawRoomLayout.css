@@ -19,10 +19,11 @@
 .surf-draw-page .draw-room-heading__status small { font-size: 10px; font-weight: 400; color: var(--hub-muted); }
 .surf-draw-page .draw-room-heading__status .roster-room__count { gap: 3px; }
 .surf-draw-page .roster-room:not(.roster-manager) { max-width: none; margin: 0 auto 24px; }
-.surf-draw-page .roster-room:not(.roster-manager) .roster-status { margin: 0 0 10px; padding: 9px 0; gap: 16px; }
+.roster-draw-controls { display: flex; align-items: center; gap: 24px; margin-bottom: 10px; }
+.surf-draw-page .roster-draw-controls .roster-status { flex: 1; min-width: 0; margin: 0; padding: 9px 0; gap: 16px; border: 0; }
 .surf-draw-page .roster-status__label { font-size: 11px; }
 .surf-draw-page .roster-status__actions :is(a,button) { font-size: 11px; }
-.roster-draw-toolbar { display: flex; align-items: center; justify-content: flex-end; gap: 16px; min-height: 44px; }
+.roster-draw-toolbar { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; min-height: 44px; }
 .surf-draw-page .roster-draw-toolbar .roster-demo { margin: 0; white-space: nowrap; }
 
 .surf-draw-page:not([data-theater=true]) .surf-reveal-stage[data-batch=true] {
@@ -52,13 +53,6 @@
 .surf-draw-page .roster-charizard-info p { font-size: 11px; margin: 5px 0 0; }
 .surf-draw-page .roster-charizard-actions { justify-content: center; margin: 0; gap: 14px; }
 
-@media(min-width:900px) {
-  .surf-draw-page .roster-room[data-kind=other] { display: grid; grid-template-columns: minmax(0,1fr) auto; }
-  .roster-room[data-kind=other] > :is(.draw-room-heading,.roster-pack-scene,.roster-history,.roster-error) { grid-column: 1 / -1; }
-  .surf-draw-page .roster-room[data-kind=other] > .roster-status { grid-column: 1; grid-row: 2; padding-right: 30px; margin-bottom: 10px; border-top: 0; }
-  .roster-room[data-kind=other] > .roster-draw-toolbar { grid-column: 2; grid-row: 2; gap: 30px; margin-bottom: 10px; border-bottom: 1px solid #aa9db52a; }
-}
-
 @media(max-width:700px) {
   .surf-draw-page .draw-room-modes { gap: 18px; margin-top: 10px; }
   .surf-draw-page .draw-room-heading { min-height: 82px; gap: 14px; padding-bottom: 10px; }
@@ -68,6 +62,7 @@
   .surf-draw-page .roster-charizard-actions button { padding: 10px 18px; }
 }
 @media(max-width:440px) {
+  .roster-draw-controls { gap: 14px; }
   .surf-draw-page .draw-room-modes { gap: 14px; }
   .surf-draw-page .draw-room-modes button { font-size: 11px; }
   .surf-draw-page .draw-room-heading h1 { font-size: 24px; }
@@ -77,5 +72,4 @@
 /* Keep prepared GPU resources across routes; only the active panel takes space. */
 .draw-room-panels { position: relative; }
 .draw-room-panel[data-active=false] { position: absolute; inset: 0 0 auto; visibility: hidden; pointer-events: none; }
-.roster-charizard-actions .roster-demo { border: 0; background: none; font-size: 11px; color: var(--hub-muted); }
 .roster-history__rows time { color: var(--hub-muted); font-size: 11px; }

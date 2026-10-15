@@ -14,6 +14,8 @@ share one roster and one durable winner ledger. Surf VRF state is separate.
 4. Return to **噴火龍抽獎** (`#draw/charizard`) or **額外加碼** (`#draw/other`).
    Each draw page shows only a green **已上傳** indicator (or its unavailable/error state), with a
    **重新讀取** control. These pages do not contain file-upload controls.
+   The status row has no divider lines; both draw pages place **Demo 預覽** at
+   the right of the same row, beside **重新讀取**.
    Refreshing the page retains the chosen draw type and fetches the server's
    current shared roster using `cache: no-store`; an unavailable server is shown
    as a read error, never as an empty roster. The management page uses the same
@@ -123,8 +125,8 @@ changing the gallery layout, avoiding a cut-off at the stage's lower boundary.
 
 `DrawRoom/DrawRoomHeading.tsx` and `DrawRoomLayout.css` own the common heading,
 status scale and viewport composition for Surf, Charizard and Other. Charizard
-uses the same centred prize / bottom actions arrangement. Other keeps prize
-settings and Demo together, beside roster status on wide screens.
+uses the same centred prize / bottom actions arrangement. Charizard and Other
+share a borderless roster status row, with refresh and Demo aligned on the right.
 
 `useDrawViewportStage` measures the stage's actual document position and reserves
 24px below it, rather than stacking a fixed 85vh scene below the page header.

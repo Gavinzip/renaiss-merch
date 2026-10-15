@@ -77,8 +77,15 @@ export function RosterDrawRoom({
   return (
     <section className="roster-room" data-kind={kind} aria-label={title}>
       <DrawRoomHeading title={title} eyebrow="RENAISS · ROSTER DRAW" />
-      <RosterStatus compact state={draw.state} refreshing={draw.refreshing} error={draw.error}
-        disabled={draw.busy || active} onRefresh={draw.refresh} />
+      <div className="roster-draw-controls">
+        <RosterStatus compact state={draw.state} refreshing={draw.refreshing} error={draw.error}
+          disabled={draw.busy || active} onRefresh={draw.refresh} />
+        <div className="roster-draw-toolbar">
+          <button type="button" className="roster-demo"
+            disabled={active || (kind === "charizard" && !charizardReady)}
+            onClick={previewAnimation}>Demo 預覽 ↗</button>
+        </div>
+      </div>
       {draw.error ? (
         <div className="roster-error" role="alert">
           {draw.error}
@@ -112,16 +119,11 @@ export function RosterDrawRoom({
                 }}>
                 {preparationError ? "準備失敗" : !charizardReady ? "準備中…" : "Reveal ↗"}
               </button>
-              <button type="button" className="roster-demo" disabled={!charizardReady}
-                onClick={previewAnimation}>Demo 預覽 ↗</button>
           </div>
         </section>
       ) : null}
       {kind === "other" ? (
         <>
-          <div className="roster-draw-toolbar">
-            <button type="button" className="roster-demo" disabled={active} onClick={previewAnimation}>Demo 預覽 ↗</button>
-          </div>
           <RenaissPackDraw
             revision={run}
             visible={visible}
