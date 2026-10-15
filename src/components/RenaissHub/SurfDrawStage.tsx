@@ -11,6 +11,8 @@ import { useSurfDrawTheater } from './useSurfDrawTheater';
 import { useSurfDrawMotionAssets } from './surfDrawMotionContext';
 import type { DrawAction, DrawStatus, Prize, Winner } from './useSurfDraw';
 import { isSurfRevealRunning, type RevealPhase } from './useSurfDrawPresentation';
+import { DrawRoomHeading } from '../DrawRoom/DrawRoomHeading';
+import { useDrawViewportStage } from '../DrawRoom/useDrawViewportStage';
 
 type Props = {
   locale: AppLocale; prize: Prize; winner?: Winner; phase: RevealPhase; simulation: boolean;
@@ -41,6 +43,7 @@ export function SurfDrawStage(props: Props) {
   const multiple = batchSize > 1;
   const stage = useRef<HTMLElement>(null);
   const slot = useRef<HTMLDivElement>(null);
+  useDrawViewportStage(stage);
   const nextMedia = nextPrize?.kind === 'surf-pro-month' ? motionAssets.card : motionAssets.box;
   const ready = mediaReady && (!nextPrize || nextMedia.ready) && sceneReady && !sceneError;
   const locked = isSurfRevealRunning(phase) || batchActive;
@@ -59,10 +62,10 @@ export function SurfDrawStage(props: Props) {
 
   return <>
     <SurfDrawCinema phase={phase} stops={0} revision={revision} batch proBatch={prize.kind === 'surf-pro-month'} onReady={onSceneReady} onError={onSceneError} />
-    <div className="surf-draw-masthead">
-      <div><span className="surf-draw-masthead__eyebrow"><SurfLogo />SURF × RENAISS{simulation ? ` · ${copy.simulation}` : ''}</span><h1 id="surf-draw-title" tabIndex={-1}>{copy.title}</h1><p>{simulation ? copy.simulationNote : copy.subtitle}</p></div>
-      <div className="surf-draw-masthead__status"><span><i />{simulation ? copy.simulation : copy.live}</span><strong>{String(revealedCount).padStart(2, '0')}<small>/ 27</small></strong></div>
-    </div>
+    <DrawRoomHeading id="surf-draw-title" title={copy.title}
+      eyebrow={<><SurfLogo />SURF × RENAISS</>}
+      subtitle={simulation ? copy.simulationNote : copy.subtitle}
+      status={<><span>{simulation ? copy.simulation : copy.live}</span><strong>{String(revealedCount).padStart(2, '0')} <small>/ 27</small></strong></>} />
 
     <div ref={slot} className="surf-reveal-stage-slot">
     <section ref={stage} className="surf-reveal-stage" data-phase={phase} data-kind={prize.kind} data-batch data-simulation={simulation} data-ready={ready} data-spin-ms={Math.round(elapsed)}

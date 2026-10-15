@@ -1,0 +1,47 @@
+{
+  "access": "public",
+  "bucket": "renaiss-merch-media",
+  "prefix": "merch/next/roster-draw",
+  "release": "r86acedc89a2ad03ff9c3",
+  "assets": {
+    "model": {
+      "type": "binary",
+      "source": "work/roster-draw-media/charizard-product-v6.glb",
+      "contentType": "model/gltf-binary",
+      "path": "charizard-product-v6.glb"
+    },
+    "box": {
+      "type": "binary",
+      "source": "work/roster-draw-media/gift-box-print.jpg",
+      "contentType": "image/jpeg",
+      "path": "gift-box-print.jpg"
+    },
+    "card": {
+      "type": "binary",
+      "source": "work/roster-draw-media/jumbo-charizard-card.jpg",
+      "contentType": "image/jpeg",
+      "path": "jumbo-charizard-card.jpg"
+    },
+    "score": {
+      "type": "binary",
+      "source": "work/roster-draw-media/charizard-epic-score.m4a",
+      "contentType": "audio/mp4",
+      "path": "charizard-epic-score.m4a"
+    },
+    "decoderScript": {
+      "type": "binary",
+      "source": "work/roster-draw-media/draco_wasm_wrapper.js",
+      "contentType": "text/javascript",
+      "path": "draco_wasm_wrapper.js"
+    },
+    "decoderWasm": {
+      "type": "binary",
+      "source": "work/roster-draw-media/draco_decoder.wasm",
+      "contentType": "application/wasm",
+      "path": "draco_decoder.wasm"
+    }
+  },
+  "contentHash": "86acedc89a2ad03ff9c34ddd9d656fb72228e1f056c1e3f6c7e9b2488cd9e108",
+  "fileCount": 6,
+  "totalBytes": 3356423
+}

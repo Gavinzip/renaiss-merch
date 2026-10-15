@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 
-// 30th ann's solid rounded card construction: two opaque print faces and a
-// separate bevelled metal edge. No CSS transform planes or alpha sorting.
+// Full-bleed print faces meet a thin card-stock edge. Keep all three surfaces
+// on the same outline; an oversized bevel reads as a case around the card.
 function outline(w: number, h: number, r: number) {
   const shape = new THREE.Shape(), x = -w / 2, y = -h / 2;
-  shape.moveTo(x + r, y); shape.lineTo(x + w - r, y); shape.quadraticCurveTo(x + w, y, x + w, y + r);
-  shape.lineTo(x + w, y + h - r); shape.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  shape.lineTo(x + r, y + h); shape.quadraticCurveTo(x, y + h, x, y + h - r);
-  shape.lineTo(x, y + r); shape.quadraticCurveTo(x, y, x + r, y); return shape;
+  shape.moveTo(x + r, y); shape.lineTo(x + w - r, y); shape.absarc(x + w - r, y + r, r, -Math.PI / 2, 0);
+  shape.lineTo(x + w, y + h - r); shape.absarc(x + w - r, y + h - r, r, 0, Math.PI / 2);
+  shape.lineTo(x + r, y + h); shape.absarc(x + r, y + h - r, r, Math.PI / 2, Math.PI);
+  shape.lineTo(x, y + r); shape.absarc(x + r, y + r, r, Math.PI, Math.PI * 1.5); return shape;
 }
 function faceGeometry(w: number, h: number, r: number) {
   const geometry = new THREE.ShapeGeometry(outline(w, h, r), 12), position = geometry.attributes.position, uv = geometry.attributes.uv;
@@ -16,17 +16,17 @@ function faceGeometry(w: number, h: number, r: number) {
 }
 export function createSurfCeremonyCard(frontTexture: THREE.Texture, backTexture: THREE.Texture) {
   const group = new THREE.Group();
-  const edge = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: '#c6c9d2', metalness: .88, roughness: .22 }));
+  const edge = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: '#e2e1e0', metalness: .08, roughness: .64 }));
   const front = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({ map: frontTexture, toneMapped: false }));
   const back = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({ map: backTexture, toneMapped: false }));
-  front.position.z = 1.85; back.position.z = -1.85; back.rotation.y = Math.PI;
+  front.position.z = .42; back.position.z = -.42; back.rotation.y = Math.PI;
   group.add(edge, front, back); group.visible = false;
-  let width = 0, height = 0;
-  function resize(w: number, h: number) {
-    if (w === width && h === height) return; width = w; height = h;
+  let width = 0, height = 0, radius = 0;
+  function resize(w: number, h: number, r = Math.min(13, w * .06)) {
+    if (w === width && h === height && r === radius) return; width = w; height = h; radius = r;
     group.children.forEach(child => (child as THREE.Mesh).geometry.dispose());
-    edge.geometry = new THREE.ExtrudeGeometry(outline(w, h, Math.min(13, w * .06)), { depth: 2.6, steps: 1, curveSegments: 10, bevelEnabled: true, bevelSegments: 2, bevelThickness: .35, bevelSize: .5 }); edge.geometry.translate(0, 0, -1.3);
-    front.geometry = faceGeometry(w - 2, h - 2, Math.min(12, w * .06)); back.geometry = faceGeometry(w - 2, h - 2, Math.min(12, w * .06));
+    edge.geometry = new THREE.ExtrudeGeometry(outline(w, h, r), { depth: .8, steps: 1, curveSegments: 12, bevelEnabled: false }); edge.geometry.translate(0, 0, -.4);
+    front.geometry = faceGeometry(w, h, r); back.geometry = faceGeometry(w, h, r);
   }
   return { group, front, back, resize, dispose() { group.children.forEach(child => { const mesh = child as THREE.Mesh<THREE.BufferGeometry, THREE.Material>; mesh.geometry.dispose(); mesh.material.dispose(); }); } };
 }

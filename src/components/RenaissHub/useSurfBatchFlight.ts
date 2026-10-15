@@ -7,10 +7,10 @@ import type { CeremonyState, createSurfBatchCeremony } from './draw-effects/batc
 
 // React owns readiness and authoritative phase boundaries. One imperative scene
 // owns high-frequency 3D motion, as in the existing 30th anniversary project.
-export function useSurfBatchFlight({ root, canvas, phase, revision, kind, duration, progress, images, logos, onSettled, onRevealed }: {
+export function useSurfBatchFlight({ root, canvas, phase, revision, kind, duration, progress, images, logos, brand, active = true, onSettled, onRevealed }: {
   root: RefObject<HTMLDivElement | null>; canvas: RefObject<HTMLCanvasElement | null>;
   phase: RevealPhase; revision: number; kind: Prize['kind']; duration: string; progress: { current: number; total: number } | null;
-  images?: ImageBitmap[]; logos?: SurfProLogoUrls; onSettled: () => void; onRevealed: () => void;
+  images?: ImageBitmap[]; logos?: SurfProLogoUrls; brand?: 'surf' | 'renaiss'; active?: boolean; onSettled: () => void; onRevealed: () => void;
 }) {
   const [ready, setReady] = useState(false), [error, setError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<number[]>([]);
@@ -23,6 +23,8 @@ export function useSurfBatchFlight({ root, canvas, phase, revision, kind, durati
   }, [flipping]);
   useEffect(() => () => { turn.current?.cancel(); turn.current = null; }, [revision]);
   const confirmed = progress?.current ?? 0;
+  const activity = useRef(active); activity.current = active;
+  useEffect(() => { scene.current?.setActive(active); }, [active]);
   const latest = useRef<{ state: CeremonyState; onSettled: () => void; onRevealed: () => void }>({ state: { phase, revision, kind, duration, confirmed }, onSettled, onRevealed });
   latest.current = { state: { phase, revision, kind, duration, confirmed }, onSettled, onRevealed };
   useEffect(() => {
@@ -32,7 +34,7 @@ export function useSurfBatchFlight({ root, canvas, phase, revision, kind, durati
     const timer = window.setTimeout(() => { controller.abort(); if (live) setError('The 3D ceremony did not prepare in time. Reload to retry.'); }, 15000);
     void import('./draw-effects/batch-ceremony/createSurfBatchCeremony').then(async ({ createSurfBatchCeremony }) => {
       controller.signal.throwIfAborted();
-      const prepared = await createSurfBatchCeremony(root.current!, canvas.current!, { images, logos }, latest.current.state, {
+      const prepared = await createSurfBatchCeremony(root.current!, canvas.current!, { images, logos, brand }, latest.current.state, {
         // The scene reports GPU readiness before this promise returns. Expose
         // controls only after scene.current can receive their first input.
         onReady: () => {},
@@ -42,10 +44,10 @@ export function useSurfBatchFlight({ root, canvas, phase, revision, kind, durati
         onRevealed: () => latest.current.onRevealed(),
       }, controller.signal);
       if (!live || controller.signal.aborted) { prepared.dispose(); return; }
-      clearTimeout(timer); scene.current = prepared; prepared.setState(latest.current.state); setReady(true);
+      clearTimeout(timer); scene.current = prepared; prepared.setActive(activity.current); prepared.setState(latest.current.state); setReady(true);
     }).catch(reason => { clearTimeout(timer); if (live && !controller.signal.aborted) { setReady(false); setError(reason instanceof Error ? reason.message : String(reason)); } });
     return () => { live = false; clearTimeout(timer); controller.abort(); scene.current?.dispose(); scene.current = null; };
-  }, [root, canvas, images, logos]);
+  }, [root, canvas, images, logos, brand]);
   useEffect(() => { setRevealed([]); setFlipping(null); setPackOpened(false); }, [revision]);
   useEffect(() => { scene.current?.setState({ phase, revision, kind, duration, confirmed }); }, [phase, revision, kind, duration, confirmed]);
   function flipCard(index: number) {
@@ -59,10 +61,12 @@ export function useSurfBatchFlight({ root, canvas, phase, revision, kind, durati
     });
     return true;
   }
-  function openPack() { if (scene.current?.openPack()) setPackOpened(true); }
+  function openPack() { const opened = scene.current?.openPack() ?? false; if (opened) setPackOpened(true); return opened; }
   function previewPack(progress: number) { scene.current?.previewPack(progress); }
   function releasePack() { scene.current?.releasePack(); }
   return { ready, error, revealed, flipping, flipCard, packOpened, openPack, previewPack, releasePack,
+    browsePacks: (delta: number, settle: boolean) => scene.current?.browsePacks(delta, settle),
+    spinPacks: () => scene.current?.spinPacks() ?? Promise.resolve(null),
     selectPack: (index: number) => scene.current?.selectPack(index),
     rotatePack: (delta: number, animated = false) => scene.current?.rotatePack(delta, animated),
     focusPack: (focused: boolean) => scene.current?.focusPack(focused),

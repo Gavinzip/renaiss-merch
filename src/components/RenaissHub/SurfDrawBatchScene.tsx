@@ -30,9 +30,9 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
   const revealing = phase === 'identity' || phase === 'revealed';
   const flight = useSurfBatchFlight({ root, canvas, phase, revision, kind: prize.kind, duration: surfProCopy[locale].duration, progress, images, logos, onSettled, onRevealed });
   useEffect(() => { onStatus({ stage: 'render', percent: flight.ready ? 100 : Math.min(99, media.percent), ready: media.ready && flight.ready, error: artworkError || Boolean(flight.error) }); }, [media, artworkError, flight.ready, flight.error, onStatus]);
-  const title = locale === 'zh-TW' ? revealing ? '幸運，一起揭曉。' : isBox && amount === 7 ? '一箱期待，七份幸運。' : '幸運，即將一起登場。'
-    : locale === 'ko' ? revealing ? '행운을 함께 공개합니다.' : '행운이 곧 펼쳐집니다.'
-    : revealing ? 'A little luck, shared.' : isBox ? 'Good things come together.' : 'Your next chapter, sealed.';
+  const title = locale === 'zh-TW' ? revealing ? '本批開獎結果' : isBox ? 'Mystery Box 開獎' : 'Pro Membership 開獎'
+    : locale === 'ko' ? revealing ? '이번 추첨 결과' : isBox ? 'Mystery Box 추첨' : 'Pro Membership 추첨'
+    : revealing ? 'Draw results' : isBox ? 'Mystery Box draw' : 'Pro Membership draw';
   const total = amount;
   return <div ref={root} className="surf-batch-scene" data-phase={phase} data-kind={prize.kind} data-count={total} data-prepared={flight.ready}>
     <div className="surf-batch-heading">
@@ -67,7 +67,7 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
         : artworkError ? <><span>{locale === 'zh-TW' ? '獎品動畫載入失敗' : 'Prize motion could not load'}</span><button onClick={retry} type="button">{locale === 'zh-TW' ? '重試' : 'Retry'}</button></>
         : <span>{locale === 'zh-TW' ? '準備立體開獎場景' : 'Preparing the 3D ceremony'} · {Math.min(99, media.percent)}%</span>}
     </div> : null}
-    <ol className="surf-batch-gallery" aria-label={locale === 'zh-TW' ? '本批得獎者' : 'Batch winners'} aria-live="polite" aria-busy={phase === 'idle' || phase === 'spinning' || phase === 'settling' || phase === 'ticket'}>
+    <ol className="surf-batch-gallery" aria-label={locale === 'zh-TW' ? '本批得獎者' : 'Batch winners'} aria-live="polite" aria-hidden={!revealing} aria-busy={!revealing}>
       {Array.from({ length: total }, (_, index) => {
         const winner = winners[index];
         const shown = phase === 'revealed' || flight.revealed.includes(index);

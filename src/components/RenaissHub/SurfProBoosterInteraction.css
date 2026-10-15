@@ -2,6 +2,12 @@
 .surf-pro-booster-hit { position: absolute; z-index: 5; left: var(--pro-pack-x); top: var(--pro-pack-y); width: var(--pro-pack-width); height: var(--pro-pack-height); transform: translate(-50%,-50%); pointer-events: auto; touch-action: none; cursor: grab; border: 0; background: transparent; padding: 0; border-radius: 8px; }
 .surf-pro-booster-hit:active { cursor: grabbing; }
 .surf-pro-booster-hit:focus-visible { outline: 2px solid #527565; outline-offset: 15px; }
+.surf-pro-booster-seal { position: absolute; z-index: 7; left: var(--pro-pack-x); top: calc(var(--pro-pack-y) - var(--pro-pack-height) * var(--pro-seal-offset)); width: var(--pro-pack-width); height: 44px; transform: translate(-50%,-50%); pointer-events: auto; touch-action: none; user-select: none; cursor: ew-resize; border-radius: 22px; outline: none; }
+.surf-pro-booster-seal__guide { position: absolute; left: 12px; right: 12px; top: 22px; border-top: 1px dashed #54726155; opacity: calc(1 - var(--tear-progress)); }
+.surf-pro-booster-seal__grip { position: absolute; top: 22px; left: calc(12px + (100% - 24px) * var(--tear-progress)); width: 30px; height: 30px; display: grid; place-items: center; transform: translate(-50%,-50%); border: 1px solid #fff; border-radius: 50%; background: #fffdf3eb; box-shadow: 0 2px 12px #2a4d3626; color: #385a49; font-size: 17px; }
+.surf-pro-booster-seal:focus-visible .surf-pro-booster-seal__grip { outline: 2px solid #527565; outline-offset: 3px; }
+.surf-pro-booster-seal__label { position: absolute; right: calc(100% + 14px); top: 50%; transform: translateY(-50%); white-space: nowrap; color: #567060; font-size: 10px; opacity: clamp(0, calc(1 - var(--tear-progress) * 10), 1); }
+.surf-pro-booster-manual { color: #7b8d82; font-size: 9px !important; letter-spacing: .06em; }
 /* The hit targets follow the same layout as the physical pouches. */
 .surf-pro-booster-browse { position: absolute; inset: var(--surf-batch-gallery-top) 0 85px; pointer-events: auto; touch-action: pan-y; cursor: ew-resize; }
 .surf-pro-booster-choice { position: absolute; left: calc(50% + var(--pack-distance) * var(--pro-pack-spacing)); top: calc(var(--pro-pack-y) + var(--pack-lower)); width: calc(var(--pro-pack-width) * var(--pack-scale)); height: calc(var(--pro-pack-height) * var(--pack-scale)); transform: translate(-50%,-50%); border: 0; background: transparent; pointer-events: auto; touch-action: pan-y; cursor: pointer; }
@@ -31,6 +37,7 @@
 .surf-batch-scene[data-kind=surf-pro-month] .surf-batch-progress > strong { margin: 0; font-size: 19px; }
 .surf-batch-scene[data-kind=surf-pro-month] .surf-batch-progress__passes { display: none; }
 @media(max-width:700px) {
+ .surf-pro-booster-seal__label { right: auto; left: 50%; top: -12px; transform: translate(-50%,-100%); font-size: 9px; }
  .surf-pro-booster-picker p { font-size: 8px; }
  .surf-pro-booster-picker__controls { gap: 7px; }
  .surf-pro-booster-picker,.surf-pro-booster-interaction[data-focused=true] .surf-pro-booster-picker { left: 0; right: 0; bottom: -76px; width: auto; text-align: center; }
@@ -45,4 +52,12 @@
 /* Membership tickets keep a real card proportion while the same mesh travels
    through the pouch and hands off to its parked DOM face. */
 .surf-batch-scene[data-kind=surf-pro-month] .surf-batch-card__face { aspect-ratio: 1.6; }
-.surf-batch-scene[data-kind=surf-pro-month][data-phase=settling] .surf-batch-webgl { mask-image: linear-gradient(to bottom,#000 calc(100% - 32px),transparent); }
+
+.surf-pro-booster-picker .surf-pro-booster-reveal {
+  min-width: 180px; height: 46px; padding: 0 28px; font-size: 15px;
+  background: #27252b; color: #fff; border-color: #27252b;
+}
+.surf-pro-booster-picker button:disabled { opacity: .4; cursor: default; transform: none; }
+.surf-pro-booster-picker .surf-pro-booster-turn { padding: 0 12px; }
+
+.surf-pro-booster-picker .surf-pro-booster-reveal:hover { background: #3b3741; color: #fff; }

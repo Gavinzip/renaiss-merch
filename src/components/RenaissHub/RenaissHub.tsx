@@ -23,7 +23,8 @@ import { HubAssistant } from "./HubAssistant";
 import { HubNavigation } from "./HubNavigation";
 import { HubAccountAction } from "./HubAccountAction";
 import { SurfCampaignPage } from "./SurfCampaignPage";
-import { surfDrawHash, useHubCampaignRoute } from "./useHubCampaignRoute";
+import { useHubCampaignRoute } from "./useHubCampaignRoute";
+import { isDrawRoomHash } from '../RosterDraw/drawRoomRoute';
 import { useHubInitialReadiness } from './useHubInitialReadiness';
 import { HubPageLoading } from './HubPageLoading';
 import { editableHubLayout, visibleHubLayout } from "./hubLayout";
@@ -48,9 +49,9 @@ export function RenaissHub({
   const { locale, setLocale } = useLocale();
   const copy = renaissHubCopy[locale];
   const campaignRoute = useHubCampaignRoute();
-  const [drawActive, setDrawActive] = useState(() => window.location.hash === surfDrawHash);
+  const [drawActive, setDrawActive] = useState(() => isDrawRoomHash(window.location.hash));
   useEffect(() => {
-    const sync = () => setDrawActive(window.location.hash === surfDrawHash);
+    const sync = () => setDrawActive(isDrawRoomHash(window.location.hash));
     window.addEventListener('hashchange', sync);
     window.addEventListener('popstate', sync);
     return () => { window.removeEventListener('hashchange', sync); window.removeEventListener('popstate', sync); };

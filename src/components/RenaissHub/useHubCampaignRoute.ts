@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { isDrawRoomHash } from '../RosterDraw/drawRoomRoute';
 
 export const surfCampaignHash = '#campaign/surf';
 export const surfDrawHash = '#draw/surf';
@@ -8,7 +9,7 @@ const overviewPieces = '.hub-home-intro__utility, .renaiss-hub__introduction, .h
 
 function isCampaignLocation() {
   const url = new URL(location.href);
-  return url.hash === surfCampaignHash || url.hash === surfDrawHash || ['x', 'discord', 'resume'].includes(url.searchParams.get('mission') || '');
+  return url.hash === surfCampaignHash || isDrawRoomHash(url.hash) || ['x', 'discord', 'resume'].includes(url.searchParams.get('mission') || '');
 }
 
 // One motion owner for history, mounted content, focus and scroll. The outgoing
@@ -101,8 +102,8 @@ export function useHubCampaignRoute() {
     cancelMotion();
     if (active) {
       const url = new URL(location.href);
-      if (url.hash !== surfCampaignHash && url.hash !== surfDrawHash) history.replaceState(history.state, '', `${url.pathname}${url.search}${surfCampaignHash}`);
-      if (url.hash === surfDrawHash) {
+      if (url.hash !== surfCampaignHash && !isDrawRoomHash(url.hash)) history.replaceState(history.state, '', `${url.pathname}${url.search}${surfCampaignHash}`);
+      if (isDrawRoomHash(url.hash)) {
         window.scrollTo({ top: 0, behavior: 'instant' });
         ref.current?.querySelector<HTMLElement>('#surf-draw-title')?.focus({ preventScroll: true });
       } else if (landingTarget.current === 'tasks') {

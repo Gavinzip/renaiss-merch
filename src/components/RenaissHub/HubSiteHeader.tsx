@@ -4,7 +4,8 @@ import { HubLanguageMenu } from './HubLanguageMenu';
 import { HubWordmark } from './HubWordmark';
 import './HubSiteHeader.css';
 
-export function HubSiteHeader({ locale, setLocale, location, onBack, navigation, accountAction, actions, editingActions }: {
+export function HubSiteHeader({ locale, setLocale, location, onBack, navigation, accountAction, actions, editingActions, inert = false }: {
+  inert?: boolean;
   locale: AppLocale;
   setLocale: (locale: AppLocale) => void;
   location?: string;
@@ -14,7 +15,7 @@ export function HubSiteHeader({ locale, setLocale, location, onBack, navigation,
   actions?: ReactNode;
   editingActions?: ReactNode;
 }) {
-  return <header className="hub-site-header">
+  return <header className="hub-site-header" inert={inert}>
     <div className="hub-site-header__identity">
       {onBack ? <button className="hub-site-header__back" type="button" onClick={onBack} aria-label={inlineCopy[locale].backToOverview}>←</button> : null}
       <a className="renaiss-hub__brand" href="#portal-top" onClick={location && onBack ? event => { event.preventDefault(); onBack(); } : undefined} aria-label="Renaiss"><HubWordmark /></a>

@@ -22,7 +22,7 @@ const CONTENT_MEDIA_EXTENSIONS = new Set([
   '.mp4',
   '.png',
   '.webm',
-  '.webp'
+  '.webp', '.glb', '.gltf', '.m4a', '.woff', '.woff2', '.ttf'
 ]);
 const command = process.argv[2] || 'audit';
 const options = parseOptions(process.argv.slice(3));
@@ -523,6 +523,8 @@ async function assertConfiguration() {
 
   const hubCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/hub-asset-release.json'), 'utf8'));
   if (hubCatalog.release === 'unpublished') throw new Error('Publish the hidden Hub media release before a production build.');
+  const rosterCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/roster-draw-asset-release.json'), 'utf8'));
+  if (rosterCatalog.release === 'unpublished') throw new Error('Publish the roster draw media release before a production build.');
 
   const drawCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/surf-draw-motion-release.json'), 'utf8'));
   if (drawCatalog.release === 'unpublished') throw new Error('Publish the Surf draw motion release before a production build.');
@@ -565,6 +567,8 @@ async function assertBuild() {
   }
   const drawCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/surf-draw-motion-release.json'), 'utf8'));
   const drawBase = String(process.env.VITE_SURF_DRAW_MOTION_CDN_BASE_URL || '').trim().replace(/\/+$/, '');
+  const rosterCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/roster-draw-asset-release.json'), 'utf8'));
+  if (!combinedText.includes(rosterCatalog.release)) throw new Error('Roster draw build must include its published Cloudflare release.');
   if (!drawBase || !combinedText.includes(drawBase) || !combinedText.includes(drawCatalog.release)) {
     throw new Error('Surf draw build must use its published motion CDN release.');
   }

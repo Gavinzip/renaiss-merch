@@ -5,14 +5,14 @@ import { proBoosterArtwork } from './proBoosterArtwork';
 // Long photographic softboxes and dark gaps illuminate only the foil. The
 // bright page and Mystery Box keep their own existing lighting.
 export function createProBoosterMaterials(renderer: THREE.WebGLRenderer, art: CeremonyArtwork) {
-  const studio = new THREE.Scene(); studio.background = new THREE.Color('#262d30');
+  const studio = new THREE.Scene(); studio.background = new THREE.Color('#555b60');
   const plane = new THREE.PlaneGeometry(1, 1);
   const lights: THREE.MeshBasicMaterial[] = [];
   for (const [position, size, intensity] of [
-    [[-2.5, 1, 4], [1.1, 7, 1], 3],
-    [[2.5, 1.5, 4], [.7, 6, 1], 2.4],
-    [[0, 4, 2], [6, 1.3, 1], 3.4],
-    [[0, -3, 3], [5, .8, 1], 1.3],
+    [[-2.5, 1, 4], [2.2, 7, 1], 1.5],
+    [[2.5, 1.5, 4], [1.6, 6, 1], 1.25],
+    [[0, 4, 2], [6, 2.5, 1], 1.6],
+    [[0, -3, 3], [5, 1.5, 1], .8],
     [[0, 0, -4], [5, 5, 1], 1.2],
   ] as const) {
     const material = new THREE.MeshBasicMaterial({ color: new THREE.Color(intensity, intensity, intensity), side: THREE.DoubleSide });
@@ -25,11 +25,11 @@ export function createProBoosterMaterials(renderer: THREE.WebGLRenderer, art: Ce
   const frontTexture = canvasTexture(proBoosterArtwork(art));
   const backTexture = canvasTexture(proBoosterArtwork(art, true));
   const material = (map: THREE.Texture, side: THREE.Side) => new THREE.MeshPhysicalMaterial({
-    map, side, metalness: .84, roughness: .25, clearcoat: .5, clearcoatRoughness: .22,
-    envMap: environment.texture, envMapIntensity: 1.15,
+    map, side, metalness: .78, roughness: .34, clearcoat: .12, clearcoatRoughness: .38,
+    envMap: environment.texture, envMapIntensity: .9,
   });
   const front = material(frontTexture, THREE.FrontSide), back = material(backTexture, THREE.BackSide);
-  const insideFront = new THREE.MeshStandardMaterial({ color: '#d1d6d7', metalness: 1, roughness: .3,
+  const insideFront = new THREE.MeshStandardMaterial({ color: '#bcc4c7', metalness: .85, roughness: .42,
     envMap: environment.texture, envMapIntensity: .8, side: THREE.BackSide });
   const insideBack = insideFront.clone(); insideBack.side = THREE.FrontSide;
   return { front, back, insideFront, insideBack,

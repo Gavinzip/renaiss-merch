@@ -1,0 +1,497 @@
+.draw-room-modes {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  justify-content: center;
+  margin: 24px auto 12px;
+  flex-wrap: wrap;
+}
+.surf-draw-page[data-theater=true] .draw-room-modes {
+  position: fixed;
+  top: calc(var(--surf-theater-header-height, 85px) + 4px);
+  left: 16px;
+  right: 16px;
+  min-height: 40px;
+  margin: 0;
+  flex-wrap: nowrap;
+  z-index: 6;
+}
+.draw-room-modes button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 9px 0;
+  background: none;
+  color: #9d91a4;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.draw-room-modes button[aria-pressed="true"] {
+  color: #3d3745;
+  border-color: #a69caf;
+}
+.draw-room-modes button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.roster-room {
+  --roster-ink: var(--hub-ink, #25262e);
+  --roster-muted: var(--hub-muted, #737480);
+  max-width: 1260px;
+  margin: 45px auto 70px;
+  color: var(--hub-ink, #29262d);
+}
+.roster-room button,
+.roster-room input {
+  font-family: inherit;
+}
+.roster-room button {
+  cursor: pointer;
+}
+.roster-room button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.roster-room__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+.roster-eyebrow {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--roster-muted);
+}
+.roster-room h1 {
+  font-weight: 500;
+  font-size: clamp(30px, 3.5vw, 44px);
+  letter-spacing: 0;
+  line-height: 1.3;
+  margin: 13px 0;
+}
+.roster-room p {
+  color: var(--roster-muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+.roster-room__count {
+  text-align: right;
+  display: grid;
+  gap: 6px;
+  color: var(--roster-muted);
+}
+.roster-room__count strong {
+  font-size: 46px;
+  color: var(--roster-ink);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.roster-room__count span,
+.roster-room__count small {
+  font-size: 11px;
+}
+.roster-current {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  border-block: 1px solid #aa9db52a;
+  padding: 15px 0;
+  margin: 24px 0;
+  color: #8e8197;
+  font-size: 11px;
+}
+.roster-empty {
+  padding: 44px 0 12px;
+}
+.roster-room h2 {
+  font-size: clamp(22px, 2.5vw, 28px);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+.roster-empty h2 {
+  margin: 0 0 10px;
+}
+.roster-empty p {
+  margin: 0;
+}
+.roster-room .roster-primary {
+  border: 1px solid #fff;
+  border-radius: 99px;
+  padding: 15px 26px;
+  background: #403848;
+  color: #fff;
+  box-shadow: 0 7px 22px #75628016;
+  font-size: 13px;
+}
+.roster-management {
+  border-block: 1px solid #b1a2ba30;
+  padding: 20px 0;
+  margin-top: 28px;
+}
+.roster-management summary {
+  cursor: pointer;
+  color: var(--roster-ink);
+  font-size: 14px;
+  font-weight: 500;
+}
+.roster-upload {
+  padding: 20px 0;
+  display: grid;
+  gap: 10px;
+}
+.roster-upload h3 {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 5px 0;
+}
+.roster-upload p {
+  margin: 5px 0;
+}
+.roster-upload input {
+  font-size: 13px;
+  color: var(--roster-muted);
+  max-width: 100%;
+}
+.roster-upload__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin: 8px 0;
+}
+.roster-upload__clear {
+  padding: 12px 0;
+  border: 0;
+  background: none;
+  color: #926b77;
+  font-size: 13px;
+}
+.roster-upload__clear:not(:disabled):hover {
+  color: #713c4e;
+}
+.roster-upload__actions button:focus-visible {
+  outline: 2px solid #97849f;
+  outline-offset: 5px;
+}
+.roster-room .roster-note,
+.roster-room .roster-note p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--roster-muted);
+}
+.roster-note a {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--roster-ink);
+  text-underline-offset: 4px;
+  white-space: nowrap;
+}
+.roster-upload__preview {
+  border-left: 2px solid #b9a4c4;
+  padding: 15px 24px;
+  max-width: 580px;
+  margin-top: 15px;
+}
+.roster-upload__preview strong {
+  font-size: 13px;
+}
+.roster-upload__preview ul {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0;
+}
+.roster-upload__preview li {
+  display: flex;
+  gap: 20px;
+  font-size: 13px;
+  padding: 6px 0;
+}
+.roster-upload__preview code {
+  color: #a490af;
+  min-width: 64px;
+}
+.roster-upload__preview small {
+  display: block;
+  margin-bottom: 18px;
+  color: #96869e;
+}
+.roster-error {
+  border-left: 2px solid #bd7b7b;
+  padding: 12px 18px;
+  background: #fff5f280;
+  color: #a65f61;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.roster-error button {
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  color: inherit;
+  margin-left: 20px;
+}
+.roster-prize-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--roster-muted);
+  margin: 30px 0 5px;
+}
+.roster-prize-name input {
+  min-width: 0;
+  width: 220px;
+  border: 0;
+  border-bottom: 1px solid #b9a8c344;
+  background: transparent;
+  padding: 10px;
+  color: var(--roster-ink);
+  outline-offset: 3px;
+}
+.roster-pack-scene {
+  height: min(760px, 85svh);
+  min-height: 590px;
+  margin: 0 auto;
+}
+.roster-pack-scene .surf-batch-heading h2 {
+  font-size: clamp(26px, 3vw, 36px);
+}
+.roster-pack-scene .surf-batch-heading p {
+  font-size: 13px;
+  letter-spacing: 0;
+}
+.roster-pack-scene .surf-pro-booster-picker p {
+  font-size: 12px;
+  letter-spacing: 0;
+}
+.roster-pack-status {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #9b89a6;
+  font-size: 12px;
+  z-index: 8;
+}
+.roster-pack-next {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+}
+.roster-pack-scene .surf-pro-booster-picker {
+  bottom: 4px;
+}
+.roster-pack-scene
+  .surf-pro-booster-interaction[data-focused="true"]
+  .surf-pro-booster-picker {
+  bottom: 48px;
+}
+.roster-pack-scene .surf-batch-gallery {
+  padding-bottom: 70px;
+}
+.roster-charizard-invite {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 28px;
+  padding: 0 0 30px;
+}
+.roster-charizard-model {
+  position: relative;
+  height: clamp(300px, 42vw, 400px);
+  min-width: 0;
+}
+.roster-charizard-info > span {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: #af9277;
+}
+.roster-charizard-invite h2 {
+  font-size: clamp(25px, 2.7vw, 36px);
+  line-height: 1.45;
+  margin: 16px 0 12px;
+}
+.roster-charizard-info p {
+  font-size: 12px;
+}
+.roster-charizard-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 28px;
+}
+.roster-charizard-actions .roster-demo {
+  margin: 0;
+}
+@media (max-width: 700px) {
+  .roster-charizard-invite { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .roster-charizard-model { height: min(82vw, 350px); }
+  .roster-charizard-info { text-align: center; }
+  .roster-charizard-actions { justify-content: center; gap: 18px; }
+}
+.roster-history {
+  padding: 30px 0;
+}
+.roster-history header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.roster-history h2 {
+  margin: 10px 0 22px;
+}
+.roster-history button {
+  background: none;
+  border: 0;
+  color: #97829f;
+  font-size: 12px;
+}
+.roster-history__rows > div {
+  display: grid;
+  grid-template-columns: 40px 1.5fr 1fr 70px;
+  gap: 20px;
+  align-items: center;
+  border-top: 1px solid #a493b326;
+  padding: 19px 0;
+  font-size: 12px;
+}
+.roster-history__rows > div > span:first-child {
+  color: #b3a2bd;
+  font-size: 11px;
+}
+.roster-history__rows strong {
+  display: block;
+  font-size: 17px;
+  font-weight: 500;
+  color: #60516b;
+  overflow-wrap: anywhere;
+}
+.roster-history__rows small {
+  display: block;
+  color: #a393ad;
+  margin-top: 5px;
+}
+.roster-entries {
+  margin-top: 20px;
+}
+.roster-entries > div {
+  max-height: 280px;
+  overflow: auto;
+}
+.roster-entries p {
+  display: flex;
+  gap: 25px;
+  padding: 5px 0;
+  margin: 0;
+}
+.roster-entries code {
+  min-width: 80px;
+}
+.roster-entries small {
+  color: #a894b3;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+.roster-charizard-start {
+  position: absolute;
+  inset: auto 10% 7%;
+  text-align: center;
+  z-index: 4;
+}
+.roster-room .roster-demo {
+  border: 0;
+  background: none;
+  color: var(--roster-muted);
+  font-size: 12px;
+  margin-top: 12px;
+  padding: 6px 0;
+}
+.roster-charizard-start p {
+  font-size: 13px;
+  color: #c0a77d;
+}
+.roster-charizard-start button,
+.roster-charizard-return {
+  border: 1px solid #e5be764d;
+  background: #fce9c410;
+  color: #f2d3a0;
+  border-radius: 40px;
+  padding: 15px 26px;
+  margin-top: 20px;
+  font-size: 13px;
+}
+.roster-charizard-start button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.roster-charizard-return {
+  position: absolute;
+  right: 5%;
+  bottom: 3%;
+  z-index: 4;
+}
+@media (prefers-reduced-motion: reduce) {
+  .roster-pack-scene .surf-pro-booster-hit::after {
+    content: "Renaiss";
+    color: #665174;
+  }
+}
+@media (max-width: 700px) {
+  .roster-pack-scene
+    .surf-pro-booster-interaction[data-focused="true"]
+    .surf-pro-booster-picker {
+    left: 0;
+    right: 0;
+    bottom: 4px;
+    width: auto;
+    text-align: center;
+  }
+  .roster-pack-scene
+    .surf-pro-booster-interaction[data-focused="true"]
+    .surf-pro-booster-picker p {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  .draw-room-modes {
+    gap: 22px;
+  }
+  .roster-room {
+    margin-top: 25px;
+  }
+  .roster-current {
+    flex-direction: column;
+  }
+  .roster-room__count strong {
+    font-size: 34px;
+  }
+  .roster-prize-name {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .roster-pack-scene {
+    min-height: 580px;
+  }
+  .roster-history__rows > div {
+    gap: 10px;
+    grid-template-columns: 24px 1fr 1fr 50px;
+  }
+  .roster-charizard-return {
+    bottom: 15px;
+  }
+}
+
+.roster-history__rows > div { grid-template-columns: 100px minmax(0,1fr) minmax(0,1fr) 65px; }
+@media(max-width:700px) { .roster-history__rows > div { grid-template-columns: 78px minmax(0,1fr) minmax(0,1fr) 48px; } }

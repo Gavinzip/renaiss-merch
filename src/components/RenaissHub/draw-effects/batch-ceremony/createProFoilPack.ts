@@ -16,12 +16,12 @@ export function createProFoilPack(materials: ReturnType<typeof createProBoosterM
       new THREE.Mesh(geometry, side === 1 ? materials.insideFront : materials.insideBack));
     return { geometry, side, isStrip };
   }));
-  let lastTear = -1, lastMouth = -1;
+  let lastTear = -1, lastMouth = -1, lastLoose = -1;
   return { root, strip,
-    deform(tear: number, mouth: number) {
-      if (tear === lastTear && mouth === lastMouth) return;
-      skins.forEach(skin => deformFoil(skin.geometry, skin.side, tear, mouth, skin.isStrip));
-      lastTear = tear; lastMouth = mouth;
+    deform(tear: number, mouth: number, loose = 0) {
+      if (tear === lastTear && mouth === lastMouth && loose === lastLoose) return;
+      skins.forEach(skin => deformFoil(skin.geometry, skin.side, tear, mouth, skin.isStrip, loose));
+      lastTear = tear; lastMouth = mouth; lastLoose = loose;
     },
     dispose() { root.removeFromParent(); skins.forEach(skin => skin.geometry.dispose()); },
   };

@@ -1,0 +1,108 @@
+.bonus-finale-dialog { --finale-header-height: 70px; width: 100vw; max-width: none; height: 100svh; max-height: none; margin: 0; padding: 0; border: 0; overflow: auto; color: #f9f1e3; background: #050709; font-family: 'Inter Variable', 'PingFang TC', sans-serif; isolation: isolate; }
+.bonus-finale-dialog::backdrop { background: transparent; }
+.bonus-finale-dialog * { box-sizing: border-box; }
+.bonus-finale-dialog button { font: inherit; cursor: pointer; }
+.bonus-finale-dialog button:focus-visible { outline: 2px solid #f9d28b; outline-offset: 5px; }
+.bonus-finale-header { height: var(--finale-header-height); margin: 0 4%; display: flex; align-items: center; gap: 25px; font-size: 10px; letter-spacing: .2em; color: #a69c8f; position: relative; z-index: 3; }
+.bonus-finale-header > span:first-child { display: flex; align-items: center; gap: 18px; color: #e7d6b9; }
+.bonus-finale-header i { height: 13px; width: 1px; background: #bba27d60; }
+.bonus-finale-header > span:nth-child(2) { margin-left: auto; font-size: 9px; letter-spacing: .12em; }
+.bonus-finale-header button { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid #edcf9d30; border-radius: 50%; background: #ffffff04; color: #d6c1a1; }
+.bonus-finale-header button:hover { background: #edcf9d20; }
+.bonus-stage--cinematic { --introOpacity: 0; --titleOpacity: 0; --copyOpacity: 0; --handoff: 0; --impact: 0; position: relative; display: block; max-width: none; width: 100%; height: calc(100svh - var(--finale-header-height)); min-height: 0; overflow: hidden; }
+.bonus-stage--cinematic .bonus-art { position: absolute; inset: 0; height: 100%; z-index: 0; }
+.bonus-stage--cinematic .bonus-art-caption { left: 4%; width: 48%; bottom: 5%; color: #bbae98; opacity: var(--handoff); font-size: 8px; letter-spacing: .28em; }
+.bonus-stage--cinematic .bonus-copy { position: absolute; z-index: 2; left: 51%; right: 5%; top: 50%; padding: 0; opacity: var(--copyOpacity); transform: translate(calc((1 - var(--copyOpacity)) * 35px), -50%); contain: layout style; }
+.bonus-stage--cinematic .bonus-eyebrow { font-size: 9px; color: #d6b67c; letter-spacing: .28em; margin: 0 0 16px; }
+.bonus-stage--cinematic h1 { font-size: clamp(24px, 2.2vw, 34px); letter-spacing: -.035em; font-weight: 450; line-height: 1.4; color: #f6eee1; margin: 0; }
+.bonus-stage--cinematic h1 em { font-style: normal; background: linear-gradient(110deg, #e0ad64, #ffedc8 60%, #bc874d); background-clip: text; -webkit-text-fill-color: transparent; }
+.bonus-stage--cinematic .bonus-description { color: #dcccaf; font-size: 15px; letter-spacing: .12em; margin: 0 0 9px; }
+.bonus-stage--cinematic .bonus-contents { color: #998e7e; font-size: 10px; }
+.bonus-stage--cinematic .bonus-prize-tag { font-size: 9px; color: #c7a674; margin-top: 18px; }
+.bonus-stage--cinematic .bonus-prize-details { border-top: 1px solid #e0bc7930; padding-top: 20px; }
+.bonus-stage--cinematic .bonus-winner-space { margin: 20px 0 24px; min-height: clamp(250px, 37svh, 380px); display: flex; align-items: center; }
+.bonus-stage--cinematic .bonus-waiting { color: #a99a87; font-size: 11px; border-color: #b59b7130; }
+.bonus-stage--cinematic .bonus-winner { width: 100%; padding: 0; border: 0; position: relative; }
+.bonus-stage--cinematic .bonus-winner p { color: #d3b586; letter-spacing: .08em; font-size: 11px; margin-bottom: 22px; }
+.bonus-stage--cinematic .bonus-winner p span { color: #9e8b72; }
+.bonus-stage--cinematic .bonus-winner strong { color: #fff1d4; font-size: clamp(54px, 6.4vw, 112px); font-weight: 600; line-height: 1.12; letter-spacing: -.045em; text-wrap: balance; text-shadow: 0 2px 34px #d77e3028; }
+.bonus-stage--cinematic .bonus-winner-handle { color: #b5a38b; font-size: 14px; margin-top: 18px; overflow-wrap: anywhere; }
+.bonus-stage--cinematic .bonus-canvas-status { color: #dbbc8c; }
+.bonus-cinema-titles { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.bonus-cinema-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 35%, #050709a0 100%), linear-gradient(#050709, transparent 12%, transparent 86%, #050709); }
+.bonus-cinema-intro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 7%; opacity: var(--introOpacity); transform: scale(calc(.94 + var(--introOpacity) * .06));  text-align: center; }
+.bonus-cinema-intro > span { color: #d5b785; font-size: 10px; letter-spacing: .4em; margin-bottom: 26px; }
+.bonus-cinema-intro strong { font-family: 'Songti TC', 'Noto Serif TC', serif; font-size: clamp(42px, 6vw, 90px); font-weight: 500; letter-spacing: .13em; color: #f7e7ca; text-shadow: 0 0 60px #eab26828; }
+.bonus-cinema-intro p { font-size: 12px; color: #b5a590; letter-spacing: .22em; margin-top: 28px; }
+.bonus-cinema-hero { position: absolute; left: 0; right: 0; bottom: 3%; display: flex; flex-direction: column; align-items: center; opacity: var(--titleOpacity); transform: translateY(calc((1 - var(--titleOpacity)) * 18px)); text-shadow: 0 4px 32px #000; }
+.bonus-cinema-hero span { font-size: 8px; color: #dbb77d; letter-spacing: .42em; }
+.bonus-cinema-hero strong { font-size: clamp(34px, 5vw, 78px); font-weight: 620; letter-spacing: .18em; margin: 8px 0 5px; background: linear-gradient(#fff4d5, #ba8746); background-clip: text; -webkit-text-fill-color: transparent; }
+.bonus-cinema-hero p { margin: 0; font-size: 11px; color: #e4d0ad; letter-spacing: .3em; }
+@media (min-width: 701px) and (max-width: 1000px) {
+  .bonus-stage--cinematic .bonus-copy { left: 51%; right: 4%; }
+  .bonus-stage--cinematic h1 { font-size: 24px; }
+  .bonus-stage--cinematic .bonus-winner p { flex-direction: column; gap: 7px; }
+}
+@media (max-width: 700px), (max-width: 1000px) and (max-aspect-ratio: 1.2) {
+  .bonus-finale-dialog { --finale-header-height: 58px; }
+  .bonus-finale-header { gap: 8px; font-size: 8px; letter-spacing: .08em; }
+  .bonus-finale-header > span:first-child { gap: 9px; }
+  .bonus-finale-header > span:nth-child(2) { max-width: 110px; font-size: 8px; text-align: right; line-height: 1.6; }
+  .bonus-finale-header button { width: 30px; height: 30px; flex-shrink: 0; }
+  /* Keep GPU buffers fixed; portrait handoff is composed by the camera. */
+  .bonus-stage--cinematic .bonus-art { height: 100%; }
+  .bonus-stage--cinematic .bonus-art::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(transparent calc(83% - var(--handoff) * 41%), #050709 calc(100% - var(--handoff) * 47%)); }
+  .bonus-stage--cinematic .bonus-art-caption { display: none; }
+  .bonus-stage--cinematic .bonus-copy { left: 7%; right: 7%; max-width: 580px; margin-inline: auto; top: 47%; padding: 0; text-align: center; transform: translateY(calc((1 - var(--copyOpacity)) * 18px)); }
+  .bonus-stage--cinematic .bonus-eyebrow { margin-bottom: 10px; font-size: 8px; }
+  .bonus-stage--cinematic h1 { font-size: clamp(20px, 3vw, 25px); margin: 0; }
+  .bonus-stage--cinematic h1 br { display: none; }
+  .bonus-stage--cinematic .bonus-description { font-size: 13px; }
+  .bonus-stage--cinematic .bonus-contents { font-size: 9px; }
+  .bonus-stage--cinematic .bonus-prize-tag { justify-content: center; margin-top: 10px; font-size: 8px; }
+  .bonus-stage--cinematic .bonus-prize-details { padding-top: 14px; }
+  .bonus-stage--cinematic .bonus-winner-space { margin: 14px 0 18px; min-height: 164px; justify-content: center; }
+  .bonus-stage--cinematic .bonus-winner { padding: 0; }
+  .bonus-stage--cinematic .bonus-winner strong { font-size: clamp(36px, 10.8vw, 64px); }
+  .bonus-stage--cinematic .bonus-winner p { flex-direction: row; justify-content: center; gap: 14px; margin-bottom: 12px; font-size: 9px; }
+  .bonus-stage--cinematic .bonus-winner-handle { margin-top: 7px; font-size: 10px; }
+  .bonus-cinema-intro strong { font-size: clamp(44px, 7vw, 66px); }
+  .bonus-cinema-intro > span { font-size: 8px; letter-spacing: .26em; }
+  .bonus-cinema-intro p { font-size: 10px; letter-spacing: .14em; }
+  .bonus-cinema-hero { bottom: 9%; }
+  .bonus-cinema-hero strong { font-size: clamp(36px, 6.5vw, 58px); }
+  .bonus-cinema-hero p { font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bonus-stage--cinematic .bonus-winner { animation: none; }
+}
+/* The winner follows the same clock as the camera and light. */
+.bonus-stage--cinematic .bonus-winner { animation: none; opacity: var(--winnerOpacity, 0); transform: translateX(calc((1 - var(--winnerOpacity, 0)) * 25px));  }
+.bonus-cinema-vignette { z-index: -1; }
+
+/* Stable opaque canvas and independent text layers avoid repeatedly rasterizing
+   blurred full-screen surfaces during the GPU-heavy reveal. */
+.bonus-stage--cinematic .bonus-canvas { contain: strict; }
+.bonus-stage--cinematic .bonus-copy, .bonus-cinema-intro, .bonus-cinema-hero { will-change: transform, opacity; }
+
+body:has(.bonus-finale-dialog[data-entrance="playing"]) .draw-admin * { animation-play-state: paused !important; }
+
+.bonus-finale-error { position: absolute; left: 5%; right: 5%; bottom: 18px; color: #efbe89; font-size: 12px; text-align: center; }
+@media (max-height: 740px) and (max-width: 700px) {
+  .bonus-stage--cinematic .bonus-copy { top: 45%; }
+  .bonus-stage--cinematic .bonus-winner-space { min-height: 135px; margin: 10px 0 14px; }
+  .bonus-stage--cinematic .bonus-prize-details { padding-top: 10px; }
+  .bonus-stage--cinematic .bonus-prize-tag { margin-top: 8px; }
+}
+@media (max-height: 640px) and (min-width: 701px) {
+  .bonus-finale-dialog { --finale-header-height: 52px; }
+  .bonus-stage--cinematic .bonus-eyebrow { margin-bottom: 8px; font-size: 8px; }
+  .bonus-stage--cinematic h1 { font-size: 20px; }
+  .bonus-stage--cinematic .bonus-winner-space { min-height: 115px; margin: 10px 0 14px; }
+  .bonus-stage--cinematic .bonus-winner strong { font-size: clamp(32px, 4.2vw, 52px); }
+  .bonus-stage--cinematic .bonus-winner p { margin-bottom: 10px; font-size: 9px; }
+  .bonus-stage--cinematic .bonus-winner-handle { margin-top: 8px; font-size: 10px; }
+  .bonus-stage--cinematic .bonus-prize-details { padding-top: 10px; }
+  .bonus-stage--cinematic .bonus-description { font-size: 12px; margin-bottom: 6px; }
+  .bonus-stage--cinematic .bonus-prize-tag { margin-top: 8px; font-size: 8px; }
+}

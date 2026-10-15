@@ -14,7 +14,7 @@
 .surf-draw-masthead { display: flex; justify-content: space-between; align-items: flex-end; padding: 45px 0 8px; gap: 24px; }
 .surf-draw-masthead__eyebrow { display: flex; align-items: center; gap: 10px; font-size: 9px; font-weight: 550; letter-spacing: .16em; color: #7a7285; }
 .surf-draw-masthead__eyebrow .hub-surf-logo { width: 20px; height: 20px; border-radius: 5px; }
-.surf-draw-masthead h1 { margin: 15px 0 9px; font-size: clamp(27px,3vw,39px); font-weight: 480; letter-spacing: -.055em; line-height: 1.2; }
+.surf-draw-masthead h1 { margin: 15px 0 9px; font-size: clamp(27px,3vw,39px); font-weight: 500; letter-spacing: -.015em; line-height: 1.3; }
 .surf-draw-masthead h1:focus { outline: none; }
 .surf-draw-masthead p { margin: 0; color: #817a89; font-size: 12px; line-height: 1.7; }
 .surf-draw-masthead__status { display: flex; align-items: center; gap: 25px; padding-bottom: 4px; }

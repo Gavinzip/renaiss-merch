@@ -63,7 +63,7 @@ export function SurfDrawBoard(props: BoardProps) {
 
     <section className="surf-draw-results draw-entry" aria-labelledby="surf-draw-results-title">
       <div className="surf-draw-results__heading"><div><span>{simulation ? 'DEMO MODE' : 'THE REVEALS'}</span><h2 id="surf-draw-results-title">{simulation ? scene.simulationResults : scene.results}</h2></div>
-        {status?.myTickets ? <p>{scene.tickets} <strong>#{status.myTickets.start}{status.myTickets.end > status.myTickets.start ? `–#${status.myTickets.end}` : ''}</strong></p> : <p>{scene.rule}</p>}
+        {status?.myTickets ? <p>{scene.tickets} <strong>#{status.myTickets.start}{status.myTickets.end > status.myTickets.start ? `–#${status.myTickets.end}` : ''}</strong></p> : null}
       </div>
       <div className="surf-draw-results__tabs" role="tablist" aria-label={copy.prizeBoard}>
         {(['mystery-box', 'surf-pro-month'] as const).map(kind => <button key={kind} role="tab" id={`surf-result-tab-${kind}`}
@@ -78,7 +78,7 @@ export function SurfDrawBoard(props: BoardProps) {
           return <li key={winner.slot} data-mine={Boolean(mine)}><span>{String(winner.slot + 1).padStart(2, '0')}</span>
             <strong>{mine ? copy.youWon : surfWinnerDisplayName(winner.participant.name) || scene.nameUnavailable}</strong>
             <small>{copy.ticket} #{winner.ticketNumber}</small><span aria-hidden="true">↗</span></li>;
-        })}</ol> : <div className="surf-draw-results__empty"><span className="surf-draw-results__constellation" aria-hidden="true">{groupPrizes.slice(0, 7).map(item => <i key={item.slot} />)}</span><p>{scene.empty}</p><small>{simulation ? scene.simulationNote : copy.boardNote}</small></div>}
+        })}</ol> : null}
       </div>
     </section>
 

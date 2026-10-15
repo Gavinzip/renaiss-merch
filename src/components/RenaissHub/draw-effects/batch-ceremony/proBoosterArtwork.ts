@@ -1,9 +1,11 @@
 import { PRO_PACK_ASPECT, PRO_PACK_VERTICAL_SCALE } from './proBoosterDimensions';
 import type { CeremonyArtwork } from './ceremonyArtwork';
+import { renaissDrawArtwork } from './renaissDrawArtwork';
 
 // Original Renaiss × Surf packaging, drawn at 3x display resolution. The foil's
 // changing highlights come from the actual deformed metal mesh, not a video.
 export function proBoosterArtwork(art: CeremonyArtwork, reverse = false) {
+  if (art.brand === 'renaiss') return renaissDrawArtwork(art.renaiss, true, reverse);
   const canvas = document.createElement('canvas'); canvas.width = 1050; canvas.height = Math.round(1050 * PRO_PACK_ASPECT);
   const ctx = canvas.getContext('2d'); if (!ctx) throw new Error('Pro booster artwork could not prepare');
   ctx.scale(3, 3);

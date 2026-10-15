@@ -1,0 +1,25 @@
+.roster-charizard-dialog[data-entrance="expanding"] { overflow: hidden; }
+.roster-charizard-dialog[data-entrance="expanding"] > .bonus-finale-header,
+.roster-charizard-dialog[data-entrance="expanding"] > .roster-charizard-start {
+  opacity: 0;
+  pointer-events: none;
+}
+.roster-charizard-dialog > .bonus-finale-header,
+.roster-charizard-dialog > .roster-charizard-start { transition: opacity 240ms ease; }
+.roster-charizard-actions .roster-charizard-entry {
+  padding: 15px 24px;
+  border: 1px solid #e6c78480;
+  border-radius: 9px;
+  color: #25202a;
+  background: linear-gradient(115deg, #e1bd79, #ffecd0, #c99b53);
+  font-size: 13px;
+  font-weight: 550;
+}
+@media (prefers-reduced-motion: reduce) {
+  .roster-charizard-dialog > .bonus-finale-header,
+  .roster-charizard-dialog > .roster-charizard-start { transition: none; }
+}
+
+/* Prepare the cinematic renderer once, before its first entrance. Closed dialogs
+   retain their dimensions/GPU buffers, stay out of the top layer and cannot focus. */
+.roster-charizard-dialog:not([open]) { position: fixed; inset: 0; display: block; visibility: hidden; pointer-events: none; }

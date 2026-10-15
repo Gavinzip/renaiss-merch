@@ -90,6 +90,7 @@ import { getStorefrontFeatures } from './storefront-features.mjs';
 import { isHiddenHubPath } from '../shared/site-routes.js';
 import { createSurfDrawHandler } from './surf-draw/routes.mjs';
 import { handleSurfDrawAccessRoute } from './surf-draw/access.mjs';
+import { handleRosterDrawRoute } from './roster-draw/routes.mjs';
 import {
   getStorefrontMode,
   isProductionStorefrontMode,
@@ -176,6 +177,7 @@ async function handleRoute(req, res) {
 
   if (await handleMissionRoute(req, res, url)) return true;
   if (await handleSurfDrawAccessRoute(req, res, url)) return true;
+  if (await handleRosterDrawRoute(req, res, url)) return true;
   if (await handleSurfDrawRoute(req, res, url)) return true;
 
   if (!isProduction && url.pathname.startsWith('/api/hub/hero-preview/')) {

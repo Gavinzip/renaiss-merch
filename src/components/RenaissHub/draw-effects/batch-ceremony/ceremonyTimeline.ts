@@ -16,7 +16,7 @@ export const dealDuration = (count: number) => CEREMONY.launch + (count - 1) * C
 export const boxRetreatAt = (count: number) => dealDuration(Math.max(1, count)) + .16;
 export const boxCeremonyDuration = (count: number) => boxRetreatAt(count) + CEREMONY.boxRetreat;
 export type CardTarget = { x: number; y: number; width: number; height: number };
-export type CeremonyLayout = { width: number; height: number; safeTop: number; emitter: { x: number; y: number; z: number }; center: { x: number; y: number }; unit: number; cards: CardTarget[] };
+export type CeremonyLayout = { width: number; height: number; safeTop: number; safeBottom: number; emitter: { x: number; y: number; z: number }; center: { x: number; y: number }; unit: number; cards: CardTarget[] };
 
 export function boxOpening(age: number) {
   const charge = smooth((age - CEREMONY.chargeStart) / (CEREMONY.chargePeak - CEREMONY.chargeStart))

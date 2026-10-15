@@ -1,14 +1,18 @@
 import * as THREE from 'three';
 import { paintSurfDrawBox, surfBoxMotion } from '../surfDrawBoxFrames';
+import { renaissDrawArtwork } from './renaissDrawArtwork';
+import { renaissRewardBackSurfaceUrl } from '../../../RosterDraw/renaissRewardSurface';
+import { paintRenaissReward } from './paintRenaissReward';
 
-export type CeremonyArtwork = { renaiss: HTMLImageElement; surf: HTMLImageElement; box: HTMLCanvasElement };
+export type CeremonyArtwork = { renaiss: HTMLImageElement; surf: HTMLImageElement; rewardSurface: HTMLImageElement; box: HTMLCanvasElement; brand?: 'surf' | 'renaiss' };
 export async function prepareCeremonyArtwork(logos: { renaiss: string; surf: string }, images: ImageBitmap[]) {
   const renaiss = new Image(), surf = new Image(); renaiss.src = logos.renaiss; surf.src = logos.surf;
-  await Promise.all([renaiss.decode(), surf.decode(), document.fonts.ready]);
+  const rewardSurface = new Image(); rewardSurface.src = renaissRewardBackSurfaceUrl;
+  await Promise.all([renaiss.decode(), surf.decode(), rewardSurface.decode(), document.fonts.ready]);
   const box = document.createElement('canvas'); box.width = box.height = 384;
   const pen = box.getContext('2d'); if (!pen) throw new Error('Batch artwork canvas is unavailable');
   pen.scale(384 / surfBoxMotion.tile, 384 / surfBoxMotion.tile); paintSurfDrawBox(pen, images, surfBoxMotion.frames - 1);
-  return { renaiss, surf, box };
+  return { renaiss, surf, box, rewardSurface };
 }
 function canvas(width = 640, height = 400) {
   const node = document.createElement('canvas'); node.width = width; node.height = height;
@@ -33,6 +37,7 @@ function cardSurface(pen: CanvasRenderingContext2D, w: number, h: number, pro = 
   pen.beginPath(); pen.roundRect(.5, .5, w - 1, h - 1, 13); pen.stroke();
 }
 export function cardBack(art: CeremonyArtwork, ticket?: string, slot?: string) {
+  if (art.brand === 'renaiss') return renaissDrawArtwork(art.renaiss);
   // The moving face is still a texture. Rasterize above the largest settled
   // card's screen size so it stays legible during the turn on a Retina display.
   const { node, pen } = canvas(960, 600); pen.scale(1.5, 1.5); surface(pen, 640, 400);
@@ -49,6 +54,7 @@ export function cardBack(art: CeremonyArtwork, ticket?: string, slot?: string) {
   return node;
 }
 export function credential(art: CeremonyArtwork, duration: string) {
+  if (art.brand === 'renaiss') return renaissDrawArtwork(art.renaiss);
   // Render at twice the SVG's intrinsic size. The card is the hero object in
   // the ceremony, so its typography and foil lines must survive a Retina view.
   const { node, pen } = canvas(1440, 944); pen.scale(2, 2);
@@ -80,6 +86,7 @@ export function credential(art: CeremonyArtwork, duration: string) {
 // Only the in-flight ticket is rasterized. Parked cards and click turns use
 // their original DOM faces, including the winner typography and prize art.
 export function cardTicketBack(element: HTMLElement, art: CeremonyArtwork, pro: HTMLCanvasElement) {
+  if (art.brand === 'renaiss') return paintRenaissReward(element, art);
   const bounds = element.getBoundingClientRect(), ratio = Math.min(2.5, 768 / bounds.width);
   const { node, pen } = canvas(Math.ceil(bounds.width * ratio), Math.ceil(bounds.height * ratio));
   pen.scale(ratio, ratio); cardSurface(pen, bounds.width, bounds.height, element.closest('[data-kind=surf-pro-month]') !== null);
@@ -88,9 +95,11 @@ export function cardTicketBack(element: HTMLElement, art: CeremonyArtwork, pro: 
     return { el, x: b.left - bounds.left, y: b.top - bounds.top, w: b.width, h: b.height };
   }
   for (const [selector, image] of [['.surf-batch-card__top .hub-brand-wordmark', art.renaiss], ['.surf-batch-card__top .hub-surf-logo', art.surf]] as const) {
+    if (!element.querySelector(selector)) continue;
     const r = rect(selector); pen.drawImage(image, r.x, r.y, r.w, r.h);
   }
   for (const selector of ['.surf-batch-card__top > b', '.surf-batch-card__top > span', '.surf-batch-card__identity > span', '.surf-batch-card__ticket', '.surf-batch-card__bottom > span']) {
+    if (!element.querySelector(selector)) continue;
     const r = rect(selector), css = getComputedStyle(r.el);
     pen.font = `${css.fontWeight} ${css.fontSize} ${css.fontFamily}`; pen.fillStyle = css.color; pen.textBaseline = 'top';
     const label = r.el.textContent;

@@ -64,3 +64,17 @@
 - `production` mode must disable Demo on the server, reject the Demo API, and
   invalidate existing Demo sessions. Hiding the Demo button in the client is
   not sufficient.
+
+## Agent skills
+
+### Issue tracker
+
+採用 Local Markdown；見 `docs/agents/issue-tracker.md`。
+
+### Triage labels
+
+採用五個預設狀態；見 `docs/agents/triage-labels.md`。
+
+### Domain docs
+
+採用單一專案領域文件；見 `docs/agents/domain.md`。

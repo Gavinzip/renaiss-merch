@@ -1,0 +1,86 @@
+/* Shared composition for Surf, Charizard and the one-card roster draw. */
+.surf-draw-page .draw-room-modes { margin: 14px auto 8px; gap: 28px; }
+.surf-draw-page .draw-room-heading {
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 82px; padding: 8px 0 12px; gap: 24px;
+}
+.surf-draw-page .draw-room-heading__eyebrow {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 9px; font-weight: 500; letter-spacing: .12em; color: var(--hub-muted);
+}
+.draw-room-heading__eyebrow .hub-surf-logo { width: 15px; height: 15px; border-radius: 4px; }
+.surf-draw-page .draw-room-heading h1 {
+  margin: 7px 0 0; font-size: clamp(25px, 2.6vw, 34px);
+  font-weight: 500; letter-spacing: 0; line-height: 1.25;
+}
+.surf-draw-page .draw-room-heading p { margin: 5px 0 0; font-size: 11px; line-height: 1.4; color: var(--hub-muted); }
+.draw-room-heading__status { display: flex; align-items: center; gap: 20px; color: var(--hub-muted); font-size: 11px; }
+.surf-draw-page .draw-room-heading__status strong { font-size: 32px; font-weight: 450; color: var(--hub-ink); line-height: 1; font-variant-numeric: tabular-nums; }
+.surf-draw-page .draw-room-heading__status small { font-size: 10px; font-weight: 400; color: var(--hub-muted); }
+.surf-draw-page .draw-room-heading__status .roster-room__count { gap: 3px; }
+.surf-draw-page .roster-room:not(.roster-manager) { max-width: none; margin: 0 auto 24px; }
+.surf-draw-page .roster-room:not(.roster-manager) .roster-status { margin: 0 0 10px; padding: 9px 0; gap: 16px; }
+.surf-draw-page .roster-status__label { font-size: 11px; }
+.surf-draw-page .roster-status__actions :is(a,button) { font-size: 11px; }
+.roster-draw-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; }
+.surf-draw-page .roster-draw-toolbar .roster-prize-name { justify-content: flex-start; margin: 0; font-size: 11px; }
+.roster-draw-toolbar .roster-prize-name input { padding: 8px; }
+.surf-draw-page .roster-draw-toolbar .roster-demo { margin: 0; white-space: nowrap; }
+
+.surf-draw-page:not([data-theater=true]) .surf-reveal-stage[data-batch=true] {
+  height: var(--draw-stage-height); min-height: 0; padding: 0 0 110px;
+}
+.surf-draw-page:not([data-theater=true]) .surf-batch-heading { padding: 7px 0 12px; }
+.surf-draw-page:not([data-theater=true]) .surf-batch-heading > span { display: none; }
+.surf-draw-page:not([data-theater=true]) .surf-batch-heading h2 { font-size: 20px; margin: 3px 0 6px; }
+.surf-draw-page:not([data-theater=true]) .surf-batch-prize-picker { margin-top: 9px; }
+.surf-draw-page:not([data-theater=true]) .surf-batch-quota { margin-top: 6px; }
+.surf-draw-page .roster-pack-scene { width: 100%; min-width: 0; height: var(--draw-stage-height); min-height: 0; padding-bottom: 80px; }
+.surf-draw-page .roster-pack-scene .surf-batch-heading { padding: 7px 0 8px; }
+.surf-draw-page .roster-pack-scene .surf-batch-heading h2 { font-size: 17px; margin: 0; }
+.surf-draw-page .roster-pack-scene .surf-batch-heading h2 small { margin-left: 10px; color: var(--hub-muted); font-size: 10px; font-weight: 400; }
+.surf-draw-page .roster-pack-scene .surf-batch-heading > span { display: none; }
+.surf-draw-page .roster-pack-scene[data-phase=settling][data-replay=false] .surf-batch-heading { display: none; }
+.surf-draw-page .roster-pack-scene .surf-batch-gallery { padding-bottom: 35px; }
+.surf-draw-page .roster-pack-scene .renaiss-reward-card { flex-basis: min(520px, calc((var(--draw-stage-height) - 155px) * 1.6)); }
+.surf-draw-page .roster-pack-scene .surf-pro-booster-picker { bottom: 10px; }
+.surf-draw-page .roster-pack-scene .surf-pro-booster-interaction[data-focused=true] .surf-pro-booster-picker {
+  left: 0; right: 0; bottom: 10px; width: auto; text-align: center;
+}
+.surf-draw-page .roster-pack-scene .surf-pro-booster-picker__controls { justify-content: center; }
+.surf-draw-page .roster-charizard-invite { display: grid; grid-template-columns: 1fr; grid-template-rows: auto minmax(0,1fr) auto; height: var(--draw-stage-height); min-height: 0; padding: 8px 0 10px; gap: 0; text-align: center; }
+.surf-draw-page .roster-charizard-model { height: 100%; min-height: 0; width: 100%; }
+.surf-draw-page .roster-charizard-invite h2 { font-size: 20px; margin: 0; }
+.surf-draw-page .roster-charizard-info p { font-size: 11px; margin: 5px 0 0; }
+.surf-draw-page .roster-charizard-actions { justify-content: center; margin: 0; gap: 14px; }
+
+@media(min-width:900px) {
+  .surf-draw-page .roster-room[data-kind=other] { display: grid; grid-template-columns: minmax(0,1fr) auto; }
+  .roster-room[data-kind=other] > :is(.draw-room-heading,.roster-pack-scene,.roster-history,.roster-error) { grid-column: 1 / -1; }
+  .surf-draw-page .roster-room[data-kind=other] > .roster-status { grid-column: 1; grid-row: 2; padding-right: 30px; margin-bottom: 10px; border-top: 0; }
+  .roster-room[data-kind=other] > .roster-draw-toolbar { grid-column: 2; grid-row: 2; gap: 30px; margin-bottom: 10px; border-bottom: 1px solid #aa9db52a; }
+  .roster-room[data-kind=other] .roster-prize-name input { width: 175px; }
+}
+
+@media(max-width:700px) {
+  .surf-draw-page .draw-room-modes { gap: 18px; margin-top: 10px; }
+  .surf-draw-page .draw-room-heading { min-height: 82px; gap: 14px; padding-bottom: 10px; }
+  .draw-room-heading__status { gap: 10px; }
+  .surf-draw-page .draw-room-heading__status strong { font-size: 28px; }
+  .draw-room-heading__status > span { max-width: 60px; text-align: right; font-size: 9px; }
+  .surf-draw-page .roster-charizard-actions button { padding: 10px 18px; }
+}
+@media(max-width:440px) {
+  .surf-draw-page .draw-room-modes { gap: 14px; }
+  .surf-draw-page .draw-room-modes button { font-size: 11px; }
+  .surf-draw-page .draw-room-heading h1 { font-size: 24px; }
+  .roster-draw-toolbar .roster-prize-name input { width: 145px; }
+  .surf-draw-page .roster-draw-toolbar .roster-prize-name { gap: 6px; }
+  .surf-draw-page .roster-pack-scene .surf-pro-booster-picker p { font-size: 10px; }
+}
+
+/* Keep prepared GPU resources across routes; only the active panel takes space. */
+.draw-room-panels { position: relative; }
+.draw-room-panel[data-active=false] { position: absolute; inset: 0 0 auto; visibility: hidden; pointer-events: none; }
+.roster-charizard-actions .roster-demo { border: 0; background: none; font-size: 11px; color: var(--hub-muted); }
+.roster-history__rows time { color: var(--hub-muted); font-size: 11px; }

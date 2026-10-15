@@ -1,0 +1,52 @@
+.roster-pack-scene .renaiss-reward-card {
+  width: 100%; max-width: 520px; container-type: inline-size; user-select: none;
+}
+.roster-pack-scene .renaiss-reward-card .surf-batch-card__face {
+  aspect-ratio: 1.6; padding: 0; border: 0; border-radius: 3cqw;
+  background: #faf9f5; box-shadow: 0 13px 22px -16px #373c5155, 0 2px 3px #32384912;
+}
+.renaiss-reward-card__surface { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.renaiss-reward-card__spot-foil {
+  position: absolute; inset: 0; width: 100%; height: 100%; border-radius: inherit;
+  pointer-events: none; z-index: 1;
+}
+.roster-pack-scene[data-landing-shadow=true] .renaiss-reward-card .surf-batch-card__face { box-shadow: none; }
+.roster-pack-scene .renaiss-reward-card .surf-batch-card__top {
+  position: absolute; inset: 9% 7.7% auto; height: 10%; justify-content: space-between;
+}
+.roster-pack-scene .renaiss-reward-card .hub-brand-wordmark { width: 27%; height: auto; }
+.roster-pack-scene .renaiss-reward-card .surf-batch-card__top > span {
+  font-size: 1.5cqw; letter-spacing: .13em; color: #8a8993;
+}
+.roster-pack-scene .renaiss-reward-card .surf-batch-card__identity {
+  position: absolute; inset: 31% 7.7% auto; padding: 0; text-align: center;
+}
+.roster-pack-scene .renaiss-reward-card .surf-batch-card__identity > span {
+  margin: 0 0 2.3cqw; color: #96919d; font-size: 1.65cqw; letter-spacing: .19em;
+}
+.roster-pack-scene .renaiss-reward-card .surf-batch-card__name {
+  margin: 0; color: #3d3948; font-size: 9cqw; font-weight: 450;
+  letter-spacing: -.035em; line-height: 1.2; overflow-wrap: anywhere;
+}
+.roster-pack-scene .renaiss-reward-card .surf-batch-card__name[data-long=true] { font-size: 5.6cqw; }
+.renaiss-reward-card__edition {
+  position: absolute; inset: 13% 0 auto; text-align: center;
+  color: #88858d; font-size: 1.5cqw; letter-spacing: .24em;
+}
+.renaiss-reward-card__brand { position: absolute; inset: 38% 0 auto; text-align: center; }
+.roster-pack-scene .renaiss-reward-card__brand .hub-brand-wordmark {
+  display: block; width: 42%; height: auto; margin: 0 auto;
+}
+.renaiss-reward-card__tagline {
+  position: absolute; inset: 69% 0 auto; text-align: center;
+  color: #777580; font-size: 2.05cqw; letter-spacing: .035em;
+}
+.roster-pack-scene .renaiss-reward-card .surf-batch-card__bottom {
+  position: absolute; inset: 84% 7.7% auto; border: 0; padding: 0;
+  font-size: 1.8cqw; color: #797581; letter-spacing: .06em;
+}
+.roster-pack-scene .renaiss-reward-card .surf-batch-card__bottom b { font-size: 1.45cqw; font-weight: 450; letter-spacing: .2em; }
+.roster-pack-scene .renaiss-reward-card .surf-batch-card__reveal span {
+  bottom: -32px; right: 0; padding: 5px 0; border: 0; border-radius: 0;
+  background: transparent; box-shadow: none; font-size: 11px; color: #817a8c;
+}
