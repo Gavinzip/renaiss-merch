@@ -52,7 +52,7 @@ function SurfDrawContent({ locale, account, mode, rosterActive, onActive }: Pick
   return <SurfDrawMotionAssets>
     <nav className="draw-room-modes" aria-label="開獎類型">
       {(['surf','charizard','other'] as const).map(item => <button type="button" key={item} aria-pressed={mode===item} disabled={rosterActive}
-        onClick={()=> { window.location.hash = drawRoomHashes[item]; }}>{item==='surf'?'Surf 開獎':item==='charizard'?'噴火龍抽獎':'其他抽獎'}</button>)}
+        onClick={()=> { window.location.hash = drawRoomHashes[item]; }}>{item==='surf'?'Surf 開獎':item==='charizard'?'噴火龍抽獎':'額外加碼'}</button>)}
       <button className="draw-room-modes__manage" type="button" disabled={rosterActive}
         onClick={() => { window.location.hash = drawRoomHashes.roster; }}>名單管理 ↗</button>
     </nav>

@@ -236,25 +236,6 @@
   color: inherit;
   margin-left: 20px;
 }
-.roster-prize-name {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  font-size: 13px;
-  color: var(--roster-muted);
-  margin: 30px 0 5px;
-}
-.roster-prize-name input {
-  min-width: 0;
-  width: 220px;
-  border: 0;
-  border-bottom: 1px solid #b9a8c344;
-  background: transparent;
-  padding: 10px;
-  color: var(--roster-ink);
-  outline-offset: 3px;
-}
 .roster-pack-scene {
   height: min(760px, 85svh);
   min-height: 590px;
@@ -476,10 +457,6 @@
   }
   .roster-room__count strong {
     font-size: 34px;
-  }
-  .roster-prize-name {
-    gap: 10px;
-    flex-wrap: wrap;
   }
   .roster-pack-scene {
     min-height: 580px;

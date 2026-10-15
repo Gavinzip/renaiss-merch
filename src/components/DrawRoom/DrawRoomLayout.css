@@ -22,9 +22,7 @@
 .surf-draw-page .roster-room:not(.roster-manager) .roster-status { margin: 0 0 10px; padding: 9px 0; gap: 16px; }
 .surf-draw-page .roster-status__label { font-size: 11px; }
 .surf-draw-page .roster-status__actions :is(a,button) { font-size: 11px; }
-.roster-draw-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; }
-.surf-draw-page .roster-draw-toolbar .roster-prize-name { justify-content: flex-start; margin: 0; font-size: 11px; }
-.roster-draw-toolbar .roster-prize-name input { padding: 8px; }
+.roster-draw-toolbar { display: flex; align-items: center; justify-content: flex-end; gap: 16px; min-height: 44px; }
 .surf-draw-page .roster-draw-toolbar .roster-demo { margin: 0; white-space: nowrap; }
 
 .surf-draw-page:not([data-theater=true]) .surf-reveal-stage[data-batch=true] {
@@ -59,7 +57,6 @@
   .roster-room[data-kind=other] > :is(.draw-room-heading,.roster-pack-scene,.roster-history,.roster-error) { grid-column: 1 / -1; }
   .surf-draw-page .roster-room[data-kind=other] > .roster-status { grid-column: 1; grid-row: 2; padding-right: 30px; margin-bottom: 10px; border-top: 0; }
   .roster-room[data-kind=other] > .roster-draw-toolbar { grid-column: 2; grid-row: 2; gap: 30px; margin-bottom: 10px; border-bottom: 1px solid #aa9db52a; }
-  .roster-room[data-kind=other] .roster-prize-name input { width: 175px; }
 }
 
 @media(max-width:700px) {
@@ -74,8 +71,6 @@
   .surf-draw-page .draw-room-modes { gap: 14px; }
   .surf-draw-page .draw-room-modes button { font-size: 11px; }
   .surf-draw-page .draw-room-heading h1 { font-size: 24px; }
-  .roster-draw-toolbar .roster-prize-name input { width: 145px; }
-  .surf-draw-page .roster-draw-toolbar .roster-prize-name { gap: 6px; }
   .surf-draw-page .roster-pack-scene .surf-pro-booster-picker p { font-size: 10px; }
 }
 

@@ -34,8 +34,7 @@ export function RosterDrawRoom({
   const [charizardReady, setCharizardReady] = useState(false);
   const charizardStage = useRef<HTMLElement>(null);
   useDrawViewportStage(charizardStage);
-  const [prize, setPrize] = useState("Renaiss 特別獎"),
-    [run, setRun] = useState(0),
+  const [run, setRun] = useState(0),
     [active, setActive] = useState(false),
     [holdingResult, setHoldingResult] = useState(false),
     [charizard, setCharizard] = useState<HTMLButtonElement | null>(null),
@@ -52,7 +51,8 @@ export function RosterDrawRoom({
     remaining = (roster?.entries.length ?? 0) - winners.length;
   const retryHere = draw.pendingDraw?.kind === kind;
   const retryElsewhere = Boolean(draw.pendingDraw && !retryHere);
-  const title = kind === "charizard" ? "噴火龍抽獎" : "其他抽獎";
+  const title = kind === "charizard" ? "噴火龍抽獎" : "額外加碼";
+  const prize = kind === "charizard" ? "噴火龍典藏禮盒" : "額外加碼";
   function previewAnimation(event: MouseEvent<HTMLButtonElement>) {
     replayResult({
       sequence: 0,
@@ -60,7 +60,7 @@ export function RosterDrawRoom({
       entryId: "DEMO",
       name: "示範得獎者",
       kind,
-      prize: kind === "charizard" ? "噴火龍典藏禮盒" : "Renaiss 特別獎",
+      prize,
       drawnAt: "",
     }, event.currentTarget);
   }
@@ -120,15 +120,6 @@ export function RosterDrawRoom({
       {kind === "other" ? (
         <>
           <div className="roster-draw-toolbar">
-            <label className="roster-prize-name">
-              獎項名稱
-              <input
-                maxLength={60}
-                value={prize}
-                disabled={active || draw.busy || draw.retryPending || Boolean(replay)}
-                onChange={(event) => setPrize(event.target.value)}
-              />
-            </label>
             <button type="button" className="roster-demo" disabled={active} onClick={previewAnimation}>Demo 預覽 ↗</button>
           </div>
           <RenaissPackDraw

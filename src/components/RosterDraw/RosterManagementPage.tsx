@@ -14,7 +14,7 @@ export function RosterManagementPage({ draw }: { draw: ReturnType<typeof useRost
       <div>
         <span className="roster-eyebrow">RENAISS · DRAW ROSTER</span>
         <h1 id="roster-manager-title" tabIndex={-1}>名單管理</h1>
-        <p>噴火龍與其他抽獎共用這份名單。上傳並確認後，即可回到抽獎頁。</p>
+        <p>噴火龍與額外加碼共用這份名單。上傳並確認後，即可回到抽獎頁。</p>
       </div>
     </header>
     <RosterStatus state={draw.state} refreshing={draw.refreshing} error={draw.error}
@@ -42,7 +42,7 @@ export function RosterManagementPage({ draw }: { draw: ReturnType<typeof useRost
     </div> : null}
     <nav className="roster-manager__destinations" aria-label="前往抽獎">
       <a href={drawRoomHashes.charizard}>噴火龍抽獎 <span aria-hidden="true">↗</span></a>
-      <a href={drawRoomHashes.other}>其他抽獎 <span aria-hidden="true">↗</span></a>
+      <a href={drawRoomHashes.other}>額外加碼 <span aria-hidden="true">↗</span></a>
     </nav>
   </section>;
 }

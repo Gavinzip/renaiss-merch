@@ -11,7 +11,7 @@ share one roster and one durable winner ledger. Surf VRF state is separate.
 3. Each row is one entry. Repeated names with different IDs are separate entries.
    Duplicate IDs, malformed CSV, empty names, control characters and oversized
    files are rejected. Maximum 10,000 entries and 1 MB uploaded file.
-4. Return to **噴火龍抽獎** (`#draw/charizard`) or **其他抽獎** (`#draw/other`).
+4. Return to **噴火龍抽獎** (`#draw/charizard`) or **額外加碼** (`#draw/other`).
    Each draw page shows only a green **已上傳** indicator (or its unavailable/error state), with a
    **重新讀取** control. These pages do not contain file-upload controls.
    Refreshing the page retains the chosen draw type and fetches the server's
@@ -24,10 +24,11 @@ share one roster and one durable winner ledger. Surf VRF state is separate.
    Its entry button uses the original 30th-anniversary 1.45-second page/button
    zoom and 320 ms scene dissolve. The real prepared frame gates the transition;
    reduced motion uses a short fade. Entry alone never draws a winner.
-   Other: set the prize name, choose/rotate a Renaiss pack, drag the top seal
+   額外加碼: choose/rotate a Renaiss pack, drag the top seal
    from left to right to tear it open, and tap
    the single card to reveal the winner.
-   The card packs and prize-name field remain visible with no roster or no
+   New draws use **額外加碼** as the saved prize label; there is no prize-name field.
+   The card packs remain visible with no roster or no
    remaining entries. The Reveal action is disabled until a roster is available; Demo still allows
    browsing, rotation and opening without touching the roster. Demo playback remains separate from the real roster.
 5. A winner is saved **before** playback. The entry is excluded from both draw
