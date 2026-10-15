@@ -145,11 +145,14 @@ dialog has fixed viewport dimensions so it can warm GPU targets without adding
 page height. Re-entering resets the timeline and score, not the renderer.
 Preparation failures remain visible on the draw page.
 
-Other begins with one **Reveal** button. It starts a finite two-second, easing-out
+Other and the Surf Pro Membership pack picker use the same **Reveal** control and
+carousel. It starts a finite two-second, easing-out
 orbit of all seven packs. After it stops the operator can spin again, continuously
 drag the wheel, or choose a pack and manually tear its seam. A wheel position is
-presentation only; it does not select a winner. Finishing the tear requests the
-server draw and only the saved result proceeds into the reveal. Replays use the
+presentation only; it does not select a winner. In Other, finishing the tear
+requests the server draw and only the saved result proceeds into the reveal.
+Surf Pro Membership receives its confirmed batch before the pack picker opens;
+spinning or choosing a pack never changes those results. Replays use the
 saved/synthetic result and never call the draw endpoint. New rounds reset the
 existing renderer by revision, avoiding repeated shader/model preparation.
 

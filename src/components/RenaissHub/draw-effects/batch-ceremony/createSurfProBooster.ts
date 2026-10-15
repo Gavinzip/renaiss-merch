@@ -25,14 +25,14 @@ export function createSurfProBooster(scene: THREE.Scene, renderer: THREE.WebGLRe
       let selectedWidth = stage.width * .8;
       packs.forEach((pack, index) => {
         const pose = carousel.pose(index), distance = pose.distance;
-        const angle = distance * Math.PI * 2 / PRO_PACK_COUNT, orbitX = Math.sin(angle) / Math.sin(Math.PI * 2 / PRO_PACK_COUNT);
+        const angle = distance * Math.PI * 2 / PRO_PACK_COUNT;
         const focus = pose.focus, width = stage.width * (.80 + .20 * focus);
-        const orbit = art.brand === 'renaiss' ? packOrbit(distance) : null;
-        const scale = width * (orbit ? orbit.scale : 1 / (1 + .21 * Math.abs(distance))) * (pose.chosen ? 1 : 1 - .2 * focus);
-        const x = (orbit ? orbit.x / 1.04 : orbitX) * (stage.width * 1.04 + (pose.chosen ? 0 : layout.width * focus));
-        const y = stage.y + (orbit ? orbit.lower * stage.height * .8 * (1 - focus) : Math.abs(distance) * 12) - (1 - focus) * 12;
+        const orbit = packOrbit(distance);
+        const scale = width * orbit.scale * (pose.chosen ? 1 : 1 - .2 * focus);
+        const x = orbit.x / 1.04 * (stage.width * 1.04 + (pose.chosen ? 0 : layout.width * focus));
+        const y = stage.y + orbit.lower * stage.height * .8 * (1 - focus) - (1 - focus) * 12;
         pack.root.visible = !(active && (!pose.chosen || motion.drop >= 1)) && (pose.chosen || focus < .995);
-        pack.root.position.set(x, layout.height / 2 - y - (pose.chosen ? motion.sleeveY * stage.width : 0), 500 - (orbit ? orbit.depth * 380 : Math.abs(distance) * 120));
+        pack.root.position.set(x, layout.height / 2 - y - (pose.chosen ? motion.sleeveY * stage.width : 0), 500 - orbit.depth * 380);
         pack.root.scale.setScalar(scale * (1 + (pose.chosen ? motion.load * .014 : 0)));
         pack.root.rotation.set(0, pose.rotation - Math.sin(angle) * .43 * (1 - focus), -Math.sin(angle) * .045 * (1 - focus));
         pack.deform(pose.chosen ? motion.tear : 0, pose.chosen ? motion.mouth : 0, pose.chosen ? motion.stripExit : 0);

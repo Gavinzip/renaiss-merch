@@ -56,7 +56,10 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
         })}
       </div>
     </div>
-    {!isBox && phase === 'settling' && !flight.packOpened && flight.ready ? <SurfProBoosterInteraction locale={locale} onOpen={flight.openPack} onPreview={flight.previewPack} onRelease={flight.releasePack} onSelect={flight.selectPack} onRotate={flight.rotatePack} onFocus={flight.focusPack} /> : null}
+    {!isBox && phase === 'settling' && !flight.packOpened && flight.ready ? <SurfProBoosterInteraction
+      locale={locale} onSpin={flight.spinPacks} onBrowse={flight.browsePacks}
+      onOpen={flight.openPack} onPreview={flight.previewPack} onRelease={flight.releasePack}
+      onSelect={flight.selectPack} onRotate={flight.rotatePack} onFocus={flight.focusPack} /> : null}
     <canvas ref={canvas} className="surf-batch-webgl" aria-hidden="true" />
     <div className="surf-batch-flash" aria-hidden="true" />
       {phase === 'spinning' ? <div className="surf-batch-progress"><span>{locale === 'zh-TW' ? '等待這批獎項確認' : locale === 'ko' ? '이번 추첨 확인 대기 중' : 'AWAITING DRAW CONFIRMATION'}</span>
