@@ -36,6 +36,7 @@ export function createSurfDrawHandler({ readSession }) {
         const publicChain = publicChainState(live);
         chain = { ...publicChain, signerAddress: null, signerAdmin: null,
           winners: publicChain.winners.map(publicSurfWinner) };
+        live.provider.destroy();
       } catch (error) { chainError = safeChainError(error); }
       sendJson(res, 200, { drawId: SURF_DRAW_ID, prizes: SURF_DRAW_PRIZES,
         closedAt: readClosedAt(), revision: surfRevision(db), actionsEnabled: false, candidate: null,
@@ -66,6 +67,7 @@ export function createSurfDrawHandler({ readSession }) {
         await reconcileSurfTransactions(db, live.provider);
         if (surfRevision(db) !== revisionBeforeRead) { live.provider.destroy(); return handle(req, res, url); }
         chain = publicChainState(live);
+        live.provider.destroy();
       }
       catch (error) { chainError = safeChainError(error); }
       const transactions = db.prepare('SELECT action,tx_hash AS txHash,created_at AS createdAt,confirmed_at AS confirmedAt,receipt_status AS receiptStatus,broadcast_state AS broadcastState FROM surf_draw_transactions WHERE draw_id=? ORDER BY created_at DESC LIMIT 35').all(SURF_DRAW_ID);
@@ -86,6 +88,7 @@ export function createSurfDrawHandler({ readSession }) {
     if (body.drawId !== SURF_DRAW_ID) throw new HttpError(409, 'draw_id_changed');
     if (action === 'prepare') {
       const chain = await readSurfChain(null);
+      chain.provider.destroy();
       if (chain.state !== 0) throw new HttpError(409, 'draw_already_started');
       const candidate = buildCandidateLedger(db);
       if (candidate.ticketCount < SURF_DRAW_PRIZES.length) throw new HttpError(409, 'not_enough_tickets');
@@ -106,25 +109,29 @@ export function createSurfDrawHandler({ readSession }) {
     const snapshot = readSnapshot(db);
     if (!snapshot || body.ledgerHash !== snapshot.ledger_hash) throw new HttpError(409, 'locked_ledger_mismatch');
     const chain = await readSurfChain(snapshot);
-    if (!chain.signer || !chain.signerAdmin) throw new HttpError(403, 'draw_signer_not_authorized');
-    if (!chain.vrf.subscription?.consumerRegistered) throw new HttpError(409, 'vrf_consumer_not_registered');
-    if (action === 'finalize') {
-      if (chain.state !== 0) throw new HttpError(409, 'draw_not_draft');
-      return sendSurfDrawAction(res, db, chain, 'finalize', () => chain.contract.finalizeLedger.populateTransaction(
-        SURF_DRAW_ID, snapshot.ledger_hash, snapshot.ticket_count, SURF_DRAW_PRIZES.length, ''), body.expectedRevision,
-      );
-    }
-    if (!chain.ledgerMatch) throw new HttpError(409, 'onchain_ledger_mismatch');
-    if (action === 'request') {
-      if (chain.state !== 1) throw new HttpError(409, 'draw_not_finalized');
-      if (chain.vrf.subscription.pendingRequest || BigInt(chain.vrf.subscription.balanceWei) === 0n) {
-        throw new HttpError(409, 'vrf_subscription_not_ready');
+    try {
+      if (!chain.results.ready) throw new HttpError(409, 'draw_results_not_configured');
+      if (!chain.signer || !chain.signerAdmin) throw new HttpError(403, 'draw_signer_not_authorized');
+      if (!chain.vrf.subscription?.consumerRegistered) throw new HttpError(409, 'vrf_consumer_not_registered');
+      if (action === 'finalize') {
+        if (chain.state !== 0) throw new HttpError(409, 'draw_not_draft');
+        return await sendSurfDrawAction(res, db, chain, 'finalize', () => chain.contract.finalizeLedger.populateTransaction(
+          SURF_DRAW_ID, snapshot.ledger_hash, snapshot.ticket_count, SURF_DRAW_PRIZES.length, ''), body.expectedRevision,
+        );
       }
-      return sendSurfDrawAction(res, db, chain, 'request', () => chain.contract.requestDraw.populateTransaction(SURF_DRAW_ID), body.expectedRevision);
-    }
-    if (chain.state !== 3) throw new HttpError(409, 'randomness_not_ready');
-    const slots = validateSurfRevealSelection(body, chain, SURF_DRAW_PRIZES);
-    return sendSurfDrawAction(res, db, chain, `reveal:${slots.join(',')}`, () => chain.contract.drawPrizeSlots.populateTransaction(SURF_DRAW_ID, slots), body.expectedRevision);
+      if (!chain.ledgerMatch) throw new HttpError(409, 'onchain_ledger_mismatch');
+      if (action === 'request') {
+        if (chain.state !== 1) throw new HttpError(409, 'draw_not_finalized');
+        if (chain.vrf.subscription.pendingRequest || BigInt(chain.vrf.subscription.balanceWei) === 0n) {
+          throw new HttpError(409, 'vrf_subscription_not_ready');
+        }
+        return await sendSurfDrawAction(res, db, chain, 'request', () => chain.contract.requestDraw.populateTransaction(SURF_DRAW_ID), body.expectedRevision);
+      }
+      if (chain.state !== 3) throw new HttpError(409, 'randomness_not_ready');
+      const slots = validateSurfRevealSelection(body, chain, SURF_DRAW_PRIZES);
+      return await sendSurfDrawAction(res, db, chain, `reveal:${slots.join(',')}`, () => chain.resultsContract.revealPrizeSlots.populateTransaction(
+        SURF_DRAW_ID, chain.requestId, snapshot.ledger_hash, slots), body.expectedRevision);
+    } finally { chain.provider.destroy(); }
   };
 }
 
@@ -151,7 +158,7 @@ function safeChainError(error) {
   const message = error instanceof Error ? error.message : '';
   if (message.startsWith('SURF_DRAW_RPC_URL') || message.startsWith('Wrong chain:') ||
       message.startsWith('Canonical Surf draw') || message.startsWith('On-chain winners') ||
-      message.startsWith('Surf draw snapshot')) return message;
+      message.startsWith('Surf draw snapshot') || message.startsWith('Surf draw results')) return message;
   const code = typeof error?.code === 'string' ? error.code.replace(/[^A-Z0-9_]/gi, '').slice(0, 40) : 'unknown';
   return `鏈上讀取失敗（${code}）；請檢查 Surf RPC、合約與網路狀態。`;
 }

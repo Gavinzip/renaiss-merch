@@ -1,0 +1,15 @@
+{
+  "compilerVersion": "0.8.24+commit.e11b9ed9",
+  "contractName": "contracts/draw-results/RenaissDrawResults.sol:RenaissDrawResults",
+  "sourceFiles": [
+    "contracts/draw-results/RenaissDrawResults.sol",
+    "contracts/draw-results/IRenaissDrawSource.sol",
+    "contracts/draw-results/TicketRankSelection.sol"
+  ],
+  "settings": {
+    "optimizer": { "enabled": true, "runs": 200 },
+    "evmVersion": "shanghai",
+    "metadata": { "bytecodeHash": "ipfs" },
+    "outputSelection": { "*": { "*": ["abi", "evm.bytecode", "evm.deployedBytecode", "metadata", "storageLayout"] } }
+  }
+}

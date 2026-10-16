@@ -6,6 +6,8 @@ export type Winner = { slot: number; ticketNumber: number; participant: { name: 
 export type Chain = {
   block: number; chainId: number; state: number; ledgerMatch: boolean; requestId: string;
   source: string; signerAddress: string | null; signerAdmin: boolean | null;
+  sourceState?: number;
+  results?: { ready: boolean; address: string | null; runtimeHash: string; resultId: string | null; bound: boolean; complete: boolean };
   totalTickets: number; prizeSlotCount: number; ledgerHash: string; winnerCount: number; winners: Winner[];
   vrf: { coordinatorAddress: string; subscription: { id: string; balanceWei: string; consumerRegistered: boolean; pendingRequest: boolean } | null };
 };
@@ -41,6 +43,9 @@ const errorCodes: Record<string, string> = {
   vrf_consumer_not_registered: 'The existing contract is not registered as a VRF consumer.',
   vrf_subscription_not_ready: 'The VRF subscription has a pending request or no balance.',
   draw_gas_limit_exceeded: 'Gas preflight exceeds the block limit. Stop and diagnose the selector.',
+  draw_results_not_configured: '揭露合約尚未部署或設定。',
+  draw_reveal_receipt_invalid: '鏈上揭露憑證不符，已停止後續操作。',
+  draw_transaction_target_invalid: '交易的合約或識別資料不符，已停止後續操作。',
   randomness_not_ready: 'VRF randomness is not ready.',
   reveal_slot_changed: 'The next prize slot changed. Reload the page.',
   invalid_reveal_selection: 'Choose a prize group and the number to draw, then try again.',
@@ -94,7 +99,8 @@ export function useSurfDraw(administrator: boolean, apiBase?: string, enabled = 
     return null;
   }, [status, chain, pendingTx, failedTx, prizes]);
   const closed = Boolean(status?.closedAt && now >= Date.parse(status.closedAt));
-  const canAct = Boolean(administrator && nextAction && status?.actionsEnabled && closed && !busy && chain &&
+  const canAct = Boolean(administrator && nextAction && status?.actionsEnabled && closed && !busy && !loadError && !status.chainError && chain &&
+    (nextAction === 'prepare' || chain.results?.ready) &&
     (nextAction === 'prepare' ? (status?.candidate?.tickets || 0) >= prizes.length :
       chain.signerAdmin && chain.vrf.subscription?.consumerRegistered &&
       (nextAction === 'finalize' || chain.ledgerMatch)));
@@ -125,7 +131,8 @@ export function useSurfDraw(administrator: boolean, apiBase?: string, enabled = 
   return { status, chain, prizes, now, busy, pendingTx, nextAction, canAct,
     error: actionError || loadError || status?.chainError || null, notice, refresh, act,
     unavailable: !administrator ? null : !status?.actionsEnabled ? 'Formal draw disabled' : !closed ? 'Campaign not closed' :
-      !chain ? 'Chain unavailable' : status.actionLock && !status.actionLock.recoverable || pendingTx ? 'Previous transaction pending' : failedTx ? 'Previous transaction failed' :
+      !chain || loadError || status.chainError ? 'Chain unavailable' : status.actionLock && !status.actionLock.recoverable || pendingTx ? 'Previous transaction pending' : failedTx ? 'Previous transaction failed' :
+      !chain.results?.ready && nextAction !== 'prepare' ? 'Reveal contract not configured' :
       !chain.signerAddress && nextAction !== 'prepare' ? 'Server signer missing' :
       chain.signerAdmin === false && nextAction !== 'prepare' ? 'Server signer not authorized' :
       nextAction === 'prepare' && (status?.candidate?.tickets || 0) < prizes.length ? 'Not enough eligible tickets' : null,

@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "node server/index.mjs",
     "dev:client": "vite --host 127.0.0.1",
-    "build": "node scripts/r2-merch-assets.mjs assert-config && tsc -b && vite build && node scripts/r2-merch-assets.mjs assert-build",
+    "build": "node scripts/draw-results/compile.mjs --check && node scripts/r2-merch-assets.mjs assert-config && tsc -b && vite build && node scripts/r2-merch-assets.mjs assert-build",
+    "contracts:build": "node scripts/draw-results/compile.mjs --write-manifest",
+    "contracts:check": "node scripts/draw-results/compile.mjs --check",
     "assets:audit": "node scripts/r2-merch-assets.mjs audit --catalog media/public-asset-release.json",
     "assets:prepare": "node scripts/r2-merch-assets.mjs prepare --catalog media/public-asset-release.json",
     "assets:publish": "node scripts/r2-merch-assets.mjs publish --catalog media/public-asset-release.json --bucket renaiss-merch-media",
@@ -23,6 +25,7 @@
     "jose": "^6.2.3",
     "shaders": "4.0.0"
   },
+  "overrides": { "solc": { "tmp": "0.2.6" } },
   "devDependencies": {
     "@types/node": "^24.13.3",
     "@types/react": "^19.1.8",
@@ -34,6 +37,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "sharp": "^0.35.3",
+    "solc": "0.8.24",
     "three": "^0.185.1",
     "typescript": "^5.8.3",
     "vite": "^7.3.6"

@@ -42,7 +42,8 @@ export function SurfDrawBoard(props: BoardProps) {
     unavailable === 'Campaign not closed' ? copy.reasons.open : unavailable === 'Chain unavailable' ? copy.reasons.chain :
     unavailable === 'Previous transaction pending' ? copy.reasons.pending : unavailable === 'Previous transaction failed' ? copy.reasons.failed :
     unavailable === 'Server signer missing' ? copy.reasons.signer : unavailable === 'Server signer not authorized' ? copy.reasons.admin :
-    unavailable === 'Not enough eligible tickets' ? copy.reasons.tickets : unavailable;
+    unavailable === 'Not enough eligible tickets' ? copy.reasons.tickets :
+    unavailable === 'Reveal contract not configured' ? copy.reasons.results : unavailable;
 
   return <>
     <SurfDrawStage locale={locale} prize={prize} winner={selectedWinner} settlingWinner={settlingWinner} onSettled={onSettled} onIdentityRevealed={onIdentityRevealed}
@@ -89,6 +90,8 @@ export function SurfDrawBoard(props: BoardProps) {
           <div><dt>{copy.requestId}</dt><dd>{chain?.requestId !== '0' ? chain?.requestId || copy.noRequest : copy.noRequest}</dd></div>
           <div><dt>DRAW ID</dt><dd><code>{status?.drawId || '—'}</code></dd></div>
           <div><dt>{copy.source}</dt><dd><a href="https://bscscan.com/address/0x78b79dB5726700BeDb18BC05aA612b11E33B00A9#code" target="_blank" rel="noopener noreferrer">0x78b79dB5726700BeDb18BC05aA612b11E33B00A9 ↗</a></dd></div>
+          <div><dt>{copy.results}</dt><dd>{chain?.results?.address ? <a href={`https://bscscan.com/address/${chain.results.address}#code`} target="_blank" rel="noopener noreferrer">{chain.results.address} ↗</a> : copy.notSet}</dd></div>
+          {chain?.sourceState !== undefined && chain.sourceState !== chain.state ? <div><dt>{copy.sourceStage}</dt><dd>{copy.states[chain.sourceState]}</dd></div> : null}
           <div><dt>{copy.ledgerHash}</dt><dd><code>{status?.snapshot?.ledgerHash || copy.notLocked}</code></dd></div>
           <div><dt>{copy.participants}</dt><dd>{status?.snapshot?.participants ?? status?.candidate?.participants ?? '—'} · {status?.snapshot?.tickets ?? status?.candidate?.tickets ?? '—'} {copy.tickets}</dd></div>
           {administrator ? <div><dt>{copy.signer}</dt><dd>{chain?.signerAddress || copy.notSet}{chain?.signerAdmin === false ? ` · ${copy.needsAdmin}` : ''}</dd></div> : null}

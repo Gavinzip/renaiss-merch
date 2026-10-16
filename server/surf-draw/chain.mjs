@@ -1,10 +1,12 @@
 import { Contract, FetchRequest, JsonRpcProvider, Wallet, keccak256 } from 'ethers';
 import { SURF_DRAW_ADDRESS, SURF_DRAW_CHAIN_ID, SURF_DRAW_ID, SURF_DRAW_PRIZES, SURF_DRAW_RUNTIME_HASH, findWinner } from './model.mjs';
+import { readSurfResults } from './results.mjs';
 
 export const drawAbi = [
   'function state(bytes32) view returns (uint8)',
   'function roundStatus(bytes32) view returns (bool finalized,bool requested,bool fulfilled,uint256 totalTickets,uint256 firstWinningTicket,bytes32 ledgerHash,uint256 prizeSlotCount,uint256 winnerCount)',
   'function requestId(bytes32) view returns (uint256)',
+  'function randomWord(bytes32) view returns (uint256)',
   'function winnerTicketsBySlot(bytes32) view returns (uint256[])',
   'function revealedPrizeSlots(bytes32) view returns (uint256[])',
   'function isAdmin(address) view returns (bool)',
@@ -12,7 +14,6 @@ export const drawAbi = [
   'function vrfConfig() view returns (bytes32 keyHash,uint64 subscriptionId,uint16 requestConfirmations,uint32 callbackGasLimit)',
   'function finalizeLedger(bytes32 drawId,bytes32 ledgerHash,uint256 totalTickets,uint256 prizeSlotCount,string ledgerUri)',
   'function requestDraw(bytes32 drawId) returns (uint256)',
-  'function drawPrizeSlots(bytes32 drawId,uint256[] prizeSlotIndexes) returns (uint256[])',
   'function resetDraft(bytes32 drawId)',
 ];
 
@@ -35,22 +36,38 @@ export function signerFor(provider) {
   return new Wallet(key, provider);
 }
 
-export async function readSurfChain(snapshot, { includeSubscription = true, includeSigner = true } = {}) {
-  const provider = drawProvider();
-  const block = await provider.getBlockNumber();
+export async function readSurfChain(snapshot, options = {}) {
+  const provider = options.provider || drawProvider();
+  try { return await readSurfChainAt(provider, snapshot, options); }
+  catch (error) { if (!options.provider) provider.destroy(); throw error; }
+}
+
+async function readSurfChainAt(provider, snapshot, { includeSubscription = true, includeSigner = true,
+  signer: suppliedSigner, resultsAddress, blockNumber } = {}) {
+  const finalized = await provider.getBlock('finalized');
+  if (!finalized) throw new Error('Canonical Surf draw finalized block is unavailable');
+  if (blockNumber !== undefined && (!Number.isInteger(blockNumber) || blockNumber < 0 || blockNumber > finalized.number)) {
+    throw new Error('Canonical Surf draw proof block is not finalized');
+  }
+  const block = blockNumber ?? finalized.number;
   const chainId = Number(await provider.send('eth_chainId', []));
   if (chainId !== SURF_DRAW_CHAIN_ID) throw new Error(`Wrong chain: ${chainId}`);
   const runtimeHash = keccak256(await provider.getCode(SURF_DRAW_ADDRESS, block));
   if (runtimeHash !== SURF_DRAW_RUNTIME_HASH) throw new Error('Canonical Surf draw source runtime does not match');
   const contract = new Contract(SURF_DRAW_ADDRESS, drawAbi, provider);
-  const signer = includeSigner ? signerFor(provider) : null;
-  const [stateRaw, status, requestId, tickets, slots, config, coordinatorAddress, signerAdmin] = await Promise.all([
+  const signer = includeSigner ? suppliedSigner || signerFor(provider) : null;
+  const [stateRaw, status, requestId, originalSlots, randomWord, config, coordinatorAddress, signerAdmin] = await Promise.all([
     contract.state(SURF_DRAW_ID, { blockTag: block }), contract.roundStatus(SURF_DRAW_ID, { blockTag: block }),
-    contract.requestId(SURF_DRAW_ID, { blockTag: block }), contract.winnerTicketsBySlot(SURF_DRAW_ID, { blockTag: block }),
-    contract.revealedPrizeSlots(SURF_DRAW_ID, { blockTag: block }), contract.vrfConfig({ blockTag: block }),
+    contract.requestId(SURF_DRAW_ID, { blockTag: block }), contract.revealedPrizeSlots(SURF_DRAW_ID, { blockTag: block }),
+    contract.randomWord(SURF_DRAW_ID, { blockTag: block }), contract.vrfConfig({ blockTag: block }),
     contract.vrfCoordinatorAddress({ blockTag: block }), signer ? contract.isAdmin(signer.address, { blockTag: block }) : null,
   ]);
-  const state = Number(stateRaw);
+  const sourceState = Number(stateRaw);
+  if (originalSlots.length || Number(status.winnerCount)) throw new Error('Canonical Surf draw has results from a different selector; reset or reconcile first');
+  const results = await readSurfResults(provider, { state: sourceState, ledgerHash: status.ledgerHash, requestId,
+    randomWord, totalTickets: status.totalTickets, prizeSlotCount: status.prizeSlotCount }, block, resultsAddress);
+  const { tickets, slots } = results;
+  const state = results.status.complete ? 4 : sourceState;
   const ledgerMatch = Boolean(snapshot && status.ledgerHash.toLowerCase() === snapshot.ledger_hash.toLowerCase() &&
     Number(status.totalTickets) === snapshot.ticket_count && Number(status.prizeSlotCount) === SURF_DRAW_PRIZES.length);
   // Keep the contract's publication order. Slot number is the prize identity,
@@ -68,7 +85,7 @@ export async function readSurfChain(snapshot, { includeSubscription = true, incl
       ticketRange: [entry.start, entry.end],
     } : null };
   });
-  if (winners.length !== Number(status.winnerCount) || new Set(winners.map(winner => winner.slot)).size !== winners.length ||
+  if (new Set(winners.map(winner => winner.slot)).size !== winners.length ||
       winners.some((winner) => !winner.participant) || new Set(winners.map((winner) => winner.ticketNumber)).size !== winners.length) {
     throw new Error('On-chain winners cannot be uniquely mapped to the locked Surf ledger');
   }
@@ -83,14 +100,15 @@ export async function readSurfChain(snapshot, { includeSubscription = true, incl
       requestCount: record.reqCount.toString(), consumerRegistered: record.consumers.some((address) => address.toLowerCase() === SURF_DRAW_ADDRESS.toLowerCase()),
       pendingRequest: pending };
   }
-  return { provider, contract, signer, block, chainId, state, ledgerMatch, requestId: requestId.toString(),
+  return { provider, contract, resultsContract: results.contract, signer, block, chainId, state, sourceState,
+    results: results.status, ledgerMatch, requestId: requestId.toString(),
     source: SURF_DRAW_ADDRESS, runtimeHash, signerAddress: signer?.address || null, signerAdmin,
     totalTickets: Number(status.totalTickets), prizeSlotCount: Number(status.prizeSlotCount),
-    ledgerHash: status.ledgerHash, winnerCount: Number(status.winnerCount), winners,
+    ledgerHash: status.ledgerHash, winnerCount: winners.length, winners,
     vrf: { coordinatorAddress, subscription, keyHash: config.keyHash, confirmations: Number(config.requestConfirmations), callbackGasLimit: Number(config.callbackGasLimit) } };
 }
 
 export function publicChainState(chain) {
-  const { provider: _provider, contract: _contract, signer: _signer, ...state } = chain;
+  const { provider: _provider, contract: _contract, resultsContract: _resultsContract, signer: _signer, ...state } = chain;
   return state;
 }
