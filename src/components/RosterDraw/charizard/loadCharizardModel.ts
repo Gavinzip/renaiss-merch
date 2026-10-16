@@ -3,10 +3,18 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
 import { rosterDrawAsset } from '../rosterDrawAssets'
 import { createFigurineFinish } from './createFigurineFinish'
+import { cloneCharizardModel } from './cloneCharizardModel'
 
+let preparedModel: Promise<THREE.Group> | undefined
 
 /** Product-photo reconstruction; source and inferred regions are documented in assets/README.md. */
 export async function loadCharizardModel() {
+  preparedModel ??= prepareCharizardModel().catch(error => { preparedModel = undefined; throw error })
+  return cloneCharizardModel(await preparedModel)
+}
+
+// Preview and ceremony share one download/Draco decode, including concurrent mounts.
+async function prepareCharizardModel() {
   const manager = new THREE.LoadingManager()
   manager.setURLModifier(url => url.endsWith('draco_wasm_wrapper.js') ? rosterDrawAsset('decoderScript') : url.endsWith('draco_decoder.wasm') ? rosterDrawAsset('decoderWasm') : url)
   const decoder = new DRACOLoader(manager).setDecoderPath('/roster-draco/').setWorkerLimit(1)

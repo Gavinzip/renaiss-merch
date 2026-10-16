@@ -17,6 +17,7 @@ export function createSurfDrawAtmosphere(canvas: HTMLCanvasElement, callbacks: C
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let state: AtmosphereState = { phase: 'idle', stops: 0, revision: -1 };
   let disposed = false, failed = false, initialized = false, admitted = false, painted = false, inView = true;
+  let panelActive = true;
   let frame = 0, previous = 0, travel = 0, frames = 0;
   let changedAt = performance.now(), stoppedAt = -10000, releaseAt: number | null = null;
   const values = { travel: 0, energy: .035, gather: 0, release: 0, expansion: 0, anticipation: 0, pulse: 0 };
@@ -53,7 +54,7 @@ export function createSurfDrawAtmosphere(canvas: HTMLCanvasElement, callbacks: C
   }
   function update(now: number) {
     frame = 0;
-    if (disposed || failed || !admitted || document.hidden || !inView) return;
+    if (disposed || failed || !admitted || document.hidden || !inView || !panelActive) return;
     const dt = previous ? Math.min(.05, (now - previous) / 1000) : 0;
     previous = now;
     const cue = sampleSurfAtmosphere(state.phase, state.stops, (now - changedAt) / 1000,
@@ -89,9 +90,9 @@ export function createSurfDrawAtmosphere(canvas: HTMLCanvasElement, callbacks: C
       void renderer.renderAndWait().catch(error => fail(String(error)));
     }
   }
-  function wake() { previous = 0; if (admitted && !frame && !document.hidden && inView) frame = requestAnimationFrame(update); }
+  function wake() { previous = 0; if (admitted && !frame && !document.hidden && inView && panelActive) frame = requestAnimationFrame(update); }
   function visibility() {
-    if (document.hidden || !inView || reduced.matches) {
+    if (document.hidden || !inView || !panelActive || reduced.matches) {
       cancelAnimationFrame(frame); frame = 0; renderer.stopAnimation(); canvas.dataset.gpuActive = 'false';
     }
     wake();
@@ -145,6 +146,7 @@ export function createSurfDrawAtmosphere(canvas: HTMLCanvasElement, callbacks: C
   })();
 
   return {
+    setActive(active: boolean) { panelActive = active; visibility(); },
     setState(next: AtmosphereState) {
       const now = performance.now();
       if (next.stops > state.stops) stoppedAt = now;

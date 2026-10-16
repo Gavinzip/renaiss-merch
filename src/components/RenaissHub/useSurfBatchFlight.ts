@@ -4,14 +4,16 @@ import type { RevealPhase } from './useSurfDrawPresentation';
 import type { Prize } from './useSurfDraw';
 import type { SurfProLogoUrls } from '../SurfStoreRewards/prepareSurfProLogos';
 import type { CeremonyState, createSurfBatchCeremony } from './draw-effects/batch-ceremony/createSurfBatchCeremony';
+import { useDrawSceneActivity } from '../DrawRoom/drawSceneActivity';
 
 // React owns readiness and authoritative phase boundaries. One imperative scene
 // owns high-frequency 3D motion, as in the existing 30th anniversary project.
-export function useSurfBatchFlight({ root, canvas, phase, revision, kind, duration, progress, images, logos, brand, active = true, onSettled, onRevealed }: {
+export function useSurfBatchFlight({ root, canvas, phase, revision, kind, duration, progress, images, logos, brand, active: requestedActive = true, onSettled, onRevealed }: {
   root: RefObject<HTMLDivElement | null>; canvas: RefObject<HTMLCanvasElement | null>;
   phase: RevealPhase; revision: number; kind: Prize['kind']; duration: string; progress: { current: number; total: number } | null;
   images?: ImageBitmap[]; logos?: SurfProLogoUrls; brand?: 'surf' | 'renaiss'; active?: boolean; onSettled: () => void; onRevealed: () => void;
 }) {
+  const active = useDrawSceneActivity() && requestedActive;
   const [ready, setReady] = useState(false), [error, setError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<number[]>([]);
   const [packOpened, setPackOpened] = useState(false);

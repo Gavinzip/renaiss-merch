@@ -21,11 +21,13 @@ const mimeTypes = new Map([
   ['.mp4', 'video/mp4'],
   ['.png', 'image/png'],
   ['.svg', 'image/svg+xml'],
+  ['.wasm', 'application/wasm'],
   ['.webp', 'image/webp']
 ]);
 const immutableAssetPattern = /-[A-Za-z0-9_-]{8,}\.[A-Za-z0-9]+$/;
 const compressibleTypes = [
   'application/json',
+  'application/wasm',
   'image/svg+xml',
   'text/css',
   'text/html',

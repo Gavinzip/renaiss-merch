@@ -17,6 +17,7 @@ import { RosterManagementPage } from '../RosterDraw/RosterManagementPage';
 import { drawRoomHashes, useDrawRoomRoute, type DrawRoomView } from '../RosterDraw/drawRoomRoute';
 import { useDrawNavigationLock } from '../DrawRoom/useDrawNavigationLock';
 import { canShowLocalSurfReset, LocalSurfReset } from '../DrawRoom/LocalSurfReset';
+import { DrawSceneActivity } from '../DrawRoom/drawSceneActivity';
 
 type PageProps = {
   locale: AppLocale;
@@ -51,9 +52,13 @@ function SurfDrawContent({ locale, mode, rosterActive, onActive }: PageProps & {
       <RosterDrawRoom kind={kind} locale={locale} visible={mode === kind} draw={rosterDraw} onActive={activity[kind]}/>
     </div>)}
     {mode === 'roster' ? <RosterManagementPage draw={rosterDraw}/> : null}
-    {mode === 'surf' ? simulation ? <SurfDrawSimulation locale={locale} initialKind={simulation.kind}
+    <div className="draw-room-panel" data-active={mode === 'surf'} aria-hidden={mode !== 'surf'} inert={mode !== 'surf'}>
+    <DrawSceneActivity.Provider value={mode === 'surf'}>
+    {simulation ? <SurfDrawSimulation locale={locale} initialKind={simulation.kind}
       onExit={() => setSimulation(null)} /> :
-      <SurfDrawLive key={liveRevision} onReset={() => setLiveRevision(value => value + 1)} locale={locale} onActive={activity.surf} onSimulate={kind => setSimulation({ kind })} /> : null}
+      <SurfDrawLive key={liveRevision} onReset={() => setLiveRevision(value => value + 1)} locale={locale} onActive={activity.surf} onSimulate={kind => setSimulation({ kind })} />}
+    </DrawSceneActivity.Provider>
+    </div>
     </div>
   </SurfDrawMotionAssets>;
 }
