@@ -10,7 +10,7 @@ import {
 } from 'node:zlib';
 import { HttpError } from './http.mjs';
 import { isProductionStorefrontMode } from './storefront-mode.mjs';
-import { isHiddenHubPath } from '../shared/site-routes.js';
+import { isDrawSitePath, isHiddenHubPath } from '../shared/site-routes.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const mimeTypes = new Map([
@@ -58,7 +58,7 @@ export async function serveStatic(
     'Cache-Control': cacheControlFor(filePath),
     'Content-Type': contentType,
     Vary: 'Accept-Encoding',
-    ...(isHiddenHubPath(url.pathname) ? { 'X-Robots-Tag': 'noindex, nofollow, noarchive' } : {})
+    ...(isHiddenHubPath(url.pathname) || isDrawSitePath(url.pathname) ? { 'X-Robots-Tag': 'noindex, nofollow, noarchive' } : {})
   };
 
   if (contentEncoding) {
@@ -80,6 +80,9 @@ export async function serveStatic(
 async function resolveFilePath(pathname, distDir, storefrontMode) {
   const resolvedDistDir = path.resolve(distDir);
   const safePathname = decodeURIComponent(pathname);
+
+  if (isDrawSitePath(safePathname)) return path.join(resolvedDistDir, 'draw', 'index.html');
+  if (safePathname.startsWith('/draw/')) throw new HttpError(404, 'not_found');
 
   if (isHiddenHubPath(safePathname)) {
     if (path.extname(safePathname) && !safePathname.endsWith('/index.html')) throw new HttpError(404, 'not_found');

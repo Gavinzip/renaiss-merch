@@ -13,6 +13,7 @@ export const drawAbi = [
   'function finalizeLedger(bytes32 drawId,bytes32 ledgerHash,uint256 totalTickets,uint256 prizeSlotCount,string ledgerUri)',
   'function requestDraw(bytes32 drawId) returns (uint256)',
   'function drawPrizeSlots(bytes32 drawId,uint256[] prizeSlotIndexes) returns (uint256[])',
+  'function resetDraft(bytes32 drawId)',
 ];
 
 const coordinatorAbi = [
@@ -63,6 +64,7 @@ export async function readSurfChain(snapshot, { includeSubscription = true, incl
     const entry = ledgerMatch ? findWinner(snapshot, ticket) : null;
     return { slot, ticketNumber: Number(ticket), participant: entry ? {
       name: entry.name, walletAddress: entry.walletAddress, email: entry.email,
+      ...snapshot.contacts[entry.userSub],
       ticketRange: [entry.start, entry.end],
     } : null };
   });

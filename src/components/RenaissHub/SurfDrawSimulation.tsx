@@ -11,8 +11,12 @@ export function simulatedSurfWinner(slot: number): Winner {
   const ticketNumber = slot === 0 ? 128 : slot === 1 ? 127 : 1 + (127 + (slot - 1) * 73) % 300;
   const person = Math.ceil(ticketNumber / 3);
   const demoNames = ['Mika Chen', '林小葳', '김서준', 'Alexandra Rivera · Renaiss Community'];
+  const identity = slot % 4;
   return { slot, ticketNumber, participant: { name: demoNames[(person - 1) % demoNames.length],
-    walletAddress: '', email: '', ticketRange: [person * 3 - 2, person * 3] } };
+    walletAddress: '', email: identity < 2 ? 'demo.member@example.com' : '',
+    xUsername: identity === 0 || identity === 2 ? 'renaiss_demo' : '',
+    discordUsername: identity === 0 || identity === 2 ? 'renaiss_demo' : '',
+    ticketRange: [person * 3 - 2, person * 3] } };
 }
 
 export function SurfDrawSimulation({ locale, onExit, initialAmount, initialKind }: { locale: AppLocale; onExit: () => void; initialAmount: number; initialKind: Prize['kind'] }) {

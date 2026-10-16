@@ -1,0 +1,50 @@
+/* Dedicated draw document: no community or storefront chrome is mounted. */
+body:has(.draw-site) { background: #f8f6f3; }
+.surf-draw-page.draw-site {
+  --draw-chrome-height: 92px;
+  --draw-control-edge: #fff9;
+  --draw-control-ink: #34383c;
+  --draw-control-muted: #747780;
+  --draw-control-ease: cubic-bezier(.22,1,.36,1);
+  min-height: 100svh;
+}
+.draw-site .surf-draw-page__shell { width: min(calc(100% - 64px), 1320px); padding-top: 18px; }
+.draw-site .draw-room-panels { padding-top: 12px; }
+.draw-site .draw-site-exit {
+  position: fixed; top: 24px; right: 32px; z-index: 100;
+  display: inline-flex; align-items: center; gap: 10px;
+  height: 36px; padding: 0 13px; border: 1px solid #fff9; border-radius: 11px;
+  color: #65656d; background: #ffffff75; box-shadow: inset 0 1px 0 #fff, 0 3px 12px #34383c05;
+  font-size: 11px; transition: background .2s, box-shadow .2s;
+}
+.draw-site .draw-site-exit svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; }
+.draw-site .draw-site-exit:hover:not(:disabled) { background: #ffffffe0; box-shadow: inset 0 1px 0 #fff, 0 4px 16px #34383c0c; }
+.draw-site .draw-site-exit:disabled { opacity: .4; cursor: default; }
+.draw-site .draw-site-admin { display: flex; justify-content: flex-end; height: 0; position: relative; z-index: 4; }
+.draw-site .draw-site-admin button { position: absolute; top: 12px; border: 0; background: transparent; color: #747780; font-size: 11px; padding: 7px 0; }
+.draw-site .draw-site-admin button span { padding-left: 6px; }
+.surf-draw-page.draw-site[data-theater=true] .surf-reveal-stage {
+  inset: var(--draw-chrome-height) 24px 12px;
+}
+.draw-site .surf-draw-cinema__top-light { height: var(--draw-chrome-height); }
+.draw-site .surf-draw-access { min-height: calc(100svh - 36px); max-width: 840px; margin: auto; align-content: center; gap: 70px; }
+.draw-site .surf-draw-access__copy h1 { font-weight: 500; letter-spacing: -.025em; }
+.draw-site .surf-draw-access__copy p { max-width: 280px; font-size: 12px; line-height: 1.8; }
+.draw-site .surf-draw-access__panel { border-radius: 20px; background: #ffffff70; border-color: #fff9; box-shadow: inset 0 1px 0 #fff, 0 18px 55px #31313908; }
+.draw-site .surf-draw-access input { border-radius: 10px; background: #ffffff8a; border-color: #34383c1a; }
+.draw-site .roster-manager { margin-top: 26px; }
+
+@media(max-width:900px) {
+  .surf-draw-page.draw-site { --draw-chrome-height: 126px; }
+  .draw-site .surf-draw-page__shell { width: calc(100% - 36px); padding-top: 62px; }
+  .draw-site .draw-site-exit { top: 16px; right: 18px; }
+  .draw-site .draw-room-panels { padding-top: 14px; }
+  .draw-site .surf-draw-access { min-height: calc(100svh - 80px); gap: 32px; }
+}
+@media(max-width:500px) {
+  .draw-site .surf-draw-page__shell { width: calc(100% - 28px); }
+  .draw-site .draw-site-exit { right: 14px; }
+  .draw-site .surf-draw-access { display: grid; grid-template-columns: 1fr; padding: 28px 4px 50px; max-width: 350px; }
+  .draw-site .surf-draw-access__copy p { max-width: none; }
+  .surf-draw-page.draw-site[data-theater=true] .surf-reveal-stage { left: 10px; right: 10px; }
+}

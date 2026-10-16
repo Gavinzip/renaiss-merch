@@ -23,6 +23,8 @@ function configuration() {
   return { username, parsed, fingerprint: createHash('sha256').update(`${username}:${hash}`).digest('hex') };
 }
 
+export const surfDrawCredentialFingerprint = () => configuration()?.fingerprint || null;
+
 function database() {
   const db = authSessionDatabase();
   db.exec(`CREATE TABLE IF NOT EXISTS surf_draw_access_sessions (

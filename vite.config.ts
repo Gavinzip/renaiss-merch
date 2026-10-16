@@ -7,7 +7,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         legacy: 'index.html',
-        v1_2: 'v1.2/index.html'
+        v1_2: 'v1.2/index.html',
+        draw: 'draw/index.html'
       }
     }
   },

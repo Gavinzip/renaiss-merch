@@ -1,7 +1,10 @@
 import { surfWinnerDisplayName } from '../../shared/surf-draw-identity.js';
 
-// Publish only the confirmed winner's display name, never their fulfillment data.
+// This projection is used only behind the dedicated draw-room access gate.
+// Contact fields are explicitly requested for the ceremony; wallets stay private.
 export function publicSurfWinner(winner) {
   return { slot: winner.slot, ticketNumber: winner.ticketNumber,
-    participant: { name: surfWinnerDisplayName(winner.participant?.name), walletAddress: '', email: '', ticketRange: [0, 0] } };
+    participant: { name: surfWinnerDisplayName(winner.participant?.name), walletAddress: '',
+      email: winner.participant?.email || '', xUsername: winner.participant?.xUsername || '',
+      discordUsername: winner.participant?.discordUsername || '', ticketRange: [0, 0] } };
 }

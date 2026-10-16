@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { surfCampaign } from '../../../shared/surf-campaign.js';
 
 export type Prize = { slot: number; kind: 'mystery-box' | 'surf-pro-month'; number: number };
-export type Winner = { slot: number; ticketNumber: number; participant: { name: string; walletAddress: string; email: string; ticketRange: [number, number] } };
+export type Winner = { slot: number; ticketNumber: number; participant: { name: string; walletAddress: string; email: string; xUsername?: string; discordUsername?: string; ticketRange: [number, number] } };
 export type Chain = {
   block: number; chainId: number; state: number; ledgerMatch: boolean; requestId: string;
   source: string; signerAddress: string | null; signerAdmin: boolean | null;
@@ -10,6 +10,7 @@ export type Chain = {
   vrf: { coordinatorAddress: string; subscription: { id: string; balanceWei: string; consumerRegistered: boolean; pendingRequest: boolean } | null };
 };
 export type DrawStatus = {
+  revision: number;
   drawId: string; prizes: Prize[]; closedAt: string | null; actionsEnabled: boolean;
   myTickets: { start: number; end: number } | null;
   candidate: { participants: number; tickets: number; ledgerHash: string } | null;
@@ -45,10 +46,11 @@ const errorCodes: Record<string, string> = {
   prior_action_pending: 'Another draw transaction is awaiting confirmation.',
   draw_state_changed: 'The on-chain draw changed while preparing this action. Reload and review it.',
   prior_action_failed: 'A prior transaction failed. Review it before proceeding.',
+  draw_revision_changed: 'The draw was reset. Reload before continuing.',
 };
 
-async function request<T>(path: string, body?: Record<string, unknown>, administrator = false): Promise<T> {
-  const response = await fetch(`${administrator ? ADMIN_API : PUBLIC_API}${path}`, {
+async function request<T>(path: string, body?: Record<string, unknown>, administrator = false, apiBase?: string): Promise<T> {
+  const response = await fetch(`${apiBase || (administrator ? ADMIN_API : PUBLIC_API)}${path}`, {
     method: body ? 'POST' : 'GET', credentials: 'same-origin', cache: 'no-store',
     ...(body ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}),
   });
@@ -57,7 +59,7 @@ async function request<T>(path: string, body?: Record<string, unknown>, administ
   return value as T;
 }
 
-export function useSurfDraw(administrator: boolean) {
+export function useSurfDraw(administrator: boolean, apiBase?: string, enabled = true) {
   const [loaded, setLoaded] = useState<{ administrator: boolean; value: DrawStatus } | null>(null);
   const status = loaded?.administrator === administrator ? loaded.value : null;
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -66,9 +68,10 @@ export function useSurfDraw(administrator: boolean) {
   const [notice, setNotice] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
   const refresh = useCallback(async () => {
-    try { setLoaded({ administrator, value: await request<DrawStatus>('', undefined, administrator) }); setLoadError(null); }
+    if (!enabled) { setLoaded(null); setLoadError(null); return; }
+    try { setLoaded({ administrator, value: await request<DrawStatus>('', undefined, administrator, apiBase) }); setLoadError(null); }
     catch (error) { setLoadError(error instanceof Error ? error.message : 'Could not load draw status.'); }
-  }, [administrator]);
+  }, [administrator, apiBase, enabled]);
 
   useEffect(() => {
     void refresh();
@@ -102,10 +105,10 @@ export function useSurfDraw(administrator: boolean) {
     setBusy(action); setActionError(null); setNotice(null);
     try {
       const result = await request<{ txHash?: string; broadcastState?: string }>(`/${action}`, {
-        drawId: status.drawId, ledgerHash,
+        drawId: status.drawId, ledgerHash, expectedRevision: status.revision,
         ...(action === 'reveal' ? { expectedWinnerCount: chain.winnerCount, prizeSlots,
           prizeKind: prizes.find(prize => prize.slot === prizeSlots?.[0])?.kind } : {}),
-      }, true);
+      }, true, apiBase);
       setNotice(result.txHash
         ? `${result.broadcastState === 'uncertain' ? 'Broadcast uncertain; check this same transaction hash: ' : 'Transaction recorded: '}${result.txHash}`
         : 'Participant snapshot locked.');

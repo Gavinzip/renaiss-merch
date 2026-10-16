@@ -29,7 +29,7 @@ import { useHubInitialReadiness } from './useHubInitialReadiness';
 import { HubPageLoading } from './HubPageLoading';
 import { editableHubLayout, visibleHubLayout } from "./hubLayout";
 
-const SurfDrawPage = lazy(() => import('./SurfDrawPage').then(module => ({ default: module.SurfDrawPage })));
+const DrawSiteRedirect = lazy(() => import('../DrawRoom/DrawSiteRedirect').then(module => ({ default: module.DrawSiteRedirect })));
 
 type RenaissHubProps = {
   loadProgress: number;
@@ -182,7 +182,7 @@ export function RenaissHub({
   return (
     <div className="hub-route-motion" ref={campaignRoute.ref} data-route-motion="true" data-route-transitioned={campaignRoute.hasTransitioned} data-route-busy={campaignRoute.busy} inert={campaignRoute.busy}>
     {campaignRoute.active ? drawActive
-      ? <SurfDrawPage locale={locale} setLocale={setLocale} account={account} onBack={() => { window.location.hash = '#campaign/surf'; }} onHome={campaignRoute.back} onEnterMerch={enterMerch} onLogin={() => startRenaissLogin()} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} />
+      ? <DrawSiteRedirect />
       : <SurfCampaignPage locale={locale} setLocale={setLocale} account={account} motionRevision={campaignRoute.revision} onBack={campaignRoute.back} onLogin={() => startRenaissLogin()} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} /> : <main
       ref={overviewRef}
       className="renaiss-hub"

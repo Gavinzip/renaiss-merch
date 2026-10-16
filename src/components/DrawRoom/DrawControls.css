@@ -1,0 +1,110 @@
+/* All visible controls share a satin finish. Transparent 3D hit targets are
+   intentionally excluded: they must never paint over the physical pouches. */
+.surf-draw-page.draw-site .draw-room-modes {
+  width: max-content; max-width: 100%; min-height: 48px;
+  gap: 4px; margin: 0 auto 10px; padding: 5px; flex-wrap: nowrap;
+  border: 1px solid #ffffffb3; border-radius: 17px;
+  background: linear-gradient(155deg, #ffffff85, #e8e9ec50);
+  box-shadow: inset 0 1px 0 #fff, inset 0 -1px 0 #72767d0b, 0 8px 24px #36374008;
+}
+.surf-draw-page.draw-site .draw-room-modes button {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 36px; padding: 0 19px; margin: 0;
+  border: 1px solid transparent; border-radius: 12px;
+  background: transparent; color: var(--draw-control-muted);
+  font-size: 12px; font-weight: 500; letter-spacing: .01em; white-space: nowrap;
+  transition: background .2s, color .2s, box-shadow .2s, transform .2s;
+}
+.surf-draw-page.draw-site .draw-room-modes button[aria-pressed=true] {
+  color: #fbfbfc; border-color: #2f3338;
+  background: linear-gradient(160deg,#484d53,#292d32);
+  box-shadow: inset 0 1px 0 #ffffff35, inset 0 -1px 0 #10131860, 0 3px 7px #24272d20;
+}
+.surf-draw-page.draw-site .draw-room-modes button:hover:not(:disabled):not([aria-pressed=true]) { color: #34383c; background: #fff8; }
+.surf-draw-page.draw-site .draw-room-modes button:active:not(:disabled) { transform: translateY(1px); }
+.surf-draw-page.draw-site .draw-room-modes__manage { border-left-color: #7477801a; border-top-left-radius: 3px; border-bottom-left-radius: 3px; padding-inline: 16px; font-size: 11px; }
+.surf-draw-page.draw-site .draw-room-modes__manage[aria-pressed=true] { border-radius: 12px; }
+.surf-draw-page.draw-site[data-theater=true] .draw-room-modes { top: 18px; left: 50%; right: auto; transform: translateX(-50%); z-index: 20; }
+
+.surf-draw-page.draw-site .surf-batch-prize-picker {
+  gap: 3px; padding: 4px; border: 1px solid #ffffffc0; border-radius: 13px;
+  background: #e6e8eb55; box-shadow: inset 0 1px 2px #373b4309;
+}
+.surf-draw-page.draw-site .surf-batch-prize-picker > button {
+  align-items: center; gap: 11px; min-height: 35px; padding: 0 15px;
+  border: 1px solid transparent; border-radius: 9px;
+  font-size: 11px; color: #777b83; background: transparent;
+  transition: color .2s, background .2s, box-shadow .2s;
+}
+.surf-draw-page.draw-site .surf-batch-prize-picker > button::after { display: none; }
+.surf-draw-page.draw-site .surf-batch-prize-picker > button[aria-pressed=true] {
+  color: #30373a; border-color: #fff;
+  background: linear-gradient(160deg,#fff,#f5f5f5);
+  box-shadow: inset 0 1px 0 #fff, 0 2px 5px #383d4712;
+}
+.surf-draw-page.draw-site .surf-batch-prize-picker small {
+  display: grid; place-items: center; min-width: 20px; height: 19px; padding: 0 5px;
+  border-radius: 5px; color: #737780; background: #a7adb411; font-size: 9px;
+}
+.surf-draw-page.draw-site .surf-batch-prize-picker button[aria-pressed=true] small { color: #59675f; background: #c3d2c626; }
+
+.surf-draw-page.draw-site :is(.surf-reveal-button:not(.surf-reveal-button--secondary),.surf-pro-booster-reveal,.roster-primary,.roster-charizard-entry,.surf-pro-booster-open,.surf-draw-access form > button) {
+  position: relative; isolation: isolate; overflow: hidden;
+  min-height: 46px; height: auto; padding: 13px 24px;
+  border: 1px solid #373c42; border-radius: 14px;
+  background: linear-gradient(160deg,#484e55,#292d33 75%); color: #fafbfc;
+  box-shadow: inset 0 1px 0 #ffffff40, inset 0 -1px 0 #10131866, 0 5px 14px #282d381c;
+  font-size: 12px !important; font-weight: 500; letter-spacing: .015em;
+  transition: transform .22s var(--draw-control-ease), box-shadow .22s, filter .22s;
+}
+.surf-draw-page.draw-site :is(.surf-reveal-button:not(.surf-reveal-button--secondary),.surf-pro-booster-reveal,.roster-primary,.roster-charizard-entry,.surf-pro-booster-open,.surf-draw-access form > button)::before {
+  content: ''; position: absolute; inset: -1px; z-index: 0; border-radius: inherit; pointer-events: none;
+  padding: 1px; background: linear-gradient(115deg, transparent 12%,#f7ffff 35%,#a4bdc7 51%,transparent 75%);
+  mask: linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0); mask-composite: exclude;
+  background-size: 250% 100%; background-position: 100% 0; opacity: 0;
+}
+.surf-draw-page.draw-site :is(.surf-reveal-button,.surf-pro-booster-reveal,.roster-primary,.roster-charizard-entry,.surf-pro-booster-open,.surf-draw-access form > button):is(:hover,:focus-visible):not(:disabled) {
+  transform: translateY(-1px); filter: brightness(1.07); box-shadow: inset 0 1px 0 #ffffff50, 0 7px 18px #282d3829;
+}
+.surf-draw-page.draw-site :is(.surf-reveal-button,.surf-pro-booster-reveal,.roster-primary,.roster-charizard-entry,.surf-pro-booster-open,.surf-draw-access form > button):is(:hover,:focus-visible):not(:disabled)::before { opacity: .8; animation: draw-control-rim .7s ease-out both; }
+@keyframes draw-control-rim { from { background-position: 100% 0; } to { background-position: 0 0; } }
+.surf-draw-page.draw-site :is(.surf-reveal-button,.surf-pro-booster-picker button,.roster-primary,.roster-charizard-entry,.surf-draw-access form > button):active:not(:disabled) { transform: translateY(1px) scale(.985); }
+.surf-draw-page.draw-site :is(.surf-reveal-button,.surf-pro-booster-picker button,.roster-primary,.roster-charizard-entry):disabled { opacity: .36; cursor: default; filter: none; transform: none; }
+.surf-draw-page.draw-site :is(.surf-pro-booster-picker button:not(.surf-pro-booster-reveal):not(.surf-pro-booster-open),.surf-reveal-button--secondary,.roster-demo,.roster-secondary) {
+  border: 1px solid #ffffffc9; border-radius: 11px; background: linear-gradient(150deg,#ffffffe0,#f0f1f39e);
+  color: #596169; box-shadow: inset 0 1px 0 #fff, 0 2px 7px #34383c08;
+}
+.surf-draw-page.draw-site .surf-pro-booster-picker button:not(.surf-pro-booster-reveal):not(.surf-pro-booster-open) { min-height: 36px; }
+.surf-draw-page.draw-site .roster-demo { padding: 8px 12px; font-size: 11px; }
+.surf-draw-page.draw-site .surf-pro-booster-back { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
+.surf-draw-page.draw-site .roster-charizard-entry { min-width: 180px; }
+.surf-draw-page.draw-site .surf-draw-batch { color: #747780; }
+.surf-draw-page.draw-site .surf-draw-batch__stepper {
+  height: 44px; border: 1px solid #ffffffc0; border-radius: 13px;
+  background: linear-gradient(150deg,#ffffffb0,#eceef06b);
+  box-shadow: inset 0 1px 0 #fff, 0 2px 7px #34383c05;
+}
+.surf-draw-page.draw-site .surf-draw-batch__stepper button { border-radius: 9px; color: #657078; }
+.surf-draw-page.draw-site .surf-draw-batch__stepper button:hover:not(:disabled) { background: #fff9; color: #30383e; }
+.surf-draw-page.draw-site .surf-draw-batch output { color: #39454b; }
+.surf-draw-page.draw-site .surf-draw-batch__all { border: 0; }
+.surf-draw-page.draw-site .roster-upload__clear {
+  min-height: 46px; padding: 13px 18px; border: 1px solid #ffffffc9; border-radius: 14px;
+  color: #68666d; background: linear-gradient(150deg,#ffffffc9,#f0f1f38a);
+  box-shadow: inset 0 1px 0 #fff, 0 2px 7px #34383c08;
+}
+.surf-draw-page.draw-site :is(button,a,summary):focus-visible { outline: 2px solid #617d79; outline-offset: 4px; }
+
+@media(max-width:900px) {
+  .surf-draw-page.draw-site[data-theater=true] .draw-room-modes { top: 62px; }
+}
+@media(max-width:500px) {
+  .surf-draw-page.draw-site .draw-room-modes { width: 100%; gap: 2px; padding: 4px; border-radius: 14px; }
+  .surf-draw-page.draw-site .draw-room-modes button { flex: 1; min-width: 0; padding: 0 8px; font-size: 11px; border-radius: 10px; }
+  .surf-draw-page.draw-site .draw-room-modes__manage { padding-inline: 7px; font-size: 10px; }
+  .surf-draw-page.draw-site[data-theater=true] .draw-room-modes { width: calc(100% - 28px); }
+  .surf-draw-page.draw-site .surf-batch-prize-picker > button { padding-inline: 10px; gap: 7px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .surf-draw-page.draw-site :is(button,button::before) { animation: none !important; transition: none !important; }
+}

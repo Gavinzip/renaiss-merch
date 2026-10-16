@@ -1,0 +1,9 @@
+.draw-local-reset { position: fixed; top: 24px; left: 32px; z-index: 95; max-width: 330px; color: #747780; font-size: 11px; }
+.draw-local-reset > div { display: flex; align-items: center; gap: 14px; }
+.draw-local-reset > div > button { display: inline-flex; gap: 8px; align-items: center; padding: 10px 16px; border-radius: 11px; border: 1px solid #fff9; background: #ffffff85; color: #34383c; box-shadow: inset 0 1px 0 #fff, 0 3px 12px #34383c05; font-size: 12px; }
+.draw-local-reset > div > button:disabled { opacity: .45; cursor: default; }
+.draw-local-reset p { margin: 9px 0 0; }
+.draw-local-reset a { display: inline-block; margin-top: 9px; color: inherit; }
+.draw-local-reset__refresh { border: 0; padding: 8px 0; background: transparent; color: inherit; font-size: inherit; }
+.draw-live-controls { border: 0; margin: 0; padding: 0; min-width: 0; }
+@media(max-width:900px) { .draw-local-reset { top: 16px; left: 18px; max-width: 230px; } .draw-local-reset > div { gap: 8px; } .draw-local-reset small { display: none; } }

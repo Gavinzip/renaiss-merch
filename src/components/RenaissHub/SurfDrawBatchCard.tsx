@@ -5,6 +5,7 @@ import type { RevealPhase } from './useSurfDrawPresentation';
 import { SurfBatchPrizeThumb } from './SurfBatchPrizeThumb';
 import { HubWordmark } from './HubWordmark';
 import { SurfLogo } from './SurfLogo';
+import { SurfWinnerContacts } from './SurfWinnerContacts';
 
 export function SurfDrawBatchCard({ locale, kind, slot, column, winner, phase, shown, turning, disabled, onFlip }: {
   locale: AppLocale; kind: Prize['kind']; slot: number; column: number; winner?: Winner; phase: RevealPhase;
@@ -27,6 +28,7 @@ export function SurfDrawBatchCard({ locale, kind, slot, column, winner, phase, s
             <strong className="surf-batch-card__ticket">{winner ? String(winner.ticketNumber).padStart(6, '0') : '—'}</strong>
           </div>
         </div>
+        {face === 'winner' ? <SurfWinnerContacts participant={winner?.participant} /> : null}
         <div className="surf-batch-card__bottom"><span>{kind === 'mystery-box' ? 'MYSTERY BOX' : 'SURF PRO · 1 MONTH'}</span><i /></div>
       </div>)}
     </div>

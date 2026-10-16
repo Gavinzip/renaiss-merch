@@ -87,8 +87,10 @@ import {
 } from './session-store.mjs';
 import { serveStatic } from './static.mjs';
 import { getStorefrontFeatures } from './storefront-features.mjs';
-import { isHiddenHubPath } from '../shared/site-routes.js';
+import { isDrawSitePath, isHiddenHubPath } from '../shared/site-routes.js';
 import { createSurfDrawHandler } from './surf-draw/routes.mjs';
+import { createLocalSurfOperatorHandler } from './surf-draw/local-operator.mjs';
+import { createSurfOperatorHandler } from './surf-draw/operator-routes.mjs';
 import { handleSurfDrawAccessRoute } from './surf-draw/access.mjs';
 import { handleRosterDrawRoute } from './roster-draw/routes.mjs';
 import {
@@ -114,6 +116,8 @@ const backupTriggerAttempts = [];
 getMerchDatabase(getRuntimeConfig().databasePath);
 const handleMissionRoute = createMissionRouteHandler({ readSession });
 const handleSurfDrawRoute = createSurfDrawHandler({ readSession });
+const handleLocalSurfOperator = createLocalSurfOperatorHandler();
+const handleSurfOperator = createSurfOperatorHandler({ readSession });
 const vite = isProduction
   ? null
   : await createDevelopmentViteServer();
@@ -161,7 +165,8 @@ async function createDevelopmentViteServer() {
   return createViteServer({
     appType: 'custom',
     server: {
-      middlewareMode: true
+      middlewareMode: true,
+      ...(process.env.MERCH_DEV_HMR_PORT ? { hmr: { port: Number(process.env.MERCH_DEV_HMR_PORT) } } : {})
     }
   });
 }
@@ -176,8 +181,10 @@ async function handleRoute(req, res) {
   }
 
   if (await handleMissionRoute(req, res, url)) return true;
+  if (await handleLocalSurfOperator(req, res, url)) return true;
   if (await handleSurfDrawAccessRoute(req, res, url)) return true;
   if (await handleRosterDrawRoute(req, res, url)) return true;
+  if (await handleSurfOperator(req, res, url)) return true;
   if (await handleSurfDrawRoute(req, res, url)) return true;
 
   if (!isProduction && url.pathname.startsWith('/api/hub/hero-preview/')) {
@@ -475,17 +482,22 @@ async function serveViteHtml(req, res) {
 
   const url = new URL(req.url || '/', 'http://localhost');
 
+  if (url.pathname.startsWith('/draw/') && !isDrawSitePath(url.pathname)) {
+    throw new HttpError(404, 'not_found');
+  }
+
   if (
     url.pathname.startsWith('/api/') ||
     url.pathname.startsWith('/auth/') ||
     isViteDevRequestPath(url.pathname) ||
-    (!isVersionedAppRoute(url.pathname) && /\.[^/]+$/.test(url.pathname))
+    (!isDrawSitePath(url.pathname) && !isVersionedAppRoute(url.pathname) && /\.[^/]+$/.test(url.pathname))
   ) {
     return false;
   }
 
   const previewName = url.searchParams.get('preview');
   const templatePath =
+    isDrawSitePath(url.pathname) ? '../draw/index.html' :
     previewName === 'tshirt-physics' || previewName === 'bracelets'
       ? '../dev-preview.html'
       : isHiddenHubPath(url.pathname) || isProductionStorefrontMode(storefrontMode) ||
@@ -501,7 +513,7 @@ async function serveViteHtml(req, res) {
   res.writeHead(200, {
     'Cache-Control': 'no-store',
     'Content-Type': 'text/html; charset=utf-8',
-    ...(isHiddenHubPath(url.pathname) ? { 'X-Robots-Tag': 'noindex, nofollow, noarchive' } : {})
+    ...(isHiddenHubPath(url.pathname) || isDrawSitePath(url.pathname) ? { 'X-Robots-Tag': 'noindex, nofollow, noarchive' } : {})
   });
 
   if (req.method === 'HEAD') {

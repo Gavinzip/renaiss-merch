@@ -4,6 +4,7 @@ import { surfWinnerDisplayName } from '../../../shared/surf-draw-identity.js';
 import { HubWordmark } from './HubWordmark';
 import { SurfLogo } from './SurfLogo';
 import { SurfDrawReels } from './SurfDrawReels';
+import { SurfWinnerContacts } from './SurfWinnerContacts';
 import { surfDrawSceneCopy } from './SurfDrawSceneCopy';
 import type { Winner } from './useSurfDraw';
 import type { RevealPhase } from './useSurfDrawPresentation';
@@ -56,6 +57,7 @@ export function SurfDrawTicket({ locale, winner, phase, simulation, revision, sl
         {identity ? <>
           <span className="t-stagger-line t-stagger-line--1">{copy.winnerLabel}</span>
           <strong ref={nameText} className="t-stagger-line t-stagger-line--2" data-size={name.length > 40 ? 'long' : name.length > 20 ? 'medium' : 'short'}>{name || copy.nameUnavailable}</strong>
+          <SurfWinnerContacts participant={winner?.participant} />
         </> : null}
       </div>
     </div>

@@ -1,0 +1,17 @@
+.surf-winner-contacts { display: grid; gap: 5px; margin: 12px 0 0; width: 100%; min-width: 0; text-align: left; }
+.surf-winner-contacts > div { display: grid; grid-template-columns: 38px minmax(0,1fr); align-items: baseline; gap: 8px; }
+.surf-winner-contacts dt { color: #92949a; font-size: 8px; font-weight: 450; }
+.surf-winner-contacts dd { min-width: 0; margin: 0; color: #535860; font-size: 10px; line-height: 1.45; overflow-wrap: anywhere; letter-spacing: 0; font-weight: 450; }
+.surf-draw-ticket__identity:has(.surf-winner-contacts) { inset-block-end: 58px; justify-content: flex-start; gap: 7px; }
+.surf-draw-ticket__body:has(.surf-winner-contacts) { height: 210px; }
+.surf-draw-ticket:has(.surf-winner-contacts) .surf-draw-ticket__caption { transform: translateY(158px); }
+.surf-draw-ticket:has(.surf-winner-contacts) .surf-draw-ticket__reels { transform: translateY(128px) scale(.3); }
+.surf-draw-ticket__identity > .surf-winner-contacts { width: min(320px,100%); margin-top: 0; }
+.surf-batch-card__face > .surf-winner-contacts { margin: 3px 0 10px; gap: 4px; }
+.surf-batch-card__face > .surf-winner-contacts > div { grid-template-columns: 32px minmax(0,1fr); gap: 6px; }
+.surf-batch-card__face > .surf-winner-contacts dd { font-size: clamp(8px,.8vw,10px); }
+.surf-batch-card__face:has(> .surf-winner-contacts) .surf-batch-card__body { min-height: 58px; grid-template-columns: 54px minmax(0,1fr); }
+.surf-batch-card__face:has(> .surf-winner-contacts) .surf-batch-card__name { font-size: clamp(13px,1.45vw,21px); }
+.surf-batch-card__face:has(> .surf-winner-contacts) .surf-batch-card__name[data-long=true] { font-size: clamp(9px,.9vw,12px); }
+.surf-batch-card__face:has(> .surf-winner-contacts) .surf-batch-card__ticket { margin-top: 5px; }
+@media(max-width:430px) { .surf-winner-contacts > div { grid-template-columns: 32px minmax(0,1fr); gap: 6px; } }

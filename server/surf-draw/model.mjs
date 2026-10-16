@@ -1,6 +1,7 @@
 import { keccak256, toUtf8Bytes } from 'ethers';
 import { surfCampaign } from '../../shared/surf-campaign.js';
 import { createParticipationStore, publicParticipant, TICKET_RULE_VERSION } from '../missions/participation-store.mjs';
+import { ensureSurfContactTables, readSurfWinnerContacts } from './winner-contacts.mjs';
 
 export const SURF_DRAW_ADDRESS = '0x78b79dB5726700BeDb18BC05aA612b11E33B00A9';
 export const SURF_DRAW_RUNTIME_HASH = '0xcae9a3ae4f2c228b4fba26e00e4a9d3b79b357e3ac295f2b7139ff76d3013261';
@@ -15,6 +16,7 @@ const WALLET = /^0x[a-fA-F0-9]{40}$/;
 
 export function ensureSurfDrawTables(db) {
   createParticipationStore(db);
+  ensureSurfContactTables(db);
   db.exec(`CREATE TABLE IF NOT EXISTS surf_draw_snapshots (
     draw_id TEXT PRIMARY KEY, ledger_hash TEXT NOT NULL, ticket_count INTEGER NOT NULL,
     participant_count INTEGER NOT NULL, canonical_json TEXT NOT NULL,
@@ -61,7 +63,7 @@ export function readSnapshot(db) {
       canonical.rules?.alternatesPerPrize !== 0 || !validPrizes || !validEntries) {
     throw new Error('Surf draw snapshot integrity failed');
   }
-  return { ...record, canonical };
+  return { ...record, canonical, contacts: readSurfWinnerContacts(db, record) };
 }
 
 export function buildCandidateLedger(db) {
