@@ -7,6 +7,7 @@ export const SURF_DRAW_ADDRESS = '0x78b79dB5726700BeDb18BC05aA612b11E33B00A9';
 export const SURF_DRAW_RUNTIME_HASH = '0xcae9a3ae4f2c228b4fba26e00e4a9d3b79b357e3ac295f2b7139ff76d3013261';
 export const SURF_DRAW_CHAIN_ID = 56;
 export const SURF_DRAW_ID = keccak256(toUtf8Bytes('RENAISS_SURF_V1_MAIN_ROUND_1'));
+export const SURF_DRAW_RETRY_ID = keccak256(toUtf8Bytes('RENAISS_SURF_V1_MAIN_ROUND_2'));
 export const SURF_DRAW_PRIZES = Object.freeze([
   ...Array.from({ length: surfCampaign.plannedRewards.mysteryBoxes }, (_, index) => ({ slot: index, kind: 'mystery-box', number: index + 1 })),
   ...Array.from({ length: surfCampaign.plannedRewards.proMonthTrials }, (_, index) => ({ slot: surfCampaign.plannedRewards.mysteryBoxes + index, kind: 'surf-pro-month', number: index + 1 })),
@@ -31,7 +32,18 @@ export function ensureSurfDrawTables(db) {
   CREATE TABLE IF NOT EXISTS surf_draw_action_locks (
     draw_id TEXT PRIMARY KEY, action_key TEXT NOT NULL,
     lock_id TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS surf_draw_active_round (
+    id INTEGER PRIMARY KEY CHECK(id=1), draw_id TEXT NOT NULL, updated_at TEXT NOT NULL
+  );
+  CREATE TABLE IF NOT EXISTS surf_draw_superseded_rounds (
+    draw_id TEXT PRIMARY KEY, successor_draw_id TEXT NOT NULL UNIQUE,
+    request_id TEXT NOT NULL, request_tx_hash TEXT NOT NULL, request_block INTEGER NOT NULL,
+    old_ledger_hash TEXT NOT NULL, new_ledger_hash TEXT NOT NULL,
+    observed_block INTEGER NOT NULL, superseded_at TEXT NOT NULL, reason TEXT NOT NULL
   );`);
+  db.prepare('INSERT OR IGNORE INTO surf_draw_active_round(id,draw_id,updated_at) VALUES(1,?,?)')
+    .run(SURF_DRAW_ID, new Date().toISOString());
   if (!db.pragma('table_info(surf_draw_transactions)').some((column) => column.name === 'broadcast_state')) {
     db.exec("ALTER TABLE surf_draw_transactions ADD COLUMN broadcast_state TEXT NOT NULL DEFAULT 'signed'");
   }
@@ -40,9 +52,16 @@ export function ensureSurfDrawTables(db) {
   }
 }
 
-export function readSnapshot(db) {
+export function activeSurfDrawId(db) {
   ensureSurfDrawTables(db);
-  const record = db.prepare('SELECT * FROM surf_draw_snapshots WHERE draw_id=?').get(SURF_DRAW_ID);
+  const id = db.prepare('SELECT draw_id FROM surf_draw_active_round WHERE id=1').get()?.draw_id;
+  if (id !== SURF_DRAW_ID && id !== SURF_DRAW_RETRY_ID) throw new Error('Unknown active Surf draw round');
+  return id;
+}
+
+export function readSnapshot(db, drawId = activeSurfDrawId(db)) {
+  ensureSurfDrawTables(db);
+  const record = db.prepare('SELECT * FROM surf_draw_snapshots WHERE draw_id=?').get(drawId);
   if (!record) return null;
   const canonical = JSON.parse(record.canonical_json);
   const validPrizes = Array.isArray(canonical.prizes) &&
@@ -56,7 +75,7 @@ export function readSnapshot(db) {
       return entry.end + 1;
     }, 1) === record.ticket_count + 1;
   if (keccak256(toUtf8Bytes(record.canonical_json)) !== record.ledger_hash ||
-      canonical.drawId !== SURF_DRAW_ID || canonical.campaignId !== surfCampaign.id ||
+      canonical.drawId !== drawId || canonical.campaignId !== surfCampaign.id ||
       canonical.ruleVersion !== TICKET_RULE_VERSION ||
       canonical.rules?.oneWinPerTicket !== true ||
       canonical.rules?.repeatPersonWithDifferentTickets !== true ||
@@ -66,7 +85,7 @@ export function readSnapshot(db) {
   return { ...record, canonical, contacts: readSurfWinnerContacts(db, record) };
 }
 
-export function buildCandidateLedger(db) {
+export function buildCandidateLedger(db, drawId = activeSurfDrawId(db)) {
   ensureSurfDrawTables(db);
   const rows = db.prepare(`SELECT * FROM mission_participants WHERE campaign=? AND rule_version=? AND ticket_count>0 ORDER BY user_sub`)
     .all(surfCampaign.id, TICKET_RULE_VERSION).map(publicParticipant);
@@ -96,7 +115,7 @@ export function buildCandidateLedger(db) {
   });
   const canonical = {
     version: 'surf-draw-ledger-v1', campaignId: surfCampaign.id,
-    ruleVersion: TICKET_RULE_VERSION, drawId: SURF_DRAW_ID,
+    ruleVersion: TICKET_RULE_VERSION, drawId,
     rules: { oneWinPerTicket: true, repeatPersonWithDifferentTickets: true, alternatesPerPrize: 0 },
     prizes: SURF_DRAW_PRIZES, entries,
   };

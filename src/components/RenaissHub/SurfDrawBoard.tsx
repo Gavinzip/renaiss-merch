@@ -89,6 +89,10 @@ export function SurfDrawBoard(props: BoardProps) {
         <dl><div><dt>{copy.chainStage}</dt><dd>{chain ? copy.states[chain.state] : copy.cannotRead} · BSC #{chain?.block.toLocaleString('en-US') ?? '—'}</dd></div>
           <div><dt>{copy.requestId}</dt><dd>{chain?.requestId !== '0' ? chain?.requestId || copy.noRequest : copy.noRequest}</dd></div>
           <div><dt>DRAW ID</dt><dd><code>{status?.drawId || '—'}</code></dd></div>
+          {status?.superseded ? <div><dt>{locale === 'zh-TW' ? '已作廢舊輪' : 'Superseded round'}</dt><dd>
+            <code>{status.superseded.drawId}</code> · BSC #{status.superseded.observedBlock.toLocaleString('en-US')} · <a href={`https://bscscan.com/tx/${status.superseded.requestTxHash}`}
+              target="_blank" rel="noopener noreferrer">{locale === 'zh-TW' ? '舊請求紀錄' : 'Old request'} ↗</a>
+          </dd></div> : null}
           <div><dt>{copy.source}</dt><dd><a href="https://bscscan.com/address/0x78b79dB5726700BeDb18BC05aA612b11E33B00A9#code" target="_blank" rel="noopener noreferrer">0x78b79dB5726700BeDb18BC05aA612b11E33B00A9 ↗</a></dd></div>
           <div><dt>{copy.results}</dt><dd>{chain?.results?.address ? <a href={`https://bscscan.com/address/${chain.results.address}#code`} target="_blank" rel="noopener noreferrer">{chain.results.address} ↗</a> : copy.notSet}</dd></div>
           {chain?.sourceState !== undefined && chain.sourceState !== chain.state ? <div><dt>{copy.sourceStage}</dt><dd>{copy.states[chain.sourceState]}</dd></div> : null}

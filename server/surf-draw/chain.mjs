@@ -43,7 +43,7 @@ export async function readSurfChain(snapshot, options = {}) {
 }
 
 async function readSurfChainAt(provider, snapshot, { includeSubscription = true, includeSigner = true,
-  signer: suppliedSigner, resultsAddress, blockNumber } = {}) {
+  signer: suppliedSigner, resultsAddress, blockNumber, drawId = snapshot?.draw_id || SURF_DRAW_ID } = {}) {
   const finalized = await provider.getBlock('finalized');
   if (!finalized) throw new Error('Canonical Surf draw finalized block is unavailable');
   if (blockNumber !== undefined && (!Number.isInteger(blockNumber) || blockNumber < 0 || blockNumber > finalized.number)) {
@@ -57,14 +57,14 @@ async function readSurfChainAt(provider, snapshot, { includeSubscription = true,
   const contract = new Contract(SURF_DRAW_ADDRESS, drawAbi, provider);
   const signer = includeSigner ? suppliedSigner || signerFor(provider) : null;
   const [stateRaw, status, requestId, originalSlots, randomWord, config, coordinatorAddress, signerAdmin] = await Promise.all([
-    contract.state(SURF_DRAW_ID, { blockTag: block }), contract.roundStatus(SURF_DRAW_ID, { blockTag: block }),
-    contract.requestId(SURF_DRAW_ID, { blockTag: block }), contract.revealedPrizeSlots(SURF_DRAW_ID, { blockTag: block }),
-    contract.randomWord(SURF_DRAW_ID, { blockTag: block }), contract.vrfConfig({ blockTag: block }),
+    contract.state(drawId, { blockTag: block }), contract.roundStatus(drawId, { blockTag: block }),
+    contract.requestId(drawId, { blockTag: block }), contract.revealedPrizeSlots(drawId, { blockTag: block }),
+    contract.randomWord(drawId, { blockTag: block }), contract.vrfConfig({ blockTag: block }),
     contract.vrfCoordinatorAddress({ blockTag: block }), signer ? contract.isAdmin(signer.address, { blockTag: block }) : null,
   ]);
   const sourceState = Number(stateRaw);
   if (originalSlots.length || Number(status.winnerCount)) throw new Error('Canonical Surf draw has results from a different selector; reset or reconcile first');
-  const results = await readSurfResults(provider, { state: sourceState, ledgerHash: status.ledgerHash, requestId,
+  const results = await readSurfResults(provider, { drawId, state: sourceState, ledgerHash: status.ledgerHash, requestId,
     randomWord, totalTickets: status.totalTickets, prizeSlotCount: status.prizeSlotCount }, block, resultsAddress);
   const { tickets, slots } = results;
   const state = results.status.complete ? 4 : sourceState;
@@ -100,7 +100,7 @@ async function readSurfChainAt(provider, snapshot, { includeSubscription = true,
       requestCount: record.reqCount.toString(), consumerRegistered: record.consumers.some((address) => address.toLowerCase() === SURF_DRAW_ADDRESS.toLowerCase()),
       pendingRequest: pending };
   }
-  return { provider, contract, resultsContract: results.contract, signer, block, chainId, state, sourceState,
+  return { provider, contract, resultsContract: results.contract, signer, block, chainId, drawId, state, sourceState,
     results: results.status, ledgerMatch, requestId: requestId.toString(),
     source: SURF_DRAW_ADDRESS, runtimeHash, signerAddress: signer?.address || null, signerAdmin,
     totalTickets: Number(status.totalTickets), prizeSlotCount: Number(status.prizeSlotCount),

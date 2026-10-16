@@ -10,7 +10,7 @@ export const SURF_OPERATOR_ORIGIN = 'https://merch.renaisscltb.com';
 const AUTH_ROOT = '/api/auth/surf-draw';
 const REMOTE_ROOT = '/api/admin/missions/surf/draw';
 const OPERATOR_ROOT = `${REMOTE_ROOT}/local-operator`;
-const actions = new Set(['', '/prepare', '/finalize', '/request', '/reveal', '/reset']);
+const actions = new Set(['', '/prepare', '/finalize', '/request', '/reveal', '/reset', '/replace']);
 const digest = token => createHash('sha256').update(token).digest('hex');
 
 export function createLocalSurfOperatorHandler({ fetchImpl = fetch, access = {
@@ -88,7 +88,7 @@ export function createLocalSurfOperatorHandler({ fetchImpl = fetch, access = {
     const action = url.pathname.slice(LOCAL_OPERATOR_ROOT.length + 1);
     if (!action.startsWith('draw')) throw new HttpError(404, 'not_found');
     const suffix = action.slice('draw'.length);
-    if (!actions.has(suffix) || (suffix === '' ? req.method !== 'GET' : suffix === '/reset' ? !['GET', 'POST'].includes(req.method) : req.method !== 'POST'))
+    if (!actions.has(suffix) || (suffix === '' ? req.method !== 'GET' : ['/reset', '/replace'].includes(suffix) ? !['GET', 'POST'].includes(req.method) : req.method !== 'POST'))
       throw new HttpError(405, 'method_not_allowed');
     const result = await remote(`${REMOTE_ROOT}${suffix}`, { ...connection,
       ...(req.method === 'POST' ? { body: await readJsonBody(req) } : {}) });

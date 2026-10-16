@@ -1,5 +1,6 @@
 .draw-local-reset { position: fixed; top: 24px; left: 32px; z-index: 95; max-width: 330px; color: #747780; font-size: 11px; }
 .draw-local-reset > div { display: flex; align-items: center; gap: 14px; }
+.draw-local-reset > div + div { margin-top: 8px; }
 .draw-local-reset > div > button { display: inline-flex; gap: 8px; align-items: center; padding: 10px 16px; border-radius: 11px; border: 1px solid #fff9; background: #ffffff85; color: #34383c; box-shadow: inset 0 1px 0 #fff, 0 3px 12px #34383c05; font-size: 12px; }
 .draw-local-reset > div > button:disabled { opacity: .45; cursor: default; }
 .draw-local-reset p { margin: 9px 0 0; }

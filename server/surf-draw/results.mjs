@@ -4,16 +4,17 @@ import { SURF_DRAW_ADDRESS, SURF_DRAW_CHAIN_ID, SURF_DRAW_ID, SURF_DRAW_RUNTIME_
 
 export const resultsAbi = build.abi;
 export const resultsRuntimeHash = build.runtimeHash;
-export function surfResultId(ledgerHash, requestId) {
+export function surfResultId(ledgerHash, requestId, drawId = SURF_DRAW_ID) {
   return keccak256(AbiCoder.defaultAbiCoder().encode(
     ['uint256', 'address', 'bytes32', 'bytes32', 'bytes32', 'uint256'],
-    [SURF_DRAW_CHAIN_ID, SURF_DRAW_ADDRESS, SURF_DRAW_RUNTIME_HASH, SURF_DRAW_ID, ledgerHash, requestId],
+    [SURF_DRAW_CHAIN_ID, SURF_DRAW_ADDRESS, SURF_DRAW_RUNTIME_HASH, drawId, ledgerHash, requestId],
   ));
 }
 
 // Absence is a visible, non-operational configuration state. It never invokes
 // the old selector, another deployment, or off-chain picks.
 export async function readSurfResults(provider, source, block, configuredAddress = process.env.SURF_DRAW_RESULTS_ADDRESS?.trim()) {
+  const drawId = source.drawId || SURF_DRAW_ID;
   if (!configuredAddress) {
     if (source.state !== 0) throw new Error('Surf draw results contract is not configured');
     return { contract: null, tickets: [], slots: [],
@@ -31,7 +32,7 @@ export async function readSurfResults(provider, source, block, configuredAddress
   }
   const base = { ready: true, address, runtimeHash: resultsRuntimeHash, resultId: null, bound: false, complete: false };
   if (source.requestId === 0n) return { contract, tickets: [], slots: [], status: base };
-  const resultId = surfResultId(source.ledgerHash, source.requestId);
+  const resultId = surfResultId(source.ledgerHash, source.requestId, drawId);
   const [record, tickets, slots] = await Promise.all([
     contract.resultStatus(resultId, { blockTag: block }), contract.winnerTicketsBySlot(resultId, { blockTag: block }),
     contract.revealedPrizeSlots(resultId, { blockTag: block }),
@@ -40,7 +41,7 @@ export async function readSurfResults(provider, source, block, configuredAddress
     if (slots.length || tickets.length) throw new Error('Surf draw results contain unbound selections');
     return { contract, tickets, slots, status: { ...base, resultId } };
   }
-  if (source.state !== 3 || record.drawId !== SURF_DRAW_ID || record.ledgerHash !== source.ledgerHash ||
+  if (source.state !== 3 || record.drawId !== drawId || record.ledgerHash !== source.ledgerHash ||
       record.requestId !== source.requestId || record.randomWord !== source.randomWord ||
       record.totalTickets !== source.totalTickets || record.prizeSlotCount !== source.prizeSlotCount ||
       record.revealedCount !== BigInt(slots.length) || tickets.length !== Number(record.prizeSlotCount)) {

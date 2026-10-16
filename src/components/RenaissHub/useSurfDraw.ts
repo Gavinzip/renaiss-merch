@@ -14,6 +14,7 @@ export type Chain = {
 export type DrawStatus = {
   revision: number;
   drawId: string; prizes: Prize[]; closedAt: string | null; actionsEnabled: boolean;
+  superseded?: { drawId: string; requestId: string; requestTxHash: string; observedBlock: number; supersededAt: string; reason: string } | null;
   myTickets: { start: number; end: number } | null;
   candidate: { participants: number; tickets: number; ledgerHash: string } | null;
   snapshot: { preparedAt: string; participants: number; tickets: number; ledgerHash: string } | null;
@@ -41,7 +42,7 @@ const errorCodes: Record<string, string> = {
   onchain_ledger_mismatch: 'The on-chain ledger differs from the private snapshot.',
   draw_signer_not_authorized: 'The server signer is not an admin of the existing contract.',
   vrf_consumer_not_registered: 'The existing contract is not registered as a VRF consumer.',
-  vrf_subscription_not_ready: 'The VRF subscription has a pending request or no balance.',
+  vrf_subscription_not_ready: 'The VRF subscription has no balance.',
   draw_gas_limit_exceeded: 'Gas preflight exceeds the block limit. Stop and diagnose the selector.',
   draw_results_not_configured: '揭露合約尚未部署或設定。',
   draw_reveal_receipt_invalid: '鏈上揭露憑證不符，已停止後續操作。',

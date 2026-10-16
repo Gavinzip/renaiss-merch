@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { keccak256 } from 'ethers';
 import { HttpError, sendJson } from '../http.mjs';
 import { readSurfChain } from './chain.mjs';
-import { readSnapshot, SURF_DRAW_ID } from './model.mjs';
+import { activeSurfDrawId, readSnapshot } from './model.mjs';
 import { archiveConfirmedSurfReset, assertSurfRevision } from './lifecycle.mjs';
 import { assertSurfTransactionTarget, verifySurfRevealReceipt } from './reveal-receipt.mjs';
 
@@ -11,25 +11,28 @@ const BROADCAST_RETRY_MS = 30_000;
 
 export async function sendSurfDrawAction(res, db, chain, action, transactionFactory, expectedRevision,
   { readChain = readSurfChain } = {}) {
-  const actionKey = `${SURF_DRAW_ID}:${action}`;
+  const drawId = activeSurfDrawId(db);
+  if (chain.drawId !== drawId) throw new HttpError(409, 'draw_id_changed');
+  const actionKey = `${drawId}:${action}`;
   const lockId = randomUUID();
   const reservation = db.transaction(() => {
     assertSurfRevision(db, expectedRevision);
+    if (activeSurfDrawId(db) !== drawId) throw new HttpError(409, 'draw_id_changed');
     const existing = db.prepare('SELECT * FROM surf_draw_transactions WHERE action_key=?').get(actionKey);
     if (existing) return existing;
-    if (db.prepare('SELECT 1 FROM surf_draw_transactions WHERE draw_id=? AND confirmed_at IS NULL').get(SURF_DRAW_ID)) {
+    if (db.prepare('SELECT 1 FROM surf_draw_transactions WHERE draw_id=? AND confirmed_at IS NULL').get(drawId)) {
       throw new HttpError(409, 'prior_action_pending');
     }
-    const priorLock = db.prepare('SELECT lock_id AS lockId,created_at AS createdAt FROM surf_draw_action_locks WHERE draw_id=?').get(SURF_DRAW_ID);
+    const priorLock = db.prepare('SELECT lock_id AS lockId,created_at AS createdAt FROM surf_draw_action_locks WHERE draw_id=?').get(drawId);
     if (priorLock) {
       const age = Date.now() - Date.parse(priorLock.createdAt);
       if (!Number.isFinite(age) || age < ACTION_LOCK_LEASE_MS) throw new HttpError(409, 'prior_action_pending');
       // The expired owner may still resume. Its lock-id check below fences it
       // out before its signed transaction can be stored or broadcast.
-      db.prepare('DELETE FROM surf_draw_action_locks WHERE draw_id=? AND lock_id=?').run(SURF_DRAW_ID, priorLock.lockId);
+      db.prepare('DELETE FROM surf_draw_action_locks WHERE draw_id=? AND lock_id=?').run(drawId, priorLock.lockId);
     }
     db.prepare('INSERT INTO surf_draw_action_locks (draw_id,action_key,lock_id,created_at) VALUES(?,?,?,?)')
-      .run(SURF_DRAW_ID, actionKey, lockId, new Date().toISOString());
+      .run(drawId, actionKey, lockId, new Date().toISOString());
     return null;
   }).immediate();
   if (reservation) {
@@ -44,9 +47,9 @@ export async function sendSurfDrawAction(res, db, chain, action, transactionFact
   try {
     // The reservation precedes every await. Its ID is checked again before
     // persistence, so an expired owner cannot publish after a new owner starts.
-    fresh = await readChain(readSnapshot(db));
+    fresh = await readChain(readSnapshot(db), { drawId });
     assertSurfRevision(db, expectedRevision);
-    if (fresh.state !== chain.state || fresh.winnerCount !== chain.winnerCount ||
+    if (fresh.drawId !== drawId || fresh.state !== chain.state || fresh.winnerCount !== chain.winnerCount ||
         fresh.ledgerHash !== chain.ledgerHash || fresh.ledgerMatch !== chain.ledgerMatch ||
         fresh.requestId !== chain.requestId || fresh.sourceState !== chain.sourceState ||
         fresh.results.address !== chain.results.address || fresh.results.resultId !== chain.results.resultId ||
@@ -70,24 +73,25 @@ export async function sendSurfDrawAction(res, db, chain, action, transactionFact
     raw = await fresh.signer.signTransaction({ ...tx, chainId: fresh.chainId, type: 0, gasPrice: fee.gasPrice,
       gasLimit, nonce });
     txHash = keccak256(raw);
-    assertSurfTransactionTarget({ action, signed_raw: raw, tx_hash: txHash });
+    assertSurfTransactionTarget({ action, draw_id: drawId, signed_raw: raw, tx_hash: txHash });
     db.transaction(() => {
       assertSurfRevision(db, expectedRevision);
-      if (!db.prepare('SELECT 1 FROM surf_draw_action_locks WHERE draw_id=? AND lock_id=?').get(SURF_DRAW_ID, lockId) ||
-          db.prepare('SELECT 1 FROM surf_draw_transactions WHERE draw_id=? AND confirmed_at IS NULL').get(SURF_DRAW_ID)) {
+      if (activeSurfDrawId(db) !== drawId) throw new HttpError(409, 'draw_id_changed');
+      if (!db.prepare('SELECT 1 FROM surf_draw_action_locks WHERE draw_id=? AND lock_id=?').get(drawId, lockId) ||
+          db.prepare('SELECT 1 FROM surf_draw_transactions WHERE draw_id=? AND confirmed_at IS NULL').get(drawId)) {
         throw new HttpError(409, 'prior_action_pending');
       }
       db.prepare('INSERT INTO surf_draw_transactions (action_key,draw_id,action,tx_hash,signed_raw,created_at,broadcast_state) VALUES(?,?,?,?,?,?,?)').run(
-        actionKey, SURF_DRAW_ID, action, txHash, raw, new Date().toISOString(), 'signed',
+        actionKey, drawId, action, txHash, raw, new Date().toISOString(), 'signed',
       );
-      db.prepare('DELETE FROM surf_draw_action_locks WHERE draw_id=? AND lock_id=?').run(SURF_DRAW_ID, lockId);
+      db.prepare('DELETE FROM surf_draw_action_locks WHERE draw_id=? AND lock_id=?').run(drawId, lockId);
     }).immediate();
   } finally {
     fresh?.provider.destroy();
-    db.prepare('DELETE FROM surf_draw_action_locks WHERE draw_id=? AND lock_id=?').run(SURF_DRAW_ID, lockId);
+    db.prepare('DELETE FROM surf_draw_action_locks WHERE draw_id=? AND lock_id=?').run(drawId, lockId);
   }
   const broadcastState = await broadcastSavedTransaction(db, chain.provider,
-    { action_key: actionKey, action, tx_hash: txHash, signed_raw: raw });
+    { action_key: actionKey, action, draw_id: drawId, tx_hash: txHash, signed_raw: raw });
   sendJson(res, 202, { action, txHash, broadcastState });
   return true;
 }
@@ -107,7 +111,8 @@ async function broadcastSavedTransaction(db, provider, record) {
 }
 
 export async function reconcileSurfTransactions(db, provider) {
-  const pending = db.prepare("SELECT action_key,action,tx_hash,signed_raw,broadcast_state,last_broadcast_at FROM surf_draw_transactions WHERE draw_id=? AND (confirmed_at IS NULL OR action LIKE 'reset:%' AND receipt_status=1)").all(SURF_DRAW_ID);
+  const drawId = activeSurfDrawId(db);
+  const pending = db.prepare("SELECT action_key,draw_id,action,tx_hash,signed_raw,broadcast_state,last_broadcast_at FROM surf_draw_transactions WHERE draw_id=? AND (confirmed_at IS NULL OR action LIKE 'reset:%' AND receipt_status=1)").all(drawId);
   for (const record of pending) {
     assertSurfTransactionTarget(record);
     const receipt = await provider.getTransactionReceipt(record.tx_hash);
