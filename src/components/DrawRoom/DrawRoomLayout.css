@@ -23,8 +23,6 @@
 .surf-draw-page .roster-draw-controls .roster-status { flex: 1; min-width: 0; margin: 0; padding: 9px 0; gap: 16px; border: 0; }
 .surf-draw-page .roster-status__label { font-size: 11px; }
 .surf-draw-page .roster-status__actions :is(a,button) { font-size: 11px; }
-.roster-draw-toolbar { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; min-height: 44px; }
-.surf-draw-page .roster-draw-toolbar .roster-demo { margin: 0; white-space: nowrap; }
 
 .surf-draw-page:not([data-theater=true]) .surf-reveal-stage[data-batch=true] {
   height: var(--draw-stage-height); min-height: 0; padding: 0 0 110px;

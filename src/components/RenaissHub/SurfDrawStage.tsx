@@ -82,8 +82,9 @@ export function SurfDrawStage(props: Props) {
           <span>{busy ? locale === 'zh-TW' ? '確認交易中' : 'Confirming' : nextAction ? `${actionName(nextAction, locale)}${nextAction === 'reveal' ? ` · ${batchAmount}` : ''}` : copy.phase[chainState ?? 0]}</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>
         </button> : null}
-        <button className={`surf-reveal-button ${administrator && !simulation ? 'surf-reveal-button--secondary' : ''}`} type="button"
-          disabled={locked || !ready || (simulation && (!batchLimit || revealedCount >= 27))} onClick={onSimulate}><span>{simulation ? locked ? copy.simulating : revealedCount >= 27 ? copy.simulationComplete : simulationLabel : copy.demoEntry}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7Z" /></svg></button>
+        {simulation ? <button className="surf-reveal-button" type="button"
+          disabled={locked || !ready || !batchLimit || revealedCount >= 27} onClick={onSimulate}><span>{locked ? copy.simulating : revealedCount >= 27 ? copy.simulationComplete : simulationLabel}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7Z" /></svg></button>
+          : null}
         {simulation ? <div className="surf-reveal-preview-links">
           {simulation && onRestartSimulation ? <button className="surf-reveal-exit surf-reveal-preview-kind" type="button" onClick={() => onRestartSimulation()}>{locale === 'zh-TW' ? '重播寶箱' : locale === 'ko' ? 'Mystery Boxes 다시 보기' : 'Replay Mystery Boxes'} ↺</button> : null}
           {simulation && onRestartSimulation ? <button className="surf-reveal-exit surf-reveal-preview-kind" type="button" onClick={() => onRestartSimulation('surf-pro-month')}>{locale === 'zh-TW' ? '重播會員' : locale === 'ko' ? '멤버십 팩 다시 보기' : 'Replay Memberships'} ↺</button> : null}

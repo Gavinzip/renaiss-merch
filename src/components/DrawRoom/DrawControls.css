@@ -79,12 +79,11 @@
   margin-inline: auto;
   white-space: nowrap;
 }
-.surf-draw-page.draw-site :is(.surf-pro-booster-picker button:not(.surf-pro-booster-reveal):not(.surf-pro-booster-open),.surf-reveal-button--secondary,.roster-demo,.roster-secondary) {
+.surf-draw-page.draw-site :is(.surf-pro-booster-picker button:not(.surf-pro-booster-reveal):not(.surf-pro-booster-open),.roster-secondary) {
   border: 1px solid #ffffffc9; border-radius: 11px; background: linear-gradient(150deg,#ffffffe0,#f0f1f39e);
   color: #596169; box-shadow: inset 0 1px 0 #fff, 0 2px 7px #34383c08;
 }
 .surf-draw-page.draw-site .surf-pro-booster-picker button:not(.surf-pro-booster-reveal):not(.surf-pro-booster-open) { min-height: 36px; }
-.surf-draw-page.draw-site .roster-demo { padding: 8px 12px; font-size: 11px; }
 .surf-draw-page.draw-site .surf-pro-booster-back { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
 .surf-draw-page.draw-site .roster-charizard-entry { min-width: 180px; }
 .surf-draw-page.draw-site .roster-upload__clear {

@@ -1,5 +1,4 @@
 import { lazy, Suspense, useCallback, useRef, useState } from "react";
-import type { MouseEvent } from "react";
 import type { AppLocale } from "../../i18n/LocaleContext";
 import { RosterDrawHistory } from "./RosterDrawHistory";
 import { RosterStatus } from "./RosterStatus";
@@ -53,17 +52,6 @@ export function RosterDrawRoom({
   const retryElsewhere = Boolean(draw.pendingDraw && !retryHere);
   const title = kind === "charizard" ? "噴火龍抽獎" : "額外加碼";
   const prize = kind === "charizard" ? "噴火龍典藏禮盒" : "額外加碼";
-  function previewAnimation(event: MouseEvent<HTMLButtonElement>) {
-    replayResult({
-      sequence: 0,
-      requestId: "demo",
-      entryId: "DEMO",
-      name: "示範得獎者",
-      kind,
-      prize,
-      drawnAt: "",
-    }, event.currentTarget);
-  }
   function close() {
     setCharizard(null);
     setReplay(undefined);
@@ -80,11 +68,6 @@ export function RosterDrawRoom({
       <div className="roster-draw-controls">
         <RosterStatus compact state={draw.state} refreshing={draw.refreshing} error={draw.error}
           disabled={draw.busy || active} onRefresh={draw.refresh} />
-        <div className="roster-draw-toolbar">
-          <button type="button" className="roster-demo"
-            disabled={active || (kind === "charizard" && !charizardReady)}
-            onClick={previewAnimation}>Demo 預覽 ↗</button>
-        </div>
       </div>
       {draw.error ? (
         <div className="roster-error" role="alert">
