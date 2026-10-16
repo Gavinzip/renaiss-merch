@@ -63,7 +63,7 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
       </div>
     </div>
     {!isBox && phase === 'settling' && !flight.packOpened && flight.ready ? <SurfProBoosterInteraction
-      locale={locale} onSpin={flight.spinPacks} onBrowse={flight.browsePacks}
+      locale={locale} onSpin={flight.spinPacks} onBrowse={flight.browsePacks} onHover={flight.hoverPack}
       onOpen={() => { const opened = flight.openPack(); if (opened) playSurfDrawSound('foil-tear'); return opened; }} onPreview={flight.previewPack} onRelease={flight.releasePack}
       onSelect={flight.selectPack} onRotate={flight.rotatePack} onFocus={flight.focusPack} /> : null}
     <canvas ref={canvas} className="surf-batch-webgl" aria-hidden="true" />

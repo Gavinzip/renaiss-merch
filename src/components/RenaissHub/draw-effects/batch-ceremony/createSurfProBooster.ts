@@ -21,6 +21,11 @@ export function createSurfProBooster(scene: THREE.Scene, renderer: THREE.WebGLRe
       const stage = art.brand === 'renaiss' ? { ...base, width: base.width * .88, height: base.height * .88, y: base.y + base.height * .05 } : base;
       const active = phase === 'settling' && opened;
       const motion = proBoosterMotion(active ? age : proAgeForTear(preview));
+      // The single Renaiss reward pack has no large twenty-card stack to clear.
+      // Keep its exit within the visible stage while the reward card rises.
+      const sleeveTravel = art.brand === 'renaiss'
+        ? motion.sleeveY - (1.08 * PRO_PACK_VERTICAL_SCALE - .18) * motion.withdraw - 4.78 * motion.drop
+        : motion.sleeveY;
       root.visible = (phase === 'idle' || phase === 'spinning' || phase === 'settling') && !reduced;
       let selectedWidth = stage.width * .8;
       packs.forEach((pack, index) => {
@@ -32,9 +37,9 @@ export function createSurfProBooster(scene: THREE.Scene, renderer: THREE.WebGLRe
         const x = orbit.x / 1.04 * (stage.width * 1.04 + (pose.chosen ? 0 : layout.width * focus));
         const y = stage.y + orbit.lower * stage.height * .8 * (1 - focus) - (1 - focus) * 12;
         pack.root.visible = !(active && (!pose.chosen || motion.drop >= 1)) && (pose.chosen || focus < .995);
-        pack.root.position.set(x, layout.height / 2 - y - (pose.chosen ? motion.sleeveY * stage.width : 0), 500 - orbit.depth * 380);
-        pack.root.scale.setScalar(scale * (1 + (pose.chosen ? motion.load * .014 : 0)));
-        pack.root.rotation.set(0, pose.rotation - Math.sin(angle) * .43 * (1 - focus), -Math.sin(angle) * .045 * (1 - focus));
+        pack.root.position.set(x, layout.height / 2 - y + pose.lift * 3 - (pose.chosen ? sleeveTravel * stage.width : 0), 500 - orbit.depth * 380 + pose.lift * 18);
+        pack.root.scale.setScalar(scale * (1 + pose.lift * .018 + (pose.chosen ? motion.load * .014 : 0)));
+        pack.root.rotation.set(pose.pitch + pose.tiltX, pose.rotation + pose.tiltY - Math.sin(angle) * .43 * (1 - focus), -Math.sin(angle) * .045 * (1 - focus));
         pack.deform(pose.chosen ? motion.tear : 0, pose.chosen ? motion.mouth : 0, pose.chosen ? motion.stripExit : 0);
         if (pose.chosen) {
           selectedWidth = scale;

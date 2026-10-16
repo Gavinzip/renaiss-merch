@@ -10,7 +10,7 @@ export function proBoosterLayout(layout: CeremonyLayout) {
   // Reserve only the actual space below the gallery. Roster controls are
   // inside the scene; Surf controls are already outside its canvas area.
   const space = Math.max(160, layout.height - layout.safeTop - layout.safeBottom - 12);
-  const width = Math.min(286, layout.width * .58, space / (PRO_PACK_ASPECT + .04));
+  const width = Math.min(330, layout.width * .58, space / (PRO_PACK_ASPECT + .04) * 1.15);
   return { x: layout.width / 2, y: layout.safeTop + space * .5, width, height: width * PRO_PACK_ASPECT };
 }
 export const proAgeForTear = (tear: number) => tear > 0 ? PRO_BOOSTER.tear + (PRO_BOOSTER.unseal - PRO_BOOSTER.tear) * (1 - Math.cbrt(1 - clamp(tear))) : 0;
@@ -22,7 +22,7 @@ export function proBoosterMotion(age: number) {
     tear: out((age - PRO_BOOSTER.tear) / (PRO_BOOSTER.unseal - PRO_BOOSTER.tear)),
     mouth: smooth((age - .96) / .48),
     sleeveY: .025 * smooth(age / .96) + 1.08 * PRO_PACK_VERTICAL_SCALE * withdraw + 5 * drop,
-    drop, stripExit: smooth((age - 1.16) / .76),
+    withdraw, drop, stripExit: smooth((age - 1.16) / .76),
   };
 }
 export function proCardFlight(age: number, index: number, target: CardTarget, layout: CeremonyLayout) {

@@ -93,7 +93,8 @@ export function useSurfBatchFlight({ root, canvas, phase, revision, kind, durati
     browsePacks: (delta: number, settle: boolean) => scene.current?.browsePacks(delta, settle),
     spinPacks: () => scene.current?.spinPacks() ?? Promise.resolve(null),
     selectPack: (index: number) => scene.current?.selectPack(index),
-    rotatePack: (delta: number, animated = false) => scene.current?.rotatePack(delta, animated),
+    hoverPack: (index: number | null, x = 0, y = 0) => scene.current?.hoverPack(index, x, y),
+    rotatePack: (delta: number, animated = false, pitchDelta = 0) => scene.current?.rotatePack(delta, animated, pitchDelta),
     focusPack: (focused: boolean) => scene.current?.focusPack(focused),
   };
 }

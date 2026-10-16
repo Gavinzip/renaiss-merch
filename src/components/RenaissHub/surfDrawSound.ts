@@ -4,19 +4,9 @@ type Cue = 'box-open' | 'foil-tear' | 'card-flip' | 'flip-all';
 
 let audio: AudioContext | null = null;
 let noise: AudioBuffer | null = null;
-const preferenceKey = 'renaiss:surf-draw-sound-enabled';
-
-export function isSurfDrawSoundEnabled() {
-  return typeof window === 'undefined' || window.localStorage.getItem(preferenceKey) !== 'false';
-}
-
-export function setSurfDrawSoundEnabled(enabled: boolean) {
-  window.localStorage.setItem(preferenceKey, String(enabled));
-  if (!enabled && audio?.state === 'running') void audio.suspend();
-}
 
 export function unlockSurfDrawSound() {
-  if (typeof window === 'undefined' || !window.AudioContext || !isSurfDrawSoundEnabled()) return;
+  if (typeof window === 'undefined' || !window.AudioContext) return;
   audio ??= new AudioContext();
   if (audio.state === 'suspended') void audio.resume();
 }
@@ -62,7 +52,7 @@ function tone(context: AudioContext, at: number, duration: number, from: number,
 }
 
 export function playSurfDrawSound(cue: Cue) {
-  if (document.hidden || !isSurfDrawSoundEnabled() || !audio || audio.state !== 'running') return;
+  if (document.hidden || !audio || audio.state !== 'running') return;
   const at = audio.currentTime + .01;
   if (cue === 'box-open') {
     rustle(audio, at, .13, 1100, .065);

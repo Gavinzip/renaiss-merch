@@ -10,6 +10,7 @@ import { createSurfCeremonyBurst } from './createSurfCeremonyBurst';
 import { createSurfCeremonyWhiteout } from './createSurfCeremonyWhiteout';
 import { prepareCeremonyArtwork, cardBack, cardTicketBack, credential, canvasTexture } from './ceremonyArtwork';
 import { createSurfProBooster } from './createSurfProBooster';
+import { PRO_PACK_COUNT } from './proBoosterCarousel';
 import { PRO_BOOSTER, proCardFlight, proDealDuration, proBoosterLayout, proAgeForTear } from './proBoosterTimeline';
 import { PRO_TEAR_FROM_TOP } from './proBoosterGeometry';
 import { createRewardLandingShadow } from './createRewardLandingShadow';
@@ -237,13 +238,18 @@ export async function createSurfBatchCeremony(root: HTMLDivElement, canvas: HTML
       if (disposed || failed || state.kind !== 'surf-pro-month' || state.phase !== 'settling' || packOpened || !Number.isInteger(index)) return;
       booster.carousel.select(index); request();
     },
+    hoverPack(index: number | null, x = 0, y = 0) {
+      if (disposed || failed || !panelActive || state.kind !== 'surf-pro-month' || state.phase !== 'settling' || packOpened) return;
+      if (index !== null && (!Number.isInteger(index) || index < 0 || index >= PRO_PACK_COUNT)) return;
+      booster.carousel.hover(index, x, y); request();
+    },
     browsePacks(delta: number, settle: boolean) {
       if (disposed || failed || !panelActive || packOpened || !Number.isFinite(delta)) return;
       const selected = booster.carousel.browse(delta, settle); if (settle) request(); else paint(); return selected;
     },
-    rotatePack(delta: number, animated = false) {
-      if (disposed || failed || state.kind !== 'surf-pro-month' || state.phase !== 'settling' || packOpened || !Number.isFinite(delta)) return;
-      booster.carousel.rotate(delta, animated); if (animated) request(); else paint();
+    rotatePack(delta: number, animated = false, pitchDelta = 0) {
+      if (disposed || failed || state.kind !== 'surf-pro-month' || state.phase !== 'settling' || packOpened || !Number.isFinite(delta) || !Number.isFinite(pitchDelta)) return;
+      booster.carousel.rotate(delta, animated, pitchDelta); if (animated) request(); else paint();
     },
     focusPack(focused: boolean) {
       if (disposed || failed || state.kind !== 'surf-pro-month' || state.phase !== 'settling' || packOpened) return;

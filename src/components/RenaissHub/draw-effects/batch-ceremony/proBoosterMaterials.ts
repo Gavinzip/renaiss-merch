@@ -25,7 +25,7 @@ export function createProBoosterMaterials(renderer: THREE.WebGLRenderer, art: Ce
   const frontTexture = canvasTexture(proBoosterArtwork(art));
   const backTexture = canvasTexture(proBoosterArtwork(art, true));
   const material = (map: THREE.Texture, side: THREE.Side) => new THREE.MeshPhysicalMaterial({
-    map, side, metalness: .78, roughness: .34, clearcoat: .12, clearcoatRoughness: .38,
+    map, side, metalness: .78, roughness: .27, clearcoat: .32, clearcoatRoughness: .24,
     envMap: environment.texture, envMapIntensity: .9,
   });
   const front = material(frontTexture, THREE.FrontSide), back = material(backTexture, THREE.BackSide);

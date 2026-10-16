@@ -19,7 +19,7 @@ function mountTheater(stage: HTMLElement, slot: HTMLElement) {
 
   function measureHeader() {
     const header = page.querySelector<HTMLElement>('.hub-site-header');
-    if (header) page.style.setProperty('--surf-theater-header-height', `${header.getBoundingClientRect().height}px`);
+    page.style.setProperty('--surf-theater-header-height', `${header?.getBoundingClientRect().height ?? 0}px`);
   }
 
   function changeLayout(next: boolean) {
@@ -44,8 +44,7 @@ function mountTheater(stage: HTMLElement, slot: HTMLElement) {
     page.dataset.theater = String(next);
     peripheral.forEach(({ element, inert }) => { element.inert = next || inert; });
     measureHeader();
-    // The shared header remains at the top throughout the ceremony. Return to
-    // the page's overview after it so the winner is never cropped by old scroll.
+    // Reset old scroll so the winner stays inside the viewport composition.
     window.scrollTo({ top: 0, behavior: 'instant' });
     subjects.forEach((element, index) => {
       const from = before[index];
@@ -69,10 +68,13 @@ function mountTheater(stage: HTMLElement, slot: HTMLElement) {
   reduced.addEventListener('change', preferenceChanged);
   window.addEventListener('resize', measureHeader);
   return {
-    setActive(active: boolean) {
+    setActive(active: boolean, exitImmediately = false) {
       clearTimeout(leaveTimer);
       if (active) changeLayout(true);
-      else if (entered) leaveTimer = window.setTimeout(() => changeLayout(false), WINNER_HOLD_MS);
+      else if (entered) {
+        if (exitImmediately) changeLayout(false);
+        else leaveTimer = window.setTimeout(() => changeLayout(false), WINNER_HOLD_MS);
+      }
     },
     dispose() {
       clearTimeout(leaveTimer);
@@ -88,12 +90,12 @@ function mountTheater(stage: HTMLElement, slot: HTMLElement) {
   };
 }
 
-export function useSurfDrawTheater(stage: RefObject<HTMLElement | null>, slot: RefObject<HTMLDivElement | null>, active: boolean) {
+export function useSurfDrawTheater(stage: RefObject<HTMLElement | null>, slot: RefObject<HTMLDivElement | null>, active: boolean, exitImmediately = false) {
   const controller = useRef<ReturnType<typeof mountTheater> | undefined>(undefined);
   useLayoutEffect(() => {
     if (!stage.current || !slot.current) return;
     controller.current = mountTheater(stage.current, slot.current);
     return () => { controller.current?.dispose(); controller.current = undefined; };
   }, [stage, slot]);
-  useLayoutEffect(() => { controller.current?.setActive(active); }, [active]);
+  useLayoutEffect(() => { controller.current?.setActive(active, exitImmediately); }, [active, exitImmediately]);
 }

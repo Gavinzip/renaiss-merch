@@ -8,6 +8,7 @@ import { RenaissRewardCard } from "./RenaissRewardCard";
 import type { RosterWinner } from "./types";
 import "../RenaissHub/SurfDrawBatchScene.css";
 import { useDrawViewportStage } from "../DrawRoom/useDrawViewportStage";
+import { playSurfDrawSound, unlockSurfDrawSound } from "../RenaissHub/surfDrawSound";
 
 export function RenaissPackDraw({
   locale,
@@ -66,6 +67,7 @@ export function RenaissPackDraw({
   }
   async function open() {
     if (opening.current || !flight.ready || (!replay && disabledReason)) return false;
+    unlockSurfDrawSound();
     bringStageIntoView();
     opening.current = true;
     setWaiting(true);
@@ -75,6 +77,7 @@ export function RenaissPackDraw({
       setWinner(result);
       return await new Promise<boolean>(resolve => requestAnimationFrame(() => {
         const opened = flight.openPack();
+        if (opened) playSurfDrawSound('foil-tear');
         setWaiting(false);
         if (!opened) { opening.current = false; onActive(false); }
         resolve(opened);
@@ -97,6 +100,8 @@ export function RenaissPackDraw({
       data-phase={phase}
       data-prepared={ready}
       data-replay={Boolean(replay)}
+      onClickCapture={unlockSurfDrawSound}
+      onPointerDownCapture={unlockSurfDrawSound}
     >
       <div className="surf-batch-heading">
         <span>
@@ -121,6 +126,7 @@ export function RenaissPackDraw({
             locale={locale}
             onSpin={flight.spinPacks}
             onBrowse={flight.browsePacks}
+            onHover={flight.hoverPack}
             brand="renaiss"
             disabledReason={replay ? undefined : disabledReason}
             onOpen={open}
@@ -160,7 +166,7 @@ export function RenaissPackDraw({
           shown={phase === "revealed"}
           turning={flight.flipping === 0}
           revealable={phase === "identity"}
-          onFlip={() => flight.flipCard(0)}
+          onFlip={() => { if (flight.flipCard(0)) playSurfDrawSound('card-flip'); }}
         />
       </ol>
       {phase === "revealed" ? (

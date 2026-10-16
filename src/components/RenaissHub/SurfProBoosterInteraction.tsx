@@ -7,16 +7,18 @@ import { SurfProBoosterSeal } from './SurfProBoosterSeal';
 type PackControls = {
   onSpin?: () => Promise<number | null>;
   onBrowse?: (delta: number, settle: boolean) => number | undefined;
+  onHover?: (index: number | null, x?: number, y?: number) => void;
   onOpen: () => boolean | void | Promise<boolean | void>; onPreview: (progress: number) => void; onRelease: () => void;
-  onSelect: (index: number) => void; onRotate: (delta: number, animated?: boolean) => void; onFocus: (focused: boolean) => void;
+  onSelect: (index: number) => void; onRotate: (delta: number, animated?: boolean, pitchDelta?: number) => void; onFocus: (focused: boolean) => void;
 };
-export function SurfProBoosterInteraction({ locale, onOpen, onPreview, onRelease, onSelect, onRotate, onFocus, brand, disabledReason, onSpin, onBrowse }: PackControls & { locale: AppLocale; brand?: 'renaiss'; disabledReason?: string }) {
+export function SurfProBoosterInteraction({ locale, onOpen, onPreview, onRelease, onSelect, onRotate, onFocus, brand, disabledReason, onSpin, onBrowse, onHover }: PackControls & { locale: AppLocale; brand?: 'renaiss'; disabledReason?: string }) {
   const [selected, setSelected] = useState(0), [focused, setFocused] = useState(false);
   const [carouselStep, setCarouselStep] = useState<'intro' | 'spinning' | 'browse'>(onSpin ? 'intro' : 'browse');
   const live = useRef(true), spinLock = useRef(false);
   useEffect(() => { live.current = true; return () => { live.current = false; }; }, []);
   async function spin() {
     if (!onSpin || spinLock.current || disabledReason) return;
+    onHover?.(null);
     spinLock.current = true; setCarouselStep('spinning');
     const index = await onSpin();
     if (!live.current) return;
@@ -25,37 +27,45 @@ export function SurfProBoosterInteraction({ locale, onOpen, onPreview, onRelease
     setCarouselStep(index === null ? 'intro' : 'browse');
   }
   const canBrowse = carouselStep === 'browse';
-  const drag = useRef<{ start: number; last: number; width: number; distance: number; mode: 'turn' | 'browse' } | null>(null);
+  const drag = useRef<{ start: number; startY: number; last: number; lastY: number; width: number; height: number; distance: number; mode: 'turn' | 'browse' } | null>(null);
   const dragged = useRef(false);
   const zh = locale === 'zh-TW', ko = locale === 'ko';
-  const browseHint = onSpin ? (disabledReason || (zh ? '滑動挑選卡包' : 'Swipe to choose')) : (zh ? '拖曳卡包旋轉 · 滑動兩側挑選' : ko ? '팩을 드래그해 회전 · 양옆에서 탐색' : 'Drag the pack to turn · Swipe beside it to browse')
+  const browseHint = onSpin ? (disabledReason || (zh ? '拖曳卡包翻轉 · 周圍滑動挑選' : ko ? '팩을 드래그해 회전 · 양옆에서 탐색' : 'Drag the pack to turn · Swipe beside it to browse')) : (zh ? '拖曳卡包旋轉 · 滑動兩側挑選' : ko ? '팩을 드래그해 회전 · 양옆에서 탐색' : 'Drag the pack to turn · Swipe beside it to browse')
     + (disabledReason ? '' : zh ? ' · 點擊選定' : ko ? ' · 눌러 선택' : ' · Tap to choose');
-  function select(index: number) { const next = packIndex(index); setSelected(next); onSelect(next); }
-  function focus(value: boolean) { if (value && disabledReason) return; setFocused(value); onFocus(value); }
+  function select(index: number) { onHover?.(null); const next = packIndex(index); setSelected(next); onSelect(next); }
+  function focus(value: boolean) { if (value && disabledReason) return; onHover?.(null); setFocused(value); onFocus(value); }
+  function hover(event: PointerEvent<HTMLElement>, index: number | null) {
+    if (drag.current || focused || carouselStep === 'spinning' || event.pointerType === 'touch') return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    onHover?.(index, (event.clientX - rect.left) / rect.width * 2 - 1, (event.clientY - rect.top) / rect.height * 2 - 1);
+  }
   function pointerDown(event: PointerEvent<HTMLElement>, mode: 'turn' | 'browse') {
     if (event.button !== 0) return;
+    onHover?.(null);
     dragged.current = false;
-    drag.current = { start: event.clientX, last: event.clientX, width: event.currentTarget.clientWidth, distance: 0, mode };
+    drag.current = { start: event.clientX, startY: event.clientY, last: event.clientX, lastY: event.clientY,
+      width: event.currentTarget.clientWidth, height: event.currentTarget.clientHeight, distance: 0, mode };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
-  function pointerMove(event: PointerEvent<HTMLElement>) {
-    const current = drag.current; if (!current) return;
+  function pointerMove(event: PointerEvent<HTMLElement>, index: number | null = null) {
+    const current = drag.current; if (!current) { hover(event, index); return; }
     current.distance = event.clientX - current.start;
-    if (Math.abs(current.distance) > 7) dragged.current = true;
+    if (Math.hypot(current.distance, event.clientY - current.startY) > 7) dragged.current = true;
     if (current.mode === 'browse' && onBrowse) {
       const index = onBrowse((event.clientX - current.last) / Math.max(90, current.width * .35), false);
       if (index !== undefined) setSelected(index);
     }
-    if (current.mode === 'turn') onRotate((event.clientX - current.last) / current.width * Math.PI * 2);
-    current.last = event.clientX;
+    if (current.mode === 'turn') onRotate((event.clientX - current.last) / current.width * Math.PI * 2, false,
+      (event.clientY - current.lastY) / current.height * Math.PI * 1.2);
+    current.last = event.clientX; current.lastY = event.clientY;
   }
   function pointerUp() {
     const current = drag.current; drag.current = null; if (!current) return;
     if (current.mode === 'browse' && onBrowse) { const index = onBrowse(0, true); if (index !== undefined) setSelected(index); return; }
     if (current.mode === 'browse' && Math.abs(current.distance) > 35) select(selected - Math.sign(current.distance));
   }
-  const cancel = () => { onBrowse?.(0, true); drag.current = null; dragged.current = true; onRelease(); };
-  return <div className="surf-pro-booster-interaction" data-focused={focused} data-carousel={carouselStep}>
+  const cancel = () => { onHover?.(null); onBrowse?.(0, true); drag.current = null; dragged.current = true; onRelease(); };
+  return <div className="surf-pro-booster-interaction" data-focused={focused} data-carousel={carouselStep} onPointerLeave={() => onHover?.(null)}>
     {!focused && canBrowse ? <>
       <div className="surf-pro-booster-browse" aria-hidden="true" onPointerDown={event => pointerDown(event, 'browse')}
         onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={cancel} />
@@ -65,17 +75,20 @@ export function SurfProBoosterInteraction({ locale, onOpen, onPreview, onRelease
         if (distance === 0) return null;
         return <button key={index} type="button" className="surf-pro-booster-choice" style={{ '--pack-distance': orbit ? orbit.x / .8 : Math.sin(distance * Math.PI * 2 / PRO_PACK_COUNT) / Math.sin(Math.PI * 2 / PRO_PACK_COUNT), zIndex: 4 - Math.abs(distance), '--pack-scale': orbit ? orbit.scale : 1 / (1 + .21 * Math.abs(distance)), '--pack-lower': orbit ? `calc(var(--pro-pack-height) * ${orbit.lower})` : `${Math.abs(distance) * 12}px`, ...(orbit ? { '--pro-pack-spacing': 'var(--pro-pack-width)' } : {}) } as CSSProperties}
           aria-label={`${zh ? '選擇卡包' : ko ? '팩 선택' : 'Select pack'} ${index + 1}`}
-          onPointerDown={event => pointerDown(event, 'browse')} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={cancel}
+          onPointerDown={event => pointerDown(event, 'browse')} onPointerMove={event => pointerMove(event, index)}
+          onPointerLeave={() => onHover?.(null)} onPointerUp={pointerUp} onPointerCancel={cancel}
           onClick={() => { if (!dragged.current) select(index); dragged.current = false; }} />;
       })}
     </> : null}
-    {!focused && canBrowse ? <button className="surf-pro-booster-hit" type="button" aria-label={`${zh ? '查看卡包' : ko ? '팩 살펴보기' : 'Inspect pack'} ${selected + 1}`}
-      onPointerDown={event => pointerDown(event, onBrowse ? 'browse' : 'turn')}
-      onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={cancel}
+    {!focused && carouselStep !== 'spinning' ? <button className="surf-pro-booster-hit" type="button" aria-label={`${zh ? '查看卡包' : ko ? '팩 살펴보기' : 'Inspect pack'} ${selected + 1}`}
+      onPointerDown={event => pointerDown(event, 'turn')}
+      onPointerMove={event => pointerMove(event, selected)} onPointerLeave={() => onHover?.(null)}
+      onPointerUp={event => { pointerUp(); hover(event, selected); }} onPointerCancel={cancel}
       onKeyDown={event => {
+        if (event.key === 'ArrowUp' || event.key === 'ArrowDown') { event.preventDefault(); onRotate(0, true, event.key === 'ArrowUp' ? -.2 : .2); }
         if (!focused && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) { event.preventDefault(); if (onBrowse) select(selected + (event.key === 'ArrowLeft' ? -1 : 1)); else onRotate(event.key === 'ArrowLeft' ? -Math.PI / 4 : Math.PI / 4, true); }
       }}
-      onClick={() => { if (!dragged.current) focus(true); dragged.current = false; }}>
+      onClick={() => { if (canBrowse && !dragged.current) focus(true); dragged.current = false; }}>
     </button> : focused ? <SurfProBoosterSeal locale={locale} onPreview={onPreview} onOpen={onOpen} disabled={Boolean(disabledReason)} /> : null}
     <div className="surf-pro-booster-picker">
       {canBrowse ? <p>{focused ? disabledReason || (zh ? '向右拖曳封口，放手可暫停。' : ko ? '드래그한 만큼 뜯어집니다. 놓으면 멈춥니다.' : 'Pull to tear. Let go to pause. Keep pulling to open.')
