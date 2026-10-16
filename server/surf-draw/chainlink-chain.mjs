@@ -26,7 +26,7 @@ export async function readChainlinkSurfChain(snapshot, options = {}) {
 }
 
 async function readAt(provider, snapshot, { includeSigner = true, signer: suppliedSigner,
-  blockNumber, drawId = SURF_CHAINLINK_DRAW_ID } = {}) {
+  blockNumber, drawId = snapshot?.draw_id || SURF_CHAINLINK_DRAW_ID } = {}) {
   if (drawId !== SURF_CHAINLINK_DRAW_ID && drawId !== SURF_CHAINLINK_REDRAW_ID) throw new Error('Wrong Chainlink Surf draw ID');
   const finalized = await provider.getBlock('finalized');
   if (!finalized || blockNumber !== undefined && (blockNumber < 0 || blockNumber > finalized.number))
@@ -63,6 +63,7 @@ async function readAt(provider, snapshot, { includeSigner = true, signer: suppli
   const state = sourceState;
   const ledgerMatch = Boolean(snapshot && status.ledgerHash_.toLowerCase() === snapshot.ledger_hash.toLowerCase() &&
     Number(status.totalTickets_) === snapshot.ticket_count && Number(status.prizeSlotCount_) === SURF_DRAW_PRIZES.length);
+  if (slots.length && !ledgerMatch) throw new Error('Chainlink Surf ledger commitment does not match the locked snapshot');
   if (slots.length !== Number(status.winnerCount) || (sourceState < 3 && slots.length))
     throw new Error('Chainlink Surf results state is inconsistent');
   const winners = slots.map(rawSlot => {

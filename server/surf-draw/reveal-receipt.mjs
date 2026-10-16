@@ -43,7 +43,7 @@ export function assertSurfTransactionTarget(record) {
   return tx;
 }
 
-export async function verifySurfRevealReceipt(record, receipt, snapshot, provider) {
+export async function verifySurfRevealReceipt(record, receipt, snapshot, provider, finalizedBlockNumber) {
   const tx = assertSurfTransactionTarget(record);
   const chainlink = isChainlinkSurfRound(record.draw_id);
   const iface = chainlink ? (record.draw_id === SURF_CHAINLINK_REDRAW_ID ? reusableInterface : chainlinkInterface) : resultsInterface;
@@ -64,7 +64,13 @@ export async function verifySurfRevealReceipt(record, receipt, snapshot, provide
   if (events.length !== expectedSlots.length || events.some((event, i) =>
       (!chainlink && event.args.resultId !== resultId) || event.args.drawId !== snapshot.draw_id ||
       Number(event.args.slot) !== expectedSlots[i])) throw new HttpError(409, 'draw_reveal_receipt_invalid');
-  const chain = await readSurfChain(snapshot, { provider, includeSigner: false, includeSubscription: false, blockNumber: receipt.blockNumber });
+  // The canonical receipt and its event logs prove what this transaction
+  // published. Public BSC RPC nodes may prune the state at the receipt block,
+  // so confirm that the published tickets still exist at a finalized block.
+  if (!Number.isInteger(finalizedBlockNumber) || finalizedBlockNumber < receipt.blockNumber)
+    throw new HttpError(409, 'draw_reveal_receipt_invalid');
+  const chain = await readSurfChain(snapshot, { provider, drawId: record.draw_id, includeSigner: false,
+    includeSubscription: false, blockNumber: finalizedBlockNumber });
   if ((!chainlink && chain.results.resultId !== resultId) || chain.requestId !== decoded.args.expectedRequestId.toString() || events.some(event =>
     !chain.winners.some(winner => winner.slot === Number(event.args.slot) && winner.ticketNumber === Number(event.args.ticketNumber)))) {
     throw new HttpError(409, 'draw_reveal_receipt_invalid');

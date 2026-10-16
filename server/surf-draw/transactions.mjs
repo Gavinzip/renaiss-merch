@@ -127,7 +127,7 @@ export async function reconcileSurfTransactions(db, provider) {
       if (!canonical || !finalized || canonical.hash !== receipt.blockHash || finalized.number < receipt.blockNumber) continue;
       if (receipt.hash !== record.tx_hash || receipt.to !== assertSurfTransactionTarget(record).to) throw new HttpError(409, 'draw_transaction_target_invalid');
       if (record.action.startsWith('reveal:') && Number(receipt.status) === 1) {
-        await verifySurfRevealReceipt(record, receipt, readSnapshot(db), provider);
+        await verifySurfRevealReceipt(record, receipt, readSnapshot(db), provider, finalized.number);
       }
       db.prepare('UPDATE surf_draw_transactions SET confirmed_at=?,receipt_status=? WHERE action_key=?')
         .run(new Date().toISOString(), receipt.status, record.action_key);
