@@ -10,6 +10,7 @@ import { checkMission, readMissionState, requireMissionUser } from './service.mj
 import { checkAccounts } from './accounts.mjs';
 import { createSurfRateStore } from './surf-rate-store.mjs';
 import { createParticipationAdminHandler } from './participation-admin.mjs';
+import { assertSurfCampaignOpen } from './campaign-window.mjs';
 
 export function createMissionRouteHandler({ readSession, storeFactory = createMissionStore, rateStoreFactory = createSurfRateStore, fetchImpl = fetch }) {
   const handleAdmin = createParticipationAdminHandler({ readSession, storeFactory });
@@ -20,6 +21,7 @@ export function createMissionRouteHandler({ readSession, storeFactory = createMi
     }
     if (url.pathname === '/api/missions/surf/accounts/verify') {
       method(req, 'POST'); sameOrigin(req);
+      assertSurfCampaignOpen();
       const session = readSession(req), user = requireMissionUser(session), store = storeFactory();
       const sessionId = parseCookies(req).get(SESSION_COOKIE);
       if (!sessionId) throw new HttpError(401, 'unauthenticated');
@@ -41,6 +43,7 @@ export function createMissionRouteHandler({ readSession, storeFactory = createMi
     const task = url.pathname.match(/^\/api\/missions\/surf\/(x|discord)\/(connect|verify|disconnect)$/);
     if (task) {
       method(req, 'POST'); sameOrigin(req);
+      assertSurfCampaignOpen();
       const [, provider, action] = task, session = readSession(req), user = requireMissionUser(session);
       const config = providerConfig(req, provider);
       if (provider === 'discord') discordScreeningPolicy();
@@ -84,6 +87,7 @@ export function createMissionRouteHandler({ readSession, storeFactory = createMi
     const provider = callback[1]; let returnTo = '/v1.2/?preview=hub';
     clearCookie(req, res, cookieName(provider));
     try {
+      assertSurfCampaignOpen();
       const session = readSession(req), user = requireMissionUser(session), cookies = parseCookies(req), store = storeFactory();
       const challenge = store.takeChallenge({ state: url.searchParams.get('state'), cookie: cookies.get(cookieName(provider)),
         sessionId: cookies.get(SESSION_COOKIE), sub: user.sub, provider });

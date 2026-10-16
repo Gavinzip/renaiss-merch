@@ -6,6 +6,7 @@ export function isXIdentityError(code?: string | null) {
 
 export function missionErrorCopy(code: string, locale: AppLocale) {
   const messages: Record<string, Record<AppLocale, string>> = {
+    surf_campaign_closed: { 'zh-TW': '活動已截止，抽獎票數已固定。', en: 'The campaign has ended. Ticket counts are fixed.', ko: '이벤트가 종료되어 응모권 수가 확정되었습니다.' },
     renaiss_x_not_linked: { 'zh-TW': "請先在 Renaiss 綁定 X，再重新登入。", en: "Link X in Renaiss, then sign in again.", ko: "Renaiss에서 X를 연결한 후 다시 로그인해 주세요." },
     renaiss_x_mismatch: { 'zh-TW': "無法驗證：此 X 帳號與 Renaiss 綁定的帳號不同。請使用與 Renaiss 綁定相同的 X 帳號。", en: "Cannot verify: this X account differs from the one linked to Renaiss. Use the same linked X account.", ko: "인증할 수 없습니다. Renaiss에 연결된 X 계정과 다른 계정입니다. 연결된 동일한 X 계정을 사용해 주세요." },
     identity_mismatch: { 'zh-TW': "無法驗證：授權帳號與已連接的帳號不同。請重新授權 Renaiss 綁定的 X 帳號。", en: "Cannot verify: the authorized identity differs from the connected account. Reauthorize the X account linked to Renaiss.", ko: "인증할 수 없습니다. 인증에 사용한 계정이 연결된 계정과 다릅니다. Renaiss에 연결된 X 계정으로 다시 인증해 주세요." },

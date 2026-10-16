@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { getMerchDatabase } from '../merch-database.mjs';
+import { surfCampaignClosed } from './campaign-window.mjs';
 
 export const TICKET_RULE_VERSION = 'surf-tickets-v1';
 const walletPattern = /^0x[a-fA-F0-9]{40}$/;
@@ -43,6 +44,10 @@ export function createParticipationStore(db = getMerchDatabase()) {
       if (!user?.sub || user.isDemo) return null;
       return db.transaction(() => {
         const previous = read(campaign, user.sub);
+        // Retain the approved current ledger after closing, including tickets
+        // already recorded before this enforcement was released. Reading the
+        // campaign or finishing an in-flight check cannot change these tickets.
+        if (surfCampaignClosed(campaign)) return previous;
         const wallet = typeof user.safeWalletAddress === 'string' && walletPattern.test(user.safeWalletAddress)
           ? user.safeWalletAddress.toLowerCase() : null;
         const tasks = {

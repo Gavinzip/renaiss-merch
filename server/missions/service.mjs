@@ -7,6 +7,7 @@ import { verifyXFollow } from './providers/x-follow.mjs';
 import { verifyDiscordMembership } from './providers/discord-membership.mjs';
 import { readAccountsState, missionEntries } from './accounts.mjs';
 import { createParticipationStore } from './participation-store.mjs';
+import { assertSurfCampaignOpen } from './campaign-window.mjs';
 
 export function requireMissionUser(session) {
   if (!session?.user?.sub) throw new HttpError(401, 'unauthenticated');
@@ -48,6 +49,7 @@ export function readMissionState(req, session, { storeFactory = createMissionSto
 }
 
 export async function checkMission(req, session, provider, { store = createMissionStore(), fetchImpl = fetch, connectionToSave } = {}) {
+  assertSurfCampaignOpen();
   const user = requireMissionUser(session);
   if (connectionToSave) {
     if (provider === 'x') assertLinkedX(user, connectionToSave.username);

@@ -5,6 +5,7 @@ import { missionEncryptionKey } from './config.mjs';
 import { surfAccountConfig } from './surf-config.mjs';
 import { createSurfRateStore } from './surf-rate-store.mjs';
 import { normalizeSurfEmail, verifySurfRegistration } from './providers/surf-registration.mjs';
+import { assertSurfCampaignOpen } from './campaign-window.mjs';
 
 function linkedEmail(user) {
   if (typeof user?.email !== 'string' || !user.email.trim()) throw new HttpError(409, 'renaiss_email_missing');
@@ -48,6 +49,7 @@ export function readAccountsState(user, { storeFactory }) {
 }
 
 export async function checkAccounts(user, { store, fetchImpl = fetch, rateStore = createSurfRateStore(), assertCurrentUser = () => user }) {
+  assertSurfCampaignOpen();
   const email = linkedEmail(user), config = surfAccountConfig(), hash = emailHash(email);
   const assertEmailIdentity = () => {
     const current = assertCurrentUser();

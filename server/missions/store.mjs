@@ -6,6 +6,7 @@ import { createSecretBox } from '../auth-secret-box.mjs';
 import { createXIdentityLock } from './x-identity-lock.mjs';
 import { createSocialIdentityLock } from './social-identity-lock.mjs';
 import { createManualAccountOverrideStore } from './manual-account-override.mjs';
+import { assertSurfCampaignOpen } from './campaign-window.mjs';
 
 export const missionHash = value => createHash('sha256').update(value).digest('hex');
 export const MISSION_RULE_VERSION = 'surf-social-v1';
@@ -49,7 +50,10 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
   return {
     database: db,
     getManualAccountOverride: manualAccounts.read,
-    approveManualAccount: manualAccounts.approve,
+    approveManualAccount(approval) {
+      assertSurfCampaignOpen(approval.campaign);
+      return manualAccounts.approve(approval);
+    },
     getXIdentityLock: (campaign, sub) => xIdentityLock.read(campaign, sub),
     assertXIdentity: (campaign, sub, userId) => xIdentityLock.assertIdentity(campaign, sub, userId),
     getSocialIdentityLock: (campaign, sub, provider) => identityLocks[provider]?.read(campaign, sub) || null,
@@ -59,6 +63,7 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
       if (row && row.user_sub !== sub) throw new HttpError(409, 'surf_account_already_connected');
     },
     bindAccount(campaign, sub, emailHash) {
+      assertSurfCampaignOpen(campaign);
       try {
         db.prepare(`INSERT INTO mission_surf_accounts VALUES(?,?,?) ON CONFLICT(campaign,user_sub)
           DO UPDATE SET email_hash=excluded.email_hash`).run(campaign, emailHash, sub);
@@ -68,6 +73,7 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
       }
     },
     saveChallenge({ state, cookie, sessionId, sub, provider, ...payload }) {
+      assertSurfCampaignOpen();
       db.prepare('DELETE FROM mission_oauth_challenges WHERE expires_at <= ?').run(Date.now());
       const stateHash = missionHash(state);
       db.prepare('INSERT INTO mission_oauth_challenges VALUES(?,?,?,?,?,?,?)').run(
@@ -89,9 +95,11 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
       return row ? { ...unseal(row.secret, connectionContext(campaign, sub, provider, row.user_id)), userId: row.user_id, username: row.username } : null;
     },
     saveConnection(campaign, sub, provider, connection) {
+      assertSurfCampaignOpen(campaign);
       const secret = seal(connection, connectionContext(campaign, sub, provider, connection.userId));
       try {
         db.transaction(() => {
+          assertSurfCampaignOpen(campaign);
           identityLocks[provider]?.assertIdentity(campaign, sub, connection.userId);
           const previous = db.prepare('SELECT user_id FROM mission_connections WHERE campaign=? AND user_sub=? AND provider=?')
             .get(campaign, sub, provider);
@@ -111,6 +119,7 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
     },
     deleteConnection(campaign, sub, provider) {
       db.transaction(() => {
+        assertSurfCampaignOpen(campaign);
         identityLocks[provider]?.assertDisconnectAllowed(campaign, sub);
         db.prepare('DELETE FROM mission_connections WHERE campaign=? AND user_sub=? AND provider=?').run(campaign, sub, provider);
         db.prepare('DELETE FROM mission_results WHERE campaign=? AND user_sub=? AND provider=?').run(campaign, sub, provider);
@@ -120,6 +129,7 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
     saveResult(campaign, sub, provider, result) {
       const payload = JSON.stringify(result), checkedAt = Date.now();
       db.transaction(() => {
+        assertSurfCampaignOpen(campaign);
         if (identityLocks[provider] && result.outcome === 'verified') {
           const identity = db.prepare('SELECT user_id FROM mission_connections WHERE campaign=? AND user_sub=? AND provider=?')
             .get(campaign, sub, provider);
@@ -141,6 +151,7 @@ export function createMissionStore(db = getMerchDatabase(), key = missionEncrypt
       return { ...result, stale: row.checked_at + RESULT_MAX_AGE_MS <= Date.now() };
     },
     acquire(campaign, sub, provider, purpose = 'verify') {
+      assertSurfCampaignOpen(campaign);
       const operationKey = JSON.stringify([campaign, sub, provider, purpose]), owner = randomBytes(24).toString('hex'), now = Date.now();
       const acquired = db.prepare(`INSERT INTO mission_operation_leases VALUES(?,?,?,?) ON CONFLICT(operation_key) DO UPDATE
         SET owner=excluded.owner,expires_at=excluded.expires_at,next_check_at=excluded.next_check_at
