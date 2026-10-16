@@ -117,7 +117,7 @@ getMerchDatabase(getRuntimeConfig().databasePath);
 const handleMissionRoute = createMissionRouteHandler({ readSession });
 const handleSurfDrawRoute = createSurfDrawHandler({ readSession });
 const handleLocalSurfOperator = createLocalSurfOperatorHandler();
-const handleSurfOperator = createSurfOperatorHandler({ readSession });
+const handleSurfOperator = createSurfOperatorHandler();
 const vite = isProduction
   ? null
   : await createDevelopmentViteServer();

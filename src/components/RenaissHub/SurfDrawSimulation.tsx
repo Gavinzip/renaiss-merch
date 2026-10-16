@@ -19,17 +19,17 @@ export function simulatedSurfWinner(slot: number): Winner {
     ticketRange: [person * 3 - 2, person * 3] } };
 }
 
-export function SurfDrawSimulation({ locale, onExit, initialAmount, initialKind }: { locale: AppLocale; onExit: () => void; initialAmount: number; initialKind: Prize['kind'] }) {
+export function SurfDrawSimulation({ locale, onExit, initialKind }: { locale: AppLocale; onExit: () => void; initialKind: Prize['kind'] }) {
   const [run, setRun] = useState({ revision: 0, kind: initialKind });
   return <SurfDrawSimulationRun key={run.revision} locale={locale} prizes={publicPrizes} onExit={onExit}
-    initialAmount={run.revision === 0 ? initialAmount : publicPrizes.filter(prize => prize.kind === run.kind).length} initialKind={run.kind}
+    initialKind={run.kind}
     onRestart={(kind = 'mystery-box') => setRun(value => ({ revision: value.revision + 1, kind }))} />;
 }
 
 // Restarting this local component discards only its in-memory fixture. The
 // provider retains decoded prize media, and no ledger/reset API is involved.
-function SurfDrawSimulationRun({ locale, prizes, onExit, initialAmount, initialKind, onRestart }: {
-  locale: AppLocale; prizes: Prize[]; onExit: () => void; initialAmount: number; initialKind: Prize['kind']; onRestart: (kind?: Prize['kind']) => void;
+function SurfDrawSimulationRun({ locale, prizes, onExit, initialKind, onRestart }: {
+  locale: AppLocale; prizes: Prize[]; onExit: () => void; initialKind: Prize['kind']; onRestart: (kind?: Prize['kind']) => void;
 }) {
   const [results, setResults] = useState<Winner[]>([]);
   const [selectedKind, setSelectedKind] = useState(initialKind);
@@ -45,7 +45,7 @@ function SurfDrawSimulationRun({ locale, prizes, onExit, initialAmount, initialK
   }, [results.length, prizes.length]);
   const batch = useSurfDrawBatch({ prizes, kind: selectedKind, visibleWinners: presentation.visibleWinners,
     confirmedWinners: results, phase: presentation.phase, canReveal: true,
-    execute, begin: presentation.begin, cancel: presentation.cancel, initialAmount });
+    execute, begin: presentation.begin, cancel: presentation.cancel });
 
   useEffect(() => {
     return () => {
@@ -60,7 +60,7 @@ function SurfDrawSimulationRun({ locale, prizes, onExit, initialAmount, initialK
     visibleWinners={presentation.visibleWinners} phase={presentation.phase} elapsed={presentation.elapsed}
     settlingWinner={presentation.settlingWinner} onSettled={presentation.complete} onIdentityRevealed={presentation.revealIdentity}
     batchStart={presentation.batchStart} batchSize={presentation.batchSize} batchWinners={presentation.batchWinners}
-    batchAmount={batch.amount} batchLimit={batch.limit} batchActive={batch.active} batchProgress={batch.progress} onBatchAmount={batch.setAmount}
+    batchAmount={batch.amount} batchLimit={batch.limit} batchActive={batch.active} batchProgress={batch.progress}
     revision={presentation.revision} onSimulate={() => batch.start()} nextAction={null} pendingTx={undefined}
     busy={null} canAct={false} unavailable={null} now={0} error={null} notice={null}
     onAction={() => {}} onRefresh={() => {}} />;

@@ -7,9 +7,9 @@ import { HubWordmark } from './HubWordmark';
 import { SurfLogo } from './SurfLogo';
 import { SurfWinnerContacts } from './SurfWinnerContacts';
 
-export function SurfDrawBatchCard({ locale, kind, slot, column, winner, phase, shown, turning, disabled, onFlip }: {
+export function SurfDrawBatchCard({ locale, kind, slot, column, winner, phase, shown, turning, disabled, onFlip, allowIndividualFlip = true }: {
   locale: AppLocale; kind: Prize['kind']; slot: number; column: number; winner?: Winner; phase: RevealPhase;
-  shown: boolean; turning: boolean; disabled: boolean; onFlip: () => void;
+  shown: boolean; turning: boolean; disabled: boolean; onFlip: () => void; allowIndividualFlip?: boolean;
 }) {
   const name = surfWinnerDisplayName(winner?.participant.name) || (locale === 'zh-TW' ? '未提供姓名' : 'Name unavailable');
   const revealable = phase === 'identity' && !shown;
@@ -32,7 +32,7 @@ export function SurfDrawBatchCard({ locale, kind, slot, column, winner, phase, s
         <div className="surf-batch-card__bottom"><span>{kind === 'mystery-box' ? 'MYSTERY BOX' : 'SURF PRO · 1 MONTH'}</span><i /></div>
       </div>)}
     </div>
-    {revealable ? <button className="surf-batch-card__reveal" type="button" disabled={disabled} data-flipping={turning}
+    {revealable && allowIndividualFlip ? <button className="surf-batch-card__reveal" type="button" disabled={disabled} data-flipping={turning}
       aria-label={locale === 'zh-TW' ? `翻開第 ${slot + 1} 張卡片` : locale === 'ko' ? `${slot + 1}번째 카드 공개` : `Reveal card ${slot + 1}`}
       onClick={onFlip}><span>{locale === 'zh-TW' ? '翻開' : locale === 'ko' ? '공개' : 'REVEAL'} ↗</span></button> : null}
   </li>;

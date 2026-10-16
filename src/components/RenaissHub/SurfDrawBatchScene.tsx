@@ -39,7 +39,7 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
       <span>RENAISS × SURF <i />{simulation ? 'DEMO MODE' : 'ON-CHAIN REVEAL'}</span>
       <h2>{title}</h2>
       <p>{phase === 'identity'
-        ? locale === 'zh-TW' ? `點擊卡片翻開 · ${flight.revealed.length} / ${total}`
+        ? !isBox ? `${flight.revealed.length} / ${total}` : locale === 'zh-TW' ? `點擊卡片翻開 · ${flight.revealed.length} / ${total}`
           : locale === 'ko' ? `카드를 눌러 공개 · ${flight.revealed.length} / ${total}`
             : `TAP A CARD TO REVEAL · ${flight.revealed.length} / ${total}`
         : <>{String(total).padStart(2, '0')} {isBox ? 'MYSTERY BOXES' : 'PRO MEMBERSHIPS'} <b>·</b> {String(start + 1).padStart(2, '0')}—{String(start + total).padStart(2, '0')}</>}</p>
@@ -70,6 +70,13 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
         : artworkError ? <><span>{locale === 'zh-TW' ? '獎品動畫載入失敗' : 'Prize motion could not load'}</span><button onClick={retry} type="button">{locale === 'zh-TW' ? '重試' : 'Retry'}</button></>
         : <span>{locale === 'zh-TW' ? '準備立體開獎場景' : 'Preparing the 3D ceremony'} · {Math.min(99, media.percent)}%</span>}
     </div> : null}
+    {!isBox ? <div className="surf-batch-flip-all" data-visible={revealing} aria-hidden={!revealing}>
+      <button type="button" disabled={phase !== 'identity' || !flight.ready || flight.flippingAll || flight.flipping !== null || winners.length !== total}
+        onClick={() => flight.flipAllCards()}>{flight.flippingAll
+          ? locale === 'zh-TW' ? '翻開中…' : locale === 'ko' ? '공개 중…' : 'Revealing…'
+          : phase === 'revealed' ? locale === 'zh-TW' ? '已全部翻開' : locale === 'ko' ? '모두 공개됨' : 'All revealed'
+          : locale === 'zh-TW' ? '全部翻開' : locale === 'ko' ? '전체 공개' : 'Reveal all'}</button>
+    </div> : null}
     <ol className="surf-batch-gallery" aria-label={locale === 'zh-TW' ? '本批得獎者' : 'Batch winners'} aria-live="polite" aria-hidden={!revealing} aria-busy={!revealing}>
       {Array.from({ length: total }, (_, index) => {
         const winner = winners[index];
@@ -77,8 +84,8 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
         const lastRow = Math.floor(index / 4) === Math.floor((total - 1) / 4);
         const column = index % 4 * 2 + 1 + (lastRow && total % 4 ? 4 - total % 4 : 0);
         return <SurfDrawBatchCard key={start + index} locale={locale} kind={prize.kind} slot={start + index}
-          column={column} winner={winner} phase={phase} shown={shown} turning={flight.flipping === index}
-          disabled={flight.flipping !== null || !flight.ready} onFlip={() => flight.flipCard(index)} />;
+          column={column} winner={winner} phase={phase} shown={shown} turning={flight.flipping === index || flight.flippingAll && !shown}
+          allowIndividualFlip={isBox} disabled={flight.flipping !== null || flight.flippingAll || !flight.ready} onFlip={() => flight.flipCard(index)} />;
       })}
     </ol>
   </div>;

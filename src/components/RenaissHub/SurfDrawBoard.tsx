@@ -16,16 +16,16 @@ type BoardProps = {
   settlingWinner?: Winner; onSettled: () => void; onIdentityRevealed: () => void;
   batchAmount: number; batchLimit: number; batchActive: boolean;
   batchStart: number; batchSize: number; batchWinners: Winner[];
-  batchProgress: { current: number; total: number } | null; onBatchAmount: (amount: number) => void;
+  batchProgress: { current: number; total: number } | null;
   simulation?: boolean; onExitSimulation?: () => void; onRestartSimulation?: (kind?: Prize['kind']) => void;
-  onAction: () => void; onRefresh: () => void; onSimulate: (kind: Prize['kind'], amount?: number) => void;
+  onAction: () => void; onRefresh: () => void; onSimulate: (kind: Prize['kind']) => void;
 };
 
 export function SurfDrawBoard(props: BoardProps) {
   const { locale, status, chain, prizes, nextAction, pendingTx, busy, canAct, administrator,
     selectedKind, onSelectKind, batchSlots,
     unavailable, now, error, notice, visibleWinners, settlingWinner, phase, elapsed, revision, simulation = false,
-    batchAmount, batchLimit, batchActive, batchProgress, onBatchAmount, onSettled, onIdentityRevealed,
+    batchAmount, batchLimit, batchActive, batchProgress, onSettled, onIdentityRevealed,
     batchStart, batchSize, batchWinners,
     onExitSimulation, onRestartSimulation, onAction, onRefresh, onSimulate } = props;
   const copy = surfDrawCopy(locale);
@@ -46,13 +46,13 @@ export function SurfDrawBoard(props: BoardProps) {
 
   return <>
     <SurfDrawStage locale={locale} prize={prize} winner={selectedWinner} settlingWinner={settlingWinner} onSettled={onSettled} onIdentityRevealed={onIdentityRevealed}
-      batchAmount={batchAmount} batchLimit={batchLimit} batchActive={batchActive} batchProgress={batchProgress} onBatchAmount={onBatchAmount}
+      batchAmount={batchAmount} batchLimit={batchLimit} batchActive={batchActive} batchProgress={batchProgress}
       batchStart={batchStart} batchSize={showBatch ? batchPreview ? batchAmount : batchSize : 1} batchWinners={batchWinners}
       nextPrize={prizes[batchSlots[0]]} phase={scenePhase} simulation={simulation} elapsed={elapsed}
       selectedKind={selectedKind} onSelectKind={onSelectKind} prizes={prizes} visibleWinners={visibleWinners}
       revision={revision} nextAction={nextAction} canAct={canAct} busy={busy} chainState={chain?.state}
       revealedCount={visibleWinners.length} administrator={administrator} unavailable={reason} myTickets={status?.myTickets ?? null}
-      onAction={onAction} onSimulate={() => onSimulate(selectedKind, batchAmount)} onExitSimulation={onExitSimulation}
+      onAction={onAction} onSimulate={() => onSimulate(selectedKind)} onExitSimulation={onExitSimulation}
       onRestartSimulation={onRestartSimulation ?? (kind => onSimulate(kind ?? 'mystery-box'))}
       executionError={error} />
 

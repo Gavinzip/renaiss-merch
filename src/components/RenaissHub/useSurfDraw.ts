@@ -29,8 +29,9 @@ export const publicPrizes: Prize[] = [
 ];
 
 const errorCodes: Record<string, string> = {
-  unauthenticated: 'Please sign in with an administrator account.',
-  fulfillment_access_denied: 'This account has no draw administrator access.',
+  surf_draw_access_required: '請重新登入開獎室。',
+  operator_bridge_not_deployed: '線上的單次登入流程尚未部署。',
+  operator_upstream_unavailable: '目前無法連接線上正式開獎。',
   surf_draw_not_released: 'The formal draw is not enabled or the campaign is not closed.',
   not_enough_tickets: 'The locked ledger needs at least 27 eligible tickets.',
   participant_ledger_changed: 'The participant ledger changed. Reload and review it.',

@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { AppLocale } from '../../i18n/LocaleContext';
-import type { AccountState } from './RenaissHubFeatures';
 import { SurfDrawAccessGate } from './SurfDrawAccessGate';
 import { SurfDrawBoard } from './SurfDrawBoard';
 import { SurfDrawSimulation } from './SurfDrawSimulation';
 import { SurfDrawMotionAssets } from './SurfDrawMotionAssets';
 import { actionName, prizeName, surfDrawCopy } from './SurfDrawCopy';
-import { publicPrizes, useSurfDraw, type Prize } from './useSurfDraw';
+import { useSurfDraw, type Prize } from './useSurfDraw';
 import { useSurfDrawAccess } from './useSurfDrawAccess';
 import { isSurfRevealRunning, useSurfDrawPresentation } from './useSurfDrawPresentation';
 import { useSurfDrawBatch } from './useSurfDrawBatch';
@@ -18,21 +17,16 @@ import { RosterManagementPage } from '../RosterDraw/RosterManagementPage';
 import { drawRoomHashes, useDrawRoomRoute, type DrawRoomView } from '../RosterDraw/drawRoomRoute';
 import { useDrawNavigationLock } from '../DrawRoom/useDrawNavigationLock';
 import { canShowLocalSurfReset, LocalSurfReset } from '../DrawRoom/LocalSurfReset';
-import { LOCAL_SURF_DRAW_API, useLocalSurfOperator } from '../DrawRoom/useLocalSurfOperator';
 
 type PageProps = {
   locale: AppLocale;
-  account: AccountState;
-  onLogin: () => void;
-  onRetry: () => void;
 };
 
-function SurfDrawContent({ locale, account, onLogin, onRetry, mode, rosterActive, onActive }: PageProps & {
+function SurfDrawContent({ locale, mode, rosterActive, onActive }: PageProps & {
   mode: DrawRoomView; rosterActive: boolean; onActive: (kind: 'surf' | 'charizard' | 'other', active: boolean) => void;
 }) {
-  const [simulation, setSimulation] = useState<{ kind: Prize['kind']; amount: number } | null>(null);
+  const [simulation, setSimulation] = useState<{ kind: Prize['kind'] } | null>(null);
   const [liveRevision, setLiveRevision] = useState(0);
-  const Live = import.meta.env.DEV && canShowLocalSurfReset() ? LocalSurfDrawLive : SurfDrawLive;
   const activity = useMemo(() => ({
     surf: (active: boolean) => onActive('surf', active),
     charizard: (active: boolean) => onActive('charizard', active),
@@ -57,35 +51,25 @@ function SurfDrawContent({ locale, account, onLogin, onRetry, mode, rosterActive
       <RosterDrawRoom kind={kind} locale={locale} visible={mode === kind} draw={rosterDraw} onActive={activity[kind]}/>
     </div>)}
     {mode === 'roster' ? <RosterManagementPage draw={rosterDraw}/> : null}
-    {mode === 'surf' ? simulation ? <SurfDrawSimulation locale={locale} initialAmount={simulation.amount} initialKind={simulation.kind}
+    {mode === 'surf' ? simulation ? <SurfDrawSimulation locale={locale} initialKind={simulation.kind}
       onExit={() => setSimulation(null)} /> :
-      <Live key={liveRevision} onReset={() => setLiveRevision(value => value + 1)} locale={locale} account={account} onLogin={onLogin} onRetry={onRetry} onActive={activity.surf} onSimulate={(kind, amount) => setSimulation({ kind,
-        amount: amount && amount > 0 ? amount : publicPrizes.filter(prize => prize.kind === kind).length })} /> : null}
+      <SurfDrawLive key={liveRevision} onReset={() => setLiveRevision(value => value + 1)} locale={locale} onActive={activity.surf} onSimulate={kind => setSimulation({ kind })} /> : null}
     </div>
   </SurfDrawMotionAssets>;
 }
 
 type LiveProps = PageProps & {
-  onSimulate: (kind: Prize['kind'], amount?: number) => void;
+  onSimulate: (kind: Prize['kind']) => void;
   onActive: (active: boolean) => void;
   onReset: () => void;
 };
 
-function LocalSurfDrawLive(props: LiveProps) {
-  const operator = useLocalSurfOperator();
-  return <SurfDrawLive {...props} operator={operator} />;
-}
-
-function SurfDrawLive({ locale, account, onLogin, onRetry, onSimulate, onActive, onReset, operator: localConnection }: LiveProps & {
-  operator?: ReturnType<typeof useLocalSurfOperator>;
-}) {
-  const operator = import.meta.env.DEV ? localConnection : undefined;
-  const administrator = operator ? operator.connected : account.status === 'ready' && account.session.authenticated &&
-    account.session.user.canManageFulfillment && !account.session.user.isDemo;
-  const draw = useSurfDraw(administrator, operator ? LOCAL_SURF_DRAW_API : undefined, !operator || operator.connected);
+function SurfDrawLive({ locale, onSimulate, onActive, onReset }: LiveProps) {
+  const local = import.meta.env.DEV && canShowLocalSurfReset();
+  const administrator = true; // The enclosing draw-room login is the operator login.
+  const draw = useSurfDraw(administrator, local ? '/api/local/surf-operator/draw' : undefined);
   const [resetBusy, setResetBusy] = useState(false);
   const presentation = useSurfDrawPresentation(draw.chain?.winners);
-  useEffect(() => { if (operator && !operator.connected) presentation.cancel(); }, [operator?.connected, presentation.cancel]);
   useEffect(() => { onActive(resetBusy || Boolean(draw.busy) || isSurfRevealRunning(presentation.phase));
     return () => onActive(false);
   }, [resetBusy, draw.busy, presentation.phase, onActive]);
@@ -117,11 +101,6 @@ function SurfDrawLive({ locale, account, onLogin, onRetry, onSimulate, onActive,
   }
 
   return <>
-    {!operator && !administrator && account.status !== 'loading' ? <div className="draw-site-admin">
-      {account.status === 'error' ? <button type="button" onClick={onRetry}>重新驗證管理員</button> :
-        !account.session.authenticated || account.session.user.isDemo ?
-          <button type="button" onClick={onLogin}>管理員登入 <span aria-hidden="true">↗</span></button> : null}
-    </div> : null}
     <fieldset className="draw-live-controls" disabled={resetBusy}>
     <SurfDrawBoard locale={locale} status={draw.status} chain={draw.chain} prizes={draw.prizes}
         selectedKind={selectedKind} onSelectKind={setSelectedKind} batchSlots={batch.slots}
@@ -129,19 +108,19 @@ function SurfDrawLive({ locale, account, onLogin, onRetry, onSimulate, onActive,
         visibleWinners={presentation.visibleWinners} phase={presentation.phase} elapsed={presentation.elapsed}
         settlingWinner={presentation.settlingWinner} onSettled={presentation.complete} onIdentityRevealed={presentation.revealIdentity}
         batchStart={presentation.batchStart} batchSize={presentation.batchSize} batchWinners={presentation.batchWinners}
-        batchAmount={batch.amount} batchLimit={batch.limit} batchActive={batch.active} batchProgress={batch.progress} onBatchAmount={batch.setAmount}
+        batchAmount={batch.amount} batchLimit={batch.limit} batchActive={batch.active} batchProgress={batch.progress}
         revision={presentation.revision} onSimulate={onSimulate}
         nextAction={draw.nextAction} pendingTx={draw.pendingTx} busy={draw.busy} canAct={draw.canAct && !resetBusy}
         unavailable={draw.unavailable} now={draw.now} error={draw.error} notice={draw.notice}
         onAction={confirmAction} onRefresh={() => void draw.refresh()} />
     </fieldset>
-    {import.meta.env.DEV && operator ? <LocalSurfReset operator={operator}
+    {import.meta.env.DEV && local ? <LocalSurfReset authenticated={administrator}
       drawBusy={Boolean(draw.busy) || isSurfRevealRunning(presentation.phase)}
       onComplete={onReset} onBusyChange={setResetBusy} /> : null}
   </>;
 }
 
-export function SurfDrawPage({ locale, account, onLogin, onRetry }: PageProps) {
+export function SurfDrawPage({ locale }: PageProps) {
   const access = useSurfDrawAccess();
   const [activity, setActivity] = useState({ surf: false, charizard: false, other: false });
   const drawActive = Object.values(activity).some(Boolean);
@@ -168,7 +147,7 @@ export function SurfDrawPage({ locale, account, onLogin, onRetry }: PageProps) {
       </button> : null}
       {access.state.status === 'ready' ? <>
         {access.error ? <p className="surf-draw-feedback" role="alert">{locale === 'zh-TW' ? '無法登出開獎室，請重試。' : locale === 'ko' ? '추첨실에서 로그아웃할 수 없습니다. 다시 시도하세요.' : 'Could not leave the draw room. Try again.'}</p> : null}
-        <SurfDrawContent key={access.state.username} mode={view} locale={locale} account={account} onLogin={onLogin} onRetry={onRetry}
+        <SurfDrawContent key={access.state.username} mode={view} locale={locale}
           rosterActive={drawActive} onActive={setDrawActive} />
       </> : <SurfDrawAccessGate locale={locale} access={access} />}
 

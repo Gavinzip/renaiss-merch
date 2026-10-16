@@ -18,8 +18,6 @@ const reasons: Record<string, string> = {
   draw_revision_changed: '本輪已重置，請重新讀取',
   draw_state_changed: '開獎狀態已變更，請重新讀取',
   reset_gas_budget_exceeded: 'Gas 餘額不足或超過 0.002 BNB 上限',
-  unauthenticated: '請先登入 Renaiss 管理員',
-  fulfillment_access_denied: '目前帳號沒有管理員權限',
   surf_draw_access_required: '請重新登入開獎室',
 };
 async function request<T>(body?: Record<string, unknown>): Promise<T> {
@@ -91,5 +89,5 @@ export function useLocalSurfReset(administrator: boolean, onComplete: () => void
     }
   }
   return { busy, reset, refresh, txHash, canReset: administrator && Boolean(status?.canReset),
-    message: !administrator ? reasons.unauthenticated : error || (status?.reason ? reasons[status.reason] || status.reason : '') };
+    message: !administrator ? reasons.surf_draw_access_required : error || (status?.reason ? reasons[status.reason] || status.reason : '') };
 }

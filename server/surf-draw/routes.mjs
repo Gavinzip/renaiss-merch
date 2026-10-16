@@ -1,5 +1,4 @@
 import { getPublicOrigin } from '../config.mjs';
-import { requireFulfillmentAdministrator } from '../fulfillment-admin.mjs';
 import { HttpError, sendJson } from '../http.mjs';
 import { getMerchDatabase } from '../merch-database.mjs';
 import { getRuntimeConfig } from '../runtime-config.mjs';
@@ -8,7 +7,7 @@ import { buildCandidateLedger, ensureSurfDrawTables, readSnapshot, SURF_DRAW_ID,
 import { publicChainState, readSurfChain } from './chain.mjs';
 import { publicSurfWinner } from './public-winner.mjs';
 import { validateSurfRevealSelection } from './reveal-selection.mjs';
-import { requireSurfDrawAccess } from './access.mjs';
+import { requireSurfDrawAccess, surfDrawOperatorSession } from './access.mjs';
 
 import { sendSurfDrawAction, reconcileSurfTransactions } from './transactions.mjs';
 import { assertSurfRevision, surfRevision } from './lifecycle.mjs';
@@ -51,10 +50,7 @@ export function createSurfDrawHandler({ readSession }) {
     if (action === 'reset' ? !['GET', 'POST'].includes(req.method) : req.method !== (action ? 'POST' : 'GET')) throw new HttpError(405, 'method_not_allowed');
     const delegated = readSurfOperatorSession(req);
     if (action === 'reset' && !delegated) throw new HttpError(403, 'operator_connection_required');
-    if (!delegated) requireSurfDrawAccess(req);
-    const session = delegated || readSession(req);
-    requireFulfillmentAdministrator(session);
-    if (session.user.isDemo) throw new HttpError(403, 'demo_missions_disabled');
+    const session = delegated || surfDrawOperatorSession(requireSurfDrawAccess(req));
     if (req.method === 'POST' && req.headers.origin !== getPublicOrigin(req)) throw new HttpError(403, 'invalid_request_origin');
     const db = getMerchDatabase(getRuntimeConfig().databasePath);
     ensureSurfDrawTables(db);

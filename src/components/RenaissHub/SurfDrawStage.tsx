@@ -3,7 +3,6 @@ import type { AppLocale } from '../../i18n/LocaleContext';
 import { SurfLogo } from './SurfLogo';
 import { actionName } from './SurfDrawCopy';
 import { surfDrawSceneCopy } from './SurfDrawSceneCopy';
-import { SurfDrawBatchControl } from './SurfDrawBatchControl';
 import { SurfDrawBatchScene } from './SurfDrawBatchScene';
 import type { SurfDrawMediaState } from './surfDrawMedia';
 import { SurfDrawCinema } from './SurfDrawCinema';
@@ -21,7 +20,7 @@ type Props = {
   settlingWinner?: Winner; onSettled: () => void; onIdentityRevealed: () => void; nextPrize?: Prize;
   batchAmount: number; batchLimit: number; batchActive: boolean;
   batchStart: number; batchSize: number; batchWinners: Winner[];
-  batchProgress: { current: number; total: number } | null; onBatchAmount: (amount: number) => void;
+  batchProgress: { current: number; total: number } | null;
   busy: DrawAction | null; chainState?: number; revealedCount: number; administrator: boolean;
   unavailable: string | null; myTickets: DrawStatus['myTickets'];
   onAction: () => void; onSimulate: () => void; onExitSimulation?: () => void; onRestartSimulation?: (kind?: Prize['kind']) => void;
@@ -32,7 +31,7 @@ export function SurfDrawStage(props: Props) {
   const { locale, prize, winner, phase, simulation, elapsed, revision, nextAction, canAct, busy, chainState,
     selectedKind, onSelectKind, prizes, visibleWinners,
     revealedCount, administrator, unavailable, onAction, onSimulate, onExitSimulation, onRestartSimulation,
-    settlingWinner, onSettled, onIdentityRevealed, batchAmount, batchLimit, batchActive, batchProgress, onBatchAmount, nextPrize,
+    settlingWinner, onSettled, onIdentityRevealed, batchAmount, batchLimit, batchActive, batchProgress, nextPrize,
     batchStart, batchSize, batchWinners, executionError } = props;
   const copy = surfDrawSceneCopy(locale);
   const motionAssets = useSurfDrawMotionAssets();
@@ -75,8 +74,6 @@ export function SurfDrawStage(props: Props) {
         phase={phase} revision={revision} simulation={simulation} progress={batchProgress} onStatus={onPrizeStatus}
         onSettled={onSettled} onRevealed={onIdentityRevealed} />
       <div className="surf-reveal-controls">
-        {administrator || simulation ? <SurfDrawBatchControl locale={locale} amount={batchAmount} limit={batchLimit}
-          disabled={locked || Boolean(busy)} onChange={onBatchAmount} /> : null}
         {administrator ? <button className="surf-reveal-button" type="button" disabled={!canAct || locked || !ready || (nextAction === 'reveal' && !batchLimit)} onClick={onAction}>
           <span>{busy ? locale === 'zh-TW' ? '確認交易中' : 'Confirming' : nextAction ? `${actionName(nextAction, locale)}${nextAction === 'reveal' ? ` · ${batchAmount}` : ''}` : copy.phase[chainState ?? 0]}</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5" /></svg>

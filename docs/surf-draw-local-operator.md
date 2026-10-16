@@ -1,65 +1,64 @@
-# Local controls for the online Surf draw
+# Surf draw operator login
 
 ## Operator flow
 
-1. Open the local `/draw/#draw/surf` page and sign in to the draw room.
-2. Select **連接正式開獎**. The online service opens its own login and approval
-   page. It requires both draw-room access and a non-Demo Renaiss administrator.
-3. Approve the displayed loopback origin, then return to the local page. The
-   local controls read and operate the online authoritative ledger and signer.
-4. Each formal draw action retains its existing confirmation. **鏈上重置**
-   checks the current revision, chain state, request, winners and ledger before
-   displaying its gas budget and a separate confirmation.
-5. After a finalized reset receipt and the canonical `RoundReset` event, the
-   server archives the old snapshot, winners and signed transaction journal.
-   The next revision starts at ledger preparation. No follow-up action runs
-   automatically.
+1. Open `/draw/#draw/surf` and enter the draw-room username and password.
+2. The same login authorizes Surf formal operations. There is no Renaiss SSO
+   administrator login, connection button, approval popup or second password.
+3. Review the prepared participant snapshot, then select **提交已確認帳本**.
+   Committing the ledger, requesting VRF, revealing prizes and resetting each
+   retain their own confirmation and on-chain preflight.
+4. All 27 Surf prizes share one VRF request. Each prize group reveals all its
+   remaining slots in one transaction: 7 Mystery Boxes, then 20 memberships.
+   The API rejects partial group selections. There is no quantity control.
+   Mystery Box cards flip individually; memberships use **全部翻開**, which
+   flips the confirmed cards together without submitting another transaction.
+5. Development-loopback pages also show **鏈上重置**. Production has no reset
+   control. Reset archives the prior snapshot, contacts, winners and transaction
+   journal only after a successful finalized receipt and canonical reset event.
+   No next chain action runs automatically.
 
-The online `SURF_DRAW_ENABLED` gate still controls formal mutations. The reset
-is blocked during an outstanding VRF request, a pending transaction, a ledger
-mismatch or a signer-permission failure. Its gas budget is capped at 0.002 BNB.
+## Local transport and authorization
 
-## Data and access
+The local login authenticates directly against the fixed online service,
+`https://merch.renaisscltb.com`. It obtains an origin-bound operator token in
+server memory and issues a separate local HttpOnly cookie. Browser responses
+contain only authentication status and username, never the online token,
+signing key or online session cookie. Passwords are not retained after login.
 
-- The ledger, signing key, transaction journal and round history stay in the
-  online service's mounted database. The development database is not used for
-  formal Surf controls.
-- `/api/local/surf-operator/*` exists only in development and accepts loopback
-  sockets, loopback hosts and same-origin mutations. Forwarding is restricted to
-  the Surf draw API and the fixed `https://merch.renaisscltb.com` origin.
-- Online approval uses a single-use SHA-256 proof challenge. The resulting
-  one-hour grant is bound to the local origin and to the active online Renaiss
-  and draw-room sessions. Credential rotation or logout invalidates it.
-- Proof verifiers and grant tokens stay in development-server memory. Browser
-  responses contain connection status only. A server restart requires another
-  connection. Refreshing the browser retains the connection while it is valid.
-- Production bundles exclude the local connection and reset controls. The
-  online reset endpoint requires a scoped local-operator grant; an ordinary
-  draw-room cookie or administrator session alone does not authorize it.
-- Connection failures are visible and stop formal operations.
+The online service verifies its configured password hash and applies the same
+login throttle as normal draw-room login. Delegation is bound to that live
+session, its expiry and current credential fingerprint. Logout revokes it.
+Restarting the development server requires signing in again; a browser refresh
+retains authentication while the development server and online session live.
+A missing deployment or failed connection is an explicit login failure.
 
-## Winner contact fields
+`/api/local/surf-operator/draw*` is development-only and checks loopback socket,
+Host and same-origin mutations. Its fixed allowlist contains Surf operations
+only. The online reset endpoint additionally requires the scoped loopback-origin
+token. An ordinary online cookie cannot invoke reset.
 
-The draw room displays recorded Email, X and Discord values. Missing values
-produce no row. Email is labelled Email because the recorded domain is not
-necessarily Gmail. Connected X usernames and recorded Renaiss X usernames are
-both recorded identity sources; a connected X username takes precedence.
+The dedicated credentials grant Surf draw access only. They do not grant
+Renaiss SSO, fulfillment, shipping or other site administration permissions.
+The approved signing key, authoritative ledger and transaction journal remain
+online in the Zeabur service's mounted database. There is no local ledger or
+signing fallback. `SURF_DRAW_ENABLED` and canonical signer permissions still
+control every formal chain operation.
 
-At ledger preparation, `surf_draw_contact_snapshots` captures the display
-metadata beside the approved canonical ticket snapshot. It has a separate
-integrity hash and does not change the ticket-ledger hash or ticket counts.
-Contact snapshots remain linked to archived rounds by draw ID and preparation
-time. The draw-room API requires its dedicated access session and continues to
-withhold wallet addresses from its viewer projection.
+## Winner contacts
 
-Deploy this feature before preparing the current round: the current approved
-round has no existing snapshot. A missing or modified contact snapshot fails
-its integrity check; it is not reconstructed from a later live profile.
+Cards display recorded Email, X and Discord values, omitting missing fields.
+At snapshot preparation, `surf_draw_contact_snapshots` captures immutable
+contact metadata with its own integrity hash, without changing ticket-ledger
+hashes or counts. Connected X takes precedence over recorded Renaiss X.
+Missing or modified snapshots fail integrity checks. Wallets remain omitted
+from the draw-room viewer projection.
 
 ## Verification
 
-Use in-memory databases and injected upstream responses for grant exchange,
-session revocation, concurrency, reset finality, revision fencing and contact
-snapshot integrity. These checks do not sign or broadcast BSC transactions.
-Verify the actual operator connection after the authorized deployment; the
-human operator completes the online access approval and any formal action.
+Use in-memory databases and injected upstream responses to check credential
+verification, failed-login throttling, token confidentiality, origin binding,
+logout, credential rotation, expiry and reset access. Preserve the existing
+revision fencing, signed-intent recovery and finalized-reset archival tests.
+These checks must not broadcast a transaction. Preparing the approved private
+snapshot is separate from the operator's first chain confirmation.

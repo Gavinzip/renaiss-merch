@@ -78,16 +78,6 @@
 .surf-draw-page.draw-site .roster-demo { padding: 8px 12px; font-size: 11px; }
 .surf-draw-page.draw-site .surf-pro-booster-back { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
 .surf-draw-page.draw-site .roster-charizard-entry { min-width: 180px; }
-.surf-draw-page.draw-site .surf-draw-batch { color: #747780; }
-.surf-draw-page.draw-site .surf-draw-batch__stepper {
-  height: 44px; border: 1px solid #ffffffc0; border-radius: 13px;
-  background: linear-gradient(150deg,#ffffffb0,#eceef06b);
-  box-shadow: inset 0 1px 0 #fff, 0 2px 7px #34383c05;
-}
-.surf-draw-page.draw-site .surf-draw-batch__stepper button { border-radius: 9px; color: #657078; }
-.surf-draw-page.draw-site .surf-draw-batch__stepper button:hover:not(:disabled) { background: #fff9; color: #30383e; }
-.surf-draw-page.draw-site .surf-draw-batch output { color: #39454b; }
-.surf-draw-page.draw-site .surf-draw-batch__all { border: 0; }
 .surf-draw-page.draw-site .roster-upload__clear {
   min-height: 46px; padding: 13px 18px; border: 1px solid #ffffffc9; border-radius: 14px;
   color: #68666d; background: linear-gradient(150deg,#ffffffc9,#f0f1f38a);

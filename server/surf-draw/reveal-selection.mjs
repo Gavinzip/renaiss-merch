@@ -9,7 +9,7 @@ export function validateSurfRevealSelection(body, chain, prizes) {
       !Number.isInteger(expectedWinnerCount)) throw new HttpError(400, 'invalid_reveal_selection');
   if (expectedWinnerCount !== chain.winnerCount) throw new HttpError(409, 'reveal_slot_changed');
   const available = remainingSurfPrizeSlots(prizes, chain.winners, prizeKind);
-  if (prizeSlots.length > available.length ||
+  if (prizeSlots.length !== available.length ||
       prizeSlots.some((slot, index) => slot !== available[index])) throw new HttpError(409, 'reveal_slot_changed');
   return prizeSlots;
 }

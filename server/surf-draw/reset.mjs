@@ -21,8 +21,8 @@ export function surfResetBlockReason(db, chain, snapshot) {
   return null;
 }
 
-// Called only after a scoped local-operator grant and the existing online
-// administrator checks. The authoritative database and signer stay online.
+// Called only after a local-origin grant authenticated with draw-room
+// credentials. The authoritative database and signer stay online.
 export async function handleSurfReset(req, res) {
   if (!process.env.SURF_DRAW_RPC_URL?.trim()) throw new HttpError(503, 'reset_rpc_not_configured');
   const db = getMerchDatabase(getRuntimeConfig().databasePath);

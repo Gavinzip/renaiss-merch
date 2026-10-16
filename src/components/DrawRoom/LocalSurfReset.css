@@ -4,6 +4,5 @@
 .draw-local-reset > div > button:disabled { opacity: .45; cursor: default; }
 .draw-local-reset p { margin: 9px 0 0; }
 .draw-local-reset a { display: inline-block; margin-top: 9px; color: inherit; }
-.draw-local-reset__refresh { border: 0; padding: 8px 0; background: transparent; color: inherit; font-size: inherit; }
 .draw-live-controls { border: 0; margin: 0; padding: 0; min-width: 0; }
 @media(max-width:900px) { .draw-local-reset { top: 16px; left: 18px; max-width: 230px; } .draw-local-reset > div { gap: 8px; } .draw-local-reset small { display: none; } }

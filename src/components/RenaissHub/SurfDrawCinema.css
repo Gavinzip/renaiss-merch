@@ -72,7 +72,6 @@
 .surf-draw-page[data-theater=true] .surf-reveal-winner h2 { font-size: 22px; }
 .surf-draw-page[data-theater=true] .surf-reveal-controls { bottom: 0; opacity: .8; transition: opacity 500ms ease; }
 .surf-draw-page[data-theater=true] .surf-reveal-controls p,.surf-draw-page[data-theater=true] .surf-reveal-exit { color: #796e85; }
-.surf-draw-page[data-theater=true] .surf-draw-batch { color: #796e85; }
 .surf-draw-page[data-theater=true] .surf-reveal-controls:focus-within { opacity: 1; }
 
 /* One forward camera move, then the actual stops straighten the ticket.
