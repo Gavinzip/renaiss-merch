@@ -70,7 +70,7 @@ type LiveProps = PageProps & {
 };
 
 function SurfDrawLive({ locale, onSimulate, onActive, onReset }: LiveProps) {
-  const local = import.meta.env.DEV && canShowLocalSurfReset();
+  const local = canShowLocalSurfReset();
   const administrator = true; // The enclosing draw-room login is the operator login.
   const draw = useSurfDraw(administrator, local ? '/api/local/surf-operator/draw' : undefined);
   const [resetBusy, setResetBusy] = useState(false);
@@ -111,10 +111,9 @@ function SurfDrawLive({ locale, onSimulate, onActive, onReset }: LiveProps) {
         unavailable={draw.unavailable} now={draw.now} error={draw.error} notice={draw.notice}
         onAction={executeAction} onRefresh={() => void draw.refresh()} />
     </fieldset>
-    <LocalSurfReset authenticated={administrator}
+    {local ? <LocalSurfReset authenticated={administrator}
       drawBusy={Boolean(draw.busy) || isSurfRevealRunning(presentation.phase)}
-      root={local ? '/api/local/surf-operator/draw' : '/api/admin/missions/surf/draw'}
-      online={!local} onComplete={onReset} onBusyChange={setResetBusy} />
+      onComplete={onReset} onBusyChange={setResetBusy} /> : null}
   </>;
 }
 
