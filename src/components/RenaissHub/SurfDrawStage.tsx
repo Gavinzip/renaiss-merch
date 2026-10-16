@@ -12,6 +12,7 @@ import type { DrawAction, DrawStatus, Prize, Winner } from './useSurfDraw';
 import { isSurfRevealRunning, type RevealPhase } from './useSurfDrawPresentation';
 import { DrawRoomHeading } from '../DrawRoom/DrawRoomHeading';
 import { useDrawViewportStage } from '../DrawRoom/useDrawViewportStage';
+import { isSurfDrawSoundEnabled, setSurfDrawSoundEnabled, unlockSurfDrawSound } from './surfDrawSound';
 
 type Props = {
   locale: AppLocale; prize: Prize; winner?: Winner; phase: RevealPhase; simulation: boolean;
@@ -38,6 +39,7 @@ export function SurfDrawStage(props: Props) {
   const [mediaReady, setMediaReady] = useState(false);
   const [sceneReady, setSceneReady] = useState(false);
   const [sceneError, setSceneError] = useState<string | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(isSurfDrawSoundEnabled);
   const [dismissedBatch, setDismissedBatch] = useState(-1);
   const multiple = batchSize > 1;
   const stage = useRef<HTMLElement>(null);
@@ -68,7 +70,17 @@ export function SurfDrawStage(props: Props) {
 
     <div ref={slot} className="surf-reveal-stage-slot">
     <section ref={stage} className="surf-reveal-stage" data-phase={phase} data-kind={prize.kind} data-batch data-simulation={simulation} data-ready={ready} data-spin-ms={Math.round(elapsed)}
+      onClickCapture={unlockSurfDrawSound}
       aria-label={copy.title}>
+      <button className="surf-draw-sound-toggle" type="button" aria-pressed={soundEnabled}
+        onClick={() => {
+          const enabled = !soundEnabled;
+          setSurfDrawSoundEnabled(enabled);
+          setSoundEnabled(enabled);
+          if (enabled) unlockSurfDrawSound();
+        }}>
+        ♪ {locale === 'zh-TW' ? `音效${soundEnabled ? '開' : '關'}` : locale === 'ko' ? `소리 ${soundEnabled ? '켜짐' : '꺼짐'}` : `Sound ${soundEnabled ? 'on' : 'off'}`}
+      </button>
       <SurfDrawBatchScene locale={locale} prize={prize} amount={batchSize} start={multiple ? batchStart : prize.slot} winners={ceremonyWinners}
         selectedKind={selectedKind} onSelectKind={onSelectKind} prizes={prizes} visibleWinners={visibleWinners} selectionDisabled={locked || Boolean(busy)}
         phase={phase} revision={revision} simulation={simulation} progress={batchProgress} onStatus={onPrizeStatus}

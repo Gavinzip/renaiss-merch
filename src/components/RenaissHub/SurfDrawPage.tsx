@@ -4,7 +4,7 @@ import { SurfDrawAccessGate } from './SurfDrawAccessGate';
 import { SurfDrawBoard } from './SurfDrawBoard';
 import { SurfDrawSimulation } from './SurfDrawSimulation';
 import { SurfDrawMotionAssets } from './SurfDrawMotionAssets';
-import { actionName, prizeName, surfDrawCopy } from './SurfDrawCopy';
+import { surfDrawCopy } from './SurfDrawCopy';
 import { useSurfDraw, type Prize } from './useSurfDraw';
 import { useSurfDrawAccess } from './useSurfDrawAccess';
 import { isSurfRevealRunning, useSurfDrawPresentation } from './useSurfDrawPresentation';
@@ -89,18 +89,10 @@ function SurfDrawLive({ locale, onSimulate, onActive, onReset }: LiveProps) {
     phase: presentation.phase, canReveal: !resetBusy && draw.canAct && draw.nextAction === 'reveal',
     failed: draw.unavailable === 'Previous transaction failed', execute: slots => draw.act('reveal', slots),
     begin: presentation.begin, cancel: presentation.cancel });
-  const copy = surfDrawCopy(locale);
-
-  function confirmAction() {
+  function executeAction() {
     if (resetBusy || !draw.status || !draw.nextAction || !draw.canAct) return;
     const action = draw.nextAction;
     if (action === 'reveal' && !batch.slots.length) return;
-    const hash = draw.status.snapshot?.ledgerHash || draw.status.candidate?.ledgerHash;
-    const prize = draw.prizes[batch.slots[0]];
-    const detail = action === 'reveal' && prize
-      ? `${prizeName(prize, locale)} × ${batch.amount}\n${locale === 'zh-TW' ? '這一批指定獎位將由合約在同一筆交易中開出。' : locale === 'ko' ? '선택한 경품은 한 번의 계약 거래로 추첨됩니다.' : 'The selected prize slots are drawn in one contract transaction.'}`
-      : `Draw ID: ${draw.status.drawId}\nLedger hash: ${hash}`;
-    if (!window.confirm(`${copy.confirm}: ${actionName(action, locale)}?\n\n${detail}\n\n${action === 'prepare' ? copy.snapshotEffect : copy.chainEffect}`)) return;
     if (action === 'reveal') batch.start();
     else void draw.act(action);
   }
@@ -117,7 +109,7 @@ function SurfDrawLive({ locale, onSimulate, onActive, onReset }: LiveProps) {
         revision={presentation.revision} onSimulate={onSimulate}
         nextAction={draw.nextAction} pendingTx={draw.pendingTx} busy={draw.busy} canAct={draw.canAct && !resetBusy}
         unavailable={draw.unavailable} now={draw.now} error={draw.error} notice={draw.notice}
-        onAction={confirmAction} onRefresh={() => void draw.refresh()} />
+        onAction={executeAction} onRefresh={() => void draw.refresh()} />
     </fieldset>
     {import.meta.env.DEV && local ? <LocalSurfReset authenticated={administrator}
       drawBusy={Boolean(draw.busy) || isSurfRevealRunning(presentation.phase)}

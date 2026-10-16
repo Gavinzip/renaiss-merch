@@ -10,6 +10,7 @@ import { surfProCopy } from '../SurfStoreRewards/surfProCopy';
 import './SurfDrawBatchScene.css';
 import { SurfProBoosterInteraction } from './SurfProBoosterInteraction';
 import { surfCampaign } from '../../../shared/surf-campaign.js';
+import { playSurfDrawSound } from './surfDrawSound';
 
 export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phase, revision, progress, simulation,
   selectedKind, onSelectKind, prizes, visibleWinners, selectionDisabled,
@@ -29,6 +30,11 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
   const isBox = prize.kind === 'mystery-box';
   const revealing = phase === 'identity' || phase === 'revealed';
   const flight = useSurfBatchFlight({ root, canvas, phase, revision, kind: prize.kind, duration: surfProCopy[locale].duration, progress, images, logos, onSettled, onRevealed });
+  useEffect(() => {
+    if (!isBox || phase !== 'settling') return;
+    const timer = window.setTimeout(() => playSurfDrawSound('box-open'), 1650);
+    return () => window.clearTimeout(timer);
+  }, [isBox, phase, revision]);
   useEffect(() => { onStatus({ stage: 'render', percent: flight.ready ? 100 : Math.min(99, media.percent), ready: media.ready && flight.ready, error: artworkError || Boolean(flight.error) }); }, [media, artworkError, flight.ready, flight.error, onStatus]);
   const title = locale === 'zh-TW' ? revealing ? '本批開獎結果' : isBox ? 'Mystery Box 開獎' : 'Pro Membership 開獎'
     : locale === 'ko' ? revealing ? '이번 추첨 결과' : isBox ? 'Mystery Box 추첨' : 'Pro Membership 추첨'
@@ -50,15 +56,15 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
           const drawn = visibleWinners.filter(winner => prizes[winner.slot]?.kind === kind).length;
           const totalPrizes = prizes.filter(item => item.kind === kind).length;
           return <button key={kind} type="button" aria-pressed={selectedKind === kind}
-            disabled={selectionDisabled || drawn === totalPrizes} onClick={() => onSelectKind(kind)}>
-            {kind === 'mystery-box' ? 'Mystery Box' : 'Pro Membership'} <small>{totalPrizes - drawn}</small>
+            disabled={selectionDisabled} onClick={() => onSelectKind(kind)}>
+            {kind === 'mystery-box' ? 'Mystery Box' : 'Pro Membership'} <small>{drawn}/{totalPrizes}</small>
           </button>;
         })}
       </div>
     </div>
     {!isBox && phase === 'settling' && !flight.packOpened && flight.ready ? <SurfProBoosterInteraction
       locale={locale} onSpin={flight.spinPacks} onBrowse={flight.browsePacks}
-      onOpen={flight.openPack} onPreview={flight.previewPack} onRelease={flight.releasePack}
+      onOpen={() => { const opened = flight.openPack(); if (opened) playSurfDrawSound('foil-tear'); return opened; }} onPreview={flight.previewPack} onRelease={flight.releasePack}
       onSelect={flight.selectPack} onRotate={flight.rotatePack} onFocus={flight.focusPack} /> : null}
     <canvas ref={canvas} className="surf-batch-webgl" aria-hidden="true" />
     <div className="surf-batch-flash" aria-hidden="true" />
@@ -72,7 +78,7 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
     </div> : null}
     {!isBox ? <div className="surf-batch-flip-all" data-visible={revealing} aria-hidden={!revealing}>
       <button type="button" disabled={phase !== 'identity' || !flight.ready || flight.flippingAll || flight.flipping !== null || winners.length !== total}
-        onClick={() => flight.flipAllCards()}>{flight.flippingAll
+        onClick={() => { if (flight.flipAllCards()) playSurfDrawSound('flip-all'); }}>{flight.flippingAll
           ? locale === 'zh-TW' ? '翻開中…' : locale === 'ko' ? '공개 중…' : 'Revealing…'
           : phase === 'revealed' ? locale === 'zh-TW' ? '已全部翻開' : locale === 'ko' ? '모두 공개됨' : 'All revealed'
           : locale === 'zh-TW' ? '全部翻開' : locale === 'ko' ? '전체 공개' : 'Reveal all'}</button>
@@ -85,7 +91,7 @@ export function SurfDrawBatchScene({ locale, prize, amount, start, winners, phas
         const column = index % 4 * 2 + 1 + (lastRow && total % 4 ? 4 - total % 4 : 0);
         return <SurfDrawBatchCard key={start + index} locale={locale} kind={prize.kind} slot={start + index}
           column={column} winner={winner} phase={phase} shown={shown} turning={flight.flipping === index || flight.flippingAll && !shown}
-          allowIndividualFlip={isBox} disabled={flight.flipping !== null || flight.flippingAll || !flight.ready} onFlip={() => flight.flipCard(index)} />;
+          allowIndividualFlip={isBox} disabled={flight.flipping !== null || flight.flippingAll || !flight.ready} onFlip={() => { if (flight.flipCard(index)) playSurfDrawSound('card-flip'); }} />;
       })}
     </ol>
   </div>;

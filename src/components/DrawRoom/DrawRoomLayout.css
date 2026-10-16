@@ -29,6 +29,9 @@
 .surf-draw-page:not([data-theater=true]) .surf-reveal-stage[data-batch=true] {
   height: var(--draw-stage-height); min-height: 0; padding: 0 0 110px;
 }
+.surf-draw-page:not([data-theater=true]) .surf-reveal-stage[data-batch=true][data-phase=revealed] {
+  height: max(var(--draw-stage-height), 760px);
+}
 .surf-draw-page:not([data-theater=true]) .surf-batch-heading { padding: 7px 0 12px; }
 .surf-draw-page:not([data-theater=true]) .surf-batch-heading > span { display: none; }
 .surf-draw-page:not([data-theater=true]) .surf-batch-heading h2 { font-size: 20px; margin: 3px 0 6px; }

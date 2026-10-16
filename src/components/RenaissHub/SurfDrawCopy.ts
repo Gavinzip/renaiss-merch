@@ -1,5 +1,5 @@
 import type { AppLocale } from '../../i18n/LocaleContext';
-import type { DrawAction, Prize } from './useSurfDraw';
+import type { DrawAction } from './useSurfDraw';
 
 const copy = {
   'zh-TW': {
@@ -26,7 +26,6 @@ const copy = {
     reasons: { disabled: '正式操作開關尚未啟用', open: '活動尚未正式結束', chain: '鏈上狀態不可讀',
       pending: '前一筆交易尚待確認', failed: '前一筆交易失敗', signer: '服務端簽署地址未設定',
       admin: '簽署地址不是合約管理員', tickets: '有效票數不足 27', results: '揭露合約尚未部署或設定' },
-    confirm: '確認執行', snapshotEffect: '這會建立私密且不可變的名單快照。', chainEffect: '這會向 BSC 主網送出真實交易。',
   },
   en: {
     location: 'Surf draw room', back: 'Back to Surf campaign', eyebrow: 'SURF × RENAISS / DRAW',
@@ -52,7 +51,6 @@ const copy = {
     reasons: { disabled: 'Formal actions disabled', open: 'Campaign not closed', chain: 'Chain unavailable',
       pending: 'Previous transaction pending', failed: 'Previous transaction failed', signer: 'Server signer missing',
       admin: 'Signer is not an admin', tickets: 'Fewer than 27 eligible tickets', results: 'Result contract not configured' },
-    confirm: 'Confirm action', snapshotEffect: 'This creates a private, immutable participant snapshot.', chainEffect: 'This submits a real BSC mainnet transaction.',
   },
   ko: {
     location: 'Surf 추첨실', back: 'Surf 캠페인으로', eyebrow: 'SURF × RENAISS / 추첨',
@@ -78,13 +76,9 @@ const copy = {
     reasons: { disabled: '정식 추첨 비활성화', open: '캠페인이 종료되지 않음', chain: '체인 연결 불가',
       pending: '이전 거래 대기 중', failed: '이전 거래 실패', signer: '서버 서명 주소 없음',
       admin: '서명 주소가 관리자 아님', tickets: '유효 응모권 27장 미만', results: '결과 계약이 설정되지 않음' },
-    confirm: '작업 확인', snapshotEffect: '비공개 참가자 명단이 변경 불가능하게 저장됩니다.', chainEffect: '실제 BSC 메인넷 거래가 전송됩니다.',
   },
 } as const;
 
 export function surfDrawCopy(locale: AppLocale) { return copy[locale]; }
 export type SurfDrawCopy = ReturnType<typeof surfDrawCopy>;
-export function prizeName(prize: Prize, locale: AppLocale) {
-  return prize.kind === 'mystery-box' ? 'Surf Mystery Box' : locale === 'zh-TW' ? 'Surf Pro 一個月會員' : locale === 'ko' ? 'Surf Pro 1개월 멤버십' : 'Surf Pro one-month membership';
-}
 export function actionName(action: DrawAction, locale: AppLocale) { return copy[locale].actions[action]; }

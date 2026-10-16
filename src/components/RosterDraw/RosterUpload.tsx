@@ -87,13 +87,14 @@ export function RosterUpload({
       ) : (
         <div className="roster-note">
           <p>CSV／TSV 請包含 <code>name</code> 欄，<code>id</code> 選填；TXT 每行一個姓名。</p>
+          <p>編號可以是 2、3、4 位數，例如 <code>12</code>、<code>123</code>、<code>1234</code>；每列代表一個名額。若要保留 <code>01</code> 等前導零，請先將 Excel 編號欄設為文字，再匯出 CSV UTF-8。</p>
           <p>相同姓名、不同編號視為不同名額；已中獎名額會從兩種抽獎中排除。</p>
           <a
             download="renaiss-roster-template.csv"
             href={
               "data:text/csv;charset=utf-8," +
               encodeURIComponent(
-                "\uFEFFid,name\n001,示範姓名一\n002,示範姓名二\n",
+                "\uFEFFid,name\n12,示範姓名一\n123,示範姓名二\n1234,示範姓名三\n",
               )
             }
           >
@@ -111,17 +112,6 @@ export function RosterUpload({
           <strong>
             {draft.title} · {draft.entries.length.toLocaleString()} 個名額
           </strong>
-          <ul>
-            {draft.entries.slice(0, 6).map((entry) => (
-              <li key={entry.id}>
-                <code>{entry.id}</code>
-                <span>{entry.name}</span>
-              </li>
-            ))}
-          </ul>
-          {draft.entries.length > 6 ? (
-            <small>另有 {draft.entries.length - 6} 個名額</small>
-          ) : null}
           <button
             className="roster-primary"
             disabled={busy}

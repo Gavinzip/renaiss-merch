@@ -32,12 +32,14 @@ export function SurfDrawBoard(props: BoardProps) {
   const scene = surfDrawSceneCopy(locale);
   const moving = isSurfRevealRunning(phase);
   const groupPrizes = prizes.filter(item => item.kind === selectedKind);
-  const groupWinners = visibleWinners.filter(winner => prizes[winner.slot]?.kind === selectedKind);
+  const groupWinners = visibleWinners.filter(winner => prizes[winner.slot]?.kind === selectedKind).sort((a, b) => a.slot - b.slot);
   const selectedWinner = groupWinners.at(-1);
   const prize = moving ? prizes[batchSlots[0]] || groupPrizes[0] : selectedWinner ? prizes[selectedWinner.slot] : prizes[batchSlots[0]] || groupPrizes[0];
   const scenePhase = moving ? phase : selectedWinner ? 'revealed' : 'idle';
-  const batchPreview = !groupWinners.length && !moving && !batchActive && batchAmount > 1;
-  const showBatch = batchPreview || batchSize > 1 && (moving || batchActive || batchWinners.some(winner => prizes[winner.slot]?.kind === selectedKind));
+  const presentingBatch = moving || batchActive;
+  const sceneWinners = presentingBatch ? batchWinners : groupWinners;
+  const sceneStart = presentingBatch ? batchStart : groupPrizes[0]?.slot ?? 0;
+  const sceneSize = presentingBatch ? batchSize : groupWinners.length || batchAmount || 1;
   const reason = unavailable === 'Formal draw disabled' ? copy.reasons.disabled :
     unavailable === 'Campaign not closed' ? copy.reasons.open : unavailable === 'Chain unavailable' ? copy.reasons.chain :
     unavailable === 'Previous transaction pending' ? copy.reasons.pending : unavailable === 'Previous transaction failed' ? copy.reasons.failed :
@@ -48,7 +50,7 @@ export function SurfDrawBoard(props: BoardProps) {
   return <>
     <SurfDrawStage locale={locale} prize={prize} winner={selectedWinner} settlingWinner={settlingWinner} onSettled={onSettled} onIdentityRevealed={onIdentityRevealed}
       batchAmount={batchAmount} batchLimit={batchLimit} batchActive={batchActive} batchProgress={batchProgress}
-      batchStart={batchStart} batchSize={showBatch ? batchPreview ? batchAmount : batchSize : 1} batchWinners={batchWinners}
+      batchStart={sceneStart} batchSize={sceneSize} batchWinners={sceneWinners}
       nextPrize={prizes[batchSlots[0]]} phase={scenePhase} simulation={simulation} elapsed={elapsed}
       selectedKind={selectedKind} onSelectKind={onSelectKind} prizes={prizes} visibleWinners={visibleWinners}
       revision={revision} nextAction={nextAction} canAct={canAct} busy={busy} chainState={chain?.state}
@@ -66,20 +68,26 @@ export function SurfDrawBoard(props: BoardProps) {
       <div className="surf-draw-results__heading"><div><span>{simulation ? 'DEMO MODE' : 'THE REVEALS'}</span><h2 id="surf-draw-results-title">{simulation ? scene.simulationResults : scene.results}</h2></div>
         {status?.myTickets ? <p>{scene.tickets} <strong>#{status.myTickets.start}{status.myTickets.end > status.myTickets.start ? `–#${status.myTickets.end}` : ''}</strong></p> : null}
       </div>
-      <div className="surf-draw-results__tabs" role="tablist" aria-label={copy.prizeBoard}>
-        {(['mystery-box', 'surf-pro-month'] as const).map(kind => <button key={kind} role="tab" id={`surf-result-tab-${kind}`}
-          aria-controls="surf-result-list" aria-selected={selectedKind === kind} disabled={moving || batchActive || Boolean(busy)} type="button" onClick={() => onSelectKind(kind)}>
-          <span>{kind === 'mystery-box' ? scene.boxCount : scene.proCount}</span>
-          <small>{String(visibleWinners.filter(winner => prizes[winner.slot]?.kind === kind).length).padStart(2, '0')} / {kind === 'mystery-box' ? '07' : '20'}</small>
-        </button>)}
-      </div>
-      <div id="surf-result-list" role="tabpanel" aria-labelledby={`surf-result-tab-${selectedKind}`}>
-        {groupWinners.length ? <ol className="surf-draw-results__list">{groupWinners.map(winner => {
-          const mine = status?.myTickets && winner.ticketNumber >= status.myTickets.start && winner.ticketNumber <= status.myTickets.end;
-          return <li key={winner.slot} data-mine={Boolean(mine)}><span>{String(winner.slot + 1).padStart(2, '0')}</span>
-            <strong>{mine ? copy.youWon : surfWinnerDisplayName(winner.participant.name) || scene.nameUnavailable}</strong>
-            <small>{copy.ticket} #{winner.ticketNumber}</small><span aria-hidden="true">↗</span></li>;
-        })}</ol> : null}
+      <div className="surf-draw-results__groups" aria-label={copy.prizeBoard}>
+        {(['mystery-box', 'surf-pro-month'] as const).map(kind => {
+          const winners = visibleWinners.filter(winner => prizes[winner.slot]?.kind === kind).sort((a, b) => a.slot - b.slot);
+          const total = kind === 'mystery-box' ? 7 : 20;
+          return <section className="surf-draw-results__group" key={kind} aria-label={kind === 'mystery-box' ? scene.boxCount : scene.proCount}>
+            <div className="surf-draw-results__group-heading">
+              <h3>{kind === 'mystery-box' ? scene.boxCount : scene.proCount} <small>{String(winners.length).padStart(2, '0')} / {String(total).padStart(2, '0')}</small></h3>
+              {winners.length ? <button type="button" disabled={moving || batchActive || Boolean(busy)} onClick={() => {
+                onSelectKind(kind);
+                document.querySelector('.surf-reveal-stage-slot')?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
+              }}>{locale === 'zh-TW' ? '查看卡片' : locale === 'ko' ? '카드 보기' : 'View cards'} ↗</button> : null}
+            </div>
+            {winners.length ? <ol className="surf-draw-results__list">{winners.map(winner => {
+              const mine = status?.myTickets && winner.ticketNumber >= status.myTickets.start && winner.ticketNumber <= status.myTickets.end;
+              return <li key={winner.slot} data-mine={Boolean(mine)}><span>{String(winner.slot + 1).padStart(2, '0')}</span>
+                <strong>{mine ? copy.youWon : surfWinnerDisplayName(winner.participant.name) || scene.nameUnavailable}</strong>
+                <small>{copy.ticket} #{winner.ticketNumber}</small></li>;
+            })}</ol> : null}
+          </section>;
+        })}
       </div>
     </section>
 

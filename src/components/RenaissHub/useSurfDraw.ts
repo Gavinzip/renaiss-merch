@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { surfCampaign } from '../../../shared/surf-campaign.js';
 
 export type Prize = { slot: number; kind: 'mystery-box' | 'surf-pro-month'; number: number };
@@ -74,6 +74,7 @@ export function useSurfDraw(administrator: boolean, apiBase?: string, enabled = 
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [busy, setBusy] = useState<DrawAction | null>(null);
+  const actionInFlight = useRef(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
   const refresh = useCallback(async () => {
@@ -109,9 +110,10 @@ export function useSurfDraw(administrator: boolean, apiBase?: string, enabled = 
       (nextAction === 'finalize' || chain.ledgerMatch)));
 
   async function act(action: DrawAction, prizeSlots?: number[]) {
-    if (!status || !chain || action !== nextAction || !canAct) return false;
+    if (actionInFlight.current || !status || !chain || action !== nextAction || !canAct) return false;
     const ledgerHash = status.snapshot?.ledgerHash || status.candidate?.ledgerHash;
     if (!ledgerHash) return false;
+    actionInFlight.current = true;
     setBusy(action); setActionError(null); setNotice(null);
     try {
       const result = await request<{ txHash?: string; broadcastState?: string }>(`/${action}`, {
@@ -128,7 +130,7 @@ export function useSurfDraw(administrator: boolean, apiBase?: string, enabled = 
       setActionError(error instanceof Error ? error.message : 'Draw action failed.');
       await refresh();
       return false;
-    } finally { setBusy(null); }
+    } finally { actionInFlight.current = false; setBusy(null); }
   }
 
   return { status, chain, prizes, now, busy, pendingTx, nextAction, canAct,

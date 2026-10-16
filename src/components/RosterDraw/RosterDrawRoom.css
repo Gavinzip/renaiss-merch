@@ -199,27 +199,10 @@
   margin-top: 15px;
 }
 .roster-upload__preview strong {
-  font-size: 13px;
-}
-.roster-upload__preview ul {
-  list-style: none;
-  padding: 0;
-  margin: 18px 0;
-}
-.roster-upload__preview li {
-  display: flex;
-  gap: 20px;
-  font-size: 13px;
-  padding: 6px 0;
-}
-.roster-upload__preview code {
-  color: #a490af;
-  min-width: 64px;
-}
-.roster-upload__preview small {
   display: block;
   margin-bottom: 18px;
-  color: #96869e;
+  font-size: 13px;
+  overflow-wrap: anywhere;
 }
 .roster-error {
   border-left: 2px solid #bd7b7b;
