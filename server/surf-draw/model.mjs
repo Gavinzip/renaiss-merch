@@ -9,6 +9,7 @@ export const SURF_DRAW_CHAIN_ID = 56;
 export const SURF_DRAW_ID = keccak256(toUtf8Bytes('RENAISS_SURF_V1_MAIN_ROUND_1'));
 export const SURF_DRAW_RETRY_ID = keccak256(toUtf8Bytes('RENAISS_SURF_V1_MAIN_ROUND_2'));
 export const SURF_CHAINLINK_DRAW_ID = keccak256(toUtf8Bytes('RENAISS_SURF_V1_CHAINLINK_ROUND_3'));
+export const SURF_CHAINLINK_REDRAW_ID = keccak256(toUtf8Bytes('RENAISS_SURF_V1_CHAINLINK_REDRAW_ROUND_4'));
 export const SURF_DRAW_PRIZES = Object.freeze([
   ...Array.from({ length: surfCampaign.plannedRewards.mysteryBoxes }, (_, index) => ({ slot: index, kind: 'mystery-box', number: index + 1 })),
   ...Array.from({ length: surfCampaign.plannedRewards.proMonthTrials }, (_, index) => ({ slot: surfCampaign.plannedRewards.mysteryBoxes + index, kind: 'surf-pro-month', number: index + 1 })),
@@ -56,7 +57,8 @@ export function ensureSurfDrawTables(db) {
 export function activeSurfDrawId(db) {
   ensureSurfDrawTables(db);
   const id = db.prepare('SELECT draw_id FROM surf_draw_active_round WHERE id=1').get()?.draw_id;
-  if (id !== SURF_DRAW_ID && id !== SURF_DRAW_RETRY_ID && id !== SURF_CHAINLINK_DRAW_ID) throw new Error('Unknown active Surf draw round');
+  if (id !== SURF_DRAW_ID && id !== SURF_DRAW_RETRY_ID && id !== SURF_CHAINLINK_DRAW_ID &&
+      id !== SURF_CHAINLINK_REDRAW_ID) throw new Error('Unknown active Surf draw round');
   return id;
 }
 

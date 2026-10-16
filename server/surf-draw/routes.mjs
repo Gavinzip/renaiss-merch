@@ -54,7 +54,6 @@ export function createSurfDrawHandler({ readSession }) {
     if (action && !ACTIONS.has(action)) throw new HttpError(404, 'not_found');
     if (['reset', 'replace'].includes(action) ? !['GET', 'POST'].includes(req.method) : req.method !== (action ? 'POST' : 'GET')) throw new HttpError(405, 'method_not_allowed');
     const delegated = readSurfOperatorSession(req);
-    if (['reset', 'replace'].includes(action) && !delegated) throw new HttpError(403, 'operator_connection_required');
     const session = delegated || surfDrawOperatorSession(requireSurfDrawAccess(req));
     if (req.method === 'POST' && req.headers.origin !== getPublicOrigin(req)) throw new HttpError(403, 'invalid_request_origin');
     const db = getMerchDatabase(getRuntimeConfig().databasePath);

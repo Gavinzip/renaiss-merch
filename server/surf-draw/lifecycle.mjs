@@ -1,6 +1,7 @@
 import { Interface } from 'ethers';
 import { HttpError } from '../http.mjs';
-import { activeSurfDrawId, ensureSurfDrawTables, SURF_DRAW_ADDRESS } from './model.mjs';
+import { activeSurfDrawId, ensureSurfDrawTables, SURF_CHAINLINK_REDRAW_ID } from './model.mjs';
+import { surfDrawSourceAddress } from './reveal-receipt.mjs';
 
 const resetEvents = new Interface(['event RoundReset(bytes32 indexed drawId)']);
 
@@ -33,10 +34,11 @@ export function assertSurfRevision(db, expected) {
 // records move to history. All old signed intents remain in the private DB.
 export function archiveConfirmedSurfReset(db, record, receipt) {
   const drawId = activeSurfDrawId(db);
+  const source = surfDrawSourceAddress(drawId);
   if (record.draw_id && record.draw_id !== drawId) throw new HttpError(409, 'reset_receipt_invalid');
-  if (Number(receipt.status) !== 1 || receipt.to?.toLowerCase() !== SURF_DRAW_ADDRESS.toLowerCase() ||
+  if (Number(receipt.status) !== 1 || receipt.to?.toLowerCase() !== source.toLowerCase() ||
       receipt.hash?.toLowerCase() !== record.tx_hash.toLowerCase() || !receipt.logs?.some(log => {
-        if (log.address?.toLowerCase() !== SURF_DRAW_ADDRESS.toLowerCase()) return false;
+        if (log.address?.toLowerCase() !== source.toLowerCase()) return false;
         try { return resetEvents.parseLog(log)?.args.drawId === drawId; } catch { return false; }
       })) throw new HttpError(409, 'reset_receipt_invalid');
   const expected = Number(record.action.slice('reset:'.length));
@@ -55,7 +57,10 @@ export function archiveConfirmedSurfReset(db, record, receipt) {
       drawId, expected, record.tx_hash, new Date().toISOString(),
       snapshot ? JSON.stringify(snapshot) : null, JSON.stringify(transactions), context.chain_json,
     );
-    db.prepare('DELETE FROM surf_draw_snapshots WHERE draw_id=?').run(drawId);
+    // The reusable Chainlink round must retain the frozen participant ledger.
+    // Its next on-chain commitment is the same reviewed list after reset.
+    if (drawId !== SURF_CHAINLINK_REDRAW_ID)
+      db.prepare('DELETE FROM surf_draw_snapshots WHERE draw_id=?').run(drawId);
     db.prepare('DELETE FROM surf_draw_transactions WHERE draw_id=?').run(drawId);
     db.prepare('DELETE FROM surf_draw_action_locks WHERE draw_id=?').run(drawId);
     db.prepare('DELETE FROM surf_draw_reset_context WHERE draw_id=?').run(drawId);

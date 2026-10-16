@@ -4,11 +4,12 @@ import { getMerchDatabase } from '../merch-database.mjs';
 import { getRuntimeConfig } from '../runtime-config.mjs';
 import { readJsonBody } from '../shipping-details.mjs';
 import { readSurfChain } from './chain.mjs';
-import { activeSurfDrawId, readSnapshot, SURF_CHAINLINK_DRAW_ID, SURF_DRAW_ADDRESS, SURF_DRAW_ID, SURF_DRAW_RETRY_ID } from './model.mjs';
+import { activeSurfDrawId, readSnapshot, SURF_CHAINLINK_DRAW_ID, SURF_CHAINLINK_REDRAW_ID, SURF_DRAW_ID, SURF_DRAW_PRIZES, SURF_DRAW_RETRY_ID } from './model.mjs';
 
 function successorFor(active) {
   if (active === SURF_DRAW_ID) return { oldDrawId: SURF_DRAW_ID, newDrawId: SURF_DRAW_RETRY_ID };
   if (active === SURF_DRAW_RETRY_ID) return { oldDrawId: SURF_DRAW_RETRY_ID, newDrawId: SURF_CHAINLINK_DRAW_ID };
+  if (active === SURF_CHAINLINK_DRAW_ID) return { oldDrawId: SURF_CHAINLINK_DRAW_ID, newDrawId: SURF_CHAINLINK_REDRAW_ID };
   return null;
 }
 
@@ -29,12 +30,12 @@ function requestTransaction(db, oldDrawId) {
   return record;
 }
 
-export async function replacementPreflight(db) {
+export async function replacementPreflight(db, { readChain = readSurfChain } = {}) {
   const active = activeSurfDrawId(db);
-  if (active === SURF_CHAINLINK_DRAW_ID) {
-    const record = db.prepare('SELECT * FROM surf_draw_superseded_rounds WHERE successor_draw_id=?').get(SURF_CHAINLINK_DRAW_ID);
+  if (active === SURF_CHAINLINK_REDRAW_ID) {
+    const record = db.prepare('SELECT * FROM surf_draw_superseded_rounds WHERE successor_draw_id=?').get(SURF_CHAINLINK_REDRAW_ID);
     if (!record) throw new HttpError(409, 'round_history_missing');
-    return { completed: true, canReplace: false, oldDrawId: SURF_DRAW_RETRY_ID, newDrawId: SURF_CHAINLINK_DRAW_ID,
+    return { completed: true, canReplace: false, oldDrawId: SURF_CHAINLINK_DRAW_ID, newDrawId: SURF_CHAINLINK_REDRAW_ID,
       oldLedgerHash: record.old_ledger_hash, newLedgerHash: record.new_ledger_hash,
       requestId: record.request_id, requestTxHash: record.request_tx_hash,
       requestBlock: record.request_block, observedBlock: record.observed_block };
@@ -42,6 +43,7 @@ export async function replacementPreflight(db) {
   const successor = successorFor(active);
   if (!successor) throw new HttpError(409, 'draw_id_changed');
   const { oldDrawId, newDrawId } = successor;
+  const completedRedraw = oldDrawId === SURF_CHAINLINK_DRAW_ID;
   if (process.env.SURF_DRAW_ENABLED !== 'true') throw new HttpError(409, 'surf_draw_not_released');
   const { old, canonicalJson, ledgerHash } = frozenSuccessor(db, oldDrawId, newDrawId);
   const request = requestTransaction(db, oldDrawId);
@@ -52,24 +54,29 @@ export async function replacementPreflight(db) {
   if (db.prepare('SELECT 1 FROM surf_draw_snapshots WHERE draw_id=?').get(newDrawId)) {
     throw new HttpError(409, 'successor_already_prepared');
   }
-  const oldChain = await readSurfChain(old, { includeSubscription: false });
+  const oldChain = await readChain(old, { includeSubscription: false });
   try {
     const receipt = await oldChain.provider.getTransactionReceipt(request.tx_hash);
     const requestBlock = receipt ? await oldChain.provider.getBlock(receipt.blockNumber) : null;
     if (!receipt || Number(receipt.status) !== 1 || receipt.hash?.toLowerCase() !== request.tx_hash.toLowerCase() ||
         !requestBlock || requestBlock.hash !== receipt.blockHash ||
-        receipt.to?.toLowerCase() !== SURF_DRAW_ADDRESS.toLowerCase() ||
-        oldChain.block - receipt.blockNumber < 256) throw new HttpError(409, 'request_not_timed_out');
-    const nextChain = await readSurfChain(null, { provider: oldChain.provider, drawId: newDrawId,
+        receipt.to?.toLowerCase() !== oldChain.source.toLowerCase() ||
+        (!completedRedraw && oldChain.block - receipt.blockNumber < 256)) throw new HttpError(409, 'request_not_timed_out');
+    const nextChain = await readChain(null, { provider: oldChain.provider, drawId: newDrawId,
       blockNumber: oldChain.block, includeSubscription: false, signer: oldChain.signer });
-    if (oldChain.state !== 2 || oldChain.sourceState !== 2 || !oldChain.ledgerMatch || !oldChain.results.ready ||
-        oldChain.requestId === '0' || oldChain.winnerCount !== 0 || oldChain.results.bound ||
+    const oldRoundValid = completedRedraw
+      ? oldChain.state === 4 && oldChain.sourceState === 4 && oldChain.results.complete &&
+        oldChain.winnerCount === SURF_DRAW_PRIZES.length &&
+        new Set(oldChain.winners.map(winner => winner.slot)).size === SURF_DRAW_PRIZES.length
+      : oldChain.state === 2 && oldChain.sourceState === 2 && oldChain.winnerCount === 0 && !oldChain.results.bound;
+    if (!oldRoundValid || !oldChain.ledgerMatch || !oldChain.results.ready || oldChain.requestId === '0' ||
         nextChain.state !== 0 || nextChain.requestId !== '0' || nextChain.totalTickets !== 0 ||
         nextChain.winnerCount !== 0 || !nextChain.results.ready || nextChain.results.bound ||
         !nextChain.signerAdmin) throw new HttpError(409, 'draw_state_changed');
     if (!oldChain.signerAdmin) throw new HttpError(403, 'draw_signer_not_authorized');
     return { completed: false, canReplace: true, oldDrawId, newDrawId,
-      newProvider: newDrawId === SURF_CHAINLINK_DRAW_ID ? 'chainlink-v2.5' : 'binance-vrf',
+      newProvider: [SURF_CHAINLINK_DRAW_ID, SURF_CHAINLINK_REDRAW_ID].includes(newDrawId) ? 'chainlink-v2.5' : 'binance-vrf',
+      reason: completedRedraw ? 'completed_round_redraw' : 'unfulfilled_vrf',
       oldLedgerHash: old.ledger_hash, newLedgerHash: ledgerHash, requestId: oldChain.requestId,
       requestTxHash: request.tx_hash, requestBlock: receipt.blockNumber,
       participants: old.participant_count, tickets: old.ticket_count,
@@ -109,7 +116,9 @@ export function commitSurfRoundReplacement(db, ready) {
   if (successorFor(ready.oldDrawId)?.newDrawId !== ready.newDrawId ||
       !/^\d+$/.test(ready.requestId || '') ||
       !Number.isInteger(ready.requestBlock) || !Number.isInteger(ready.observedBlock) ||
-      ready.observedBlock - ready.requestBlock < 256) throw new HttpError(409, 'draw_state_changed');
+      ready.observedBlock < ready.requestBlock ||
+      (ready.reason === 'completed_round_redraw' ? ready.oldDrawId !== SURF_CHAINLINK_DRAW_ID :
+        ready.observedBlock - ready.requestBlock < 256)) throw new HttpError(409, 'draw_state_changed');
   db.transaction(() => {
     if (activeSurfDrawId(db) !== ready.oldDrawId ||
         db.prepare('SELECT 1 FROM surf_draw_snapshots WHERE draw_id=?').get(ready.newDrawId) ||
@@ -129,8 +138,10 @@ export function commitSurfRoundReplacement(db, ready) {
       old.prepared_at, ledgerHash, contact.contacts_json, contact.contacts_hash);
     db.prepare('INSERT INTO surf_draw_superseded_rounds VALUES(?,?,?,?,?,?,?,?,?,?)').run(ready.oldDrawId,
       ready.newDrawId, ready.requestId, ready.requestTxHash, ready.requestBlock, old.ledger_hash, ledgerHash,
-      ready.observedBlock, now, ready.newDrawId === SURF_CHAINLINK_DRAW_ID
-        ? 'binance_vrf_unfulfilled_migrate_chainlink_v2_5' : 'binance_vrf_request_unfulfilled');
+      ready.observedBlock, now, ready.reason === 'completed_round_redraw'
+        ? 'chainlink_completed_round_operator_redraw'
+        : ready.newDrawId === SURF_CHAINLINK_DRAW_ID
+          ? 'binance_vrf_unfulfilled_migrate_chainlink_v2_5' : 'binance_vrf_request_unfulfilled');
     db.prepare('UPDATE surf_draw_active_round SET draw_id=?,updated_at=? WHERE id=1').run(ready.newDrawId, now);
   }).immediate();
 }

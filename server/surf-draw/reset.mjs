@@ -5,15 +5,15 @@ import { getRuntimeConfig } from '../runtime-config.mjs';
 import { readJsonBody } from '../shipping-details.mjs';
 import { publicChainState, readSurfChain } from './chain.mjs';
 import { assertSurfRevision, surfRevision } from './lifecycle.mjs';
-import { activeSurfDrawId, readSnapshot } from './model.mjs';
+import { activeSurfDrawId, readSnapshot, SURF_CHAINLINK_REDRAW_ID } from './model.mjs';
 import { reconcileSurfTransactions, sendSurfDrawAction } from './transactions.mjs';
 
 export function surfResetBlockReason(db, chain, snapshot) {
   const drawId = activeSurfDrawId(db);
-  if (chain.vrf.provider === 'chainlink-v2.5') return 'chainlink_round_cannot_reset';
+  if (chain.vrf.provider === 'chainlink-v2.5' && drawId !== SURF_CHAINLINK_REDRAW_ID) return 'chainlink_round_cannot_reset';
   if (process.env.SURF_DRAW_ENABLED !== 'true') return 'surf_draw_not_released';
   if (!chain.signerAddress || !chain.signerAdmin) return 'draw_signer_not_authorized';
-  if (chain.state === 2) return 'reset_randomness_pending';
+  if (chain.state === 2 && drawId !== SURF_CHAINLINK_REDRAW_ID) return 'reset_randomness_pending';
   if (chain.state !== 0 && (!snapshot || !chain.ledgerMatch)) return 'onchain_ledger_mismatch';
   if (db.prepare('SELECT 1 FROM surf_draw_transactions WHERE draw_id=? AND confirmed_at IS NULL').get(drawId) ||
       db.prepare('SELECT 1 FROM surf_draw_action_locks WHERE draw_id=?').get(drawId)) return 'prior_action_pending';

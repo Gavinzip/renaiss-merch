@@ -5,7 +5,6 @@ type ResetStatus = {
   canReset: boolean; reason: string | null; completed?: boolean;
   transaction?: { txHash: string; receiptStatus: number | null; broadcastState: string } | null;
 };
-const ROOT = '/api/local/surf-operator/draw/reset';
 const reasons: Record<string, string> = {
   reset_rpc_not_configured: '線上尚未設定 Surf RPC',
   surf_draw_not_released: '正式開獎尚未啟用',
@@ -21,15 +20,15 @@ const reasons: Record<string, string> = {
   reset_gas_budget_exceeded: 'Gas 餘額不足或超過 0.002 BNB 上限',
   surf_draw_access_required: '請重新登入開獎室',
 };
-async function request<T>(body?: Record<string, unknown>): Promise<T> {
-  const response = await fetch(ROOT, { credentials: 'same-origin', cache: 'no-store',
+async function request<T>(root: string, body?: Record<string, unknown>): Promise<T> {
+  const response = await fetch(`${root}/reset`, { credentials: 'same-origin', cache: 'no-store',
     ...(body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}) });
   const value = await response.json();
   if (!response.ok) throw new Error(reasons[value.code] || `無法重置（${value.code || response.status}）`);
   return value;
 }
 
-export function useLocalSurfReset(administrator: boolean, onComplete: () => void) {
+export function useLocalSurfReset(administrator: boolean, onComplete: () => void, root: string) {
   const [status, setStatus] = useState<ResetStatus | null>(null);
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [txHash, setTxHash] = useState('');
@@ -41,7 +40,7 @@ export function useLocalSurfReset(administrator: boolean, onComplete: () => void
     if (!administrator) return;
     const id = ++readId.current;
     try {
-      const next = await request<ResetStatus>();
+      const next = await request<ResetStatus>(root);
       if (!alive.current || readId.current !== id) return;
       setStatus(next); setError('');
       if (next.transaction) setTxHash(next.transaction.txHash);
@@ -57,7 +56,7 @@ export function useLocalSurfReset(administrator: boolean, onComplete: () => void
     } catch (reason) {
       if (alive.current && id === readId.current) setError(reason instanceof Error ? reason.message : '無法讀取重置狀態');
     }
-  }, [administrator]);
+  }, [administrator, root]);
   useEffect(() => {
     void refresh();
     const timer = window.setInterval(() => { if (!document.hidden) void refresh(); }, 3000);
@@ -71,13 +70,13 @@ export function useLocalSurfReset(administrator: boolean, onComplete: () => void
     const body = { drawId: expected.drawId, expectedRevision: expected.revision, expectedState: expected.state,
       expectedRequestId: expected.requestId, expectedWinnerCount: expected.winnerCount, expectedLedgerHash: expected.ledgerHash };
     try {
-      const preflight = await request<{ gasBudgetBnb: string }>({ ...body, preflight: true });
+      const preflight = await request<{ gasBudgetBnb: string }>(root, { ...body, preflight: true });
       if (!alive.current) return;
       if (!window.confirm(`重置 BSC 正式開獎？\n\n本輪 ${expected.winnerCount} 個結果將移至歷史紀錄，回到帳本提交步驟。\nGas 預算：${preflight.gasBudgetBnb} BNB\n不會自動鎖帳、請求 VRF 或抽獎。`)) {
         locked.current = false; setBusy(false); return;
       }
       started.current = expected;
-      const result = await request<{ txHash: string }>(body);
+      const result = await request<{ txHash: string }>(root, body);
       if (alive.current) setTxHash(result.txHash);
       await refresh();
     } catch (reason) {

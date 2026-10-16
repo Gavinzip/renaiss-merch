@@ -1,7 +1,8 @@
 import { AbiCoder, Contract, getAddress, keccak256 } from 'ethers';
 import build from '../../shared/chainlink-surf-contract.json' with { type: 'json' };
+import reusableBuild from '../../shared/chainlink-surf-reusable-contract.json' with { type: 'json' };
 import { drawProvider, signerFor } from './chain.mjs';
-import { findWinner, SURF_CHAINLINK_DRAW_ID, SURF_DRAW_CHAIN_ID, SURF_DRAW_PRIZES } from './model.mjs';
+import { findWinner, SURF_CHAINLINK_DRAW_ID, SURF_CHAINLINK_REDRAW_ID, SURF_DRAW_CHAIN_ID, SURF_DRAW_PRIZES } from './model.mjs';
 
 const WRAPPER = '0x471506e6ADED0b9811D05B8cAc8Db25eE839Ac94';
 const COORDINATOR = '0xd691f04bc0C9a24Edb78af9E005Cf85768F694C9';
@@ -26,21 +27,24 @@ export async function readChainlinkSurfChain(snapshot, options = {}) {
 
 async function readAt(provider, snapshot, { includeSigner = true, signer: suppliedSigner,
   blockNumber, drawId = SURF_CHAINLINK_DRAW_ID } = {}) {
-  if (drawId !== SURF_CHAINLINK_DRAW_ID) throw new Error('Wrong Chainlink Surf draw ID');
+  if (drawId !== SURF_CHAINLINK_DRAW_ID && drawId !== SURF_CHAINLINK_REDRAW_ID) throw new Error('Wrong Chainlink Surf draw ID');
   const finalized = await provider.getBlock('finalized');
   if (!finalized || blockNumber !== undefined && (blockNumber < 0 || blockNumber > finalized.number))
     throw new Error('Canonical Surf draw finalized block is unavailable');
   const block = blockNumber ?? finalized.number;
   const chainId = Number(await provider.send('eth_chainId', []));
   if (chainId !== SURF_DRAW_CHAIN_ID) throw new Error(`Wrong chain: ${chainId}`);
-  const configuredAddress = process.env.SURF_CHAINLINK_SOURCE_ADDRESS?.trim();
-  const expectedHash = process.env.SURF_CHAINLINK_RUNTIME_HASH?.trim();
+  const reusable = drawId === SURF_CHAINLINK_REDRAW_ID;
+  const configuredAddress = (reusable ? process.env.SURF_CHAINLINK_REDRAW_SOURCE_ADDRESS :
+    process.env.SURF_CHAINLINK_SOURCE_ADDRESS)?.trim();
+  const expectedHash = (reusable ? process.env.SURF_CHAINLINK_REDRAW_RUNTIME_HASH :
+    process.env.SURF_CHAINLINK_RUNTIME_HASH)?.trim();
   if (!configuredAddress || !expectedHash) throw new Error('Chainlink Surf contract is not configured');
   const source = getAddress(configuredAddress);
   if (!/^0x[a-fA-F0-9]{64}$/.test(expectedHash)) throw new Error('Chainlink Surf runtime hash is invalid');
   const runtimeHash = keccak256(await provider.getCode(source, block));
   if (runtimeHash.toLowerCase() !== expectedHash.toLowerCase()) throw new Error('Chainlink Surf runtime does not match');
-  const contract = new Contract(source, build.abi, provider);
+  const contract = new Contract(source, reusable ? reusableBuild.abi : build.abi, provider);
   const signer = includeSigner ? suppliedSigner || signerFor(provider) : null;
   const [configuredId, configuredChain, configuredWrapper, owner, stageRaw, status, requestId,
     randomWord, slots, tickets, signerAdmin] = await Promise.all([

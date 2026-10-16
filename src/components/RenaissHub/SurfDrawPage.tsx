@@ -111,9 +111,10 @@ function SurfDrawLive({ locale, onSimulate, onActive, onReset }: LiveProps) {
         unavailable={draw.unavailable} now={draw.now} error={draw.error} notice={draw.notice}
         onAction={executeAction} onRefresh={() => void draw.refresh()} />
     </fieldset>
-    {import.meta.env.DEV && local ? <LocalSurfReset authenticated={administrator}
+    <LocalSurfReset authenticated={administrator}
       drawBusy={Boolean(draw.busy) || isSurfRevealRunning(presentation.phase)}
-      onComplete={onReset} onBusyChange={setResetBusy} /> : null}
+      root={local ? '/api/local/surf-operator/draw' : '/api/admin/missions/surf/draw'}
+      online={!local} onComplete={onReset} onBusyChange={setResetBusy} />
   </>;
 }
 
