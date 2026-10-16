@@ -129,7 +129,7 @@ export function RosterDrawRoom({
           />
         </>
       ) : null}
-      {!active ? <RosterDrawHistory winners={draw.state?.history ?? []} kind={kind}
+      {!active ? <RosterDrawHistory winners={winners} kind={kind}
         busy={draw.busy} onReplay={replayResult} /> : null}
       {kind === "charizard" ? (
         <Suspense fallback={null}>
