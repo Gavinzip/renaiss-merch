@@ -10,6 +10,7 @@ import { reconcileSurfTransactions, sendSurfDrawAction } from './transactions.mj
 
 export function surfResetBlockReason(db, chain, snapshot) {
   const drawId = activeSurfDrawId(db);
+  if (chain.vrf.provider === 'chainlink-v2.5') return 'chainlink_round_cannot_reset';
   if (process.env.SURF_DRAW_ENABLED !== 'true') return 'surf_draw_not_released';
   if (!chain.signerAddress || !chain.signerAdmin) return 'draw_signer_not_authorized';
   if (chain.state === 2) return 'reset_randomness_pending';

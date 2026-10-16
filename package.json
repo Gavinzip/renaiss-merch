@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "node server/index.mjs",
     "dev:client": "vite --host 127.0.0.1",
-    "build": "node scripts/draw-results/compile.mjs --check && node scripts/r2-merch-assets.mjs assert-config && tsc -b && vite build && node scripts/r2-merch-assets.mjs assert-build",
+    "build": "node scripts/draw-results/compile.mjs --check && node scripts/chainlink-surf/compile.mjs && node scripts/r2-merch-assets.mjs assert-config && tsc -b && vite build && node scripts/r2-merch-assets.mjs assert-build",
     "contracts:build": "node scripts/draw-results/compile.mjs --write-manifest",
     "contracts:check": "node scripts/draw-results/compile.mjs --check",
+    "contracts:chainlink:check": "node scripts/chainlink-surf/compile.mjs",
     "assets:audit": "node scripts/r2-merch-assets.mjs audit --catalog media/public-asset-release.json",
     "assets:prepare": "node scripts/r2-merch-assets.mjs prepare --catalog media/public-asset-release.json",
     "assets:publish": "node scripts/r2-merch-assets.mjs publish --catalog media/public-asset-release.json --bucket renaiss-merch-media",

@@ -13,11 +13,11 @@ export function LocalSurfReset({ authenticated, drawBusy, onComplete, onBusyChan
   const replacement = useLocalSurfReplacement(authenticated, onComplete);
   useEffect(() => { onBusyChange(reset.busy || replacement.busy); return () => onBusyChange(false); }, [reset.busy, replacement.busy, onBusyChange]);
   return <section className="draw-local-reset" aria-label="本地鏈上重置">
-    {!replacement.canReplace ? <div><button type="button" disabled={drawBusy || reset.busy || !reset.canReset} onClick={() => void reset.reset()}>
+    {!replacement.canReplace && reset.reasonCode !== 'chainlink_round_cannot_reset' ? <div><button type="button" disabled={drawBusy || reset.busy || !reset.canReset} onClick={() => void reset.reset()}>
       <span aria-hidden="true">↺</span>{reset.busy ? '等待鏈上重置確認…' : '鏈上重置'}
     </button><small>BSC 正式開獎 · 僅本地</small></div> : null}
     {replacement.canReplace ? <div><button type="button" disabled={drawBusy || reset.busy || replacement.busy}
-      onClick={() => void replacement.replace()}>{replacement.busy ? '正在建立新輪…' : '作廢舊輪並建立新輪'}</button></div> : null}
+      onClick={() => void replacement.replace()}>{replacement.busy ? '正在建立新輪…' : replacement.provider === 'chainlink-v2.5' ? '切換 Chainlink 並重置' : '作廢舊輪並建立新輪'}</button></div> : null}
     {reset.message && !replacement.canReplace ? <p role="status">{reset.message}</p> : null}
     {replacement.error ? <p role="alert">{replacement.error}</p> : null}
     {reset.txHash ? <a href={`https://bscscan.com/tx/${reset.txHash}`} target="_blank" rel="noopener noreferrer">查看重置交易 ↗</a> : null}

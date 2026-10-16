@@ -11,6 +11,7 @@ const reasons: Record<string, string> = {
   surf_draw_not_released: '正式開獎尚未啟用',
   draw_signer_not_authorized: '線上簽署錢包尚未就緒',
   reset_randomness_pending: '等待本次 VRF 完成後才能重置',
+  chainlink_round_cannot_reset: 'Chainlink 本輪只能請求一次，抽獎後不可重抽',
   onchain_ledger_mismatch: '正式帳本與鏈上帳本不一致',
   prior_action_pending: '等待上一筆交易確認',
   prior_action_failed: '請先核對失敗的重置交易',
@@ -89,5 +90,6 @@ export function useLocalSurfReset(administrator: boolean, onComplete: () => void
     }
   }
   return { busy, reset, refresh, txHash, canReset: administrator && Boolean(status?.canReset),
+    reasonCode: status?.reason || null,
     message: !administrator ? reasons.surf_draw_access_required : error || (status?.reason ? reasons[status.reason] || status.reason : '') };
 }

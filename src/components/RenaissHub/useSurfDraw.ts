@@ -9,7 +9,8 @@ export type Chain = {
   sourceState?: number;
   results?: { ready: boolean; address: string | null; runtimeHash: string; resultId: string | null; bound: boolean; complete: boolean };
   totalTickets: number; prizeSlotCount: number; ledgerHash: string; winnerCount: number; winners: Winner[];
-  vrf: { coordinatorAddress: string; subscription: { id: string; balanceWei: string; consumerRegistered: boolean; pendingRequest: boolean } | null };
+  vrf: { provider?: 'chainlink-v2.5'; coordinatorAddress: string; wrapperAddress?: string;
+    directPriceWei?: string | null; subscription: { id: string; balanceWei: string; consumerRegistered: boolean; pendingRequest: boolean } | null };
 };
 export type DrawStatus = {
   revision: number;
@@ -43,6 +44,7 @@ const errorCodes: Record<string, string> = {
   draw_signer_not_authorized: 'The server signer is not an admin of the existing contract.',
   vrf_consumer_not_registered: 'The existing contract is not registered as a VRF consumer.',
   vrf_subscription_not_ready: 'The VRF subscription has no balance.',
+  vrf_request_gas_budget_exceeded: 'Chainlink VRF price or gas exceeds the approved request budget.',
   draw_gas_limit_exceeded: 'Gas preflight exceeds the block limit. Stop and diagnose the selector.',
   draw_results_not_configured: '揭露合約尚未部署或設定。',
   draw_reveal_receipt_invalid: '鏈上揭露憑證不符，已停止後續操作。',
@@ -103,7 +105,7 @@ export function useSurfDraw(administrator: boolean, apiBase?: string, enabled = 
   const canAct = Boolean(administrator && nextAction && status?.actionsEnabled && closed && !busy && !loadError && !status.chainError && chain &&
     (nextAction === 'prepare' || chain.results?.ready) &&
     (nextAction === 'prepare' ? (status?.candidate?.tickets || 0) >= prizes.length :
-      chain.signerAdmin && chain.vrf.subscription?.consumerRegistered &&
+      chain.signerAdmin && (chain.vrf.provider === 'chainlink-v2.5' || chain.vrf.subscription?.consumerRegistered) &&
       (nextAction === 'finalize' || chain.ledgerMatch)));
 
   async function act(action: DrawAction, prizeSlots?: number[]) {

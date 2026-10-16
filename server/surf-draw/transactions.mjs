@@ -56,14 +56,20 @@ export async function sendSurfDrawAction(res, db, chain, action, transactionFact
         fresh.signerAddress !== chain.signerAddress || !fresh.signerAdmin) {
       throw new HttpError(409, 'draw_state_changed');
     }
-    const tx = await transactionFactory();
-    const estimate = await fresh.provider.estimateGas({ ...tx, from: fresh.signer.address });
+    const fee = await fresh.provider.getFeeData();
+    if (!fee.gasPrice) throw new HttpError(503, 'gas_price_unavailable');
+    const tx = await transactionFactory({ fresh, gasPrice: fee.gasPrice });
+    const estimate = await fresh.provider.estimateGas({ ...tx, from: fresh.signer.address, gasPrice: fee.gasPrice });
     const latest = await fresh.provider.getBlock('latest');
     const gasLimit = estimate * 120n / 100n;
     if (!latest || gasLimit >= latest.gasLimit) throw new HttpError(409, 'draw_gas_limit_exceeded');
-    const fee = await fresh.provider.getFeeData();
-    if (!fee.gasPrice) throw new HttpError(503, 'gas_price_unavailable');
     const nonce = await fresh.provider.getTransactionCount(fresh.signer.address, 'pending');
+    if (fresh.vrf.provider === 'chainlink-v2.5' && action === 'request') {
+      const cost = gasLimit * fee.gasPrice + BigInt(tx.value || 0);
+      if (!tx.value || cost > 2_000_000_000_000_000n ||
+          await fresh.provider.getBalance(fresh.signer.address) < cost)
+        throw new HttpError(409, 'vrf_request_gas_budget_exceeded');
+    }
     if (action.startsWith('reset:')) {
       if (nonce !== await fresh.provider.getTransactionCount(fresh.signer.address, 'latest')) throw new HttpError(409, 'prior_action_pending');
       const cost = gasLimit * fee.gasPrice;

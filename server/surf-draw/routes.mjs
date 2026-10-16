@@ -14,6 +14,7 @@ import { assertSurfRevision, surfRevision } from './lifecycle.mjs';
 import { readSurfOperatorSession } from './operator-routes.mjs';
 import { handleSurfReset } from './reset.mjs';
 import { handleSurfRoundReplacement } from './round-replacement.mjs';
+import { chainlinkRequestTransaction } from './chainlink-chain.mjs';
 import { captureSurfWinnerContacts } from './winner-contacts.mjs';
 
 const ROOT = '/api/admin/missions/surf/draw';
@@ -119,7 +120,8 @@ export function createSurfDrawHandler({ readSession }) {
     try {
       if (!chain.results.ready) throw new HttpError(409, 'draw_results_not_configured');
       if (!chain.signer || !chain.signerAdmin) throw new HttpError(403, 'draw_signer_not_authorized');
-      if (!chain.vrf.subscription?.consumerRegistered) throw new HttpError(409, 'vrf_consumer_not_registered');
+      if (chain.vrf.provider !== 'chainlink-v2.5' && !chain.vrf.subscription?.consumerRegistered)
+        throw new HttpError(409, 'vrf_consumer_not_registered');
       if (action === 'finalize') {
         if (chain.state !== 0) throw new HttpError(409, 'draw_not_draft');
         return await sendSurfDrawAction(res, db, chain, 'finalize', () => chain.contract.finalizeLedger.populateTransaction(
@@ -131,10 +133,13 @@ export function createSurfDrawHandler({ readSession }) {
         if (chain.state !== 1) throw new HttpError(409, 'draw_not_finalized');
         // The coordinator's subscription-level pending flag includes the
         // superseded request; readiness is determined by this draw's state.
-        if (BigInt(chain.vrf.subscription.balanceWei) === 0n) {
+        if (chain.vrf.provider !== 'chainlink-v2.5' && BigInt(chain.vrf.subscription.balanceWei) === 0n) {
           throw new HttpError(409, 'vrf_subscription_not_ready');
         }
-        return await sendSurfDrawAction(res, db, chain, 'request', () => chain.contract.requestDraw.populateTransaction(drawId), body.expectedRevision);
+        return await sendSurfDrawAction(res, db, chain, 'request',
+          chain.vrf.provider === 'chainlink-v2.5'
+            ? ({ fresh, gasPrice }) => chainlinkRequestTransaction(fresh, gasPrice)
+            : () => chain.contract.requestDraw.populateTransaction(drawId), body.expectedRevision);
       }
       if (chain.state !== 3) throw new HttpError(409, 'randomness_not_ready');
       const slots = validateSurfRevealSelection(body, chain, SURF_DRAW_PRIZES);
@@ -167,7 +172,8 @@ function safeChainError(error) {
   const message = error instanceof Error ? error.message : '';
   if (message.startsWith('SURF_DRAW_RPC_URL') || message.startsWith('Wrong chain:') ||
       message.startsWith('Canonical Surf draw') || message.startsWith('On-chain winners') ||
-      message.startsWith('Surf draw snapshot') || message.startsWith('Surf draw results')) return message;
+      message.startsWith('Surf draw snapshot') || message.startsWith('Surf draw results') ||
+      message.startsWith('Chainlink Surf') || message.startsWith('Chainlink VRF')) return message;
   const code = typeof error?.code === 'string' ? error.code.replace(/[^A-Z0-9_]/gi, '').slice(0, 40) : 'unknown';
   return `鏈上讀取失敗（${code}）；請檢查 Surf RPC、合約與網路狀態。`;
 }

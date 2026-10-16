@@ -1,5 +1,5 @@
 import { Contract, FetchRequest, JsonRpcProvider, Wallet, keccak256 } from 'ethers';
-import { SURF_DRAW_ADDRESS, SURF_DRAW_CHAIN_ID, SURF_DRAW_ID, SURF_DRAW_PRIZES, SURF_DRAW_RUNTIME_HASH, findWinner } from './model.mjs';
+import { SURF_CHAINLINK_DRAW_ID, SURF_DRAW_ADDRESS, SURF_DRAW_CHAIN_ID, SURF_DRAW_ID, SURF_DRAW_PRIZES, SURF_DRAW_RUNTIME_HASH, findWinner } from './model.mjs';
 import { readSurfResults } from './results.mjs';
 
 export const drawAbi = [
@@ -37,6 +37,10 @@ export function signerFor(provider) {
 }
 
 export async function readSurfChain(snapshot, options = {}) {
+  if ((options.drawId || snapshot?.draw_id) === SURF_CHAINLINK_DRAW_ID) {
+    const { readChainlinkSurfChain } = await import('./chainlink-chain.mjs');
+    return readChainlinkSurfChain(snapshot, options);
+  }
   const provider = options.provider || drawProvider();
   try { return await readSurfChainAt(provider, snapshot, options); }
   catch (error) { if (!options.provider) provider.destroy(); throw error; }

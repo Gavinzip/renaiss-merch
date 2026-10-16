@@ -93,13 +93,14 @@ export function SurfDrawBoard(props: BoardProps) {
             <code>{status.superseded.drawId}</code> · BSC #{status.superseded.observedBlock.toLocaleString('en-US')} · <a href={`https://bscscan.com/tx/${status.superseded.requestTxHash}`}
               target="_blank" rel="noopener noreferrer">{locale === 'zh-TW' ? '舊請求紀錄' : 'Old request'} ↗</a>
           </dd></div> : null}
-          <div><dt>{copy.source}</dt><dd><a href="https://bscscan.com/address/0x78b79dB5726700BeDb18BC05aA612b11E33B00A9#code" target="_blank" rel="noopener noreferrer">0x78b79dB5726700BeDb18BC05aA612b11E33B00A9 ↗</a></dd></div>
+          <div><dt>{copy.source}</dt><dd>{chain?.source ? <a href={`https://bscscan.com/address/${chain.source}#code`} target="_blank" rel="noopener noreferrer">{chain.source} ↗</a> : copy.notSet}</dd></div>
           <div><dt>{copy.results}</dt><dd>{chain?.results?.address ? <a href={`https://bscscan.com/address/${chain.results.address}#code`} target="_blank" rel="noopener noreferrer">{chain.results.address} ↗</a> : copy.notSet}</dd></div>
           {chain?.sourceState !== undefined && chain.sourceState !== chain.state ? <div><dt>{copy.sourceStage}</dt><dd>{copy.states[chain.sourceState]}</dd></div> : null}
           <div><dt>{copy.ledgerHash}</dt><dd><code>{status?.snapshot?.ledgerHash || copy.notLocked}</code></dd></div>
           <div><dt>{copy.participants}</dt><dd>{status?.snapshot?.participants ?? status?.candidate?.participants ?? '—'} · {status?.snapshot?.tickets ?? status?.candidate?.tickets ?? '—'} {copy.tickets}</dd></div>
           {administrator ? <div><dt>{copy.signer}</dt><dd>{chain?.signerAddress || copy.notSet}{chain?.signerAdmin === false ? ` · ${copy.needsAdmin}` : ''}</dd></div> : null}
           {administrator && chain?.vrf.subscription ? <div><dt>VRF</dt><dd>#{chain.vrf.subscription.id} · {chain.vrf.subscription.balanceWei} wei · {chain.vrf.subscription.consumerRegistered ? 'Consumer ✓' : 'Consumer ×'}</dd></div> : null}
+          {administrator && chain?.vrf.provider === 'chainlink-v2.5' ? <div><dt>VRF</dt><dd>Chainlink v2.5 · Direct funding · {chain.vrf.directPriceWei} wei</dd></div> : null}
         </dl>
         {administrator ? <div className="surf-draw-proof__transactions"><h3>{copy.transactions}</h3>{status?.transactions.length ? status.transactions.map(tx =>
           <p key={tx.txHash}><span>{tx.action.startsWith('reveal:') ? `${scene.prize} ${tx.action.slice(7).split(',').map(slot => Number(slot) + 1).join(', ')}` : actionName(tx.action as DrawAction, locale)}</span>
