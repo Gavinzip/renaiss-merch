@@ -1,0 +1,32 @@
+{
+  "access": "private",
+  "bucket": "renaiss-merch-private-pilot-20261018",
+  "prefix": "merch/v1.2/surf",
+  "release": "r9a0782e12e7511dbea11",
+  "assets": {
+    "video": {
+      "type": "binary",
+      "source": ".media-assets/surf-store-h264/reveal/surf-box-open-4s-1080p.mp4",
+      "sourceContentType": "video/mp4",
+      "contentType": "video/mp4",
+      "path": "reveal/surf-box-open-4s-1080p.mp4"
+    },
+    "poster": {
+      "type": "binary",
+      "source": ".media-assets/surf-store-source/reveal/surf-box-start-frame-1080p-v2.png",
+      "sourceContentType": "image/png",
+      "contentType": "image/png",
+      "path": "reveal/surf-box-start-frame-1080p-v2.png"
+    },
+    "reverse": {
+      "type": "binary",
+      "source": ".media-assets/surf-store-h264/reveal/surf-box-close-4s-1080p.mp4",
+      "sourceContentType": "video/mp4",
+      "contentType": "video/mp4",
+      "path": "reveal/surf-box-close-4s-1080p.mp4"
+    }
+  },
+  "contentHash": "9a0782e12e7511dbea11fb65417a7129c902d5bc932020d96df14a946643e09a",
+  "fileCount": 3,
+  "totalBytes": 12651888
+}

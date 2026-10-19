@@ -4,12 +4,31 @@ import { surfPreviewLogoUrl } from '../RenaissHub/hubPreviewAssets';
 import { surfCampaignAssets } from '../RenaissHub/surfCampaignAssets';
 import { SurfProCredential } from './SurfProCredential';
 import { surfStoreCopy } from './surfStoreCopy';
+import type { SurfStoreRelease } from '../../hooks/useStorefrontFeatures';
+import { SurfStoreAvailability } from './SurfStoreAvailability';
 
-export function SurfStoreRewardCard({ reward }: { reward: SurfActiveStoreReward }) {
+type Props = {
+  reward: SurfActiveStoreReward;
+  release: SurfStoreRelease | null;
+  onOpenReward: (id: SurfActiveStoreReward['id']) => void;
+  checking: boolean;
+  busy: boolean;
+  error: string | null;
+};
+
+export function SurfStoreRewardCard({ reward, release, onOpenReward, checking, busy, error }: Props) {
   const { locale } = useLocale();
   const copy = surfStoreCopy[locale];
   const benefit = copy.benefits[reward.id];
   const titleId = `surf-store-${reward.id}-title`;
+  const opensAt = release ? new Intl.DateTimeFormat(locale, {
+    timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+  }).format(new Date(release.opensAt)) : '';
+  const releaseCopy = {
+    'zh-TW': { opens: `台灣時間 ${opensAt} 開放`, checking: '正在檢查資格…' },
+    en: { opens: `Opens ${opensAt} (UTC+8)`, checking: 'Checking eligibility…' },
+    ko: { opens: `${opensAt} (UTC+8) 오픈`, checking: '자격 확인 중…' },
+  }[locale];
 
   return (
     <>
@@ -28,9 +47,12 @@ export function SurfStoreRewardCard({ reward }: { reward: SurfActiveStoreReward 
           <p className="surf-store-card__edition">RENAISS × SURF / {benefit.label}</p>
           <h2 id={titleId}>{benefit.name}</h2>
           <p className="surf-store-card__description">{benefit.description}</p>
-          <button type="button" disabled>
-            {copy.unavailable}
+          <SurfStoreAvailability reward={reward} />
+          <button type="button" disabled={!release?.open || busy}
+            data-surf-reward-opener={reward.id} onClick={() => onOpenReward(reward.id)}>
+            {checking ? releaseCopy.checking : release?.open ? benefit.view : release ? releaseCopy.opens : copy.unavailable}
           </button>
+          {error ? <p className="surf-store-card__description" role="alert">{error}</p> : null}
         </div>
       </article>
     </>

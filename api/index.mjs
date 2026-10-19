@@ -1,6 +1,9 @@
 import { HttpError, sendJson, sendHttpError } from "../server/http.mjs";
 import { getStorefrontMode } from "../server/storefront-mode.mjs";
 import { getStorefrontFeatures } from "../server/storefront-features.mjs";
+import { readSurfStoreAccess } from "../server/surf-store-access.mjs";
+import { readSurfStoreMediaUrls } from "../server/surf-store-media.mjs";
+import { createSurfStoreRoutes } from '../server/surf-store-routes.mjs';
 import {
   normalizeShippingPayload,
   normalizeShippingProfilePayload,
@@ -35,8 +38,14 @@ import { handleBackupRoute } from "../server/postgres/backup.mjs";
 import { handleWorkflowRoutes } from "../server/postgres/workflow-routes.mjs";
 
 const tables = sqlTables();
+const handleSurfStoreRoutes = createSurfStoreRoutes();
 const allowedPaths = [
   "/api/storefront/features",
+  "/api/surf-store/access",
+  "/api/surf-store/claim",
+  "/api/surf-store/inventory",
+  "/api/admin/surf-store/claims",
+  "/api/surf-store/media",
   "/api/auth/session",
   "/api/auth/renaiss/start",
   "/auth/callback",
@@ -124,6 +133,7 @@ export default async function handler(req, res) {
     }
     if (await handleBackupRoute(req, res, url)) return;
     if (await handleWorkflowRoutes(req, res, url)) return;
+    if (await handleSurfStoreRoutes(req, res, url)) return;
     if (
       url.pathname.startsWith("/api/auth/") ||
       url.pathname === "/auth/callback"
@@ -143,6 +153,16 @@ export default async function handler(req, res) {
     }
     const session = await readSession(req);
     subject(session);
+    if (url.pathname === '/api/surf-store/access') {
+      method(req, 'GET');
+      sendJson(res, 200, await readSurfStoreAccess(session, url.searchParams.get('rewardId')));
+      return;
+    }
+    if (url.pathname === '/api/surf-store/media') {
+      method(req, 'GET');
+      sendJson(res, 200, await readSurfStoreMediaUrls(session));
+      return;
+    }
     if (url.pathname === "/api/merch-7-eleven/map") {
       method(req, "POST"); sameOrigin(req);
       await handleSevenElevenMapStart(req, res, session, { publicOrigin: getPublicOrigin(req) });

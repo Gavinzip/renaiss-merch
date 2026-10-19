@@ -1,5 +1,5 @@
 // Notion section 6B: planned shop allocations, independent of the raffle pool.
-// Holding requirements are confirmed; redemption remains unopened.
+// Holding requirements are confirmed; server/surf-store-release.mjs owns the opening time.
 export const surfStoreRewards = Object.freeze([
   Object.freeze({ id: 'mystery-box', plannedQuantity: 3, approximateQuantity: false, status: 'planned', minimumSbtBalance: 120, redemptionUrl: null }),
   Object.freeze({ id: 'pro-month', plannedQuantity: 20, approximateQuantity: false, status: 'planned', minimumSbtBalance: 100, redemptionUrl: null }),

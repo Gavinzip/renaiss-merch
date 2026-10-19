@@ -77,10 +77,14 @@ import { HubAccountAction } from '../RenaissHub/HubAccountAction';
 import { HubPageLoading } from '../RenaissHub/HubPageLoading';
 import { useStoreInitialReadiness } from './useStoreInitialReadiness';
 import './MerchHubStore.css';
+import { useSurfRewardNavigation } from './useSurfRewardNavigation';
+import { useSurfStoreAccess } from '../SurfStoreRewards/useSurfStoreAccess';
+import { SurfStoreInventoryProvider } from '../SurfStoreRewards/SurfStoreInventoryContext';
 
 // Preview cards remain outside the physical-product claim flow. Their temporary
 // visibility comes from the server environment, so it does not require a build.
 const SurfStoreRewards = lazy(() => import('../SurfStoreRewards/SurfStoreRewards'));
+const SurfRewardScene = lazy(() => import('../SurfStoreRewards/SurfRewardScene'));
 
 type StoreState =
   | 'loading-session'
@@ -165,6 +169,8 @@ export function MerchStore({
       CATALOG_VIEW_ENABLED ? readStoredMerchStoreView() : 'cards'
   );
   const storeRoot = useRef<HTMLElement>(null);
+  const surfNavigation = useSurfRewardNavigation(storeRoot);
+  const surfAccess = useSurfStoreAccess(surfNavigation.open, onLogin);
   const accessResultGenerationRef = useRef(0);
   const productCheckGenerationRef = useRef(0);
   const privateImageGenerationRef = useRef(0);
@@ -718,10 +724,10 @@ export function MerchStore({
     onExitStore?.();
   }
 
-  const showStore = !accessResult || !accessResultReady;
+  const showStore = !surfNavigation.openRewardId && (!accessResult || !accessResultReady);
 
   return (
-    <>
+    <SurfStoreInventoryProvider enabled={showSurfRewards}>
       {showStore ? (
         <main
           ref={storeRoot}
@@ -958,7 +964,10 @@ export function MerchStore({
           })}
           {showSurfRewards ? (
             <Suspense>
-              <SurfStoreRewards />
+              <SurfStoreRewards
+                release={storefrontFeatures.state.status === 'ready' ? storefrontFeatures.state.surfStoreRelease : null}
+                onOpenReward={id => void surfAccess.open(id)}
+                checkingRewardId={surfAccess.checkingRewardId} error={surfAccess.error} />
             </Suspense>
           ) : null}
         </div>
@@ -1010,6 +1019,9 @@ export function MerchStore({
         </main>
       ) : null}
 
+      {surfNavigation.openRewardId ? <Suspense>
+        <SurfRewardScene rewardId={surfNavigation.openRewardId} onBack={surfNavigation.close} />
+      </Suspense> : null}
       {accessResult ? (
         <div
           aria-hidden={!accessResultReady}
@@ -1032,7 +1044,7 @@ export function MerchStore({
           />
         </div>
       ) : null}
-    </>
+    </SurfStoreInventoryProvider>
   );
 }
 

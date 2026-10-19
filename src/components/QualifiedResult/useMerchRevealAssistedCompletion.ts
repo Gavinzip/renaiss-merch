@@ -9,6 +9,9 @@ import type { MerchProductId } from '../../lib/merchProducts';
 export type MerchRevealPhase = 'idle' | 'playing' | 'review' | 'closing';
 
 type MerchRevealAssistedCompletionOptions = {
+  enabled?: boolean;
+  autoCompleteSeconds?: number;
+  claimFormProgress?: number;
   forwardVideoRef: RefObject<HTMLVideoElement | null>;
   hasReverseVideo: boolean;
   journeyRef: RefObject<HTMLElement | null>;
@@ -17,7 +20,7 @@ type MerchRevealAssistedCompletionOptions = {
     decode: string;
     reveal: string;
   };
-  productId: MerchProductId;
+  productId: MerchProductId | 'surf-box';
   reverseVideoRef: RefObject<HTMLVideoElement | null>;
   setMediaReady: Dispatch<SetStateAction<boolean>>;
   setPlaybackError: Dispatch<SetStateAction<string | null>>;
@@ -36,6 +39,9 @@ const MOBILE_REVEAL_MEDIA_QUERY = '(max-width: 860px), (pointer: coarse)';
 const MOBILE_CLAIM_FORM_REVEAL_DELAY_MS = 1300;
 
 export function useMerchRevealAssistedCompletion({
+  enabled = true,
+  autoCompleteSeconds = AUTO_COMPLETE_SECONDS,
+  claimFormProgress = CLAIM_FORM_PROGRESS,
   forwardVideoRef,
   hasReverseVideo,
   journeyRef,
@@ -49,6 +55,7 @@ export function useMerchRevealAssistedCompletion({
   startAtEnd
 }: MerchRevealAssistedCompletionOptions) {
   useLayoutEffect(() => {
+    if (!enabled) return undefined;
     const journey = journeyRef.current!;
     const forwardVideo = forwardVideoRef.current!;
     const reverseVideo = reverseVideoRef.current!;
@@ -115,7 +122,7 @@ export function useMerchRevealAssistedCompletion({
       setClaimFormVisible(
         allowClaimForm &&
           !mobileRevealQuery?.matches &&
-          progress >= CLAIM_FORM_PROGRESS
+          progress >= claimFormProgress
       );
 
       if (driveDocument) {
@@ -179,7 +186,7 @@ export function useMerchRevealAssistedCompletion({
         ) {
           failPlayback(kind);
         }
-      }, AUTO_COMPLETE_SECONDS * 1000 + PLAYBACK_TIMEOUT_BUFFER_MS);
+      }, autoCompleteSeconds * 1000 + PLAYBACK_TIMEOUT_BUFFER_MS);
     }
 
     function completeReveal(delayClaimForm = true) {
@@ -316,7 +323,7 @@ export function useMerchRevealAssistedCompletion({
       const progress = clampProgress(
         1 -
           (timestamp - manualReverseStartedAt) /
-            (AUTO_COMPLETE_SECONDS * 1000)
+            (autoCompleteSeconds * 1000)
       );
       seekVideo(reverseVideo, readEndTime(reverseDuration) * progress);
       syncProgress(progress, { allowClaimForm: false });
@@ -345,7 +352,7 @@ export function useMerchRevealAssistedCompletion({
         return;
       }
 
-      forwardVideo.playbackRate = readPlaybackRate(forwardDuration);
+      forwardVideo.playbackRate = readPlaybackRate(forwardDuration, autoCompleteSeconds);
       armPlaybackTimer('forward');
       void forwardVideo.play().then(requestForwardProgressSync).catch(() => {
         if (!disposed && currentPhase === 'playing') {
@@ -394,7 +401,7 @@ export function useMerchRevealAssistedCompletion({
           }
 
           reverseDuration = readVideoDuration(reverseVideo);
-          reverseVideo.playbackRate = readPlaybackRate(reverseDuration);
+          reverseVideo.playbackRate = readPlaybackRate(reverseDuration, autoCompleteSeconds);
           return reverseVideo.play().then(requestReverseProgressSync);
         })
         .catch(() => {
@@ -431,8 +438,8 @@ export function useMerchRevealAssistedCompletion({
     function handleMetadata() {
       forwardDuration = readVideoDuration(forwardVideo) || forwardDuration;
       reverseDuration = readVideoDuration(reverseVideo) || reverseDuration;
-      forwardVideo.playbackRate = readPlaybackRate(forwardDuration);
-      reverseVideo.playbackRate = readPlaybackRate(reverseDuration);
+      forwardVideo.playbackRate = readPlaybackRate(forwardDuration, autoCompleteSeconds);
+      reverseVideo.playbackRate = readPlaybackRate(reverseDuration, autoCompleteSeconds);
 
       if (!initialized && forwardDuration > 0) {
         initialized = true;
@@ -556,6 +563,9 @@ export function useMerchRevealAssistedCompletion({
       );
     };
   }, [
+    enabled,
+    autoCompleteSeconds,
+    claimFormProgress,
     forwardVideoRef,
     hasReverseVideo,
     journeyRef,
@@ -640,10 +650,10 @@ function waitForVideoEvent(
   });
 }
 
-function readPlaybackRate(duration: number) {
+function readPlaybackRate(duration: number, autoCompleteSeconds: number) {
   return Math.min(
     3,
-    Math.max(1, duration > 0 ? duration / AUTO_COMPLETE_SECONDS : 1)
+    Math.max(1, duration > 0 ? duration / autoCompleteSeconds : 1)
   );
 }
 
@@ -665,9 +675,12 @@ function clampProgress(progress: number) {
 }
 
 function readMobileVideoPanX(
-  productId: MerchProductId,
+  productId: MerchProductId | 'surf-box',
   progress: number
 ) {
+  if (productId === 'surf-box') {
+    return 50 - 36 * clampProgress((progress - 0.3) / 0.425);
+  }
   if (productId === 'ticket') {
     return interpolateCameraStops(
       [

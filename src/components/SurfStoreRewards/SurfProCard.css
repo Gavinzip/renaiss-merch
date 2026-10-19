@@ -1,0 +1,28 @@
+.surf-pro-card-turn {
+  position: relative;
+  aspect-ratio: 720 / 472;
+  transform-style: preserve-3d;
+  transform: perspective(1400px) rotateY(calc(180deg * (1 - var(--surf-pro-progress))));
+}
+.surf-pro-card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.surf-pro-card-back { transform: rotateY(180deg); }
+.surf-pro-pass[data-front-visible="false"] .surf-pro-card-front,
+.surf-pro-pass[data-front-visible="true"] .surf-pro-card-back { visibility: hidden; }
+.surf-pro-pass .surf-pro-card-face > .surf-pro-credential {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.surf-pro-card-front .surf-pro-material {
+  opacity: .52;
+  mix-blend-mode: luminosity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .surf-pro-card-turn { transform: none; }
+  .surf-pro-card-back { transform: none; }
+}

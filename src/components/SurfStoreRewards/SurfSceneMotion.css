@@ -1,0 +1,20 @@
+.surf-pro-toolbar > [data-scene-item],
+.surf-pro-loader > [data-scene-item],
+.surf-pro-error > [data-scene-item],
+.surf-box-scene__toolbar > [data-scene-item],
+.surf-box-scene__loader > [data-scene-item],
+.surf-box-scene__error > [data-scene-item],
+.surf-box-scene__media-entry {
+  animation: surf-scene-enter 400ms cubic-bezier(.22,1,.36,1) both;
+}
+.surf-pro-toolbar > span { animation-delay: 30ms; }
+.surf-pro-loader > progress, .surf-box-scene__loader > progress { animation-delay: 30ms; }
+.surf-box-scene__media-entry { animation-delay: 40ms; }
+.surf-pro-intro > span, .surf-pro-scroll-hint > span, .surf-box-scene__scroll-hint > span { display: inline-flex; align-items: center; gap: 12px; }
+@keyframes surf-scene-enter {
+  from { opacity: .12; translate: 0 8px; filter: blur(4px); }
+  to { opacity: 1; translate: 0 0; filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .surf-pro-scene [data-scene-item], .surf-box-scene [data-scene-item] { animation: none; }
+}

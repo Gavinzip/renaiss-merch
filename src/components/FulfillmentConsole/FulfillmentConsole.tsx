@@ -18,10 +18,11 @@ import {
   type AppLocale
 } from '../../i18n/LocaleContext';
 import { SurfParticipants } from './SurfParticipants';
+import { SurfStoreClaims, surfStoreClaimsTitle, surfStoreClaimsDescription } from './SurfStoreClaims';
 
 type FulfillmentConsoleProps = {
   onClose: () => void;
-  initialSection?: 'shipping' | 'surf';
+  initialSection?: 'shipping' | 'surf' | 'surf-store';
 };
 
 type LoadState = 'loading' | 'ready' | 'error';
@@ -131,12 +132,12 @@ export function FulfillmentConsole({ onClose, initialSection = 'shipping' }: Ful
     <dialog ref={dialogRef} className="fulfillment-console" aria-labelledby="fulfillment-title"
       onCancel={event => { event.preventDefault(); onClose(); }}>
       <div className="fulfillment-console__backdrop" aria-hidden="true" />
-      <div className={`fulfillment-console__panel${section === 'surf' ? ' fulfillment-console__panel--participants' : ''}`}>
+      <div className={`fulfillment-console__panel${section !== 'shipping' ? ' fulfillment-console__panel--participants' : ''}`}>
         <header className="fulfillment-console__header">
           <div>
             <p className="fulfillment-console__eyebrow">RENAISS MERCH</p>
-            <h2 id="fulfillment-title">{section === 'surf' ? inlineCopy[locale].surfRaffleParticipants : copy.title}</h2>
-            <p>{section === 'surf' ? inlineCopy[locale].reviewVerificationResultsAndTicketCountsFor : copy.intro}</p>
+            <h2 id="fulfillment-title">{section === 'surf-store' ? surfStoreClaimsTitle[locale] : section === 'surf' ? inlineCopy[locale].surfRaffleParticipants : copy.title}</h2>
+            <p>{section === 'surf-store' ? surfStoreClaimsDescription[locale] : section === 'surf' ? inlineCopy[locale].reviewVerificationResultsAndTicketCountsFor : copy.intro}</p>
           </div>
           <button className="fulfillment-console__close" type="button" onClick={onClose}>
             {copy.close}
@@ -145,8 +146,9 @@ export function FulfillmentConsole({ onClose, initialSection = 'shipping' }: Ful
         <nav className="fulfillment-console__sections" aria-label={inlineCopy[locale].managementSections}>
           <button type="button" aria-pressed={section === 'shipping'} onClick={() => setSection('shipping')}>{inlineCopy[locale].shipping}</button>
           <button type="button" aria-pressed={section === 'surf'} onClick={() => setSection('surf')}>{inlineCopy[locale].surfParticipants}</button>
+          <button type="button" aria-pressed={section === 'surf-store'} onClick={() => setSection('surf-store')}>{surfStoreClaimsTitle[locale]}</button>
         </nav>
-        {section === 'surf' ? <SurfParticipants /> : <>
+        {section === 'surf-store' ? <SurfStoreClaims /> : section === 'surf' ? <SurfParticipants /> : <>
         {loadState === 'loading' ? (
           <p className="fulfillment-console__loading" role="status">{copy.loading}</p>
         ) : null}

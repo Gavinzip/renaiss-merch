@@ -56,6 +56,40 @@
 .surf-store-card__edition { margin: 0; color: #847586; font-size: .54rem; font-weight: 650; letter-spacing: .12em; }
 .surf-store-card__body h2 { margin: 0; font-size: clamp(1.35rem, 2vw, 2rem); line-height: 1.15; letter-spacing: -.04em; font-weight: 800; }
 .surf-store-card__description { margin: 0 0 .35rem; color: #716772; font-size: .8rem; line-height: 1.5; }
+.surf-store-availability {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .35rem .75rem;
+  margin-top: auto;
+  padding-top: .85rem;
+  border-top: 1px solid #8475862b;
+  color: #716772;
+  font-size: .65rem;
+  line-height: 1.4;
+}
+.surf-store-availability__edition { font-weight: 550; letter-spacing: .04em; }
+.surf-store-availability__remaining {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .3rem;
+  font-weight: 600;
+  animation: surf-store-count-enter 180ms ease-out;
+}
+.surf-store-availability__remaining strong {
+  color: #34313a;
+  font-size: 1.05rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.surf-store-availability[data-state="sold-out"] .surf-store-availability__remaining { color: #756874; }
+.surf-store-availability[data-state="error"] .surf-store-availability__remaining { color: #8b3f40; }
+@keyframes surf-store-count-enter {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 .surf-reward-facts { display: grid; gap: 12px; margin: 0 0 20px; padding-top: 16px; border-top: 1px solid #e6dfe9; font-size: 11px; }
 .surf-reward-facts > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; }
 .surf-reward-facts dt { color: #75647d; }
@@ -66,7 +100,7 @@
   align-items: center;
   width: 100%;
   min-height: 2.75rem;
-  margin-top: auto;
+  margin-top: .15rem;
   padding: .65rem .8rem;
   color: #28212b;
   background: transparent;
@@ -167,4 +201,5 @@
   .surf-reward-dialog.t-modal { transition: none !important; }
   .surf-store-card { transition: none; }
   .surf-store-card:hover { transform: none; }
+  .surf-store-availability__remaining { animation: none; }
 }

@@ -76,6 +76,7 @@ export function sqlTables(schema = "public") {
     "merch_product_entitlements",
     "merch_access_checks",
     "hub_preferences",
+    "surf_store_claims",
   ];
   return Object.fromEntries(names.map((name) => [name, `${schema}.${name}`]));
 }

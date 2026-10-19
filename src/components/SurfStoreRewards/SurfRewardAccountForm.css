@@ -1,0 +1,22 @@
+/* Layout only. Typography and controls share the existing claim treatment. */
+.surf-reward-account { padding: 5px 5px 20px; color: #121211; }
+.surf-reward-account[data-presence="hidden"] { visibility: hidden; }
+.surf-reward-account__logo { width: 42px; height: 42px; object-fit: contain; border-radius: 12px; margin-bottom: 20px; }
+.surf-reward-account h2 { margin: 0; color: #121211; font-size: clamp(1.85rem, 2.45vw, 2.35rem); font-weight: 900; line-height: .94; letter-spacing: 0; text-wrap: balance; }
+.surf-reward-account h2:focus { outline: none; }
+.surf-reward-account__description { margin: .62rem 0 1.4rem; color: rgba(18,18,17,.6); font-size: .84rem; font-weight: 650; line-height: 1.42; }
+.surf-reward-account .surf-reward-facts { color: #121211; border-color: rgba(18,18,17,.14); margin-bottom: 1.5rem; padding-top: 1rem; font-size: .72rem; font-weight: 650; }
+.surf-reward-account .surf-reward-facts dt { color: rgba(18,18,17,.58); }
+.surf-reward-account__field { display: grid; gap: .3rem; }
+.surf-reward-account__field input { box-sizing: border-box; }
+.surf-reward-account__hint, .surf-reward-account__error { margin: .35rem 0 0; color: rgba(18,18,17,.6); font-size: .72rem; font-weight: 650; line-height: 1.42; }
+.surf-reward-account__error { color: #8b1f12; }
+.surf-reward-account__submit { width: 100%; margin-top: .9rem; }
+.surf-reward-account__submit:disabled { cursor: not-allowed; }
+.surf-reward-account__note { margin: .55rem 0 0; color: rgba(18,18,17,.56); font-size: .72rem; font-weight: 720; line-height: 1.35; }
+@media (max-width: 860px), (pointer: coarse) {
+  .surf-reward-account__logo { width: 32px; height: 32px; border-radius: 9px; margin-bottom: 14px; }
+}
+@media (max-width: 540px) {
+  .surf-reward-account h2 { font-size: 1.8rem; }
+}
