@@ -66,6 +66,9 @@ if (command === 'audit' || command === 'prepare') {
 
 if (command === 'publish') {
   const bucket = options.bucket || catalog.bucket;
+  if (!['renaiss-merch-pilot-20261018','renaiss-merch-private-pilot-20261018'].includes(bucket)) {
+    throw new Error('Migration copy may publish only to its isolated pilot buckets.');
+  }
 
   if (!bucket) {
     throw new Error('An R2 bucket is required.');

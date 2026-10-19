@@ -1,10 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { readMerchProductId } from './eligibility.mjs';
 import { HttpError, redirect, sendJson } from './http.mjs';
-import {
-  getMerchDatabase,
-  runWithSqliteBusyRetry
-} from './merch-database.mjs';
+import { createSevenElevenStore } from './postgres/seven-eleven.mjs';
 import { readJsonBody } from './shipping-details.mjs';
 import { isHiddenHubPath } from '../shared/site-routes.js';
 
@@ -13,7 +10,6 @@ const ECPAY_STAGE_MAP_URL =
 const ECPAY_PRODUCTION_MAP_URL =
   'https://logistics.ecpay.com.tw/Express/map';
 const LOGISTICS_SUB_TYPE = 'UNIMARTC2C';
-const PENDING_SELECTION_MINUTES = 30;
 const MAX_FORM_BODY_BYTES = 16 * 1024;
 const tokenPattern = /^[A-Za-z0-9]{20}$/;
 const merchantIdPattern = /^[A-Za-z0-9]{1,10}$/;
@@ -44,7 +40,7 @@ export async function handleSevenElevenMapStart(
   const returnTo = readSafeReturnTo(payload.get('returnTo'));
   const device = payload.get('device') === '1' ? '1' : '0';
   const config = getEcpayStoreMapConfig(options.publicOrigin);
-  const selection = createPendingSelection(
+  const selection = await createPendingSelection(
     {
       context,
       merchantId: config.merchantId,
@@ -69,7 +65,7 @@ export async function handleSevenElevenMapStart(
 export async function handleSevenElevenMapCallback(req, res, options = {}) {
   const payload = await readUrlEncodedBody(req);
   const token = readSelectionToken(payload.get('MerchantTradeNo'));
-  const selection = readSelectionByToken(token, options);
+  const selection = await readSelectionByToken(token, options);
 
   if (!selection || new Date(selection.expires_at).getTime() <= Date.now()) {
     throw new HttpError(410, 'seven_eleven_selection_expired');
@@ -104,7 +100,7 @@ export async function handleSevenElevenMapCallback(req, res, options = {}) {
     outside: readStoreOutside(payload.get('CVSOutSide'))
   };
 
-  saveReturnedSelection(selection, store, options);
+  await saveReturnedSelection(selection, store, options);
   redirect(res, buildSelectionReturnLocation(selection, token), 303);
 }
 
@@ -117,13 +113,13 @@ export async function handleSevenElevenSelectionConsume(
   const userSub = requireSessionIdentity(session);
   const payload = await readJsonBody(req);
   const token = readSelectionToken(payload?.token);
-  const selection = readSelectedStore(token, userSub, options);
+  const selection = await readSelectedStore(token, userSub, options);
 
-  markSelectionConsumed(token, userSub, options);
+  await markSelectionConsumed(token, userSub, options);
   sendJson(res, 200, toPublicSelection(selection));
 }
 
-export function resolveSevenElevenShippingDetails(
+export async function resolveSevenElevenShippingDetails(
   session,
   shipping,
   options = {}
@@ -133,7 +129,7 @@ export function resolveSevenElevenShippingDetails(
   }
 
   const userSub = requireSessionIdentity(session);
-  const selection = readSelectedStore(
+  const selection = await readSelectedStore(
     shipping.sevenElevenSelectionToken,
     userSub,
     options
@@ -188,183 +184,26 @@ function readEcpayStoreMapEnvironment() {
   return { merchantId, mode };
 }
 
-function createPendingSelection(input, options) {
-  const database = getSelectionDatabase(options);
-  const createdAt = new Date();
-  const expiresAt = new Date(
-    createdAt.getTime() + PENDING_SELECTION_MINUTES * 60 * 1000
-  );
-
-  cleanupExpiredPendingSelections(database);
-
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const selection = {
-      ...input,
-      createdAt: createdAt.toISOString(),
-      expiresAt: expiresAt.toISOString(),
-      token: randomBytes(10).toString('hex')
-    };
-
-    try {
-      runWithSqliteBusyRetry(() => {
-        database
-          .prepare(
-            `
-              INSERT INTO seven_eleven_store_selections (
-                token,
-                user_sub,
-                context,
-                product_id,
-                return_to,
-                merchant_id,
-                created_at,
-                expires_at
-              ) VALUES (
-                @token,
-                @userSub,
-                @context,
-                @productId,
-                @returnTo,
-                @merchantId,
-                @createdAt,
-                @expiresAt
-              )
-            `
-          )
-          .run(selection);
-      });
-
-      return selection;
-    } catch (error) {
-      if (error?.code !== 'SQLITE_CONSTRAINT_PRIMARYKEY') {
-        throw error;
-      }
-    }
-  }
-
-  throw new HttpError(500, 'seven_eleven_selection_create_failed');
+async function createPendingSelection(input, options) {
+  return createSevenElevenStore(options).create(input);
 }
-
-function saveReturnedSelection(selection, store, options) {
-  const database = getSelectionDatabase(options);
-  const selectedAt = new Date().toISOString();
-
-  if (selection.selected_at) {
-    const matchesExistingSelection =
-      selection.logistics_sub_type === LOGISTICS_SUB_TYPE &&
-      selection.store_id === store.id &&
-      selection.store_name === store.name &&
-      selection.store_address === store.address &&
-      selection.store_outside === store.outside;
-
-    if (!matchesExistingSelection) {
-      throw new HttpError(409, 'seven_eleven_selection_already_returned');
-    }
-
-    return;
-  }
-
-  runWithSqliteBusyRetry(() => {
-    const result = database
-      .prepare(
-        `
-          UPDATE seven_eleven_store_selections
-          SET
-            logistics_sub_type = @logisticsSubType,
-            store_id = @storeId,
-            store_name = @storeName,
-            store_address = @storeAddress,
-            store_outside = @storeOutside,
-            selected_at = @selectedAt
-          WHERE token = @token
-            AND selected_at IS NULL
-        `
-      )
-      .run({
-        logisticsSubType: LOGISTICS_SUB_TYPE,
-        selectedAt,
-        storeAddress: store.address,
-        storeId: store.id,
-        storeName: store.name,
-        storeOutside: store.outside,
-        token: selection.token
-      });
-
-    if (result.changes !== 1) {
-      throw new HttpError(409, 'seven_eleven_selection_already_returned');
-    }
-  });
+async function saveReturnedSelection(selection, store, options) {
+  return createSevenElevenStore(options).returned(selection.token, store);
 }
-
-function readSelectedStore(token, userSub, options) {
-  const selection = readSelectionByToken(readSelectionToken(token), options);
-
-  if (!selection || selection.user_sub !== userSub) {
+async function readSelectedStore(token, userSub, options) {
+  const selection = await readSelectionByToken(readSelectionToken(token), options);
+  if (!selection || selection.user_sub !== userSub)
     throw new HttpError(404, 'seven_eleven_selection_not_found');
-  }
-
-  if (
-    !selection.selected_at ||
-    selection.logistics_sub_type !== LOGISTICS_SUB_TYPE ||
-    !selection.store_id ||
-    !selection.store_name ||
-    !selection.store_address
-  ) {
+  if (!selection.selected_at || selection.logistics_sub_type !== LOGISTICS_SUB_TYPE ||
+      !selection.store_id || !selection.store_name || !selection.store_address)
     throw new HttpError(409, 'seven_eleven_selection_not_ready');
-  }
-
   return selection;
 }
-
-function readSelectionByToken(token, options) {
-  return getSelectionDatabase(options)
-    .prepare(
-      `
-        SELECT *
-        FROM seven_eleven_store_selections
-        WHERE token = ?
-        LIMIT 1
-      `
-    )
-    .get(token);
+async function readSelectionByToken(token, options) {
+  return createSevenElevenStore(options).read(token);
 }
-
-function markSelectionConsumed(token, userSub, options) {
-  runWithSqliteBusyRetry(() => {
-    getSelectionDatabase(options)
-      .prepare(
-        `
-          UPDATE seven_eleven_store_selections
-          SET consumed_at = COALESCE(consumed_at, @consumedAt)
-          WHERE token = @token
-            AND user_sub = @userSub
-            AND selected_at IS NOT NULL
-        `
-      )
-      .run({
-        consumedAt: new Date().toISOString(),
-        token,
-        userSub
-      });
-  });
-}
-
-function cleanupExpiredPendingSelections(database) {
-  runWithSqliteBusyRetry(() => {
-    database
-      .prepare(
-        `
-          DELETE FROM seven_eleven_store_selections
-          WHERE selected_at IS NULL
-            AND expires_at <= ?
-        `
-      )
-      .run(new Date().toISOString());
-  });
-}
-
-function getSelectionDatabase(options) {
-  return getMerchDatabase(options.selectionDbPath || options.dbPath);
+async function markSelectionConsumed(token, userSub, options) {
+  return createSevenElevenStore(options).consume(token, userSub);
 }
 
 function buildSelectionReturnLocation(selection, token) {

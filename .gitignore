@@ -22,3 +22,6 @@ src/components/TShirtPhysicsLab/
 src/three/
 src/assets/merch/*.glb
 .media-assets/
+
+/server/vendor/backup/
+.vercel/

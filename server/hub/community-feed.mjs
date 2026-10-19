@@ -1,8 +1,8 @@
 import { HttpError } from "../http.mjs";
+import { communityHubOrigin } from "./origin.mjs";
 
 // Read-only source shared with the website. JSON travels through this adapter;
 // source links and media remain on their original host.
-const WEBSITE_ORIGIN = "https://renaiss.zeabur.app";
 const cache = new Map();
 const pending = new Map();
 const regionAccounts = {
@@ -34,22 +34,24 @@ const regions = new Set([
 export async function readCommunityFeed(locale) {
   if (!["en", "zh-TW", "ko"].includes(locale))
     throw new HttpError(400, "invalid_hub_language");
-  const cached = cache.get(locale);
+  const origin = communityHubOrigin();
+  const key = `${origin}:${locale}`;
+  const cached = cache.get(key);
   if (cached && Date.now() - cached.fetchedAt < 60_000) return cached.feed;
-  if (pending.has(locale)) return pending.get(locale);
-  const request = fetchCommunityFeed(locale)
+  if (pending.has(key)) return pending.get(key);
+  const request = fetchCommunityFeed(locale, origin)
     .then((feed) => {
-      cache.set(locale, { fetchedAt: Date.now(), feed });
+      cache.set(key, { fetchedAt: Date.now(), feed });
       return feed;
     })
-    .finally(() => pending.delete(locale));
-  pending.set(locale, request);
+    .finally(() => pending.delete(key));
+  pending.set(key, request);
   return request;
 }
 
-async function fetchCommunityFeed(locale) {
+async function fetchCommunityFeed(locale, origin) {
   try {
-    const url = new URL("/api/intel/feed", WEBSITE_ORIGIN);
+    const url = new URL("/api/intel/feed", origin);
     url.searchParams.set("lang", locale === "zh-TW" ? "zh-Hant" : locale);
     const response = await fetch(url, {
       headers: { Accept: "application/json" },
@@ -84,7 +86,7 @@ async function fetchCommunityFeed(locale) {
           card.dedupe_status !== "dropped" &&
           (locale === "zh-TW" || card._i18n_status?.status === "translated"),
       )
-      .map((card) => adaptCard(card, projectMap))
+      .map((card) => adaptCard(card, projectMap, origin))
       .filter((card) => card.title && card.url)
       .sort(
         (a, b) =>
@@ -93,7 +95,7 @@ async function fetchCommunityFeed(locale) {
     return {
       cards,
       generatedAt: text(feed.generated_at, 80),
-      websiteUrl: `${WEBSITE_ORIGIN}/community-hub/`,
+      websiteUrl: `${origin}/community-hub/`,
     };
   } catch {
     // Never disguise an upstream failure with demo or stale posts.
@@ -101,7 +103,7 @@ async function fetchCommunityFeed(locale) {
   }
 }
 
-function adaptCard(card, projectMap) {
+function adaptCard(card, projectMap, origin) {
   const account = text(card.account, 100).replace(/^@+/, "");
   const normalized = account.toLowerCase();
   const project = projectMap[normalized] || officialAccounts[normalized] || "";
@@ -139,12 +141,12 @@ function adaptCard(card, projectMap) {
     eventStatus: text(card.event_status, 40),
     effectiveEventDate: text(card.effective_event_date, 80),
     // Use the published cover, never a fabricated or generated placeholder.
-    imageUrl: coverUrl(card.cover_image),
+    imageUrl: coverUrl(card.cover_image, origin),
   };
 }
-function coverUrl(value) {
+function coverUrl(value, origin) {
   if (typeof value === "string" && value.startsWith("/data/generated_covers/")) {
-    return new URL(value, WEBSITE_ORIGIN).href;
+    return new URL(value, origin).href;
   }
   return safeUrl(value);
 }

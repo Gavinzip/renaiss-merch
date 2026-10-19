@@ -8,10 +8,15 @@ export function surfAccountConfig() {
   if (inline && file) throw new HttpError(503, 'surf_key_configuration_conflict');
   let partnerKey = inline;
   if (file) {
-    try { partnerKey = readFileSync(file, 'utf8').trim(); }
-    catch { throw new HttpError(503, 'surf_key_file_unavailable'); }
+    try {
+      partnerKey = readFileSync(file, 'utf8').trim();
+    } catch {
+      throw new HttpError(503, 'surf_key_file_unavailable');
+    }
   }
   if (!partnerKey) throw new HttpError(503, 'surf_not_configured');
   if (/\s/.test(partnerKey)) throw new HttpError(503, 'surf_key_invalid');
-  return { partnerKey };
+  return {
+    partnerKey
+  };
 }

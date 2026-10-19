@@ -1,18 +1,18 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "renaiss-merch-private-media",
+  "name": "renaiss-merch-private-pilot-20261018",
   "main": "src/index.js",
   "compatibility_date": "2026-07-28",
   "workers_dev": true,
   "preview_urls": false,
   "vars": {
-    "ALLOWED_ORIGINS": "https://merch.renaisscltb.com,http://127.0.0.1:5173,http://localhost:5173",
+    "ALLOWED_ORIGINS": "https://merch.renaisscltb.com,https://renaiss-merch-vercel-pilot.vercel.app,http://127.0.0.1:5173,http://localhost:5173",
     "SIGNED_URL_MAX_TTL_SECONDS": "300"
   },
   "r2_buckets": [
     {
       "binding": "PRIVATE_MEDIA",
-      "bucket_name": "renaiss-merch-private-media"
+      "bucket_name": "renaiss-merch-private-pilot-20261018"
     }
   ]
 }

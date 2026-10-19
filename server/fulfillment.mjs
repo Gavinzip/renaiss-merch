@@ -1,16 +1,12 @@
 import { randomUUID } from 'node:crypto';
-import Database from 'better-sqlite3';
+import { getWorkflowDatabase } from './postgres/statements.mjs';
 import { HttpError } from './http.mjs';
-import { getClaimDatabasePath } from './runtime-config.mjs';
-import { readStoredShippingClaims } from './shipping-claims.mjs';
-import { readStoredVipTicketClaims } from './vip-ticket-claims.mjs';
 
-const dbByPath = new Map();
 const fulfillmentProductIds = new Set(['shirt', 'bracelet', 'ticket']);
 
-export function readFulfillmentOverview(options = {}) {
-  const recipients = readFulfillmentRecipients(options);
-  const exports = readFulfillmentExports(options);
+export async function readFulfillmentOverview(options = {}) {
+  const recipients = await readFulfillmentRecipients(options);
+  const exports = await readFulfillmentExports(options);
   const lastExport = exports[0] || null;
 
   return {
@@ -26,9 +22,9 @@ export function readFulfillmentOverview(options = {}) {
   };
 }
 
-export function createFulfillmentExport(options = {}) {
+export async function createFulfillmentExport(options = {}) {
   const productId = readExportProductId(options.productId);
-  const recipients = readFulfillmentRecipients(options).filter((recipient) => {
+  const recipients = (await readFulfillmentRecipients(options)).filter((recipient) => {
     return productId === null || recipient.productId === productId;
   });
   const createdAt = new Date().toISOString();
@@ -41,7 +37,7 @@ export function createFulfillmentExport(options = {}) {
   const db = getFulfillmentDb(options.dbPath);
 
   try {
-    db.prepare(
+    await db.prepare(
       `
         INSERT INTO fulfillment_exports (id, created_at, product_id, recipient_count)
         VALUES (@id, @createdAt, @productId, @recipientCount)
@@ -57,12 +53,12 @@ export function createFulfillmentExport(options = {}) {
   };
 }
 
-function readFulfillmentRecipients(options) {
+async function readFulfillmentRecipients(options) {
   const latestSubmittedByWalletAndProduct = new Map();
 
   const claims = [
-    ...readStoredShippingClaims(options),
-    ...readStoredVipTicketClaims(options)
+    ...await readStoredShippingClaims(options),
+    ...await readStoredVipTicketClaims(options)
   ];
 
   for (const claim of claims) {
@@ -90,19 +86,19 @@ function readFulfillmentRecipients(options) {
   });
 }
 
-function readFulfillmentExports(options) {
+async function readFulfillmentExports(options) {
   const db = getFulfillmentDb(options.dbPath);
 
-  return db
+  return (await db
     .prepare(
       `
         SELECT id, created_at, product_id, recipient_count
         FROM fulfillment_exports
-        ORDER BY created_at DESC, rowid DESC
+        ORDER BY created_at DESC, id DESC
         LIMIT 50
       `
     )
-    .all()
+    .all())
     .map((row) => ({
       id: row.id,
       createdAt: row.created_at,
@@ -111,44 +107,20 @@ function readFulfillmentExports(options) {
     }));
 }
 
-function getFulfillmentDb(configuredPath) {
-  const dbPath = getClaimDatabasePath(configuredPath);
-  const cached = dbByPath.get(dbPath);
-
-  if (cached) {
-    return cached;
-  }
-
-  // Shipping claims initialize the shared database and its WAL settings.
-  readStoredShippingClaims({ dbPath });
-  const db = new Database(dbPath, { timeout: 5000 });
-
-  try {
-    db.pragma('busy_timeout = 5000');
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS fulfillment_exports (
-        id TEXT PRIMARY KEY,
-        created_at TEXT NOT NULL,
-        product_id TEXT,
-        recipient_count INTEGER NOT NULL
-      );
-
-      CREATE INDEX IF NOT EXISTS idx_fulfillment_exports_created_at
-        ON fulfillment_exports (created_at);
-    `);
-    const exportColumns = db.pragma('table_info(fulfillment_exports)');
-
-    if (!exportColumns.some((column) => column.name === 'product_id')) {
-      db.exec('ALTER TABLE fulfillment_exports ADD COLUMN product_id TEXT');
-    }
-  } catch (error) {
-    db.close();
-    throw new HttpError(500, 'fulfillment_database_unavailable', String(error));
-  }
-
-  dbByPath.set(dbPath, db);
-
-  return db;
+function getFulfillmentDb(options) {
+  return getWorkflowDatabase();
+}
+async function readStoredShippingClaims() {
+  return (await getFulfillmentDb().prepare('SELECT * FROM shipping_claims ORDER BY created_at,id').all()).map(row => ({
+    id:row.id,createdAt:row.created_at,eligibility:JSON.parse(row.eligibility_json),productId:row.product_id,
+    shipping:JSON.parse(row.shipping_json),status:row.claim_status,submittedAt:row.submitted_at,
+  }));
+}
+async function readStoredVipTicketClaims() {
+  return (await getFulfillmentDb().prepare('SELECT * FROM vip_ticket_claims ORDER BY submitted_at,id').all()).map(row => ({
+    id:row.id,createdAt:row.created_at,eligibility:JSON.parse(row.eligibility_json),productId:row.product_id,
+    shipping:{email:row.claim_email},status:'submitted',submittedAt:row.submitted_at,
+  }));
 }
 
 function countRecipients(recipients, productId) {

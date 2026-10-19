@@ -6,80 +6,140 @@ import { surfAccountConfig } from './surf-config.mjs';
 import { createSurfRateStore } from './surf-rate-store.mjs';
 import { normalizeSurfEmail, verifySurfRegistration } from './providers/surf-registration.mjs';
 import { assertSurfCampaignOpen } from './campaign-window.mjs';
-
 function linkedEmail(user) {
   if (typeof user?.email !== 'string' || !user.email.trim()) throw new HttpError(409, 'renaiss_email_missing');
-  try { return normalizeSurfEmail(user.email); }
-  catch { throw new HttpError(409, 'renaiss_email_invalid'); }
+  try {
+    return normalizeSurfEmail(user.email);
+  } catch {
+    throw new HttpError(409, 'renaiss_email_invalid');
+  }
 }
 function emailHash(email) {
   return createHmac('sha256', missionEncryptionKey()).update(JSON.stringify([surfCampaign.id, email])).digest('hex');
 }
-
 function resultBinding(config, email) {
   // A result from the retired email-code flow is not an SSO-email result.
   return createHmac('sha256', config.partnerKey).update(JSON.stringify(['renaiss-linked-email-v2', emailHash(email)])).digest('hex');
 }
-
-export function readAccountsState(user, { storeFactory }) {
+export async function readAccountsState(user, {
+  storeFactory
+}) {
   let config, configurationReason;
-  try { config = surfAccountConfig(); }
-  catch (error) { configurationReason = error.code; }
-  const configuration = { configured: Boolean(config) };
-  if (!user?.sub || user.isDemo) return { ...configuration, outcome: 'pending', reason: user?.isDemo ? 'demo_missions_disabled' : 'unauthenticated' };
+  try {
+    config = surfAccountConfig();
+  } catch (error) {
+    configurationReason = error.code;
+  }
+  const configuration = {
+    configured: Boolean(config)
+  };
+  if (!user?.sub || user.isDemo) return {
+    ...configuration,
+    outcome: 'pending',
+    reason: user?.isDemo ? 'demo_missions_disabled' : 'unauthenticated'
+  };
   const wallet = typeof user.safeWalletAddress === 'string' ? user.safeWalletAddress.toLowerCase() : null;
-  const override = storeFactory().getManualAccountOverride?.(surfCampaign.id, user.sub);
+  const override = await storeFactory().getManualAccountOverride?.(surfCampaign.id, user.sub);
   if (wallet && override?.walletAddress === wallet) {
-    return { ...configuration, emailLinked: Boolean(user.email),
-      ...(user.email ? { email: user.email } : {}),
-      outcome: 'verified', checkedAt: override.approvedAt, stale: false,
-      manualOverride: true, walletAddress: wallet };
+    return {
+      ...configuration,
+      emailLinked: Boolean(user.email),
+      ...(user.email ? {
+        email: user.email
+      } : {}),
+      outcome: 'verified',
+      checkedAt: override.approvedAt,
+      stale: false,
+      manualOverride: true,
+      walletAddress: wallet
+    };
   }
   let email;
-  try { email = linkedEmail(user); }
-  catch (error) { return { ...configuration, emailLinked: false, outcome: 'pending', reason: error.code }; }
-  const linkage = { ...configuration, emailLinked: true, email };
-  if (!config) return { ...linkage, outcome: 'unavailable', reason: configurationReason };
-  const result = storeFactory().getResult(surfCampaign.id, user.sub, 'accounts');
+  try {
+    email = linkedEmail(user);
+  } catch (error) {
+    return {
+      ...configuration,
+      emailLinked: false,
+      outcome: 'pending',
+      reason: error.code
+    };
+  }
+  const linkage = {
+    ...configuration,
+    emailLinked: true,
+    email
+  };
+  if (!config) return {
+    ...linkage,
+    outcome: 'unavailable',
+    reason: configurationReason
+  };
+  const result = await storeFactory().getResult(surfCampaign.id, user.sub, 'accounts');
   // Results cannot survive a changed linked email, policy or partner credential.
   const binding = resultBinding(config, email);
-  if (!result || result.binding !== binding) return { ...linkage, outcome: 'pending' };
-  const { binding: _binding, ...safeResult } = result;
-  return { ...linkage, ...safeResult };
+  if (!result || result.binding !== binding) return {
+    ...linkage,
+    outcome: 'pending'
+  };
+  const {
+    binding: _binding,
+    ...safeResult
+  } = result;
+  return {
+    ...linkage,
+    ...safeResult
+  };
 }
-
-export async function checkAccounts(user, { store, fetchImpl = fetch, rateStore = createSurfRateStore(), assertCurrentUser = () => user }) {
+export async function checkAccounts(user, {
+  store,
+  fetchImpl = fetch,
+  rateStore = createSurfRateStore(),
+  assertCurrentUser = () => user
+}) {
   assertSurfCampaignOpen();
-  const email = linkedEmail(user), config = surfAccountConfig(), hash = emailHash(email);
-  const assertEmailIdentity = () => {
-    const current = assertCurrentUser();
+  const email = linkedEmail(user),
+    config = surfAccountConfig(),
+    hash = emailHash(email);
+  const assertEmailIdentity = async () => {
+    const current = await assertCurrentUser();
     if (current?.sub !== user.sub || current.isDemo) throw new HttpError(401, 'unauthenticated');
     if (linkedEmail(current) !== email) throw new HttpError(409, 'renaiss_email_changed');
   };
-  assertEmailIdentity();
-  if (readAccountsState(user, { storeFactory: () => store }).outcome === 'verified') return;
-  const release = store.acquire(surfCampaign.id, user.sub, 'accounts');
+  await assertEmailIdentity();
+  if ((await readAccountsState(user, {
+    storeFactory: () => store
+  })).outcome === 'verified') return;
+  const release = await store.acquire(surfCampaign.id, user.sub, 'accounts');
   try {
-    store.assertAccountAvailable(surfCampaign.id, user.sub, hash);
-    const retryAfterSeconds = rateStore.reserve(config.partnerKey);
-    let result = retryAfterSeconds === null
-      ? await verifySurfRegistration({ email, partnerKey: config.partnerKey, fetchImpl })
-      : { outcome: 'unavailable', reason: 'surf_rate_limited', retryAfterSeconds };
-    if (result.reason === 'surf_rate_limited' && result.retryAfterSeconds)
-      rateStore.defer(config.partnerKey, result.retryAfterSeconds);
-    assertEmailIdentity();
-    result = { ...result, checkedAt: new Date().toISOString(),
-      binding: resultBinding(config, email) };
-    if (result.outcome === 'verified') store.bindAccount(surfCampaign.id, user.sub, hash);
+    await store.assertAccountAvailable(surfCampaign.id, user.sub, hash);
+    const retryAfterSeconds = await rateStore.reserve(config.partnerKey);
+    let result = retryAfterSeconds === null ? await verifySurfRegistration({
+      email,
+      partnerKey: config.partnerKey,
+      fetchImpl
+    }) : {
+      outcome: 'unavailable',
+      reason: 'surf_rate_limited',
+      retryAfterSeconds
+    };
+    if (result.reason === 'surf_rate_limited' && result.retryAfterSeconds) await rateStore.defer(config.partnerKey, result.retryAfterSeconds);
+    await assertEmailIdentity();
+    result = {
+      ...result,
+      checkedAt: new Date().toISOString(),
+      binding: resultBinding(config, email)
+    };
+    if (result.outcome === 'verified') await store.bindAccount(surfCampaign.id, user.sub, hash);
     // Invalid upstream responses replace an old pass, but never masquerade as
     // evidence that the Surf account does not exist.
-    store.saveResult(surfCampaign.id, user.sub, 'accounts', result);
-  } finally { release(); }
+    await store.saveResult(surfCampaign.id, user.sub, 'accounts', result);
+  } finally {
+    await release();
+  }
 }
-
 export function missionEntries(accounts, providers) {
   if (accounts.outcome === 'incomplete') return 0;
   if (accounts.outcome !== 'verified' || accounts.stale) return null;
-  return 1 + Object.values(providers).filter(task => task.configured && task.connection &&
-    task.result?.outcome === 'verified' && !task.result.stale).length;
+  return 1 + Object.values(providers).filter(task => task.configured && task.connection && task.result?.outcome === 'verified' && !task.result.stale).length;
 }

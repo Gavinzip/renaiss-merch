@@ -1,0 +1,16 @@
+.git
+.github
+.scratch
+.data
+.env*
+node_modules
+work
+outputs
+private
+docs
+workers
+cloudflare
+Dockerfile
+
+server/vendor/backup
+.secrets/

@@ -88,7 +88,8 @@
   cursor: pointer;
   transition: background-color 150ms ease, color 150ms ease;
 }
-.surf-store-card__body button:hover { background: #28212b; color: #fff; }
+.surf-store-card__body button:not(:disabled):hover { background: #28212b; color: #fff; }
+.surf-store-card__body button:disabled { color: #716575; border-color: #b7aeb9; cursor: not-allowed; }
 .surf-store-card button:focus-visible, .surf-reward-dialog button:focus-visible, .surf-reward-dialog a:focus-visible { outline: 2px solid #7e62ae; outline-offset: 4px; }
 
 .surf-reward-dialog {

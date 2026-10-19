@@ -10,6 +10,7 @@ const SQLITE_BUSY_RETRY_BASE_MS = 25;
 const databaseByPath = new Map();
 
 export function getMerchDatabase(configuredPath) {
+  if (process.env.MERCH_DATABASE_DRIVER === 'postgres') throw new Error('sqlite_disabled_in_postgres_pilot');
   const databasePath = getClaimDatabasePath(configuredPath);
   const cachedDatabase = databaseByPath.get(databasePath);
 

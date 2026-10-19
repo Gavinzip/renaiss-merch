@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node server/index.mjs",
+    "dev": "NODE_ENV=production node server/local.mjs --build",
     "dev:client": "vite --host 127.0.0.1",
     "build": "node scripts/draw-results/compile.mjs --check && node scripts/chainlink-surf/compile.mjs && node scripts/chainlink-surf/compile-reusable.mjs && node scripts/r2-merch-assets.mjs assert-config && tsc -b && vite build && node scripts/r2-merch-assets.mjs assert-build",
     "contracts:build": "node scripts/draw-results/compile.mjs --write-manifest",
@@ -12,21 +12,27 @@
     "contracts:chainlink:check": "node scripts/chainlink-surf/compile.mjs && node scripts/chainlink-surf/compile-reusable.mjs",
     "assets:audit": "node scripts/r2-merch-assets.mjs audit --catalog media/public-asset-release.json",
     "assets:prepare": "node scripts/r2-merch-assets.mjs prepare --catalog media/public-asset-release.json",
-    "assets:publish": "node scripts/r2-merch-assets.mjs publish --catalog media/public-asset-release.json --bucket renaiss-merch-media",
+    "assets:publish": "node scripts/r2-merch-assets.mjs publish --catalog media/public-asset-release.json --bucket renaiss-merch-pilot-20261018",
     "assets:verify": "node scripts/r2-merch-assets.mjs verify --catalog media/public-asset-release.json",
     "assets:private:audit": "node scripts/r2-merch-assets.mjs audit --catalog media/private-asset-release.json",
-    "assets:private:publish": "node scripts/r2-merch-assets.mjs publish --catalog media/private-asset-release.json --bucket renaiss-merch-private-media",
+    "assets:private:publish": "node scripts/r2-merch-assets.mjs publish --catalog media/private-asset-release.json --bucket renaiss-merch-private-pilot-20261018",
     "assets:private:verify": "node scripts/r2-merch-assets.mjs verify --catalog media/private-asset-release.json",
-    "preview": "npm run build && NODE_ENV=production node server/index.mjs",
-    "start": "NODE_ENV=production node server/index.mjs"
+    "preview": "NODE_ENV=production node server/local.mjs --build",
+    "start": "NODE_ENV=production node server/local.mjs",
+    "build:pilot": "npm run build && node scripts/vercel-finalize.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",
     "ethers": "^6.17.0",
     "jose": "^6.2.3",
-    "shaders": "4.0.0"
+    "shaders": "4.0.0",
+    "pg": "8.16.3"
   },
-  "overrides": { "solc": { "tmp": "0.2.6" } },
+  "overrides": {
+    "solc": {
+      "tmp": "0.2.7"
+    }
+  },
   "devDependencies": {
     "@types/node": "^24.13.3",
     "@types/react": "^19.1.8",
@@ -42,5 +48,8 @@
     "three": "^0.185.1",
     "typescript": "^5.8.3",
     "vite": "^7.3.6"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }

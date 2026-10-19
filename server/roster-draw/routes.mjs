@@ -1,27 +1,20 @@
-import { getMerchDatabase } from "../merch-database.mjs";
+import { getWorkflowDatabase as getMerchDatabase } from "../postgres/statements.mjs";
 import { getRuntimeConfig } from "../runtime-config.mjs";
 import { requireSurfDrawAccess } from "../surf-draw/access.mjs";
 import { getPublicOrigin } from "../config.mjs";
 import { HttpError, sendJson } from "../http.mjs";
 import { createRosterStore } from "./store.mjs";
-
 const ROOT = "/api/draw-room/roster";
 export async function handleRosterDrawRoute(req, res, url) {
-  if (url.pathname !== ROOT && !url.pathname.startsWith(`${ROOT}/`))
-    return false;
+  if (url.pathname !== ROOT && !url.pathname.startsWith(`${ROOT}/`)) return false;
   const action = url.pathname.slice(ROOT.length);
-  if (!["", "/upload", "/draw", "/clear"].includes(action))
-    throw new HttpError(404, "not_found");
-  if (req.method !== (action ? "POST" : "GET"))
-    throw new HttpError(405, "method_not_allowed");
-  const access = requireSurfDrawAccess(req);
-  if (action && req.headers.origin !== getPublicOrigin(req))
-    throw new HttpError(403, "invalid_request_origin");
-  const store = createRosterStore(
-    getMerchDatabase(getRuntimeConfig().databasePath),
-  );
+  if (!["", "/upload", "/draw", "/clear"].includes(action)) throw new HttpError(404, "not_found");
+  if (req.method !== (action ? "POST" : "GET")) throw new HttpError(405, "method_not_allowed");
+  const access = await requireSurfDrawAccess(req);
+  if (action && req.headers.origin !== getPublicOrigin(req)) throw new HttpError(403, "invalid_request_origin");
+  const store = createRosterStore(getMerchDatabase());
   if (!action) {
-    sendJson(res, 200, store.state());
+    sendJson(res, 200, await store.state());
     return true;
   }
   let size = 0;
@@ -37,16 +30,7 @@ export async function handleRosterDrawRoute(req, res, url) {
   } catch {
     throw new HttpError(400, "invalid_json");
   }
-  if (!input || typeof input !== "object" || Array.isArray(input))
-    throw new HttpError(400, "invalid_json");
-  sendJson(
-    res,
-    200,
-    action === "/upload"
-      ? store.upload(input, access.username)
-      : action === "/clear"
-        ? store.clear(input, access.username)
-        : store.draw(input, access.username),
-  );
+  if (!input || typeof input !== "object" || Array.isArray(input)) throw new HttpError(400, "invalid_json");
+  sendJson(res, 200, action === "/upload" ? await store.upload(input, access.username) : action === "/clear" ? await store.clear(input, access.username) : await store.draw(input, access.username));
   return true;
 }

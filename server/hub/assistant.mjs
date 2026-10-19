@@ -1,13 +1,14 @@
 import { HttpError } from "../http.mjs";
+import { communityHubOrigin } from "./origin.mjs";
+import { completeAssistantJob } from "./assistant-job.mjs";
 
-const WEBSITE_ORIGIN = "https://renaiss.zeabur.app";
 let activeRequests = 0;
 
 export function normalizeAssistantSources(sources) {
   return sources.slice(0, 6).flatMap((source, index) => {
     if (typeof source?.url !== "string") return [];
     try {
-      const url = new URL(source.url, WEBSITE_ORIGIN);
+      const url = new URL(source.url, communityHubOrigin());
       if (!["https:", "http:"].includes(url.protocol)) return [];
       // The website numbers its context in source-array order. Keep that
       // original number when an unsafe/malformed URL is excluded.
@@ -28,14 +29,16 @@ export function normalizeAssistantRequest(value) {
 
 export async function askHubAssistant(value, signal) {
   const request = normalizeAssistantRequest(value);
+  const origin = communityHubOrigin();
+  const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(90_000)]);
   if (activeRequests >= 2) throw new HttpError(503, "assistant_busy");
   activeRequests++;
   try {
-    const response = await fetch(`${WEBSITE_ORIGIN}/api/intel/agent`, {
+    const response = await fetch(`${origin}/api/intel/agent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify(request),
-      signal: AbortSignal.any([signal, AbortSignal.timeout(90_000)]),
+      signal: requestSignal,
     });
     if (!response.ok || !response.headers.get("content-type")?.includes("application/json")) {
       throw new HttpError(response.status === 503 || response.status === 429 ? 503 : 502, response.status === 503 || response.status === 429 ? "assistant_busy" : "assistant_unavailable");
@@ -47,7 +50,9 @@ export async function askHubAssistant(value, signal) {
       if (bytes > 512 * 1024) throw new Error("assistant_response_too_large");
       chunks.push(chunk);
     }
-    const payload = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+    const payload = await completeAssistantJob(
+      JSON.parse(Buffer.concat(chunks).toString("utf8")), origin, requestSignal,
+    );
     if (payload.ok !== true || typeof payload.answer !== "string" || !payload.answer.trim() || payload.answer.length > 24_000 || !Array.isArray(payload.sources)) throw new Error("invalid_assistant_response");
     return {
       answer: payload.answer,
@@ -55,6 +60,7 @@ export async function askHubAssistant(value, signal) {
     };
   } catch (error) {
     if (error instanceof HttpError) throw error;
-    throw new HttpError(error.name === "TimeoutError" ? 504 : 502, error.name === "TimeoutError" ? "assistant_timeout" : "assistant_unavailable");
+    const timedOut = requestSignal.reason?.name === "TimeoutError";
+    throw new HttpError(timedOut ? 504 : 502, timedOut ? "assistant_timeout" : "assistant_unavailable");
   } finally { activeRequests--; }
 }

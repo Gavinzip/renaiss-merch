@@ -6,7 +6,7 @@ import { issueSurfDrawAccess, readSurfDrawAccess, requireSurfDrawAccess, setSurf
 import { assertLocalSurfOperatorRequest } from './local-operator-guard.mjs';
 
 export const LOCAL_OPERATOR_ROOT = '/api/local/surf-operator';
-export const SURF_OPERATOR_ORIGIN = 'https://merch.renaisscltb.com';
+export const SURF_OPERATOR_ORIGIN = process.env.SURF_OPERATOR_REMOTE_ORIGIN?.trim();
 const AUTH_ROOT = '/api/auth/surf-draw';
 const REMOTE_ROOT = '/api/admin/missions/surf/draw';
 const OPERATOR_ROOT = `${REMOTE_ROOT}/local-operator`;
@@ -19,6 +19,7 @@ export function createLocalSurfOperatorHandler({ fetchImpl = fetch, access = {
 } } = {}) {
   const connections = new Map();
   async function remote(path, { body, token, origin } = {}) {
+    if (!SURF_OPERATOR_ORIGIN || !/^https:\/\//.test(SURF_OPERATOR_ORIGIN)) throw new HttpError(503, 'operator_remote_origin_not_configured');
     let response;
     try {
       response = await fetchImpl(`${SURF_OPERATOR_ORIGIN}${path}`, {
@@ -60,7 +61,7 @@ export function createLocalSurfOperatorHandler({ fetchImpl = fetch, access = {
       if (!/^[A-Za-z0-9_-]{43}$/.test(grant.token || '') || typeof grant.username !== 'string' ||
           !Number.isFinite(grant.expiresAt) || grant.expiresAt <= Date.now()) throw new HttpError(502, 'operator_upstream_invalid');
       try {
-        const session = access.issue(grant.username);
+        const session = await access.issue(grant.username);
         await disconnect(key, connection);
         connections.set(digest(session.token), { token: grant.token, expiresAt: grant.expiresAt, origin });
         access.setCookie(req, res, session);
@@ -75,7 +76,7 @@ export function createLocalSurfOperatorHandler({ fetchImpl = fetch, access = {
     }
     if (authAction === 'session') {
       if (req.method !== 'GET') throw new HttpError(405, 'method_not_allowed');
-      if (!access.read(req) || !connection) {
+      if (!await access.read(req) || !connection) {
         sendJson(res, 200, { configured: access.configured(), authenticated: false, username: null }); return true;
       }
       const result = await remote(`${OPERATOR_ROOT}/session`, connection);
@@ -83,7 +84,7 @@ export function createLocalSurfOperatorHandler({ fetchImpl = fetch, access = {
       if (result.status !== 200) throw new HttpError(result.status, result.value.code || 'operator_upstream_invalid');
       sendJson(res, 200, { configured: true, authenticated: result.value.authenticated === true, username: result.value.username }); return true;
     }
-    access.require(req);
+    await access.require(req);
     if (!connection || connection.origin !== origin) throw new HttpError(401, 'surf_draw_access_required');
     const action = url.pathname.slice(LOCAL_OPERATOR_ROOT.length + 1);
     if (!action.startsWith('draw')) throw new HttpError(404, 'not_found');
