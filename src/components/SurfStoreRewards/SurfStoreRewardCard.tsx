@@ -2,6 +2,7 @@ import type { SurfActiveStoreReward } from '../../../shared/surf-store-rewards.j
 import { useLocale } from '../../i18n/LocaleContext';
 import { surfPreviewLogoUrl } from '../RenaissHub/hubPreviewAssets';
 import { surfCampaignAssets } from '../RenaissHub/surfCampaignAssets';
+import { SurfProCredential } from './SurfProCredential';
 import { surfStoreCopy } from './surfStoreCopy';
 
 export function SurfStoreRewardCard({ reward }: { reward: SurfActiveStoreReward }) {
@@ -19,10 +20,7 @@ export function SurfStoreRewardCard({ reward }: { reward: SurfActiveStoreReward 
             <img className="surf-store-card__box" src={surfCampaignAssets().box} alt="Surf Mystery Box" />
           ) : (
             <div className="surf-store-card__credential" aria-hidden="true">
-              <img src={surfPreviewLogoUrl()} alt="" width={400} height={400} />
-              <strong>Surf Pro</strong>
-              <span>{benefit.label}</span>
-              <div>{benefit.value}</div>
+              <SurfProCredential logoUrl={surfPreviewLogoUrl()} duration={benefit.value} />
             </div>
           )}
         </div>
