@@ -14,9 +14,10 @@ there is no deployment, cron job, client clock override, or agent wake-up at the
 An open browser rechecks the server at the deadline and when the tab becomes visible.
 There is no fixed closing date. Each product closes to new submissions as soon as
 its allocation is fully claimed. Existing receipts remain readable after sellout.
-Both store cards show a subtle availability row below the description and above
-the action, keeping the product image unobstructed. It shows the allocation limit
-and live remaining quantity, or "fully claimed". Cards and the open Gmail form share a count feed,
+Both store cards show a compact live remaining count beside the product title,
+keeping the image unobstructed without adding a separate row or divider. The
+allocation limit is available in the count's tooltip and the claim form. Sold-out
+products show "fully claimed". Cards and the open Gmail form share a count feed,
 refreshed every ten seconds, on focus/visibility changes, and after submission.
 Unavailable inventory is shown as an error and disables submission; configured
 limits are never substituted for live quantities.

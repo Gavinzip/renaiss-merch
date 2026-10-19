@@ -45,9 +45,11 @@ export function SurfStoreRewardCard({ reward, release, onOpenReward, checking, b
         </div>
         <div className="surf-store-card__body">
           <p className="surf-store-card__edition">RENAISS × SURF / {benefit.label}</p>
-          <h2 id={titleId}>{benefit.name}</h2>
+          <div className="surf-store-card__title-row">
+            <h2 id={titleId}>{benefit.name}</h2>
+            <SurfStoreAvailability reward={reward} />
+          </div>
           <p className="surf-store-card__description">{benefit.description}</p>
-          <SurfStoreAvailability reward={reward} />
           <button type="button" disabled={!release?.open || busy}
             data-surf-reward-opener={reward.id} onClick={() => onOpenReward(reward.id)}>
             {checking ? releaseCopy.checking : release?.open ? benefit.view : release ? releaseCopy.opens : copy.unavailable}
