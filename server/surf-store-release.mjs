@@ -1,7 +1,7 @@
 import { HttpError } from './http.mjs';
 
 // One release instant for both products, interpreted by the server in UTC.
-export const SURF_STORE_OPENS_AT = '2026-10-20T19:00:00+08:00';
+export const SURF_STORE_OPENS_AT = '2026-10-21T19:00:00+08:00';
 const opensAtMs = Date.parse(SURF_STORE_OPENS_AT);
 
 export function getSurfStoreRelease(now = Date.now()) {

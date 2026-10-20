@@ -7,8 +7,8 @@ The store allocations are independent of the Surf campaign draw.
 | Surf Mystery Box | 3 | 120 |
 | Surf Pro, one month | 20 | 100 |
 
-Both open at **2026-10-20 19:00 Asia/Taipei**, equivalent to
-`2026-10-20T11:00:00.000Z`. The single release instant is owned by
+Both open at **2026-10-21 19:00 Asia/Taipei**, equivalent to
+`2026-10-21T11:00:00.000Z`. The single release instant is owned by
 `server/surf-store-release.mjs`. Availability is evaluated on each server request;
 there is no deployment, cron job, client clock override, or agent wake-up at the deadline.
 An open browser rechecks the server at the deadline and when the tab becomes visible.
