@@ -26,19 +26,19 @@ export function HubEventHero({ cards, locale, enabled }: { cards: CommunityCard[
         return <div key={card.id} className="hub-event-hero__slide" data-active={active} aria-hidden={!active} inert={!active}
           role="group" aria-roledescription={inlineCopy[locale].slide} aria-label={`${index + 1} / ${cards.length}`}>
           <a href={card.url} target="_blank" rel="noopener noreferrer" aria-label={`${card.title}${ended ? inlineCopy[locale].ended : ''}`}>
-            <div className="hub-event-hero__media">
+            <div data-hub-enter className="hub-event-hero__media">
               {card.imageUrl ? <HubFeedImage key={card.imageUrl} url={card.imageUrl} locale={locale} eager onSettled={() => carousel.markSettled(card.id)} />
                 : <span className="hub-event-hero__missing">{inlineCopy[locale].noImageInTheOriginalPost}</span>}
               {!Number.isNaN(date.valueOf()) ? <time dateTime={dateValue} title={hasEventDate ? inlineCopy[locale].eventDate : inlineCopy[locale].posted}>{date.toLocaleDateString(locale,{month:'2-digit',day:'2-digit'})}</time> : null}
               {ended ? <span className="hub-event-hero__ended">{inlineCopy[locale].ended2}</span> : null}
               <span className="hub-event-hero__open" aria-hidden="true">↗</span>
             </div>
-            <h3>{card.title}</h3>
+            <h3 data-hub-enter>{card.title}</h3>
           </a>
         </div>;
       })}
     </div>
-    {cards.length > 1 ? <div className="hub-event-hero__controls">
+    {cards.length > 1 ? <div data-hub-enter className="hub-event-hero__controls">
       <div className="hub-event-hero__dots" aria-label={inlineCopy[locale].chooseAnEvent}>
         {cards.map((card,index) => <button key={card.id} type="button" aria-label={`${inlineCopy[locale].event} ${index+1}：${card.title}`} aria-pressed={index===carousel.index}
           onClick={() => carousel.select(card.id)}><span /></button>)}

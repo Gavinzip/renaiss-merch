@@ -119,10 +119,10 @@ export function useHubCampaignRoute() {
       const returnTarget = triggerKey.current ? ref.current?.querySelector<HTMLElement>(`[data-campaign-entry="${CSS.escape(triggerKey.current)}"]`) : ref.current?.querySelector<HTMLElement>('.renaiss-hub__brand');
       returnTarget?.focus({ preventScroll: true });
     }
-    // Campaign entry belongs to its per-element viewport observer. The route
-    // owns exits and overview entry, so two animations never target one piece.
+    // Widget entry belongs to useHubWidgetEntrance, including return to Hub.
+    // The route retains exits, overview chrome and the campaign observer.
     if (!active && !document.hidden && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      pieces(active).forEach((element, index) => {
+      pieces(active).filter(element => !element.matches('.hub-widget__surface')).forEach((element, index) => {
         const animation = run(element, [
           { opacity: .12, transform: 'translateY(8px)', filter: 'blur(3px)' },
           { opacity: 1, transform: 'none', filter: 'blur(0px)' },

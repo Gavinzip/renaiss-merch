@@ -37,36 +37,36 @@ export function HubCommunityWidget({
   return (
     <article className={`renaiss-hub__card hub-feed hub-feed--${settings.source}`} data-size={hubWidgetSize(settings)}>
       <div className="renaiss-hub__card-heading">
-        <span className="renaiss-hub__eyebrow">Community Hub</span>
+        <span data-hub-enter className="renaiss-hub__eyebrow">Community Hub</span>
         {feed.status === "ready" ? (
-          <button className="hub-feed__live" type="button" onClick={onRetry} aria-label={inlineCopy[locale].refreshUpdates} title={inlineCopy[locale].latestSourcePostClickToRefresh}>
+          <button data-hub-enter className="hub-feed__live" type="button" onClick={onRetry} aria-label={inlineCopy[locale].refreshUpdates} title={inlineCopy[locale].latestSourcePostClickToRefresh}>
             <i />{settings.source === "official" && settings.project === "tcg" ? "@renaissxyz · " : ""}{latestLabel}
           </button>
         ) : null}
       </div>
-      <h2>
+      <h2 data-hub-enter>
         <HubMotionText>{copy.sources[settings.source]}</HubMotionText>
       </h2>
-      <div className="hub-feed__filters">
+      <div data-hub-enter className="hub-feed__filters">
         <span>{copy.projects[settings.project]}</span>
         {settings.region !== "all" ? (
           <span>{copy.regions[settings.region]}</span>
         ) : null}
       </div>
       {feed.status === "loading" ? (
-        <div className="hub-feed__state" role="status">
+        <div data-hub-enter className="hub-feed__state" role="status">
           <span className="hub-feed__loader" />
           {copy.loading}
         </div>
       ) : feed.status === "error" ? (
-        <div className="hub-feed__state" role="alert">
+        <div data-hub-enter className="hub-feed__state" role="alert">
           <p>{copy.error}</p>
           <button type="button" onClick={onRetry}>
             {copy.retry} ↗
           </button>
         </div>
       ) : cards.length === 0 ? (
-        <p className="hub-feed__state">{settings.source === 'events' ? inlineCopy[locale].noConfirmedUpcomingEventsCheckTheOfficial : copy.empty}</p>
+        <p data-hub-enter className="hub-feed__state">{settings.source === 'events' ? inlineCopy[locale].noConfirmedUpcomingEventsCheckTheOfficial : copy.empty}</p>
       ) : settings.source === "events" ? (
         <HubEventHero cards={cards} locale={locale} enabled={!editing && !preview} />
       ) : (
@@ -85,7 +85,7 @@ export function HubCommunityWidget({
                 >
                   {hubWidgetSize(settings) !== "small" && card.imageUrl ? <HubFeedImage key={card.imageUrl} url={card.imageUrl} locale={locale} /> : null}
                   <div className="hub-feed__post-body">
-                  <div className="hub-feed__post-meta">
+                  <div data-hub-enter className="hub-feed__post-meta">
                     <span>
                       {settings.source === "community" ? (
                         <i className="hub-feed__avatar" aria-hidden="true">{(card.account || "R").slice(0, 1).toUpperCase()}</i>
@@ -102,13 +102,13 @@ export function HubCommunityWidget({
                       </time>
                     ) : null}
                   </div>
-                  <div className="hub-feed__post-heading">
+                  <div data-hub-enter className="hub-feed__post-heading">
                     <h3>{card.title}</h3>
                     <svg viewBox="0 0 20 20" aria-hidden="true">
                       <path d="M5 15 15 5M5 5h10v10" />
                     </svg>
                   </div>
-                  <p>{card.summary}</p>
+                  <p data-hub-enter>{card.summary}</p>
                   </div>
                 </a>
               </li>

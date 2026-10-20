@@ -110,7 +110,7 @@ export function HubMerchHero({
       data-phase={phase}
       data-playing={playing}
     >
-      <div className="hub-merch-hero__scene">
+      <div data-hub-enter className="hub-merch-hero__scene">
         <img
           key={attempt}
           ref={image}
@@ -124,7 +124,7 @@ export function HubMerchHero({
           onError={() => setPhase("error")}
         />
       </div>
-      <span className="hub-widget-title hub-merch-hero__title"><HubMotionText>{eyebrow}</HubMotionText></span>
+      <span data-hub-enter className="hub-widget-title hub-merch-hero__title"><HubMotionText>{eyebrow}</HubMotionText></span>
       {phase === "loading" ? (
         <span className="hub-merch-hero__message" role="status">
           {inlineCopy[locale].preparingTheEdition}

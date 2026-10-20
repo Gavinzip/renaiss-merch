@@ -17,6 +17,7 @@ import { useCommunityFeed } from "./useCommunityFeed";
 import { HubWidgetFrame } from "./HubWidgetEditor";
 import { HubWidgetLibrary } from "./HubWidgetLibrary";
 import { useHubWidgetMotion } from "./useHubWidgetMotion";
+import { useHubWidgetEntrance } from "./useHubWidgetEntrance";
 import { useHubWidgetDrag } from "./useHubWidgetDrag";
 import { HubHomeIntro } from "./HubHomeIntro";
 import { HubAssistant } from "./HubAssistant";
@@ -75,6 +76,12 @@ export function RenaissHub({
   const overviewRef = useRef<HTMLElement>(null);
   const initialReadiness = useHubInitialReadiness(account, settings.status, feed.state, overviewRef);
   const widgetMotion = useHubWidgetMotion(preferences.widgets, editing);
+  useHubWidgetEntrance(
+    widgetMotion.gridRef,
+    initialReadiness === 'ready' && settings.status !== 'error',
+    !campaignRoute.active && !drawActive,
+    editing,
+  );
 
   const [moveAnnouncement, setMoveAnnouncement] = useState("");
   const widgetDrag = useHubWidgetDrag({

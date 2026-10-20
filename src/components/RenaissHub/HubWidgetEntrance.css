@@ -1,0 +1,7 @@
+/* The content coordinator owns entry. Keep the original text hover layers,
+   but do not run the old title reveal again after its parent settles. */
+.renaiss-hub__dashboard .hub-widget:not(.is-editing) .hub-motion-text {
+  animation: none;
+  clip-path: none;
+  translate: none;
+}

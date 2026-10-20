@@ -27,27 +27,27 @@ export function HubMember({ account, copy, locale, onLogin, onRetry, preview = f
   return <article className={`renaiss-hub__card renaiss-hub__member hub-member ${user ? 'is-authenticated' : ''}`}
     id={preview ? undefined : 'portal-member'}>
     <div className="renaiss-hub__card-heading">
-      <h2><HubMotionText>{copy.title}</HubMotionText></h2>
-      {user ? <span className="hub-member__connection-status">{copy.connected}</span> :
-        <span className="renaiss-hub__eyebrow">{copy.eyebrow}</span>}
+      <h2 data-hub-enter><HubMotionText>{copy.title}</HubMotionText></h2>
+      {user ? <span data-hub-enter className="hub-member__connection-status">{copy.connected}</span> :
+        <span data-hub-enter className="renaiss-hub__eyebrow">{copy.eyebrow}</span>}
     </div>
     <div className="renaiss-hub__identity">
       {user ? <HubMemberAvatar picture={user.picture} copy={copy} /> :
-        <span className="renaiss-hub__identity-mark"><HubLogo /></span>}
-      <div><strong title={displayName}>{displayName}</strong><p role={account.status === 'error' ? 'alert' : 'status'}>{message}</p></div>
+        <span data-hub-enter className="renaiss-hub__identity-mark"><HubLogo /></span>}
+      <div data-hub-enter><strong title={displayName}>{displayName}</strong><p role={account.status === 'error' ? 'alert' : 'status'}>{message}</p></div>
     </div>
-    {user ? <div className="hub-member__sbt" aria-live="polite" aria-busy={sbt.status === 'loading'}>
+    {user ? <div data-hub-enter className="hub-member__sbt" aria-live="polite" aria-busy={sbt.status === 'loading'}>
       {sbt.status === 'ready' ? <><strong className="hub-member__sbt-count" key={sbt.count}>{sbt.count.toLocaleString()}</strong><span>{copy.sbt}</span></> :
         <div className="hub-member__sbt-pending"><span className="hub-member__sbt-label">{copy.sbt}</span><span>{sbtMessage}</span></div>}
     </div> : null}
     <dl className="renaiss-hub__account-details">
-      <div><dt>{copy.wallet}</dt><dd>{user?.safeWalletAddress ? <HubWalletCopy key={user.safeWalletAddress} address={user.safeWalletAddress} copy={copy} /> : user ? copy.missingWallet : copy.unavailable}</dd></div>
-      {user ? <div><dt>{copy.email}</dt><dd className="hub-member__email-detail"><HubMemberEmail user={user} copy={copy} /></dd></div> : null}
-      <div><dt>{copy.x}</dt><dd>{user?.twitterUsername ? <a className="hub-member__settings is-linked" href={`https://x.com/${encodeURIComponent(user.twitterUsername.replace(/^@/, ''))}`} target="_blank" rel="noopener noreferrer">@{user.twitterUsername.replace(/^@/, '')}<ExternalArrow /></a> : user ?
+      <div data-hub-enter><dt>{copy.wallet}</dt><dd>{user?.safeWalletAddress ? <HubWalletCopy key={user.safeWalletAddress} address={user.safeWalletAddress} copy={copy} /> : user ? copy.missingWallet : copy.unavailable}</dd></div>
+      {user ? <div data-hub-enter><dt>{copy.email}</dt><dd className="hub-member__email-detail"><HubMemberEmail user={user} copy={copy} /></dd></div> : null}
+      <div data-hub-enter><dt>{copy.x}</dt><dd>{user?.twitterUsername ? <a className="hub-member__settings is-linked" href={`https://x.com/${encodeURIComponent(user.twitterUsername.replace(/^@/, ''))}`} target="_blank" rel="noopener noreferrer">@{user.twitterUsername.replace(/^@/, '')}<ExternalArrow /></a> : user ?
         <a className="hub-member__settings" href={RENAISS_ACCOUNT_SETTINGS_URL} target="_blank" rel="noopener noreferrer" title={copy.xSettings}>{copy.missingX}<ExternalArrow /></a> : copy.unavailable}</dd></div>
     </dl>
     {user && user.safeWalletAddress && !user.isDemo && !preview ?
-      <div className="hub-member__sbt-actions">
+      <div data-hub-enter className="hub-member__sbt-actions">
         {sbt.status === 'ready' ? <time dateTime={sbt.checkedAt}>{copy.sbtCheckedAt} {new Intl.DateTimeFormat(locale, {
           month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
         }).format(new Date(sbt.checkedAt))}</time> : null}
@@ -56,8 +56,8 @@ export function HubMember({ account, copy, locale, onLogin, onRetry, preview = f
           {sbt.status === 'loading' ? copy.sbtLoading : copy.sbtRefresh}
         </button>
       </div> : null}
-    {needsSync ? <div className="hub-member__sync"><span>{copy.syncHint}</span><button type="button" onClick={onLogin}>{copy.syncAccount}<ExternalArrow /></button></div> : null}
-    {!user && account.status !== 'loading' ? <button className="renaiss-hub__button renaiss-hub__account-action t-learn" onClick={account.status === 'error' ? onRetry : onLogin} type="button">
+    {needsSync ? <div data-hub-enter className="hub-member__sync"><span>{copy.syncHint}</span><button type="button" onClick={onLogin}>{copy.syncAccount}<ExternalArrow /></button></div> : null}
+    {!user && account.status !== 'loading' ? <button data-hub-enter className="renaiss-hub__button renaiss-hub__account-action t-learn" onClick={account.status === 'error' ? onRetry : onLogin} type="button">
       <span className="hub-action-label">{account.status === 'error' ? copy.retry : copy.login}</span><span className="t-learn-chevron" aria-hidden="true"><svg className="renaiss-hub__arrow" viewBox="0 0 16 16"><path className="t-learn-arm t-learn-arm-top" d="M6 4L10 8" /><path className="t-learn-arm t-learn-arm-bot" d="M10 8L6 12" /></svg></span>
     </button> : null}
   </article>;

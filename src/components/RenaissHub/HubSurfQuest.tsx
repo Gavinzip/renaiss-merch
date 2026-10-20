@@ -27,25 +27,25 @@ export function HubSurfQuest({ locale, account, onOpenCampaign, preview = false 
   return (
     <article className="renaiss-hub__card hub-surf-quest" id={preview ? undefined : "portal-partner"}>
       <div className="renaiss-hub__card-heading">
-        <span className="hub-widget-title"><HubMotionText>{copy.eyebrow}</HubMotionText></span>
-        <button type="button" data-campaign-entry="stage" className="hub-surf-quest__stage" onClick={() => onOpenCampaign()}>{copy.stage}<span aria-hidden="true"> ↗</span></button>
+        <span data-hub-enter className="hub-widget-title"><HubMotionText>{copy.eyebrow}</HubMotionText></span>
+        <button data-hub-enter type="button" data-campaign-entry="stage" className="hub-surf-quest__stage" onClick={() => onOpenCampaign()}>{copy.stage}<span aria-hidden="true"> ↗</span></button>
       </div>
       <div className="hub-surf-quest__brand-row">
-        <div className="hub-surf-quest__brands" aria-hidden="true">
+        <div data-hub-enter className="hub-surf-quest__brands" aria-hidden="true">
           <HubLogo />
           <span className="hub-surf-quest__cross">×</span>
           <SurfLogo />
         </div>
-        <h2>
+        <h2 data-hub-enter>
           <button className="hub-title-action" data-campaign-entry="title" type="button" onClick={() => onOpenCampaign()}>
             <HubMotionText>{copy.title}</HubMotionText>
           </button>
         </h2>
       </div>
-      <p className="hub-surf-quest__description">{copy.description}</p>
+      <p data-hub-enter className="hub-surf-quest__description">{copy.description}</p>
       <ol className="hub-surf-quest__tasks">
         {tasks.map((task, index) => (
-          <li key={task.id} data-complete={task.complete}>
+          <li data-hub-enter key={task.id} data-complete={task.complete}>
             <span className="hub-surf-quest__number" aria-hidden="true">{task.complete ? <svg viewBox="0 0 16 16"><path d="m3 8 3 3 7-7" /></svg> : `0${index + 1}`}</span>
             <div className="hub-surf-quest__task-content">
               <div className="hub-surf-quest__task-heading">
@@ -60,10 +60,10 @@ export function HubSurfQuest({ locale, account, onOpenCampaign, preview = false 
           </li>
         ))}
       </ol>
-      <button type="button" data-campaign-entry="details" className="hub-surf-quest__preview-action" onClick={() => onOpenCampaign()}>
+      <button data-hub-enter type="button" data-campaign-entry="details" className="hub-surf-quest__preview-action" onClick={() => onOpenCampaign()}>
         <span><span className="hub-action-label">{allComplete ? copy.viewCampaign : copy.completeTasks}</span><small>{allComplete ? copy.prizeSummary : copy.taskSummary}</small></span><ExternalArrow />
       </button>
-      <footer className="hub-surf-quest__footer"><span>{copy.notOpen}</span><p>{copy.notice}</p></footer>
+      <footer data-hub-enter className="hub-surf-quest__footer"><span>{copy.notOpen}</span><p>{copy.notice}</p></footer>
     </article>
   );
 }

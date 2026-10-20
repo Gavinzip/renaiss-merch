@@ -18,15 +18,15 @@ export function HubQuestline({ copy, preview = false }: { copy: RenaissHubCopy["
       className="renaiss-hub__card renaiss-hub__quest"
       id={preview ? undefined : "portal-questline"}
     >
-      <div className="renaiss-hub__card-heading">
+      <div data-hub-enter className="renaiss-hub__card-heading">
         <span className="renaiss-hub__eyebrow">{copy.eyebrow}</span>
         <span className="renaiss-hub__status">{copy.stage}</span>
       </div>
-      <h2 className="renaiss-hub__quest-title"><HubMotionText>{copy.title}</HubMotionText></h2>
-      <p className="renaiss-hub__description">{copy.description}</p>
+      <h2 data-hub-enter className="renaiss-hub__quest-title"><HubMotionText>{copy.title}</HubMotionText></h2>
+      <p data-hub-enter className="renaiss-hub__description">{copy.description}</p>
       <ol className="renaiss-hub__journey">
         {copy.steps.map((step, index) => (
-          <li key={step.title}>
+          <li data-hub-enter key={step.title}>
             <span className="renaiss-hub__step-number">0{index + 1}</span>
             <div>
               <strong>{step.title}</strong>
@@ -35,7 +35,7 @@ export function HubQuestline({ copy, preview = false }: { copy: RenaissHubCopy["
           </li>
         ))}
       </ol>
-      <div className="t-acc renaiss-hub__quest-disclosure" data-open={open}>
+      <div data-hub-enter className="t-acc renaiss-hub__quest-disclosure" data-open={open}>
         <button
           className="t-acc-head"
           aria-expanded={open}
@@ -88,14 +88,15 @@ export function HubMerch({
       <HubMerchHero locale={locale} eyebrow={copy.eyebrow} />
       <div className="renaiss-hub__merch-content">
         <div>
-          <h2>
+          <h2 data-hub-enter>
             <button className="hub-title-action" type="button" disabled={preparing} onClick={onEnter}>
               <HubMotionText>{copy.title}</HubMotionText>
             </button>
           </h2>
-          <p className="renaiss-hub__description">{copy.description}</p>
+          <p data-hub-enter className="renaiss-hub__description">{copy.description}</p>
         </div>
         <button
+          data-hub-enter
           className="renaiss-hub__button t-learn"
           data-preparing={preparing}
           aria-label={preparing ? `${copy.preparing} ${loadProgress}%` : copy.action}

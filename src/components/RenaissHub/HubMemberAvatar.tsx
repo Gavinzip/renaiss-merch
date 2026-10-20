@@ -6,7 +6,7 @@ export function HubMemberAvatar({ picture, copy }: {
 }) {
   const [failedPicture, setFailedPicture] = useState<string | null>(null);
   const failed = Boolean(picture && failedPicture === picture);
-  return <span className="hub-member__avatar" role={picture && !failed ? undefined : 'img'}
+  return <span data-hub-enter className="hub-member__avatar" role={picture && !failed ? undefined : 'img'}
     aria-label={picture && !failed ? undefined : failed ? copy.avatarError : copy.noAvatar}
     title={failed ? copy.avatarError : picture ? undefined : copy.noAvatar}>
     {picture && !failed ? <img src={picture} alt={copy.avatar} width={48} height={48}
