@@ -3,8 +3,9 @@ import type { KeyboardEvent } from 'react';
 import { appLanguages as languages, type AppLocale } from '../../i18n/LocaleContext';
 import './HubLanguageMenu.css';
 
-export function HubLanguageMenu({ locale, setLocale }: {
+export function HubLanguageMenu({ locale, setLocale, placement = 'header', compact = false }: {
   locale: AppLocale; setLocale: (locale: AppLocale) => void;
+  placement?: 'header' | 'sidebar'; compact?: boolean;
 }) {
   const id = useId();
   const root = useRef<HTMLDivElement>(null);
@@ -53,16 +54,17 @@ export function HubLanguageMenu({ locale, setLocale }: {
     }
   }
 
-  return <div className="hub-language" ref={root} onKeyDown={keyDown} onBlur={event => {
+  return <div className="hub-language" data-placement={placement} data-compact={compact} ref={root} onKeyDown={keyDown} onBlur={event => {
     if (open && !event.currentTarget.contains(event.relatedTarget as Node | null)) close();
   }}>
-    <button className="hub-language__trigger" ref={trigger} type="button" aria-label={label}
+    <button className="hub-language__trigger" ref={trigger} type="button" aria-label={label} title={language.label}
       aria-haspopup="listbox" aria-expanded={open} aria-controls={id} onClick={() => open ? close(true) : show()}>
-      <span>{language.shortLabel}</span>
-      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m5 6 3 3 3-3" /></svg>
+      {placement === 'sidebar' ? <svg className="hub-language__globe" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7" /><ellipse cx="10" cy="10" rx="3" ry="7" /><path d="M3 10h14" /></svg> : null}
+      <span className="hub-language__label">{placement === 'sidebar' ? language.label : language.shortLabel}</span>
+      <svg className="hub-language__chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m5 6 3 3 3-3" /></svg>
     </button>
     <div id={id} className={`hub-language__list t-dropdown${open ? ' is-open' : phase === 'closing' ? ' is-closing' : ''}`}
-      data-origin="top-right" data-phase={phase} role="listbox" aria-label={label} aria-hidden={!open} inert={!open}>
+      data-origin={placement === 'sidebar' ? 'bottom-left' : 'top-right'} data-phase={phase} role="listbox" aria-label={label} aria-hidden={!open} inert={!open}>
       {languages.map((language, index) => <button key={language.value} ref={element => { options.current[index] = element; }}
         className="hub-language__option" type="button" role="option" aria-selected={locale === language.value}
         tabIndex={open && active === index ? 0 : -1} lang={language.value} onFocus={() => setActive(index)}

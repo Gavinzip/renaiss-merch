@@ -496,14 +496,18 @@ async function serveViteHtml(req, res) {
   }
 
   const previewName = url.searchParams.get('preview');
+  const eventArchiveTemplate = {
+    '/events/pokemon-30': '../events/pokemon-30/index.html',
+    '/events/football': '../events/football/index.html'
+  }[url.pathname.replace(/\/$/, '')];
   const templatePath =
-    isDrawSitePath(url.pathname) ? '../draw/index.html' :
+    eventArchiveTemplate || (isDrawSitePath(url.pathname) ? '../draw/index.html' :
     previewName === 'tshirt-physics' || previewName === 'bracelets'
       ? '../dev-preview.html'
       : isHiddenHubPath(url.pathname) || isProductionStorefrontMode(storefrontMode) ||
           isVersionedAppRoute(url.pathname)
         ? '../v1.2/index.html'
-        : '../index.html';
+        : '../index.html');
   const template = await readFile(
     fileURLToPath(new URL(templatePath, import.meta.url)),
     'utf8'

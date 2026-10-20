@@ -17,6 +17,7 @@ import { createStoreRevealMediaController } from './lib/storeRevealMedia';
 import { preloadStoreAssets } from './lib/storePreload';
 import { HubPageLoading } from './components/RenaissHub/HubPageLoading';
 import { useLocale } from './i18n/LocaleContext';
+import { HubNavigationProvider } from './components/RenaissHub/HubNavigationState';
 
 const STORE_ADMISSION_QUERY = 'storeAdmission';
 const STORE_ADMISSION_SESSION_KEY = 'renaiss-merch-store-admitted';
@@ -139,9 +140,15 @@ export default function App() {
     setView('landing');
     setStoreLoadProgress(0);
     setStoreLoadState('loading');
+    const requestedLocation = window.location.href;
 
     try {
       await prepareStoreAssets();
+      // A newer Hub destination cancels this pending Store entry.
+      if (window.location.href !== requestedLocation) {
+        setStoreLoadState('idle');
+        return;
+      }
       if (!(await storePageMotion.leave())) return;
 
       storeEntryAdmittedRef.current = true;
@@ -257,6 +264,7 @@ export default function App() {
     initialAuthFailed={storeAuthFailed}
     onExitStore={invalidateStoreAdmission}
     onOpenCampaign={() => { invalidateStoreAdmission(); window.location.hash = '#campaign/surf'; }}
+    onOpenArchive={() => { invalidateStoreAdmission(); window.location.hash = '#events'; }}
     onLogin={() => startRenaissLogin(buildStoreAdmissionReturnTo())}
     revealMediaController={revealMediaController}
   />;
@@ -278,7 +286,7 @@ export default function App() {
   }
 
   if (isHubExperience) {
-    return <div className="store-page-transition" ref={storePageMotion.ref}
+    return <HubNavigationProvider busy={storePageMotion.busy}><div className="store-page-transition" ref={storePageMotion.ref}
       data-page={view} data-page-busy={storePageMotion.busy} inert={storePageMotion.busy}
       style={{ '--store-page-background': staticMerchAssetCssUrl('storeBackground') } as CSSProperties}>
       {view === 'store' ? storeLoadState === 'loading' ? <HubPageLoading locale={locale} /> : storeLoadState === 'error' ? <HubPageLoading locale={locale} error onRetry={() => window.location.reload()} /> : store : <Suspense fallback={<HubPageLoading locale={locale} />}><RenaissHub
@@ -290,7 +298,7 @@ export default function App() {
           void enterStore();
         }}
       /></Suspense>}
-    </div>;
+    </div></HubNavigationProvider>;
   }
 
   if (view === 'store') return store;

@@ -1,0 +1,80 @@
+.pokemon-winners { position: relative; isolation: isolate; padding: 96px max(24px, calc((100vw - 1280px) / 2)) 48px; background: #f7f8fa; color: #202a3b; scroll-margin-top: 88px; }
+.pokemon-winners__canvas { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+.pokemon-winners__canvas canvas { display: block; width: 100%; height: 100%; }
+.pokemon-winners__intro { position: relative; z-index: 3; max-width: 760px; margin-bottom: 48px; }
+.pokemon-winners__intro > span { font-size: 11px; font-weight: 700; letter-spacing: .19em; color: #8f794d; }
+.pokemon-winners__intro h2 { margin: 16px 0; font-size: clamp(29px, 3.4vw, 44px); font-weight: 650; letter-spacing: -.04em; line-height: 1.25; }
+.pokemon-winners__intro p { color: #737a85; font-size: 14px; line-height: 1.8; }
+.pokemon-winners__standard { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: clamp(32px, 5vw, 80px); align-items: start; }
+.pokemon-winners__product { position: sticky; top: 100px; margin: 0; padding: 8px 0 24px; }
+.pokemon-winners__flat-prize { position: relative; z-index: 3; width: 100%; max-width: 460px; aspect-ratio: 1; margin: 24px auto 28px; }
+.pokemon-winners__flat-prize .pokemon-prize-stage { perspective: none; }
+.pokemon-winners__flat-prize .pokemon-prize-stage::after { display: none; }
+.pokemon-winners__flat-prize .pokemon-prize-stage__object,
+.pokemon-winners__flat-prize .pokemon-prize-stage__art,
+.pokemon-winners__flat-prize .pokemon-prize-stage__frame { transform: none; }
+.pokemon-winners__flat-prize .pokemon-prize-stage__glint { display: none; animation: none; }
+.pokemon-winners__product-title { position: relative; z-index: 3; }
+.pokemon-winners__product-title > span { display: block; color: #8c98a8; font-size: 10px; letter-spacing: .16em; font-weight: 700; }
+.pokemon-winners__product-title h3 { max-width: 340px; margin: 12px 0 8px; font-size: clamp(21px, 2.1vw, 28px); font-weight: 600; line-height: 1.25; letter-spacing: -.03em; }
+.pokemon-winners__product-title p { margin: 0; color: #778392; font-size: 12px; }
+.pokemon-winners__model-view { position: relative; z-index: 3; height: clamp(300px, 29vw, 420px); cursor: grab; touch-action: pan-y; outline-offset: 4px; }
+.pokemon-winners__model-view:active { cursor: grabbing; }
+.pokemon-winners__model-view:focus-visible { outline: 2px solid #b79b5f; border-radius: 12px; }
+.pokemon-winners__model-status { position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; text-align: center; font-size: 12px; color: #798497; }
+.pokemon-winners__model-controls { position: relative; z-index: 3; display: flex; align-items: center; justify-content: center; gap: 14px; margin: 0 0 22px; font-size: 10px; letter-spacing: .04em; color: #8792a0; }
+.pokemon-winners__model-controls button { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #ced5de; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; transition: background .18s, color .18s; }
+.pokemon-winners__model-controls button:hover { background: #fff; color: #202a3b; }
+.pokemon-winners__model-controls button:disabled { opacity: .3; cursor: default; }
+.pokemon-winners__product-note { position: relative; z-index: 3; display: flex; align-items: center; justify-content: center; gap: 12px; color: #8f9aaa; font-size: 9px; letter-spacing: .12em; }
+.pokemon-winners__product-note i { height: 10px; width: 1px; background: #c8d0da; }
+.pokemon-winners__roster { position: relative; z-index: 3; padding-top: 8px; }
+.pokemon-winners__roster-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding-bottom: 19px; border-bottom: 1px solid #ccd3dc; }
+.pokemon-winners__roster-heading h3 { margin: 0; font-size: 18px; font-weight: 600; }
+.pokemon-winners__roster-heading > span { color: #85909f; font-size: 10px; }
+.pokemon-winners__list { list-style: none; padding: 0; margin: 0; }
+.pokemon-winners__row { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 18px; padding: 18px 0; border-bottom: 1px solid #e1e5eb; }
+.pokemon-winners__number { align-self: start; padding-top: 3px; color: #a3acb8; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.pokemon-winners__identity { display: flex; flex-direction: column; gap: 5px; min-width: 0; overflow-wrap: anywhere; }
+.pokemon-winners__identity strong { font-size: 15px; line-height: 1.45; font-weight: 600; }
+.pokemon-winners__identity a, .pokemon-winners__identity small { color: #7d8898; font-size: 11px; text-decoration: none; }
+.pokemon-winners__identity a:hover { text-decoration: underline; }
+.pokemon-winners__identity strong a { color: inherit; font-size: inherit; }
+.pokemon-winners__ticket { color: #465366; font-size: 12px; font-variant-numeric: tabular-nums; }
+.pokemon-winners__result-proof { display: flex; flex-direction: column; align-items: end; gap: 7px; }
+.pokemon-winners__transaction { display: inline-flex; align-items: center; gap: 3px; width: fit-content; color: #8f794d; font-size: 10px; line-height: 1.5; text-decoration: none; white-space: nowrap; }
+.pokemon-winners__transaction:hover { text-decoration: underline; text-underline-offset: 3px; }
+.pokemon-winners__bonus-transaction { margin-top: 12px; }
+.pokemon-winners__bonus { position: relative; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); align-items: center; gap: clamp(32px, 5vw, 80px); margin-top: 72px; padding-top: 56px; border-top: 1px solid #dfe4ea; }
+.pokemon-winners__bonus-product { min-width: 0; }
+.pokemon-winners__bonus-edition { position: relative; z-index: 3; display: block; color: #8f794d; font-size: 9px; letter-spacing: .2em; }
+.pokemon-winners__model--bonus .pokemon-winners__model-view { height: clamp(340px, 32vw, 460px); }
+.pokemon-winners__model--bonus .pokemon-winners__model-controls { margin: 0; }
+.pokemon-winners__bonus-copy { position: relative; z-index: 3; padding: 16px 0 24px; }
+.pokemon-winners__bonus-kicker { display: flex; align-items: center; gap: 10px; color: #8f794d; font-size: 11px; letter-spacing: .12em; }
+.pokemon-winners__bonus-kicker i { width: 5px; height: 5px; border-radius: 50%; background: #b6985c; }
+.pokemon-winners__bonus-copy h3 { margin: 20px 0 14px; max-width: 340px; font-size: clamp(26px, 2.8vw, 37px); line-height: 1.3; font-weight: 500; letter-spacing: -.03em; }
+.pokemon-winners__bonus-description { margin: 0; color: #737a85; font-size: 12px; line-height: 1.8; }
+.pokemon-winners__bonus-winner { margin-top: 36px; padding-top: 24px; border-top: 1px solid #dfe4ea; }
+.pokemon-winners__bonus-winner > span { display: block; margin-bottom: 12px; color: #7d8898; font-size: 10px; letter-spacing: .1em; }
+.pokemon-winners__bonus-winner .pokemon-winners__identity strong { font-size: clamp(24px, 2.4vw, 34px); font-weight: 500; }
+.pokemon-winners__bonus-winner .pokemon-winners__identity a, .pokemon-winners__bonus-winner .pokemon-winners__identity small { color: #7d8898; font-size: 12px; }
+.pokemon-winners__bonus-ticket { display: flex; align-items: center; gap: 16px; margin-top: 24px; color: #7d8898; font-size: 10px; }
+.pokemon-winners__bonus-ticket strong { color: #8f794d; font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.pokemon-winners__published { position: relative; z-index: 3; margin-top: 24px; text-align: right; color: #9aa3af; font-size: 10px; }
+.pokemon-winners__error { padding: 32px 24px; text-align: center; color: #666258; }
+@media (max-width: 760px) {
+  .pokemon-winners { padding: 64px 20px 32px; }
+  .pokemon-winners__intro { margin-bottom: 32px; }
+  .pokemon-winners__standard { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .pokemon-winners__product { position: relative; top: auto; padding: 0; }
+  .pokemon-winners__model-view { height: 300px; }
+  .pokemon-winners__row { gap: 12px; padding: 17px 0; }
+  .pokemon-winners__bonus { grid-template-columns: minmax(0, 1fr); margin-top: 44px; padding-top: 36px; gap: 28px; }
+  .pokemon-winners__model--bonus .pokemon-winners__model-view { height: 320px; }
+  .pokemon-winners__bonus-copy { padding: 0; }
+  .pokemon-winners__bonus-copy h3 { font-size: 28px; }
+  .pokemon-winners__bonus-winner { margin-top: 28px; }
+  .pokemon-winners__published { text-align: left; line-height: 1.8; }
+}
+@media (prefers-reduced-motion: reduce) { .pokemon-winners__model-controls button { transition: none; } }

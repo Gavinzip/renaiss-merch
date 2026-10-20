@@ -8,7 +8,9 @@ export default defineConfig({
       input: {
         legacy: 'index.html',
         v1_2: 'v1.2/index.html',
-        draw: 'draw/index.html'
+        draw: 'draw/index.html',
+        archivePokemon: 'events/pokemon-30/index.html',
+        archiveFootball: 'events/football/index.html'
       }
     }
   },

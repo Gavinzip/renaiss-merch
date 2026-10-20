@@ -1,0 +1,27 @@
+{
+  "release": "rd3dd09cd135f3df155aa",
+  "prefix": "hub-events",
+  "assets": {
+    "football": {
+      "path": "football.webp",
+      "type": "binary",
+      "source": "work/assets/event-archive/football.webp",
+      "contentType": "image/webp",
+      "bytes": 349670,
+      "sha256": "0e2624381279069afabb6ab1ea7be4606296d9a2a400ac9ed054cccef069e9ab"
+    },
+    "pokemon-30": {
+      "path": "pokemon30.jpg",
+      "type": "binary",
+      "source": "work/assets/event-archive/pokemon30.jpg",
+      "contentType": "image/jpeg",
+      "bytes": 401356,
+      "sha256": "1281394a12712e0d945c473ca40e4244d9d2179849259038855eb370eace6d58"
+    }
+  },
+  "access": "public",
+  "bucket": "renaiss-merch-pilot-20261018",
+  "contentHash": "d3dd09cd135f3df155aa4c864b2ebf44f28d69d079ff04c4fae930c7053b4dc9",
+  "fileCount": 2,
+  "totalBytes": 751026
+}

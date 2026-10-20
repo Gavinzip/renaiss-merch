@@ -5,7 +5,7 @@ export const surfCampaignHash = '#campaign/surf';
 export const surfDrawHash = '#draw/surf';
 const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
 const campaignPieces = '.surf-page__header, .surf-page__brand-pair, .surf-page__eyebrow, .surf-page h1 > span, .surf-page__hero-description, .surf-page__hero-actions, .surf-page__hero-footnote, .surf-page__hero-art, .surf-page__section-heading, .surf-page__reward-grid > article, .surf-page__participation-intro, .surf-page__task-list > ol > li, .surf-page__details, .surf-page__footer';
-const overviewPieces = '.hub-home-intro__utility, .renaiss-hub__introduction, .hub-widget__surface, .renaiss-hub__footer';
+const overviewPieces = '.renaiss-hub__introduction, .hub-widget__surface, .renaiss-hub__footer';
 
 function isCampaignLocation() {
   const url = new URL(location.href);
@@ -61,7 +61,7 @@ export function useHubCampaignRoute() {
       }
       direction.current = target ? 1 : -1;
       if (!current.current) {
-        dashboardPosition.current = scrollY;
+        dashboardPosition.current = ref.current?.querySelector('.renaiss-hub') ? scrollY : 0;
         hasOpened.current = true;
       }
       setBusy(true);

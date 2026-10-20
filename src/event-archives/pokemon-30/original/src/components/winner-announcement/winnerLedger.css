@@ -1,0 +1,14 @@
+.pokemon-winners-ledger { position: relative; z-index: 3; margin: -12px 0 48px; padding: 24px 0; border-top: 1px solid #dfe4ea; border-bottom: 1px solid #dfe4ea; }
+.pokemon-winners-ledger__summary { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.pokemon-winners-ledger h3 { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
+.pokemon-winners-ledger p { color: #737a85; font-size: 12px; line-height: 1.8; margin: 0; }
+.pokemon-winners-ledger__links { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; }
+.pokemon-winners-ledger__download { display: inline-flex; align-items: center; gap: 8px; color: #6e5931; font-size: 12px; text-underline-offset: 4px; }
+.pokemon-winners-ledger__verification { margin-top: 16px; color: #737a85; font-size: 11px; }
+.pokemon-winners-ledger__verification summary { width: fit-content; cursor: pointer; }
+.pokemon-winners-ledger__verification p { margin: 12px 0 8px; max-width: 780px; }
+.pokemon-winners-ledger__verification code { display: block; overflow-wrap: anywhere; color: #465366; font-size: 11px; line-height: 1.8; }
+@media (max-width: 760px) {
+  .pokemon-winners-ledger { margin-bottom: 32px; }
+  .pokemon-winners-ledger__summary { flex-direction: column; align-items: start; gap: 16px; }
+}

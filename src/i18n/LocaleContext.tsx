@@ -33,6 +33,11 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = locale;
     writeStoredLocale(locale);
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('lang')) {
+      url.searchParams.set('lang', locale);
+      window.history.replaceState(null, '', url);
+    }
   }, [locale]);
 
   return (
@@ -67,6 +72,8 @@ export function formatLocalizedDate(value: string, locale: AppLocale) {
 }
 
 function readStoredLocale(): AppLocale {
+  const requestedLocale = new URLSearchParams(window.location.search).get('lang');
+  if (APP_LOCALES.includes(requestedLocale as AppLocale)) return requestedLocale as AppLocale;
   try {
     const storedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
     return APP_LOCALES.includes(storedLocale as AppLocale) ? storedLocale as AppLocale : defaultLocale;

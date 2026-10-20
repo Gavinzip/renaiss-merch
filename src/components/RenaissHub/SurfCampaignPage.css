@@ -11,6 +11,18 @@
   -webkit-font-smoothing: antialiased;
 }
 .surf-page * { box-sizing: border-box; }
+.surf-page--hub {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .03)),
+    var(--store-page-background) center / cover fixed no-repeat;
+}
+.surf-page--hub .surf-page__shell { width: min(1320px, calc(100% - 5rem)); }
+.surf-page__hub-actions { display: flex; align-items: center; gap: 18px; }
+.surf-page__hub-actions button { min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--surf-muted); font-size: 11px; }
+.surf-page__hub-actions button:hover { color: var(--surf-pink); }
+@media(max-width: 760px) {
+  .surf-page--hub .surf-page__shell { width: calc(100% - 2rem); }
+  .surf-page__hub-actions { display: none; }
+}
 .surf-page button, .surf-page a { -webkit-tap-highlight-color: transparent; }
 .surf-page button { font: inherit; cursor: pointer; }
 .surf-page button:disabled { cursor: wait; }

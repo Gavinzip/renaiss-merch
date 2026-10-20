@@ -1,0 +1,498 @@
+{
+  "release": "rcf46f71ce3488f0343c1",
+  "prefix": "event-experiences",
+  "assets": {
+    "football/avatars/174a57cb8fc3ee34.jpg": {
+      "path": "football/avatars/174a57cb8fc3ee34.jpg",
+      "bytes": 2035,
+      "sha256": "174a57cb8fc3ee3487289367b111799ea313698f79f209028a0c46b362f78495",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/avatars/174a57cb8fc3ee34.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 2035,
+      "encodedSha256": "174a57cb8fc3ee3487289367b111799ea313698f79f209028a0c46b362f78495"
+    },
+    "football/avatars/1fb16abf282bf7b1.jpg": {
+      "path": "football/avatars/1fb16abf282bf7b1.jpg",
+      "bytes": 2491,
+      "sha256": "1fb16abf282bf7b1291ed5ed021cc4caa1ac9ab8fce1ade493b8051866e24f10",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/avatars/1fb16abf282bf7b1.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 2491,
+      "encodedSha256": "1fb16abf282bf7b1291ed5ed021cc4caa1ac9ab8fce1ade493b8051866e24f10"
+    },
+    "football/avatars/318e689469063ac7.jpg": {
+      "path": "football/avatars/318e689469063ac7.jpg",
+      "bytes": 2035,
+      "sha256": "318e689469063ac7772276079ea879a2fe50e5acc7f72799650425363f8e5892",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/avatars/318e689469063ac7.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 2035,
+      "encodedSha256": "318e689469063ac7772276079ea879a2fe50e5acc7f72799650425363f8e5892"
+    },
+    "football/avatars/31b4f8759a2b868f.jpg": {
+      "path": "football/avatars/31b4f8759a2b868f.jpg",
+      "bytes": 2111,
+      "sha256": "31b4f8759a2b868f3f2348f51148e8f985ead396cc29f9b30f2a16d18044b90d",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/avatars/31b4f8759a2b868f.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 2111,
+      "encodedSha256": "31b4f8759a2b868f3f2348f51148e8f985ead396cc29f9b30f2a16d18044b90d"
+    },
+    "football/avatars/7619038c75f4cc35.jpg": {
+      "path": "football/avatars/7619038c75f4cc35.jpg",
+      "bytes": 2263,
+      "sha256": "7619038c75f4cc3565632d4be3178fb8412028e33e5a9c8e5a15d521ae63383a",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/avatars/7619038c75f4cc35.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 2263,
+      "encodedSha256": "7619038c75f4cc3565632d4be3178fb8412028e33e5a9c8e5a15d521ae63383a"
+    },
+    "football/avatars/9e39e3b4798cdc0f.jpg": {
+      "path": "football/avatars/9e39e3b4798cdc0f.jpg",
+      "bytes": 2339,
+      "sha256": "9e39e3b4798cdc0f9b096a584362845ae3be198ad13a25c39883144592839299",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/avatars/9e39e3b4798cdc0f.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 2339,
+      "encodedSha256": "9e39e3b4798cdc0f9b096a584362845ae3be198ad13a25c39883144592839299"
+    },
+    "football/avatars/b6955dc117245cce.jpg": {
+      "path": "football/avatars/b6955dc117245cce.jpg",
+      "bytes": 2111,
+      "sha256": "b6955dc117245cce9ae5b7ac845ce3b69c7766f56074ab4adfb28b378d695198",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/avatars/b6955dc117245cce.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 2111,
+      "encodedSha256": "b6955dc117245cce9ae5b7ac845ce3b69c7766f56074ab4adfb28b378d695198"
+    },
+    "football/avatars/b7b907bd3f362ca4.jpg": {
+      "path": "football/avatars/b7b907bd3f362ca4.jpg",
+      "bytes": 2187,
+      "sha256": "b7b907bd3f362ca48620dc74379ef12e734062de590e1cbc7e5f6588e2bb9e52",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/avatars/b7b907bd3f362ca4.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 2187,
+      "encodedSha256": "b7b907bd3f362ca48620dc74379ef12e734062de590e1cbc7e5f6588e2bb9e52"
+    },
+    "football/avatars/cb53832ae9fffe94.jpg": {
+      "path": "football/avatars/cb53832ae9fffe94.jpg",
+      "bytes": 2263,
+      "sha256": "cb53832ae9fffe94220f320feafaa8fd83ba3a1c9be7da3fe0b7b575e1987cd4",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/avatars/cb53832ae9fffe94.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 2263,
+      "encodedSha256": "cb53832ae9fffe94220f320feafaa8fd83ba3a1c9be7da3fe0b7b575e1987cd4"
+    },
+    "football/avatars/d955bc11327d6265.jpg": {
+      "path": "football/avatars/d955bc11327d6265.jpg",
+      "bytes": 1959,
+      "sha256": "d955bc11327d6265e8a8c40cfb1709a27bfb4c4f59039fb228b93dee5bded8a9",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/avatars/d955bc11327d6265.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 1959,
+      "encodedSha256": "d955bc11327d6265e8a8c40cfb1709a27bfb4c4f59039fb228b93dee5bded8a9"
+    },
+    "football/avatars/dcfaf48c73abd488.jpg": {
+      "path": "football/avatars/dcfaf48c73abd488.jpg",
+      "bytes": 2263,
+      "sha256": "dcfaf48c73abd488d8b1696fe6aa0789fe6b4b4cfb3a2144755ee2dee219381f",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/avatars/dcfaf48c73abd488.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 2263,
+      "encodedSha256": "dcfaf48c73abd488d8b1696fe6aa0789fe6b4b4cfb3a2144755ee2dee219381f"
+    },
+    "football/avatars/dd67c0911616a878.jpg": {
+      "path": "football/avatars/dd67c0911616a878.jpg",
+      "bytes": 2187,
+      "sha256": "dd67c0911616a878b4205d78dc93d5c16d1642e42a81c24e989fef8243568dc9",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/avatars/dd67c0911616a878.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 2187,
+      "encodedSha256": "dd67c0911616a878b4205d78dc93d5c16d1642e42a81c24e989fef8243568dc9"
+    },
+    "football/avatars/ea4431833dca8226.jpg": {
+      "path": "football/avatars/ea4431833dca8226.jpg",
+      "bytes": 2339,
+      "sha256": "ea4431833dca822646396239661fda7500cd2369d7448bea6178315d10f5ae6d",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/avatars/ea4431833dca8226.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 2339,
+      "encodedSha256": "ea4431833dca822646396239661fda7500cd2369d7448bea6178315d10f5ae6d"
+    },
+    "football/data/ledger-final.json": {
+      "path": "football/data/ledger-final.json",
+      "bytes": 385058,
+      "sha256": "86561a932777b6e66f478d9872031b8bc5ac9cf2e2fb17798341dd77462cef9d",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/data/ledger-final.json",
+      "contentType": "application/json",
+      "contentEncoding": "gzip",
+      "encodedBytes": 33970,
+      "encodedSha256": "cfa219a6d95e0181379c1e40cb573538ffc95ca42d8f128f6f95a9592bb514fc"
+    },
+    "football/data/ledger-quarterFinal.json": {
+      "path": "football/data/ledger-quarterFinal.json",
+      "bytes": 902319,
+      "sha256": "1389276032c881bddf441a21187401e2e70b896f2f63b13584467926e3d4cf47",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/data/ledger-quarterFinal.json",
+      "contentType": "application/json",
+      "contentEncoding": "gzip",
+      "encodedBytes": 78747,
+      "encodedSha256": "2236b40e6cbc1f299402c08ee00cd46dec3dc74b0cb3d40e1705cc64e62b364a"
+    },
+    "football/data/ledger-round16.json": {
+      "path": "football/data/ledger-round16.json",
+      "bytes": 951674,
+      "sha256": "9928422672f37d5ace8a7340bb7503fb0e9cc8851ab5487b0826dce140003a3f",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/data/ledger-round16.json",
+      "contentType": "application/json",
+      "contentEncoding": "gzip",
+      "encodedBytes": 85386,
+      "encodedSha256": "495ed635f562142165a281fa9a158c418033d4b2ff97427f2033a45859072be4"
+    },
+    "football/data/ledger-semiFinal.json": {
+      "path": "football/data/ledger-semiFinal.json",
+      "bytes": 422228,
+      "sha256": "a976ba48495504cb2454162a927baf233a97bd85cc671a5be01ee322858532a3",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/data/ledger-semiFinal.json",
+      "contentType": "application/json",
+      "contentEncoding": "gzip",
+      "encodedBytes": 37515,
+      "encodedSha256": "463113b5fde2d2c874e93472ab45952e581cdbc963f6084fd6b680400d4af048"
+    },
+    "football/src/app/assets/Background.mobile.mp4": {
+      "path": "football/src/app/assets/Background.mobile.mp4",
+      "bytes": 2255396,
+      "sha256": "7b927aff584971c93247cbd72af79e40de153fd0b5ca90f10b6c9382b0c82ee6",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/Background.mobile.mp4",
+      "contentType": "video/mp4",
+      "encodedBytes": 2255396,
+      "encodedSha256": "7b927aff584971c93247cbd72af79e40de153fd0b5ca90f10b6c9382b0c82ee6"
+    },
+    "football/src/app/assets/Background.web.mp4": {
+      "path": "football/src/app/assets/Background.web.mp4",
+      "bytes": 4534590,
+      "sha256": "2efe6899e5d345037a33b4eb63927830f9f1595306e9c19799902b387f4b2c48",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/Background.web.mp4",
+      "contentType": "video/mp4",
+      "encodedBytes": 4534590,
+      "encodedSha256": "2efe6899e5d345037a33b4eb63927830f9f1595306e9c19799902b387f4b2c48"
+    },
+    "football/src/app/assets/championship-trophy-renaiss-mark.webp": {
+      "path": "football/src/app/assets/championship-trophy-renaiss-mark.webp",
+      "bytes": 157366,
+      "sha256": "711e35ae8e2ba02eb8692dc413d119e9af28ae479d74530cfae07bc8cfaf2b01",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/championship-trophy-renaiss-mark.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 157366,
+      "encodedSha256": "711e35ae8e2ba02eb8692dc413d119e9af28ae479d74530cfae07bc8cfaf2b01"
+    },
+    "football/src/app/assets/hero-world-cup-clean.webp": {
+      "path": "football/src/app/assets/hero-world-cup-clean.webp",
+      "bytes": 349670,
+      "sha256": "0e2624381279069afabb6ab1ea7be4606296d9a2a400ac9ed054cccef069e9ab",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/hero-world-cup-clean.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 349670,
+      "encodedSha256": "0e2624381279069afabb6ab1ea7be4606296d9a2a400ac9ed054cccef069e9ab"
+    },
+    "football/src/app/assets/match-prize-card.webp": {
+      "path": "football/src/app/assets/match-prize-card.webp",
+      "bytes": 142386,
+      "sha256": "099e480d7e337574e8acca1f995e464f489d5bc4612dff272dae9e9b00befa09",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prize-card.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 142386,
+      "encodedSha256": "099e480d7e337574e8acca1f995e464f489d5bc4612dff272dae9e9b00befa09"
+    },
+    "football/src/app/assets/match-prizes/final/final-01.webp": {
+      "path": "football/src/app/assets/match-prizes/final/final-01.webp",
+      "bytes": 164032,
+      "sha256": "3bc61acee7d9d9873006245506f159a5c190bc307b50eda5fe54ae078bb6d0ef",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/final/final-01.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 164032,
+      "encodedSha256": "3bc61acee7d9d9873006245506f159a5c190bc307b50eda5fe54ae078bb6d0ef"
+    },
+    "football/src/app/assets/match-prizes/quarter-final/quarter-01.webp": {
+      "path": "football/src/app/assets/match-prizes/quarter-final/quarter-01.webp",
+      "bytes": 127400,
+      "sha256": "a75feff032e3f9d051f89335aed049aa127eae2fe9950466c52df4d43517daa6",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/quarter-final/quarter-01.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 127400,
+      "encodedSha256": "a75feff032e3f9d051f89335aed049aa127eae2fe9950466c52df4d43517daa6"
+    },
+    "football/src/app/assets/match-prizes/quarter-final/quarter-02.webp": {
+      "path": "football/src/app/assets/match-prizes/quarter-final/quarter-02.webp",
+      "bytes": 121234,
+      "sha256": "fce5f0cdd496fcc42ac2adb5db3ea85e45fe050c0ddb6b674d71c608ce8c50d8",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/quarter-final/quarter-02.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 121234,
+      "encodedSha256": "fce5f0cdd496fcc42ac2adb5db3ea85e45fe050c0ddb6b674d71c608ce8c50d8"
+    },
+    "football/src/app/assets/match-prizes/quarter-final/quarter-03.webp": {
+      "path": "football/src/app/assets/match-prizes/quarter-final/quarter-03.webp",
+      "bytes": 104184,
+      "sha256": "9e572b0b1753f5fbba9e66449390e8b15d9a6a792905d14d8eeddb404d5295a1",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/quarter-final/quarter-03.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 104184,
+      "encodedSha256": "9e572b0b1753f5fbba9e66449390e8b15d9a6a792905d14d8eeddb404d5295a1"
+    },
+    "football/src/app/assets/match-prizes/quarter-final/quarter-04.webp": {
+      "path": "football/src/app/assets/match-prizes/quarter-final/quarter-04.webp",
+      "bytes": 113366,
+      "sha256": "c3fbbc6d7c262b48ccb3e3fa23533a08b68896ae99511afa7865fe6f421b12fb",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/quarter-final/quarter-04.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 113366,
+      "encodedSha256": "c3fbbc6d7c262b48ccb3e3fa23533a08b68896ae99511afa7865fe6f421b12fb"
+    },
+    "football/src/app/assets/match-prizes/round16/eevee-01.webp": {
+      "path": "football/src/app/assets/match-prizes/round16/eevee-01.webp",
+      "bytes": 122640,
+      "sha256": "88e6274fef9261f07b69b5e748835c8fc211190f3408e6987313ed8fc11196a0",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/round16/eevee-01.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 122640,
+      "encodedSha256": "88e6274fef9261f07b69b5e748835c8fc211190f3408e6987313ed8fc11196a0"
+    },
+    "football/src/app/assets/match-prizes/round16/eevee-02.webp": {
+      "path": "football/src/app/assets/match-prizes/round16/eevee-02.webp",
+      "bytes": 126382,
+      "sha256": "808007189737b09374f709aff54144ab7b9195f802ef62c7fdb908c5c12f1885",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/round16/eevee-02.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 126382,
+      "encodedSha256": "808007189737b09374f709aff54144ab7b9195f802ef62c7fdb908c5c12f1885"
+    },
+    "football/src/app/assets/match-prizes/round16/eevee-03.webp": {
+      "path": "football/src/app/assets/match-prizes/round16/eevee-03.webp",
+      "bytes": 140886,
+      "sha256": "6cefbbe7e08ced6aef83e90cbf919b3accd2195b71ec35f9959547a683104bb6",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/round16/eevee-03.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 140886,
+      "encodedSha256": "6cefbbe7e08ced6aef83e90cbf919b3accd2195b71ec35f9959547a683104bb6"
+    },
+    "football/src/app/assets/match-prizes/round16/eevee-04.webp": {
+      "path": "football/src/app/assets/match-prizes/round16/eevee-04.webp",
+      "bytes": 117482,
+      "sha256": "677c50228d4533a6b3eeebf7af8a7221ae3415c7c40eefc2871bcc733b9856ae",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/round16/eevee-04.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 117482,
+      "encodedSha256": "677c50228d4533a6b3eeebf7af8a7221ae3415c7c40eefc2871bcc733b9856ae"
+    },
+    "football/src/app/assets/match-prizes/round16/eevee-05.webp": {
+      "path": "football/src/app/assets/match-prizes/round16/eevee-05.webp",
+      "bytes": 117222,
+      "sha256": "497bbe23fe2f5ffcf5c16a8f10274035f49c9297807effe332a847974f551219",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/round16/eevee-05.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 117222,
+      "encodedSha256": "497bbe23fe2f5ffcf5c16a8f10274035f49c9297807effe332a847974f551219"
+    },
+    "football/src/app/assets/match-prizes/round16/eevee-06.webp": {
+      "path": "football/src/app/assets/match-prizes/round16/eevee-06.webp",
+      "bytes": 141680,
+      "sha256": "fd8f3791be88d14c54af2aa82ad925e647fb07fd641fcebdecc66877eafd2599",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/round16/eevee-06.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 141680,
+      "encodedSha256": "fd8f3791be88d14c54af2aa82ad925e647fb07fd641fcebdecc66877eafd2599"
+    },
+    "football/src/app/assets/match-prizes/round16/eevee-07.webp": {
+      "path": "football/src/app/assets/match-prizes/round16/eevee-07.webp",
+      "bytes": 119784,
+      "sha256": "78992c58491a05b389371e3a222c5d08c44cf8b13df917a0077393f5dbe1e787",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/round16/eevee-07.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 119784,
+      "encodedSha256": "78992c58491a05b389371e3a222c5d08c44cf8b13df917a0077393f5dbe1e787"
+    },
+    "football/src/app/assets/match-prizes/round16/sobble-us-belgium.webp": {
+      "path": "football/src/app/assets/match-prizes/round16/sobble-us-belgium.webp",
+      "bytes": 166502,
+      "sha256": "d5cec49e18fb26fea68851c81972691811b2c7f0b93b0043889b0a62723af525",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/round16/sobble-us-belgium.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 166502,
+      "encodedSha256": "d5cec49e18fb26fea68851c81972691811b2c7f0b93b0043889b0a62723af525"
+    },
+    "football/src/app/assets/match-prizes/semi-final/semi-01.webp": {
+      "path": "football/src/app/assets/match-prizes/semi-final/semi-01.webp",
+      "bytes": 143040,
+      "sha256": "6a8264a441fcde705f3f77cfa7dd64b6394b27fe7ff2320d5c3d80a087d210b0",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/semi-final/semi-01.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 143040,
+      "encodedSha256": "6a8264a441fcde705f3f77cfa7dd64b6394b27fe7ff2320d5c3d80a087d210b0"
+    },
+    "football/src/app/assets/match-prizes/semi-final/semi-02.webp": {
+      "path": "football/src/app/assets/match-prizes/semi-final/semi-02.webp",
+      "bytes": 118384,
+      "sha256": "30458d71e15573f82b32835dfcea1212d6e5394c1b06ab0993a0125405686b4a",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/match-prizes/semi-final/semi-02.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 118384,
+      "encodedSha256": "30458d71e15573f82b32835dfcea1212d6e5394c1b06ab0993a0125405686b4a"
+    },
+    "football/src/app/assets/renaiss-logo-mark.webp": {
+      "path": "football/src/app/assets/renaiss-logo-mark.webp",
+      "bytes": 123338,
+      "sha256": "4b02bb8118ccbd966a80fe67f9f92c96cf60962e14f91e9e3061bec2a9a64e6d",
+      "type": "binary",
+      "source": "work/assets/event-experiences/football/src/app/assets/renaiss-logo-mark.webp",
+      "contentType": "image/webp",
+      "encodedBytes": 123338,
+      "encodedSha256": "4b02bb8118ccbd966a80fe67f9f92c96cf60962e14f91e9e3061bec2a9a64e6d"
+    },
+    "pokemon-30/data/ticket-ledger.json": {
+      "path": "pokemon-30/data/ticket-ledger.json",
+      "bytes": 60747,
+      "sha256": "ba74acec09280e3a75316d1dae9316e1e5bdf4923ecc8ab88625838e0d50ddda",
+      "type": "binary",
+      "source": "work/assets/event-experiences/pokemon-30/data/ticket-ledger.json",
+      "contentType": "application/json",
+      "contentEncoding": "gzip",
+      "encodedBytes": 17689,
+      "encodedSha256": "563007ed6a33777ac44a6321d69d407a91c9e30410571a6b87eb6f15351115b7"
+    },
+    "pokemon-30/fonts/inter.woff2": {
+      "path": "pokemon-30/fonts/inter.woff2",
+      "bytes": 48256,
+      "sha256": "3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62",
+      "type": "binary",
+      "source": "work/assets/event-experiences/pokemon-30/fonts/inter.woff2",
+      "contentType": "font/woff2",
+      "encodedBytes": 48256,
+      "encodedSha256": "3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62"
+    },
+    "pokemon-30/fonts/urbanist.woff2": {
+      "path": "pokemon-30/fonts/urbanist.woff2",
+      "bytes": 27752,
+      "sha256": "7981ef90c246352c7c217081b8d9337b9c95e9d17ae126bf56b0d3753d1e5ffb",
+      "type": "binary",
+      "source": "work/assets/event-experiences/pokemon-30/fonts/urbanist.woff2",
+      "contentType": "font/woff2",
+      "encodedBytes": 27752,
+      "encodedSha256": "7981ef90c246352c7c217081b8d9337b9c95e9d17ae126bf56b0d3753d1e5ffb"
+    },
+    "pokemon-30/runtime/draco_decoder.wasm": {
+      "path": "pokemon-30/runtime/draco_decoder.wasm",
+      "bytes": 192420,
+      "sha256": "a680d927bed9cb864ddbd63521868891af2bfbe755092761b4837487618df8ac",
+      "type": "binary",
+      "source": "work/assets/event-experiences/pokemon-30/runtime/draco_decoder.wasm",
+      "contentType": "application/wasm",
+      "contentEncoding": "gzip",
+      "encodedBytes": 63395,
+      "encodedSha256": "67f43de44f3ef6f90224902dbf7f4c6a9c5f52dd0d9faa5dad0f9ace4229a834"
+    },
+    "pokemon-30/runtime/draco_wasm_wrapper.js": {
+      "path": "pokemon-30/runtime/draco_wasm_wrapper.js",
+      "bytes": 58456,
+      "sha256": "8bb2952d2ba7d67e1414f8df819410cb0434a666be53f671fff75f68843d76f6",
+      "type": "binary",
+      "source": "work/assets/event-experiences/pokemon-30/runtime/draco_wasm_wrapper.js",
+      "contentType": "application/javascript",
+      "contentEncoding": "gzip",
+      "encodedBytes": 11667,
+      "encodedSha256": "ee8411334c92f6760b59319bb4206540215750e1436ca8e032202ef4a96ebc83"
+    },
+    "pokemon-30/src/assets/pokemon30-prize-box-crystal-thin.jpg": {
+      "path": "pokemon-30/src/assets/pokemon30-prize-box-crystal-thin.jpg",
+      "bytes": 401356,
+      "sha256": "1281394a12712e0d945c473ca40e4244d9d2179849259038855eb370eace6d58",
+      "type": "binary",
+      "source": "work/assets/event-experiences/pokemon-30/src/assets/pokemon30-prize-box-crystal-thin.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 401356,
+      "encodedSha256": "1281394a12712e0d945c473ca40e4244d9d2179849259038855eb370eace6d58"
+    },
+    "pokemon-30/src/assets/renaiss-logo-black.png": {
+      "path": "pokemon-30/src/assets/renaiss-logo-black.png",
+      "bytes": 31973,
+      "sha256": "d4a79cf2bfa00bb90fe9d5ce76c3515b3d425f3091caec816a8d9c7a36640319",
+      "type": "binary",
+      "source": "work/assets/event-experiences/pokemon-30/src/assets/renaiss-logo-black.png",
+      "contentType": "image/png",
+      "encodedBytes": 31973,
+      "encodedSha256": "d4a79cf2bfa00bb90fe9d5ce76c3515b3d425f3091caec816a8d9c7a36640319"
+    },
+    "pokemon-30/src/draw/bonus-prize/assets/charizard-product-v6.glb": {
+      "path": "pokemon-30/src/draw/bonus-prize/assets/charizard-product-v6.glb",
+      "bytes": 2127496,
+      "sha256": "3752c2710dfcd020cdc841cb6fca0ed71c75f1dbea4c0bef65111cb41f2dd3ec",
+      "type": "binary",
+      "source": "work/assets/event-experiences/pokemon-30/src/draw/bonus-prize/assets/charizard-product-v6.glb",
+      "contentType": "model/gltf-binary",
+      "encodedBytes": 2127496,
+      "encodedSha256": "3752c2710dfcd020cdc841cb6fca0ed71c75f1dbea4c0bef65111cb41f2dd3ec"
+    },
+    "pokemon-30/src/draw/bonus-prize/assets/gift-box-print.jpg": {
+      "path": "pokemon-30/src/draw/bonus-prize/assets/gift-box-print.jpg",
+      "bytes": 279226,
+      "sha256": "b5d998e83dd27ff51f56e33a3f6de24a7beaf889a0f458d744e1b78e1a5c0b4d",
+      "type": "binary",
+      "source": "work/assets/event-experiences/pokemon-30/src/draw/bonus-prize/assets/gift-box-print.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 279226,
+      "encodedSha256": "b5d998e83dd27ff51f56e33a3f6de24a7beaf889a0f458d744e1b78e1a5c0b4d"
+    },
+    "pokemon-30/src/draw/bonus-prize/assets/jumbo-charizard-card.jpg": {
+      "path": "pokemon-30/src/draw/bonus-prize/assets/jumbo-charizard-card.jpg",
+      "bytes": 374852,
+      "sha256": "f0e52e61ef21977cfb974935b5b8554d8d16641534d48074363cd20ddf3b1568",
+      "type": "binary",
+      "source": "work/assets/event-experiences/pokemon-30/src/draw/bonus-prize/assets/jumbo-charizard-card.jpg",
+      "contentType": "image/jpeg",
+      "encodedBytes": 374852,
+      "encodedSha256": "f0e52e61ef21977cfb974935b5b8554d8d16641534d48074363cd20ddf3b1568"
+    }
+  },
+  "access": "public",
+  "bucket": "renaiss-merch-pilot-20261018",
+  "contentHash": "cf46f71ce3488f0343c1aa87a42152cc3250fb6bf57bbbb7fa5fcac66ca6e3c5",
+  "fileCount": 48,
+  "totalBytes": 13154827
+}

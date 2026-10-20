@@ -1,0 +1,290 @@
+[
+  {
+    "event": "pokemon-30",
+    "source": "src/components/PokemonWinnerAnnouncement.jsx",
+    "sha256": "34f9346d0b7ed5645d44f99537e7171320205527dfdbc85264be42235ec18350",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/i18n/Pokemon30I18n.jsx",
+    "sha256": "d307e9dc9bf46212e504bc35205c3907a713d0426f2deadeb2aec61a0166aada",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/i18n/pokemon30Messages.js",
+    "sha256": "0892696d9389f020ce1997114a0949cfb402fbf08b9f1b0a80ada84c46c9dfe4",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/i18n/winnerAnnouncementMessages.js",
+    "sha256": "8372d21d517bf7a2b282e7214116908321d5540240cd443ae81652b636ae61da",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "shared/drawPrizes.mjs",
+    "sha256": "ac8f5466a09bd2270c733d61b76f5f8230f9b451334e97b8121ceab2823a3678",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/winner-announcement/WinnerIdentity.jsx",
+    "sha256": "692a04ce2c7d299f1e2e4eab157b098720dc58ff1f8df19df8e843d1ec2db12e",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/winner-announcement/ExtraWinnerAnnouncement.jsx",
+    "sha256": "8991a981f482b95aebcd16bd8aa30a32203be72efdc4d2aed916c7e16a31bf19",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/winner-announcement/WinnerTransaction.jsx",
+    "sha256": "be5461b8b73a26a9561b92f3002a1ca71e4f0f6af6a6d34b3c57cc0831a5e786",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/winner-announcement/extraWinnerAnnouncement.css",
+    "sha256": "28cd04e2b88359f0765772880435e6fe493f5416cddec98555f4e5bfa4aaa86e",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/winner-announcement/WinnerLedger.jsx",
+    "sha256": "79d100f865fe0b7b9280e6cf28f5afa11aed6ca8fe8cfb0a8188e250e24d7911",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/winner-announcement/winnerLedger.css",
+    "sha256": "150835c523952570f8844765e0958d23bb40d754733ac1c98ea09d2308cd5e5a",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/winner-announcement/useWinnerPrizeGallery.js",
+    "sha256": "e4cfa7827bbf5d0db9b4baaa45f475f338c54ffcd4d92b9d45d5646fd847c07a",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/winner-announcement/createWinnerPrizeGallery.js",
+    "sha256": "7b1dab2a6045dcd6f69ef68514c5d6cf73ba40d3349f141a83d5eea5075f4ae5",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/draw/bonus-prize/createProductEnvironment.ts",
+    "sha256": "526a40402fbbcdca87d64a71146c8161e8620d504456223869e407fd73127a6a",
+    "adapted": true
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/draw/bonus-prize/disposeScene.ts",
+    "sha256": "72e152ce917526fe86a14dcdaf61b886a058466c8ff1c241db1034048f7a43e1",
+    "adapted": true
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/winner-announcement/loadWinnerPrizeModels.js",
+    "sha256": "675d42c8e5a5c6976eb49ff0a42268be5ca1ead90306ac082842ec546719be3c",
+    "adapted": true
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/draw/bonus-prize/loadCharizardModel.ts",
+    "sha256": "2d1f2e55eea61debb373483635124c1a00a3dec6d790bb7c78fd843b1267ceb5",
+    "adapted": true
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/draw/bonus-prize/createFigurineFinish.ts",
+    "sha256": "4b02d6a6aa8fe74961848b591f9d8c0443d8f50001c4107142c8941291bb0a8f",
+    "adapted": true
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/draw/bonus-prize/createGiftBoxModel.ts",
+    "sha256": "44f7c7e418e7cf1719683169cebffa5ea7adecaa07ff278d7da86103ea639667",
+    "adapted": true
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/draw/bonus-prize/createGiftBoxMaterials.ts",
+    "sha256": "7f7fd43302eee7b7071b8e3b8f877193808a7b429f9f394645a7b6c5805cf527",
+    "adapted": true
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/draw/bonus-prize/createGiftBoxWindow.ts",
+    "sha256": "3c5ab20d0aec456fb983e1b6ca936f51a45f0cca00041702720dcd3970fef667",
+    "adapted": true
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/draw/bonus-prize/createGiftBoxInsert.ts",
+    "sha256": "60243d786df3d365b948c7af37dce44a87083097d7bfe9d36458d680e088ad13",
+    "adapted": true
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/draw/bonus-prize/createGiftBoxRear.ts",
+    "sha256": "393aacaa5614fafbec4a6bd123f24efc545a708581fce42df7f9a533fecb4853",
+    "adapted": true
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/draw/bonus-prize/createGiftBoxTop.ts",
+    "sha256": "40b920096721244bf81085d8f36f3c205d985ccb94e3a3436bf891794df57284",
+    "adapted": true
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/PokemonPrizeStage.jsx",
+    "sha256": "3f5e9004ad18f7fda1c8e499fb7dfe2dc36c396c3434b0bc068adeabcd22bc65",
+    "adapted": true
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/pokemonWinnerAnnouncement.css",
+    "sha256": "acf6eefe651d1b8d7965a387cae0b35e580eb54318de6ffd8825c9c16d55fc62",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/PokemonTicketRuleCard.jsx",
+    "sha256": "ca85b3bb04ec02b2cebd30b6ee79bf1c8b8c8bf6dff7f61c93074fdec6f45465",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/LanguageSelector.jsx",
+    "sha256": "acd4cf1b49cdca8486eae9a73eafda5792abec597d701315fda04e44c1da8aa7",
+    "adapted": false
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/pokemon30.css",
+    "sha256": "5385c7461ae8cba45172e78814f47bbf54fc253aa39d542bdf2e90a2ea3a9091",
+    "adapted": true
+  },
+  {
+    "event": "pokemon-30",
+    "source": "src/components/pokemon30Event.js",
+    "sha256": "20d46c66a48070cfaa78e21e482f6b69ed2ad50e606372ff5a6ec55460c143d7",
+    "adapted": false
+  },
+  {
+    "event": "football",
+    "source": "src/app/components/control-room/WinnersRoom.jsx",
+    "sha256": "44836a507e6952eed42410170c788a554a222020308475f7ba50c03a5c694bb8",
+    "adapted": true
+  },
+  {
+    "event": "football",
+    "source": "src/app/data/matchPrizeImages.js",
+    "sha256": "cdf29c256100e289cf9646bde8298fc74343681c73f79df0f49fecc490c3146b",
+    "adapted": true
+  },
+  {
+    "event": "football",
+    "source": "src/app/data/matchIds.js",
+    "sha256": "d902a097ccde25e57ccd8af31cf03fb9f578f53123caf2d1dab8845f18fdc7c9",
+    "adapted": false
+  },
+  {
+    "event": "football",
+    "source": "src/app/data/ticketMath.js",
+    "sha256": "00b8ac38000252d85c12999eed5de04982e444c74f68de092a18b9e14e60a363",
+    "adapted": false
+  },
+  {
+    "event": "football",
+    "source": "src/app/i18n/useCampaignCopy.js",
+    "sha256": "a862df0383a942e74c66baa8071fc36fd1b5360ae7dee70cf7688fadb0fdd6f6",
+    "adapted": false
+  },
+  {
+    "event": "football",
+    "source": "src/app/i18n/entities.js",
+    "sha256": "f578d44b34879204827697308e4b6b552f3d99b7e2ebd6d3fc92a533de647271",
+    "adapted": false
+  },
+  {
+    "event": "football",
+    "source": "src/app/i18n/locales/index.js",
+    "sha256": "4086c67c77a0c04bd14c4870cfe9d0de2cb10dcab33d8535c894bc8c28e6bdf5",
+    "adapted": false
+  },
+  {
+    "event": "football",
+    "source": "src/app/i18n/locales/zh-Hant.js",
+    "sha256": "30ee42b8b02a40582677892b5540fe386b0adc9bd43d1b726a43958308cdcf23",
+    "adapted": false
+  },
+  {
+    "event": "football",
+    "source": "src/app/i18n/locales/en.js",
+    "sha256": "240f637cde4b7dcd009ec9ff433d378b6bdba053f7e569bd7a587e71a90e5156",
+    "adapted": false
+  },
+  {
+    "event": "football",
+    "source": "src/app/i18n/locales/ko.js",
+    "sha256": "22add2e8919a9a7fa9a8f6241d39f7c6aee488f497c86e7f7b8571a5e182cd9d",
+    "adapted": false
+  },
+  {
+    "event": "football",
+    "source": "src/app/i18n/I18nProvider.jsx",
+    "sha256": "18fbcdc021d5f794f4f2f9be14dff58de48cd92c8d8f5231fb9e67bf8ec8b142",
+    "adapted": true
+  },
+  {
+    "event": "football",
+    "source": "src/app/i18n/translations.js",
+    "sha256": "6461367c0abce439bdf2044bf83e2e24f6368490095b4dc219c85c8effedcafb",
+    "adapted": false
+  },
+  {
+    "event": "football",
+    "source": "src/app/components/control-room/ControlRoom.jsx",
+    "sha256": "8184004da25c18ec056bb8a7aec909eacc6d44a956cb3877707bc4feeb1e5c6d",
+    "adapted": true
+  },
+  {
+    "event": "football",
+    "source": "src/app/components/Magnet.jsx",
+    "sha256": "8687a65371c52f667389df63b6c7c460c8f426826e78b15a81d2bf8b4e4e604c",
+    "adapted": false
+  },
+  {
+    "event": "football",
+    "source": "src/app/styles.css",
+    "sha256": "d559b5ffe2b9cb124545e798ec04098aaf57818b111b84f71ca6298bb6e44c2a",
+    "adapted": true
+  },
+  {
+    "event": "football",
+    "source": "src/app/components/SideRays/SideRays.jsx",
+    "sha256": "e6ba11996d74e9afa2db0fc41f2835e06a92a877476b16ebc04ad2fddc6bdef5",
+    "adapted": false
+  },
+  {
+    "event": "football",
+    "source": "src/app/components/SideRays/SideRays.css",
+    "sha256": "fb5eea20c88ca80be0c853703bdb3d4987741f933986aa965fb5d3f7798abd5b",
+    "adapted": false
+  },
+  {
+    "event": "football",
+    "source": "src/app/data/worldCupCampaign.js",
+    "sha256": "76feefbf67f988b0a6f5e752ec3c88dc491795e78317ee3fb9c22cab54a4c392",
+    "adapted": false
+  }
+]

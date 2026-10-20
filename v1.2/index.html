@@ -8,6 +8,14 @@
       content="Renaiss Community: member dashboard, official updates, partner activities, and Merch."
     />
     <title>Renaiss Community</title>
+    <link rel="stylesheet" href="/src/components/HubReturn/HubReturnMotion.css" />
+    <script>
+      // Paint the same handoff color before the lazy Hub is ready; only real returns opt in.
+      if (new URLSearchParams(location.search).get('hubReturn') === '1' && location.hash === '#events') {
+        document.documentElement.dataset.hubReturn = 'arriving';
+        addEventListener('error', () => { delete document.documentElement.dataset.hubReturn; }, { once: true });
+      }
+    </script>
     <style>
       html, body { background: #f8f6f3; }
       #root:empty { display: grid; place-items: center; min-height: 100svh; color: #675b68; font: 500 15px system-ui, sans-serif; }
@@ -15,6 +23,7 @@
     </style>
   </head>
   <body>
+    <div id="hub-return-veil" class="hub-return-veil t-page-slide" data-page="1" aria-hidden="true"><div class="t-page" data-page-id="1"></div></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

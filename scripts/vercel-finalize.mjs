@@ -10,6 +10,8 @@ for (const file of [
   "dist/index.html",
   "dist/v1.2/index.html",
   "dist/draw/index.html",
+  "dist/events/pokemon-30/index.html",
+  "dist/events/football/index.html",
 ]) {
   const html = await readFile(file, "utf8");
   await writeFile(

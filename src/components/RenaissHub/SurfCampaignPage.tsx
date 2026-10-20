@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { FulfillmentConsole } from '../FulfillmentConsole/FulfillmentConsole';
 import { surfCampaign } from '../../../shared/surf-campaign.js';
 import type { AppLocale } from '../../i18n/LocaleContext';
 import type { AccountState } from './RenaissHubFeatures';
-import { HubLogo } from './HubLogo';
-import { HubLanguageMenu } from './HubLanguageMenu';
+import { HubSiteHeader } from './HubSiteHeader';
 import { HubAccountAction } from './HubAccountAction';
 import { surfCampaignCopy } from './SurfCampaignCopy';
 import { SurfCampaignHero } from './SurfCampaignHero';
@@ -14,8 +13,9 @@ import { useSurfMissions } from './useSurfMissions';
 import { useSurfCampaignMotion } from './useSurfCampaignMotion';
 import './SurfQuestBrand.css';
 
-export function SurfCampaignPage({ locale, setLocale, account, motionRevision, onBack, onLogin, onRetry, onLogout, loggingOut }: {
+export function SurfCampaignPage({ locale, setLocale, account, navigation, motionRevision, onBack, onLogin, onRetry, onLogout, loggingOut }: {
   locale: AppLocale; setLocale: (locale: AppLocale) => void; account: AccountState;
+  navigation: ReactNode;
   motionRevision: number;
   onBack: () => void; onLogin: () => void; onRetry: () => void; onLogout: () => void; loggingOut: boolean;
 }) {
@@ -41,17 +41,15 @@ export function SurfCampaignPage({ locale, setLocale, account, motionRevision, o
     history.replaceState(history.state, '', `${target.pathname}${target.search}${target.hash}`);
     onLogin();
   }
-  return <main className="surf-page" lang={locale} ref={motionRoot}>
+  return <main className="surf-page surf-page--hub" lang={locale} ref={motionRoot}>
     <div className="surf-page__shell">
-      <header className="surf-page__header" data-surf-reveal="0">
-        <div className="surf-page__location"><button className="surf-page__back" type="button" onClick={onBack}><span aria-hidden="true">←</span><HubLogo /><span>{copy.back}</span></button><span className="surf-page__location-label">{copy.pageLabel}</span></div>
-        <nav aria-label={copy.pageNavigation}><button type="button" onClick={() => goTo('surf-campaign-rewards')}>{copy.viewRewards}</button><button type="button" onClick={() => goTo('surf-campaign-tasks')}>{copy.viewTasks}</button></nav>
-        <div className="surf-page__account-controls"><HubLanguageMenu locale={locale} setLocale={setLocale} />
+      <HubSiteHeader locale={locale} setLocale={setLocale} location={copy.pageLabel} onBack={onBack} navigation={navigation}
+        actions={<nav className="surf-page__hub-actions" aria-label={copy.pageNavigation}><button type="button" onClick={() => goTo('surf-campaign-rewards')}>{copy.viewRewards}</button><button type="button" onClick={() => goTo('surf-campaign-tasks')}>{copy.viewTasks}</button></nav>}
+        accountAction={<div className="surf-page__account-controls">
           {administrator ? <button className="surf-page__logout" type="button" onClick={() => setShowParticipants(true)}>{inlineCopy[locale].participants}</button> : null}
           {account.status === 'error' || (account.status === 'ready' && !account.session.authenticated) ? <HubAccountAction account={account} locale={locale} onRetry={onRetry} onLogin={loginForMission} disabled={false} /> : null}
           {account.status === 'ready' && account.session.authenticated ? <button className="surf-page__logout" type="button" onClick={onLogout} disabled={loggingOut}>{loggingOut ? inlineCopy[locale].signingOut : inlineCopy[locale].signOut}</button> : null}
-        </div>
-      </header>
+        </div>} />
       <SurfCampaignHero locale={locale} onTasks={() => goTo('surf-campaign-tasks')} onRewards={() => goTo('surf-campaign-rewards')} />
       <SurfCampaignRewards locale={locale} />
       <SurfCampaignTasks locale={locale} account={account} missions={missions} onLogin={loginForMission} onRetry={onRetry} />

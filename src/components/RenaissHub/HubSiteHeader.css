@@ -17,6 +17,4 @@
   .hub-site-header__location { font-size: .62rem; }
   .hub-site-header__controls { position: relative; flex-wrap: wrap; margin-left: 0; width: 100%; justify-content: flex-end; column-gap: .35rem; row-gap: .5rem; }
   .hub-site-header__controls .hub-language { margin-right: auto; }
-  .hub-site-header__controls .hub-navigation { position: static; }
-  .hub-site-header__controls .hub-navigation__panel { right: 0; width: min(286px, 100%); top: calc(100% + 10px); z-index: 1; }
 }

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 
 // Use the existing route's per-piece motion approach: fixed controls retain
 // their viewport positioning and long pages do not become one blurred layer.
-const hubPieces = '.hub-home-intro__utility, .hub-widget__surface, .renaiss-hub__footer, .assistant-launch';
+const hubPieces = '.hub-widget__surface, .renaiss-hub__footer, .assistant-launch';
 const storePieces = '.merch-store__header, .merch-store__intro, .merch-product-card, .catalog-item, .surf-store-card';
 
 export function useStorePageTransition(view: 'landing' | 'store', enabled: boolean) {

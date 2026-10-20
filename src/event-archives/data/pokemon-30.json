@@ -1,0 +1,311 @@
+{
+  "sourceUrl": "https://renaiss30th.zeabur.app/api/pokemon30/winners",
+  "capturedAt": "2026-10-20T13:44:00.690Z",
+  "announcement": {
+    "publishedAt": "2026-10-12T16:55:25.387Z",
+    "ledger": {
+      "ledgerHash": "0xba74acec09280e3a75316d1dae9316e1e5bdf4923ecc8ab88625838e0d50ddda",
+      "sourceLedgerHash": "0x8e57b020e5325e9edc6ee43303d22f4017c83ebedb730e3b830c4621e6049192",
+      "totalTickets": 75914,
+      "eligibleWallets": 533,
+      "downloadUrl": "/api/pokemon30/winners/ledger",
+      "transactionHash": "0xc890a166ad373288512914baaf25438906f1108bd5f934b1e01d78b2fda52e0b",
+      "vrfTransactionHash": "0x91998954cc256d3d919c152cc7b626f474202e8785f7f17f26e4325edb8ee7f2",
+      "downloadAsset": "pokemon-30/data/ticket-ledger.json"
+    },
+    "winners": [
+      {
+        "displayName": "JokesFetch9931",
+        "walletAddressMasked": "0xe536…0e6c",
+        "ticketNumber": 66856,
+        "transactionHash": "0x2117368c99979775879007a7c9a7b18d7c6db1594d981f8072486ef810b241d9",
+        "prizeSlotIndex": 0,
+        "prize": {
+          "prizeSlotIndex": 0,
+          "kind": "celebration-box",
+          "name": "Pokémon 30th Celebration Box"
+        }
+      },
+      {
+        "displayName": "KnivesDouble873",
+        "walletAddressMasked": "0x2ce9…9df2",
+        "ticketNumber": 9763,
+        "transactionHash": "0x2117368c99979775879007a7c9a7b18d7c6db1594d981f8072486ef810b241d9",
+        "prizeSlotIndex": 1,
+        "prize": {
+          "prizeSlotIndex": 1,
+          "kind": "celebration-box",
+          "name": "Pokémon 30th Celebration Box"
+        }
+      },
+      {
+        "displayName": "SpoonsVanish540",
+        "walletAddressMasked": "0x9537…f94c",
+        "ticketNumber": 42162,
+        "transactionHash": "0x2117368c99979775879007a7c9a7b18d7c6db1594d981f8072486ef810b241d9",
+        "prizeSlotIndex": 2,
+        "prize": {
+          "prizeSlotIndex": 2,
+          "kind": "celebration-box",
+          "name": "Pokémon 30th Celebration Box"
+        }
+      },
+      {
+        "displayName": "TipsRest4380",
+        "walletAddressMasked": "0x9546…2b4c",
+        "ticketNumber": 43891,
+        "transactionHash": "0x2117368c99979775879007a7c9a7b18d7c6db1594d981f8072486ef810b241d9",
+        "prizeSlotIndex": 3,
+        "prize": {
+          "prizeSlotIndex": 3,
+          "kind": "celebration-box",
+          "name": "Pokémon 30th Celebration Box"
+        }
+      },
+      {
+        "displayName": "ClothsGive1929",
+        "walletAddressMasked": "0xb89b…2d12",
+        "ticketNumber": 55361,
+        "transactionHash": "0x2117368c99979775879007a7c9a7b18d7c6db1594d981f8072486ef810b241d9",
+        "prizeSlotIndex": 4,
+        "prize": {
+          "prizeSlotIndex": 4,
+          "kind": "celebration-box",
+          "name": "Pokémon 30th Celebration Box"
+        }
+      },
+      {
+        "displayName": "KidsCheer4050",
+        "walletAddressMasked": "0xf12c…6a1b",
+        "ticketNumber": 71480,
+        "transactionHash": "0x2117368c99979775879007a7c9a7b18d7c6db1594d981f8072486ef810b241d9",
+        "prizeSlotIndex": 5,
+        "prize": {
+          "prizeSlotIndex": 5,
+          "kind": "celebration-box",
+          "name": "Pokémon 30th Celebration Box"
+        }
+      },
+      {
+        "displayName": "RosesType3296",
+        "walletAddressMasked": "0x08ce…c235",
+        "ticketNumber": 452,
+        "transactionHash": "0x2117368c99979775879007a7c9a7b18d7c6db1594d981f8072486ef810b241d9",
+        "prizeSlotIndex": 6,
+        "prize": {
+          "prizeSlotIndex": 6,
+          "kind": "celebration-box",
+          "name": "Pokémon 30th Celebration Box"
+        }
+      },
+      {
+        "displayName": "JR_Forge",
+        "xHandle": "@JRForgeAI",
+        "walletAddressMasked": "0x553b…e49b",
+        "ticketNumber": 29697,
+        "transactionHash": "0x2117368c99979775879007a7c9a7b18d7c6db1594d981f8072486ef810b241d9",
+        "prizeSlotIndex": 7,
+        "prize": {
+          "prizeSlotIndex": 7,
+          "kind": "celebration-box",
+          "name": "Pokémon 30th Celebration Box"
+        }
+      },
+      {
+        "displayName": "Dokipoki",
+        "xHandle": "@Dokipokiapp",
+        "walletAddressMasked": "0xf3c5…eb1d",
+        "ticketNumber": 74599,
+        "transactionHash": "0x2117368c99979775879007a7c9a7b18d7c6db1594d981f8072486ef810b241d9",
+        "prizeSlotIndex": 8,
+        "prize": {
+          "prizeSlotIndex": 8,
+          "kind": "celebration-box",
+          "name": "Pokémon 30th Celebration Box"
+        }
+      },
+      {
+        "displayName": "TipsRest4380",
+        "walletAddressMasked": "0x9546…2b4c",
+        "ticketNumber": 42665,
+        "transactionHash": "0x2117368c99979775879007a7c9a7b18d7c6db1594d981f8072486ef810b241d9",
+        "prizeSlotIndex": 9,
+        "prize": {
+          "prizeSlotIndex": 9,
+          "kind": "celebration-box",
+          "name": "Pokémon 30th Celebration Box"
+        }
+      },
+      {
+        "displayName": "BadgersWatch306",
+        "walletAddressMasked": "0x26c2…36f9",
+        "ticketNumber": 4990,
+        "transactionHash": "0xa3d3feb9edd73da2739885783711c39788eaf657ba08f383ea0f042fa11a60f2",
+        "prizeSlotIndex": 10,
+        "prize": {
+          "prizeSlotIndex": 10,
+          "kind": "charizard-gift-box",
+          "name": "噴火龍典藏公仔禮盒"
+        }
+      }
+    ],
+    "extraWinners": [
+      {
+        "displayName": "MapsTrade3975",
+        "walletAddressMasked": "0xb755…5d25",
+        "ticketNumber": 53433,
+        "transactionHash": "0x47a20206554e9d06ffc84acb9a51c080cc2bbcee338827c3161527c7822777ad",
+        "extraPrizeIndex": 1
+      },
+      {
+        "displayName": "KnivesRelax6990",
+        "walletAddressMasked": "0x4e61…e1a3",
+        "ticketNumber": 28457,
+        "transactionHash": "0xa34a518e1fd8c869c92240c1d0a771fc54ddeb9bdd5710837960fe8dcb0be725",
+        "extraPrizeIndex": 2
+      },
+      {
+        "displayName": "BugsJoin6368",
+        "walletAddressMasked": "0xb76e…9637",
+        "ticketNumber": 54863,
+        "transactionHash": "0xafb08a1119d5dcfac87a6f5a2656c85bb92599faad9f5c2f05de5d3ec68a29d3",
+        "extraPrizeIndex": 3
+      },
+      {
+        "displayName": "FactsRescue2845",
+        "walletAddressMasked": "0x19ec…bf34",
+        "ticketNumber": 1877,
+        "transactionHash": "0x76db6965ac14d9ffec530afd953a454f7dce4e0576aa2fc982bb2408ce80d2f7",
+        "extraPrizeIndex": 4
+      },
+      {
+        "displayName": "JokesFetch9931",
+        "walletAddressMasked": "0xe536…0e6c",
+        "ticketNumber": 66987,
+        "transactionHash": "0xd6cf368f45d93b373bf0a26a3eafc6d58baaa21aa110f8c6977b9e6dba378f51",
+        "extraPrizeIndex": 5
+      },
+      {
+        "displayName": "GarlicsTap7030",
+        "walletAddressMasked": "0xaa31…6563",
+        "ticketNumber": 48662,
+        "transactionHash": "0x56487ed574fdce4c6b30891711d3be87d615efc9b19e8cd2945aac531982ce4e",
+        "extraPrizeIndex": 6
+      },
+      {
+        "displayName": "SealsDrive1328",
+        "walletAddressMasked": "0x279c…358e",
+        "ticketNumber": 9069,
+        "transactionHash": "0x071746e539935f5d1329be2e9275dd4511c2e70006ceae95dfa661d7a8a555a4",
+        "extraPrizeIndex": 7
+      },
+      {
+        "displayName": "AdsSneeze6836",
+        "walletAddressMasked": "0x2582…244c",
+        "ticketNumber": 3210,
+        "transactionHash": "0x08afa69e17ec387b3499ad1965bf228480ca91fc15546eabb163f11d1034c7d1",
+        "extraPrizeIndex": 8
+      },
+      {
+        "displayName": "JokesFetch9931",
+        "walletAddressMasked": "0xe536…0e6c",
+        "ticketNumber": 67865,
+        "transactionHash": "0x489c18a06be114f384f9aaaf037ce8d9e446026e1bad9691c50cbaec64d5e482",
+        "extraPrizeIndex": 9
+      },
+      {
+        "displayName": "RosesCamp7665",
+        "walletAddressMasked": "0x1f95…15a6",
+        "ticketNumber": 2586,
+        "transactionHash": "0x8dfb2aeab2b0c413c68cb88d6eba59d561f87f179198127acd247e169ff02f6d",
+        "extraPrizeIndex": 10
+      },
+      {
+        "displayName": "KidsInvite9401",
+        "walletAddressMasked": "0xc746…d4e5",
+        "ticketNumber": 56796,
+        "transactionHash": "0x21456d9dd63addbc88821a9a880fd4fcf975740d37d3d2d1caa5efaf2a4c2c2e",
+        "extraPrizeIndex": 11
+      },
+      {
+        "displayName": "ToolsTake5101",
+        "walletAddressMasked": "0xf2e7…92a4",
+        "ticketNumber": 73855,
+        "transactionHash": "0x9cf8dc1dfa0d9d236eaf47f3628c24132251eabf2827fc9cb3312f9e31e8a0fe",
+        "extraPrizeIndex": 12
+      },
+      {
+        "displayName": "BadgersWatch306",
+        "walletAddressMasked": "0x26c2…36f9",
+        "ticketNumber": 7456,
+        "transactionHash": "0xaddb8911a6a61de185f51759484235503c9a2aec931e4f42ad17e027ae0a98cc",
+        "extraPrizeIndex": 13
+      },
+      {
+        "displayName": "_V9",
+        "xHandle": "@_V9_V9",
+        "walletAddressMasked": "0xbe50…2355",
+        "ticketNumber": 55530,
+        "transactionHash": "0xf27e820863e424472dd190c87b931e9d180039f759e2b80595964765d8493ed6",
+        "extraPrizeIndex": 14
+      },
+      {
+        "displayName": "PapayasMake4405",
+        "walletAddressMasked": "0xd73a…ed1f",
+        "ticketNumber": 60229,
+        "transactionHash": "0x2aa872d92dfa35adb1ee5c4b1c490d93eec0d2f358df2cad842c5fbaca4b5b59",
+        "extraPrizeIndex": 15
+      },
+      {
+        "displayName": "MomentsAppear78",
+        "walletAddressMasked": "0xf21b…1cef",
+        "ticketNumber": 71720,
+        "transactionHash": "0x3598af4e05b58965d049d759612d0145edc4cbe48a922eee0e312ced578b3f5a",
+        "extraPrizeIndex": 16
+      },
+      {
+        "displayName": "WolvesBow7835",
+        "walletAddressMasked": "0x27e4…a1b2",
+        "ticketNumber": 9078,
+        "transactionHash": "0x3c823194ec994d262b3993c73ddf6588d5208765d2abe83388ec26042fff3d6d",
+        "extraPrizeIndex": 17
+      },
+      {
+        "displayName": "BalloonsFeel617",
+        "walletAddressMasked": "0x48f2…2938",
+        "ticketNumber": 24046,
+        "transactionHash": "0xaf87f134ea717651fcda9b64499c6950d980a651c7e3243e115289eaa5c0895b",
+        "extraPrizeIndex": 18
+      },
+      {
+        "displayName": "GoatsRefuse1318",
+        "walletAddressMasked": "0x765b…5ef6",
+        "ticketNumber": 35187,
+        "transactionHash": "0xe4a78a6942f65cd33023a3272e3eb42b5ab01e318146be19dbedb3aee85ed087",
+        "extraPrizeIndex": 19
+      },
+      {
+        "displayName": "TipsRest4380",
+        "walletAddressMasked": "0x9546…2b4c",
+        "ticketNumber": 42872,
+        "transactionHash": "0x8686c70362cdc4e0d872fbd5af9622fa2a55f66c99abb632b7348a8247422023",
+        "extraPrizeIndex": 20
+      },
+      {
+        "displayName": "HatsTell6066",
+        "walletAddressMasked": "0xe1cd…6b8e",
+        "ticketNumber": 63371,
+        "transactionHash": "0x20b715caf2d75e7ea793fde76113b456f7746e38aa75365925489c1878f1fe4f",
+        "extraPrizeIndex": 21
+      },
+      {
+        "displayName": "killstory",
+        "xHandle": "@killstoryyy",
+        "walletAddressMasked": "0x1c00…53a7",
+        "ticketNumber": 1909,
+        "transactionHash": "0xbfe9c0b7d0e0cf3b405e3fe33dd8d3bd6f1d13a3a25b1f0cb369fa597ad573ca",
+        "extraPrizeIndex": 22
+      }
+    ]
+  }
+}

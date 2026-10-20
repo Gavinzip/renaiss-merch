@@ -32,6 +32,22 @@
   ],
   "rewrites": [
     {
+      "source": "/events/pokemon-30",
+      "destination": "/events/pokemon-30/index.html"
+    },
+    {
+      "source": "/events/pokemon-30/",
+      "destination": "/events/pokemon-30/index.html"
+    },
+    {
+      "source": "/events/football",
+      "destination": "/events/football/index.html"
+    },
+    {
+      "source": "/events/football/",
+      "destination": "/events/football/index.html"
+    },
+    {
       "source": "/local-draw-operator",
       "destination": "/api/index"
     },

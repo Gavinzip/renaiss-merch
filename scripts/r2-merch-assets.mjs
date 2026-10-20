@@ -10,6 +10,7 @@ import {
   writeFile
 } from 'node:fs/promises';
 import { constants } from 'node:fs';
+import { gzipSync } from 'node:zlib';
 import { dirname, extname, relative, resolve, sep } from 'node:path';
 import sharp from 'sharp';
 
@@ -149,9 +150,16 @@ async function prepareRelease(catalog) {
       throw new Error(`Unsupported asset type for ${key}: ${asset.type}`);
     }
 
+    if (asset.contentEncoding) {
+      if (asset.contentEncoding !== 'gzip' || asset.type !== 'binary') {
+        throw new Error('Unsupported asset content encoding: ' + key);
+      }
+      await writeFile(temporaryPath, gzipSync(await readFile(temporaryPath), { level: 9 }));
+    }
     const fileBuffer = await readFile(temporaryPath);
     preparedFiles.push({
       contentType: asset.contentType,
+      contentEncoding: asset.contentEncoding,
       hash: createHash('sha256').update(fileBuffer).digest('hex'),
       key,
       path: asset.path,
@@ -299,6 +307,7 @@ async function publishRelease(bucket, inventory) {
         file.filePath,
         '--content-type',
         file.contentType,
+        ...(file.contentEncoding ? ['--content-encoding', file.contentEncoding] : []),
         '--cache-control',
         IMMUTABLE_CACHE_CONTROL,
         '--remote'
@@ -378,6 +387,9 @@ function runWranglerOnce(args) {
 async function writeCatalogRelease(catalog, inventory) {
   const nextCatalog = {
     ...catalog,
+    assets: Object.fromEntries(inventory.files.map(file => [file.key, {
+      ...catalog.assets[file.key], encodedBytes: file.size, encodedSha256: file.hash
+    }])),
     contentHash: inventory.contentHash,
     fileCount: inventory.files.length,
     release: inventory.release,
@@ -531,6 +543,12 @@ async function assertConfiguration() {
 
   const drawCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/surf-draw-motion-release.json'), 'utf8'));
   if (drawCatalog.release === 'unpublished') throw new Error('Publish the Surf draw motion release before a production build.');
+  for (const name of ['hub-event-asset-release.json', 'event-experience-asset-release.json']) {
+    const archive = JSON.parse(await readFile(resolve(projectRoot, 'media', name), 'utf8'));
+    if (!/^r[a-f0-9]{20}$/.test(archive.release) || !archive.contentHash || !archive.fileCount) {
+      throw new Error('Publish and verify the archive media release before production: ' + name);
+    }
+  }
   const drawBase = normalizeBase(String(process.env.VITE_SURF_DRAW_MOTION_CDN_BASE_URL || ''));
   const expectedDrawBase = `${base}/${drawCatalog.prefix}/${drawCatalog.release}`;
   if (drawBase !== expectedDrawBase) {
@@ -567,6 +585,12 @@ async function assertBuild() {
   const hubCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/hub-asset-release.json'), 'utf8'));
   if (!combinedText.includes(hubCatalog.release) || /\/api\/hub\/hero-preview\/|["']\/work\//.test(combinedText)) {
     throw new Error('Hidden Hub build must use its published CDN release, without local authoring URLs.');
+  }
+  for (const name of ['hub-event-asset-release.json', 'event-experience-asset-release.json']) {
+    const archive = JSON.parse(await readFile(resolve(projectRoot, 'media', name), 'utf8'));
+    if (!combinedText.includes(archive.prefix + '/' + archive.release) && !combinedText.includes(archive.release)) {
+      throw new Error('Archive build is missing the published CDN release: ' + name);
+    }
   }
   const drawCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/surf-draw-motion-release.json'), 'utf8'));
   const drawBase = String(process.env.VITE_SURF_DRAW_MOTION_CDN_BASE_URL || '').trim().replace(/\/+$/, '');

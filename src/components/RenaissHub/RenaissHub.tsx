@@ -22,6 +22,8 @@ import { useHubWidgetDrag } from "./useHubWidgetDrag";
 import { HubHomeIntro } from "./HubHomeIntro";
 import { HubAssistant } from "./HubAssistant";
 import { HubNavigation } from "./HubNavigation";
+import { HubEventArchive } from "./HubEventArchive";
+import { useHubArchiveRoute } from "./useHubArchiveRoute";
 import { HubAccountAction } from "./HubAccountAction";
 import { SurfCampaignPage } from "./SurfCampaignPage";
 import { useHubCampaignRoute } from "./useHubCampaignRoute";
@@ -50,6 +52,7 @@ export function RenaissHub({
   const { locale, setLocale } = useLocale();
   const copy = renaissHubCopy[locale];
   const campaignRoute = useHubCampaignRoute();
+  const archiveRoute = useHubArchiveRoute();
   const [drawActive, setDrawActive] = useState(() => isDrawRoomHash(window.location.hash));
   useEffect(() => {
     const sync = () => setDrawActive(isDrawRoomHash(window.location.hash));
@@ -79,7 +82,7 @@ export function RenaissHub({
   useHubWidgetEntrance(
     widgetMotion.gridRef,
     initialReadiness === 'ready' && settings.status !== 'error',
-    !campaignRoute.active && !drawActive,
+    !campaignRoute.active && !archiveRoute.route && !drawActive,
     editing,
   );
 
@@ -186,11 +189,23 @@ export function RenaissHub({
     };
   }, [accountRequest]);
 
+  const accountAction = editing ? undefined : <>
+    <HubAccountAction account={account} locale={locale} onRetry={retryAccount}
+      onLogout={() => void logout()} loggingOut={loggingOut} disabled={settings.saving} />
+    {logoutError ? <span className="hub-site-header__error" role="alert">{inlineCopy[locale].signOutFailedTryAgain}</span> : null}
+  </>;
+  const navigation = <HubNavigation locale={locale} setLocale={setLocale}
+    current={campaignRoute.active ? "campaign" : archiveRoute.route ? "events" : "home"}
+    onGoHome={campaignRoute.back} onOpenCampaign={campaignRoute.open} onOpenArchive={archiveRoute.open}
+    onEnterMerch={enterMerch} preparing={enterRequested && loadState === "loading"}
+    disabled={editing || settings.saving || campaignRoute.busy} />;
+
   return (
     <div className="hub-route-motion" ref={campaignRoute.ref} data-route-motion="true" data-route-transitioned={campaignRoute.hasTransitioned} data-route-busy={campaignRoute.busy} inert={campaignRoute.busy}>
     {campaignRoute.active ? drawActive
       ? <DrawSiteRedirect />
-      : <SurfCampaignPage locale={locale} setLocale={setLocale} account={account} motionRevision={campaignRoute.revision} onBack={campaignRoute.back} onLogin={() => startRenaissLogin()} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} /> : <main
+      : <SurfCampaignPage locale={locale} setLocale={setLocale} account={account} navigation={navigation} motionRevision={campaignRoute.revision} onBack={campaignRoute.back} onLogin={() => startRenaissLogin()} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} /> : archiveRoute.route
+      ? <HubEventArchive route={archiveRoute.route} locale={locale} setLocale={setLocale} navigation={navigation} accountAction={accountAction} onBack={archiveRoute.route === 'index' ? campaignRoute.back : archiveRoute.open} /> : <main
       ref={overviewRef}
       className="renaiss-hub"
       data-initial-ready={initialReadiness === 'ready'}
@@ -208,28 +223,8 @@ export function RenaissHub({
     >
       <div className="renaiss-hub__content">
         <HubHomeIntro
-          accountAction={editing ? undefined : (
-            <>
-              <HubAccountAction
-                account={account}
-                locale={locale}
-                onRetry={retryAccount}
-                onLogout={() => void logout()}
-                loggingOut={loggingOut}
-                disabled={settings.saving}
-              />
-              {logoutError ? <span className="hub-site-header__error" role="alert">{inlineCopy[locale].signOutFailedTryAgain}</span> : null}
-            </>
-          )}
-          navigation={editing ? undefined : (
-            <HubNavigation
-              locale={locale}
-              onOpenCampaign={campaignRoute.open}
-              onEnterMerch={enterMerch}
-              preparing={enterRequested && loadState === "loading"}
-              disabled={settings.saving}
-            />
-          )}
+          accountAction={accountAction}
+          navigation={navigation}
           locale={locale}
           setLocale={setLocale}
           copy={copy}
