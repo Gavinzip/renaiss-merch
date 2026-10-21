@@ -41,7 +41,7 @@ export function useSurfStoreClaim(rewardId: SurfActiveStoreReward['id'], enabled
     return () => controller.abort();
   }, [enabled, rewardId, revision]);
 
-  const submit = useCallback(async (gmail: string) => {
+  const submit = useCallback(async (email: string) => {
     if (submittingRef.current) return;
     const controller = new AbortController();
     pendingSubmission.current = controller;
@@ -51,7 +51,7 @@ export function useSurfStoreClaim(rewardId: SurfActiveStoreReward['id'], enabled
       const response = await fetch('/api/surf-store/claim', {
         method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         signal: AbortSignal.any([controller.signal, AbortSignal.timeout(90_000)]),
-        body: JSON.stringify({ rewardId, gmail }),
+        body: JSON.stringify({ rewardId, gmail: email }),
       });
       const payload = await response.json() as { claim?: SurfClaimReceipt; code?: string };
       if (!response.ok) throw new Error(payload.code || 'surf_claim_unavailable');

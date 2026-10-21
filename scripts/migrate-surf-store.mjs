@@ -14,14 +14,18 @@ if (process.env.MERCH_MIGRATION_DATABASE_URL_FILE) {
   const ownerUrl = new URL((await readFile(process.env.MERCH_MIGRATION_DATABASE_URL_FILE, 'utf8')).trim());
   if (ownerUrl.hostname.replace('-pooler', '') !== runtimeUrl.hostname.replace('-pooler', '') ||
       ownerUrl.pathname !== runtimeUrl.pathname) throw new Error('migration_database_target_mismatch');
+  // Schema changes use the direct endpoint; the deployed app keeps its pooler URL.
+  ownerUrl.hostname = ownerUrl.hostname.replace('-pooler.', '.');
   process.env.MERCH_DATABASE_URL = ownerUrl.href;
 }
-const sql = await readFile(new URL('../server/postgres/migrations/20261020-surf-store-claims.sql', import.meta.url), 'utf8');
+const migrations = ['20261020-surf-store-claims.sql', '20261021-surf-store-email.sql'];
+const statements = await Promise.all(migrations.map(name =>
+  readFile(new URL(`../server/postgres/migrations/${name}`, import.meta.url), 'utf8')));
 try {
   await transaction(async client => {
     await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', ['merch-schema:surf-store-20261020']);
-    await client.query(sql);
+    for (const sql of statements) await client.query(sql);
     await client.query(`GRANT SELECT, INSERT ON TABLE public.surf_store_claims TO ${applicationRole}`);
   });
-  console.log('Surf store claim table is ready. Existing data was not modified.');
+  console.log('Surf store claim table and email validation are ready. Existing data was not modified.');
 } finally { await getPool().end(); }

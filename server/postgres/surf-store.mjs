@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { surfStoreRewards } from '../../shared/surf-store-rewards.js';
+import { normalizeSurfStoreEmail } from '../../shared/surf-store-email.js';
 import { HttpError } from '../http.mjs';
 import { getStorefrontFeatures } from '../storefront-features.mjs';
 import { assertSurfStoreOpen } from '../surf-store-release.mjs';
@@ -7,13 +8,11 @@ import { readSurfStoreAccess, readSurfStoreReward } from '../surf-store-access.m
 import { getPool, sqlTables, transaction } from './database.mjs';
 import { identity } from './claims.mjs';
 
-export function normalizeSurfGmail(value) {
-  if (typeof value !== 'string') throw new HttpError(400, 'surf_gmail_invalid');
-  const gmail = value.trim().toLowerCase();
-  if (gmail.length > 254 || !/^[a-z0-9][a-z0-9.+_-]*@gmail\.com$/.test(gmail)) {
-    throw new HttpError(400, 'surf_gmail_invalid');
-  }
-  return gmail;
+export function normalizeSurfEmail(value) {
+  const email = normalizeSurfStoreEmail(value);
+  // Preserve the existing API error code and storage field for deployed clients.
+  if (!email) throw new HttpError(400, 'surf_gmail_invalid');
+  return email;
 }
 
 function receipt(row) {
@@ -63,7 +62,7 @@ export function surfStoreClaims({ database = getPool(), schema = 'public', clock
     },
     async submit(session, { rewardId, gmail: input }) {
       const { reward, sub, wallet } = requireOpen(session, rewardId);
-      const gmail = normalizeSurfGmail(input);
+      const gmail = normalizeSurfEmail(input);
       const previous = await findExisting(database, reward.id, sub, wallet);
       if (previous) return existingReceipt(previous, sub, wallet, gmail);
       // Check current holdings again on submission; a prior animation check is not a claim proof.

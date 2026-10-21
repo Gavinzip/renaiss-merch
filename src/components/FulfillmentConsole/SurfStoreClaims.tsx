@@ -40,7 +40,7 @@ export function SurfStoreClaims() {
     {!loading && !error && data ? <>
       <div className="surf-participants__metrics">{data.inventory.map(item => <div key={item.rewardId}><span>{name(item.rewardId)}</span><strong>{item.claimed} / {item.limit}</strong></div>)}</div>
       <div className="surf-participants__table" tabIndex={0} aria-label={copy.title}><table>
-        <thead><tr>{[copy.reward, 'Gmail', copy.account, copy.date].map(label => <th key={label} scope="col">{label}</th>)}</tr></thead>
+        <thead><tr>{[copy.reward, 'Email', copy.account, copy.date].map(label => <th key={label} scope="col">{label}</th>)}</tr></thead>
         <tbody>{data.claims.map(row => <tr key={row.id}>
           <td><strong>{name(row.rewardId)}</strong><span>#{row.allocationNumber} · {row.sbtBadgeCount} SBT</span></td>
           <td>{row.gmail}</td><td><span>{row.userSub}</span><span className="surf-participants__wallet">{row.walletAddress}</span></td>
@@ -52,4 +52,4 @@ export function SurfStoreClaims() {
 }
 
 export const surfStoreClaimsTitle = { 'zh-TW': 'Surf 商店兌換', en: 'Surf store claims', ko: 'Surf 스토어 신청' };
-export const surfStoreClaimsDescription = { 'zh-TW': '查看已保留名額的 Surf Gmail 登記資料。', en: 'View Surf Gmail registrations with reserved allocations.', ko: '수량이 확보된 Surf Gmail 신청 내역을 확인하세요.' };
+export const surfStoreClaimsDescription = { 'zh-TW': '查看已保留名額的 Surf Email 登記資料。', en: 'View Surf email registrations with reserved allocations.', ko: '수량이 확보된 Surf 이메일 신청 내역을 확인하세요.' };

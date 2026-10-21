@@ -5,7 +5,7 @@ type InventoryState = { status: 'loading' | 'ready' | 'error'; rewards: SurfInve
 type InventoryContext = InventoryState & { refresh: () => Promise<void> };
 const Context = createContext<InventoryContext | null>(null);
 
-// One count feed is shared by the cards and the currently open Gmail form.
+// One count feed is shared by the cards and the currently open email form.
 export function SurfStoreInventoryProvider({ enabled, children }: { enabled: boolean; children: ReactNode }) {
   const [state, setState] = useState<InventoryState>({ status: 'loading', rewards: {} });
   const pending = useRef<AbortController | null>(null);
