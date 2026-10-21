@@ -2,6 +2,7 @@
 // See docs/licenses/react-bits-magic-bento.md. No hover/glow engine is imported.
 const ease = 'cubic-bezier(.22,1,.36,1)';
 const spring = 'linear(0,.0603,.2033,.3821,.5633,.7258,.8584,.9574,1.0242,1.0634,1.0809,1.0828,1.0747,1.0613,1.046,1.0313,1.0186,1.0085,1.0012,.9965,.994,.9931,.9933,.9941,.9953,.9966,.9978,.9988,1)';
+const entrancePlaybackRate = 1.5;
 
 /** Measure the actual grid, including custom footprints, rather than DOM order. */
 export function diagonalWidgetOrder<T extends { left: number; top: number }>(items: T[]) {
@@ -45,6 +46,7 @@ export function playHubWidgetEntrance(grid: HTMLElement) {
 
   const run = (element: HTMLElement, frames: Keyframe[], options: KeyframeAnimationOptions) => {
     const animation = element.animate(frames, { fill: 'both', ...options });
+    animation.playbackRate = entrancePlaybackRate;
     animations.add(animation);
     animation.addEventListener('finish', () => {
       animations.delete(animation);
