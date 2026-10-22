@@ -69,45 +69,59 @@ export function createSbtCatalogReader({ fetchImpl = fetch, now = Date.now } = {
   }
 }
 
+// Export names change between official builds. Identify literal badge records
+// by their fields and SBT media paths, without evaluating remote code.
 export function parseSbtCatalogMaximum(source) {
-  const exported = source.match(/"SBT_BADGES",0,([\w$]+)/);
-  if (!exported) {
-    if (source.includes('"SBT_BADGES"')) throw new HttpError(502, 'sbt_catalog_format_changed');
-    return null;
-  }
-  const variable = exported[1].replace(/\$/g, '\\$');
-  const declaration = new RegExp(`(?:let |const |var |,)\\s*${variable}\\s*=\\s*\\[`).exec(source);
-  if (!declaration) throw new HttpError(502, 'sbt_catalog_format_changed');
-  const start = declaration.index + declaration[0].length;
-  // Mask strings before matching brackets; badge descriptions may contain any
-  // punctuation. All top-level entries must be literal objects with an ID.
-  const masked = source.slice(start).replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g, '""');
-  let depth = 0;
-  let objectStart = -1;
-  const ids = new Set();
-  for (let index = 0; index < masked.length; index++) {
-    const char = masked[index];
-    if (depth === 0) {
-      if (char === ']') {
-        if (!ids.size) break;
-        return Math.max(...ids);
-      }
-      if (char === '{') objectStart = index;
-      else if (!/[\s,]/.test(char)) break;
-    }
-    if (char === '{') depth++;
-    if (char === '}') {
-      depth--;
+  if (!source.includes('/SBT/') || !source.includes('howToEarn:')) return null;
+  const masked = source.replace(
+    /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\/\/[^\r\n]*|\/\*[\s\S]*?\*\//g,
+    (value) => ' '.repeat(value.length)
+  );
+  const declarations = /(?:\b(?:let|const|var)\s+|,)\s*[\w$]+\s*=\s*\[/g;
+  const matches = [];
+  for (const declaration of masked.matchAll(declarations)) {
+    const start = declaration.index + declaration[0].length;
+    if (!/^\s*\{\s*id\s*:\s*\d+\s*,/.test(masked.slice(start))) continue;
+    let depth = 0;
+    let objectStart = -1;
+    let end = -1;
+    const objects = [];
+    for (let index = start; index < masked.length; index++) {
+      const char = masked[index];
       if (depth === 0) {
-        const object = masked.slice(objectStart, index + 1);
-        const idMatch = object.match(/^\{\s*id\s*:\s*(\d+)\s*,/);
-        const id = idMatch ? Number(idMatch[1]) : NaN;
-        if (!Number.isSafeInteger(id) || id < 0 || id > MAX_TOKEN_ID || ids.has(id)) break;
-        ids.add(id);
+        if (char === ']') { end = index; break; }
+        if (char === '{') objectStart = index;
+        else if (!/[\s,]/.test(char)) break;
+      }
+      if (char === '{') depth++;
+      if (char === '}') {
+        depth--;
+        if (depth === 0) objects.push({
+          masked: masked.slice(objectStart, index + 1),
+          source: source.slice(objectStart, index + 1),
+        });
       }
     }
+    const isBadge = (object) => ['name', 'description', 'howToEarn', 'imageUrl']
+      .every((field) => new RegExp(`\\b${field}\\s*:`).test(object.masked)) &&
+      /\bimageUrl\s*:\s*"https:\/\/[^"\s]+\/SBT\/[^"\s]+"/.test(object.source);
+    if (!objects.length || !isBadge(objects[0])) continue;
+    if (end < 0 || !objects.every(isBadge)) {
+      throw new HttpError(502, 'sbt_catalog_format_changed');
+    }
+    const ids = new Set();
+    for (const object of objects) {
+      const match = object.masked.match(/^\{\s*id\s*:\s*(\d+)\s*,/);
+      const id = match ? Number(match[1]) : NaN;
+      if (!Number.isSafeInteger(id) || id < 0 || id > MAX_TOKEN_ID || ids.has(id)) {
+        throw new HttpError(502, 'sbt_catalog_format_changed');
+      }
+      ids.add(id);
+    }
+    matches.push(Math.max(...ids));
   }
-  throw new HttpError(502, 'sbt_catalog_format_changed');
+  if (matches.length > 1) throw new HttpError(502, 'sbt_catalog_format_changed');
+  return matches.length === 1 ? matches[0] : null;
 }
 
 export const readSbtCatalog = createSbtCatalogReader();
