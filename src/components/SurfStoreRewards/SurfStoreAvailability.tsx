@@ -1,6 +1,7 @@
 import type { SurfActiveStoreReward } from '../../../shared/surf-store-rewards.js';
 import { useLocale } from '../../i18n/LocaleContext';
 import { useSurfStoreInventory } from './SurfStoreInventoryContext';
+import { StoreReleaseStatus } from '../MerchStore/StoreReleaseStatus';
 
 const availabilityCopy = {
   'zh-TW': {
@@ -27,6 +28,8 @@ export function SurfStoreAvailability({ reward }: { reward: SurfActiveStoreRewar
   const copy = availabilityCopy[locale];
   const ready = inventory.status === 'ready' && !!stock;
   const state = ready ? stock.soldOut ? 'sold-out' : 'available' : inventory.status;
+
+  if (ready && stock.soldOut) return <StoreReleaseStatus />;
 
   return <div className="surf-store-availability" data-state={state} role="status"
     title={copy.limited(reward.plannedQuantity)} aria-live="polite" aria-atomic="true">

@@ -55,7 +55,7 @@
 .surf-store-card__body { display: flex; flex-direction: column; flex: 1; gap: .65rem; padding: clamp(1.15rem, 2vw, 1.6rem); }
 .surf-store-card__edition { margin: 0; color: #847586; font-size: .54rem; font-weight: 650; letter-spacing: .12em; }
 .surf-store-card__body h2 { margin: 0; font-size: clamp(1.35rem, 2vw, 2rem); line-height: 1.15; letter-spacing: -.04em; font-weight: 800; }
-.surf-store-card__title-row { display: flex; align-items: baseline; justify-content: space-between; gap: .65rem; }
+.surf-store-card__title-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .65rem; }
 .surf-store-card__title-row h2 { min-width: 0; }
 .surf-store-card__description { margin: 0 0 .35rem; color: #716772; font-size: .8rem; line-height: 1.5; }
 .surf-store-availability {

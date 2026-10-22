@@ -1,0 +1,72 @@
+.store-release-status {
+  flex: 0 0 auto;
+  color: #6d6b70;
+  font-size: .65rem;
+  font-weight: 550;
+  line-height: 1.5;
+  letter-spacing: .025em;
+  white-space: nowrap;
+}
+
+.merch-product-card__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .45rem .75rem;
+}
+.merch-product-card__title-row h2 { min-width: 0; }
+
+/* Lower the whole release's visual weight without fading readable text. */
+.merch-product-card.is-retired,
+.merch-store--hub .merch-product-card.is-retired,
+.surf-store-card.is-retired {
+  background: #eae8e5;
+  border-color: #f2f0ed;
+  box-shadow: inset 0 1px 0 #ffffff70, 0 12px 28px -26px #45414c35;
+  backdrop-filter: none;
+}
+.merch-product-card.is-retired:hover,
+.merch-store--hub .merch-product-card.is-retired:hover,
+.surf-store-card.is-retired:hover {
+  transform: none;
+  background: #eae8e5;
+  border-color: #f2f0ed;
+  box-shadow: inset 0 1px 0 #ffffff70, 0 12px 28px -26px #45414c35;
+}
+.merch-product-card.is-retired .merch-product-card__visual,
+.surf-store-card.is-retired .surf-store-card__visual {
+  filter: saturate(.22) brightness(.87);
+}
+.merch-product-card.is-retired:hover .merch-product-card__locked-media { transform: scale(1.02); }
+.merch-product-card.is-retired:hover .merch-product-card__locked-media.is-revealed { transform: scale(1.01); }
+.merch-product-card.is-retired .merch-product-card__body,
+.merch-store--hub .merch-product-card.is-retired .merch-product-card__body,
+.surf-store-card.is-retired .surf-store-card__body {
+  background: #eae8e5;
+  box-shadow: none;
+}
+.merch-product-card.is-retired h2,
+.surf-store-card.is-retired h2 { color: #59575d; }
+.merch-product-card.is-retired .merch-product-card__description,
+.surf-store-card.is-retired .surf-store-card__description,
+.surf-store-card.is-retired .surf-store-card__edition { color: #716e74; }
+.merch-product-card.is-retired .merch-product-card__access button,
+.merch-store--hub .merch-product-card.is-retired .merch-product-card__access button,
+.surf-store-card.is-retired .surf-store-card__body button {
+  color: #68656c;
+  background: #e2e0dd;
+  border: 1px solid #cecbc8;
+  border-radius: 999px;
+  opacity: 1;
+  box-shadow: none;
+  transform: none;
+  text-shadow: none;
+}
+.merch-product-card.is-retired .merch-product-card__access button:not(:disabled):hover,
+.surf-store-card.is-retired .surf-store-card__body button:not(:disabled):hover {
+  color: #454249;
+  background: #d9d6d2;
+  border-color: #bab6b2;
+}
+.surf-store-card.is-retired .surf-pro-credential__light { animation: none; }

@@ -15,6 +15,10 @@ export type MerchProductPresentation = {
   visualStatus: string | null;
 };
 
+export function readMerchProductDescription(productId: MerchProductId, locale: AppLocale) {
+  return eligibleDescriptions[locale][productId];
+}
+
 export function readMerchProductPresentation(
   productId: MerchProductId,
   locale: AppLocale,

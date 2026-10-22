@@ -6,6 +6,7 @@ import { SurfProCredential } from './SurfProCredential';
 import { surfStoreCopy } from './surfStoreCopy';
 import type { SurfStoreRelease } from '../../hooks/useStorefrontFeatures';
 import { SurfStoreAvailability } from './SurfStoreAvailability';
+import { useSurfStoreInventory } from './SurfStoreInventoryContext';
 
 type Props = {
   reward: SurfActiveStoreReward;
@@ -19,6 +20,8 @@ type Props = {
 export function SurfStoreRewardCard({ reward, release, onOpenReward, checking, busy, error }: Props) {
   const { locale } = useLocale();
   const copy = surfStoreCopy[locale];
+  const inventory = useSurfStoreInventory();
+  const isRetired = inventory.status === 'ready' && inventory.rewards[reward.id]?.soldOut === true;
   const benefit = copy.benefits[reward.id];
   const titleId = `surf-store-${reward.id}-title`;
   const opensAt = release ? new Intl.DateTimeFormat(locale, {
@@ -32,9 +35,9 @@ export function SurfStoreRewardCard({ reward, release, onOpenReward, checking, b
 
   return (
     <>
-      <article className={`surf-store-card surf-store-card--${reward.id}`} aria-labelledby={titleId}>
+      <article className={`surf-store-card surf-store-card--${reward.id}${isRetired ? ' is-retired' : ''}`} aria-labelledby={titleId}>
         <div className="surf-store-card__visual">
-          <span className="surf-store-card__preview">{copy.preview}</span>
+          {!isRetired ? <span className="surf-store-card__preview">{copy.preview}</span> : null}
           {reward.id === 'mystery-box' ? (
             <img className="surf-store-card__box" src={surfCampaignAssets().box} alt="Surf Mystery Box" />
           ) : (

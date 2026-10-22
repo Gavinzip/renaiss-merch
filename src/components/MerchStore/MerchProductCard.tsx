@@ -6,6 +6,7 @@ import { MerchInventoryBadge } from './MerchInventoryBadge';
 import type { MerchInventoryLoadState } from './useMerchInventory';
 import {
   readClaimStatus,
+  readMerchProductDescription,
   readMerchProductPresentation
 } from './merchProductPresentation';
 import {
@@ -13,6 +14,7 @@ import {
   type ProductPreparationPhase
 } from './ProductPreparationLabel';
 import { useLocale } from '../../i18n/LocaleContext';
+import { StoreReleaseStatus } from './StoreReleaseStatus';
 
 type MerchProductCardProps = {
   accessState?: MerchAccessProductState;
@@ -45,8 +47,9 @@ export function MerchProductCard({
   const helperId = `merch-product-${product.id}-helper`;
   const isEligible = accessState?.status === 'eligible';
   const isUnqualified = accessState?.status === 'unqualified';
+  const isRetired = inventory?.soldOut === true;
   const isSoldOut =
-    inventory?.soldOut === true &&
+    isRetired &&
     accessState?.claimStatus !== 'submitted';
   const cardCopy = readMerchProductPresentation(
     product.id,
@@ -61,6 +64,7 @@ export function MerchProductCard({
         `merch-product-card--${product.id}`,
         isEligible ? 'is-eligible' : '',
         isUnqualified ? 'is-unqualified' : '',
+        isRetired ? 'is-retired' : '',
         preparationPhase ? `is-${preparationPhase}` : ''
       ]
         .filter(Boolean)
@@ -68,7 +72,7 @@ export function MerchProductCard({
       aria-labelledby={titleId}
       data-product-id={product.id}
     >
-      {cardCopy.headerStatus ? (
+      {!isRetired && cardCopy.headerStatus ? (
         <header className="merch-product-card__header">
           <span>{cardCopy.headerStatus}</span>
         </header>
@@ -92,12 +96,12 @@ export function MerchProductCard({
               : undefined
           }
         />
-        <MerchInventoryBadge
+        {!isRetired ? <MerchInventoryBadge
           inventory={inventory}
           loadState={inventoryLoadState}
           productId={product.id}
-        />
-        {cardCopy.visualStatus ? (
+        /> : null}
+        {!isRetired && cardCopy.visualStatus ? (
           <span className="merch-product-card__lock-label">
             {cardCopy.visualStatus}
           </span>
@@ -106,11 +110,14 @@ export function MerchProductCard({
 
       <div className="merch-product-card__body">
         <div>
-          <h2 id={titleId}>{cardCopy.title}</h2>
+          <div className="merch-product-card__title-row">
+            <h2 id={titleId}>{cardCopy.title}</h2>
+            {isRetired ? <StoreReleaseStatus /> : null}
+          </div>
           <p className="merch-product-card__description">
-            {cardCopy.description}
+            {isRetired ? readMerchProductDescription(product.id, locale) : cardCopy.description}
           </p>
-          {isEligible ? (
+          {isEligible && !isSoldOut ? (
             <p
               className={`merch-product-card__claim-status merch-product-card__claim-status--${
                 accessState.claimStatus || 'not-started'
@@ -124,7 +131,7 @@ export function MerchProductCard({
 
         <div className="merch-product-card__access">
           <button
-            aria-describedby={helperText ? helperId : undefined}
+            aria-describedby={helperText && !isSoldOut ? helperId : undefined}
             disabled={disabled || isSoldOut}
             onClick={() => onCheck(product.id)}
             type="button"
@@ -140,7 +147,7 @@ export function MerchProductCard({
               cardCopy.buttonLabel
             )}
           </button>
-          {helperText ? <p id={helperId}>{helperText}</p> : null}
+          {helperText && !isSoldOut ? <p id={helperId}>{helperText}</p> : null}
         </div>
       </div>
     </article>
