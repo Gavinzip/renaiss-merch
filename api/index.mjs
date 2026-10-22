@@ -1,3 +1,5 @@
+import { logNodeRuntimeVersion } from '../server/node-runtime-version.mjs';
+
 import { HttpError, sendJson, sendHttpError } from "../server/http.mjs";
 import { getStorefrontMode } from "../server/storefront-mode.mjs";
 import { getStorefrontFeatures } from "../server/storefront-features.mjs";
@@ -72,6 +74,8 @@ function method(req, ...methods) {
   if (!methods.includes(req.method))
     throw new HttpError(405, "method_not_allowed");
 }
+
+logNodeRuntimeVersion('merch/api/index');
 
 export default async function handler(req, res) {
   res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
