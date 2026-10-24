@@ -789,18 +789,15 @@ html[data-member-binder] #root {
   font: 10px var(--sans);
   text-align: center;
 }
-/* Paint through the bottom safe area. Protect content above the floating dock
-   and Safari address pill instead of shortening the entire cover. */
+/* Keep a pink action row below the book in every viewport. The bottom inset
+   keeps the controls above Safari's address pill and the system home indicator. */
 .member-binder.binder-canvas .binder-workspace {
   position: relative;
   background: var(--bg);
   padding-bottom: calc(48px + var(--binder-bottom-inset));
 }
-.member-binder.binder-canvas .binder-workspace:has(.stage[data-fit="fill"]) {
-  padding-bottom: 0;
-}
 .member-binder.binder-canvas .stage[data-fit="fill"] {
-  --binder-content-bottom: calc(58px + var(--binder-bottom-inset));
+  --binder-content-bottom: 0px;
 }
 .member-binder .stage[data-fit="fill"] .cov {
   padding-bottom: max(8.5%, var(--binder-content-bottom));

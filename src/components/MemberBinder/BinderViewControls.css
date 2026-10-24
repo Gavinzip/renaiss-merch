@@ -2,7 +2,7 @@
 .member-binder .binder-view-tools,
 .member-binder .binder-view-fullscreen {
   position: absolute;
-  bottom: calc(var(--binder-bottom-inset) + 4px);
+  bottom: var(--binder-bottom-inset);
   z-index: 75;
 }
 .member-binder .binder-view-navigation { left: max(8px, env(safe-area-inset-left)); }
