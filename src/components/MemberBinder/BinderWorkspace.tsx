@@ -91,6 +91,7 @@ export function BinderWorkspace({
         copy={copy}
         disabled={locked}
         picking={picker}
+        practice={practice}
         onPocket={setPicker}
         onDetail={setDetail}
         onMove={move}

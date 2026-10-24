@@ -21,6 +21,7 @@ export function BinderBook({
   copy,
   disabled,
   picking,
+  practice = false,
   onPocket,
   onDetail,
   onLayout,
@@ -35,6 +36,7 @@ export function BinderBook({
   copy: BinderCopy;
   disabled: boolean;
   picking: PocketTarget | null;
+  practice?: boolean;
   onPocket: (target: PocketTarget) => void;
   onDetail: (target: PocketTarget) => void;
   onLayout: (id: string, size: 1 | 6 | 9) => void;
@@ -316,7 +318,7 @@ export function BinderBook({
             })}
           </nav>
           <span className="binder-readout" aria-live="polite">
-            {title}
+            {practice ? `${copy.practice} · ` : ""}{title}
           </span>
         </div>
         <button

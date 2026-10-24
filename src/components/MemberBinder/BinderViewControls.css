@@ -14,12 +14,12 @@
   background: #11121cdd;
   color: var(--muted);
   font: 10px var(--mono);
+  white-space: nowrap;
 }
 .member-binder .binder-view-tools { left: max(8px, env(safe-area-inset-left)); }
 .member-binder .binder-view-fullscreen { right: max(8px, env(safe-area-inset-right)); width: 36px; padding: 0; }
 .member-binder .binder-view-tools > span:first-child { font-size: 16px; }
 .member-binder .binder-view-dirty { color: var(--accent); }
-.member-binder .binder-view-practice { display: none; }
 .member-binder .binder-browser-hint,
 .member-binder .binder-fullscreen-error {
   inset: auto max(8px, env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 48px) auto;
@@ -35,9 +35,9 @@
 .member-binder .binder-browser-hint p { margin: 0; }
 .member-binder .binder-fullscreen-error { position: absolute; z-index: 76; }
 @media (max-width: 450px) {
-  .member-binder .binder-view-tools { width: 36px; padding: 0; }
-  .member-binder .binder-view-tools > span:not(:first-child) { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
+  .member-binder .binder-view-tools { min-width: 54px; max-width: 68px; padding: 0 6px; gap: 4px; font-size: 10px; }
+  .member-binder .binder-view-tools > span:first-child { font-size: 14px; }
+  .member-binder .binder-view-tools > .binder-view-dirty { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
   .member-binder .binder-view-tools:has(.binder-view-dirty)::after { content: ""; position: absolute; right: -2px; top: -2px; width: 7px; height: 7px; background: var(--accent); border-radius: 50%; }
-  .member-binder .binder-view-practice { display: block; position: absolute; top: max(12px, env(safe-area-inset-top)); left: max(16px, env(safe-area-inset-left)); z-index: 65; padding: 3px 8px; color: var(--accent); background: #11121cdd; border-radius: 20px; font: 8px var(--mono); pointer-events: none; }
   .member-binder.binder-canvas .controls { gap: 8px; }
 }

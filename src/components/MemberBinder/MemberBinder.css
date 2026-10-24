@@ -37,46 +37,22 @@ html[data-member-binder] #root {
     env(safe-area-inset-bottom) env(safe-area-inset-left);
   display: flex;
   flex-direction: column;
-  position: fixed;
-  inset: 0;
+  position: relative;
   background: var(--bg);
-  overflow: clip;
+  overflow: auto;
   outline: none;
 }
 .member-binder [hidden] {
   display: none !important;
 }
 .binder-canvas {
+  position: fixed;
+  inset: 0;
   padding-top: 0;
+  overflow: clip;
 }
 .binder-site-chrome {
   flex: none;
-}
-.binder-canvas .binder-site-chrome {
-  position: absolute;
-  top: env(safe-area-inset-top);
-  left: env(safe-area-inset-left);
-  right: env(safe-area-inset-right);
-  z-index: 74;
-  background: #0b0812f5;
-  border-bottom: 1px solid var(--line);
-}
-.binder-canvas .hub-site-header {
-  min-height: 48px;
-  padding: 4px 12px;
-}
-.binder-canvas > .binder-toolbar,
-.binder-canvas .binder-practice-tools {
-  position: absolute;
-  top: calc(env(safe-area-inset-top) + 48px);
-  left: env(safe-area-inset-left);
-  right: env(safe-area-inset-right);
-  z-index: 73;
-  background: #0b0812f5;
-  border-bottom: 1px solid var(--line);
-}
-.binder-canvas .binder-practice-guide {
-  padding: 6px 16px 12px;
 }
 .member-binder * {
   box-sizing: border-box;
@@ -814,9 +790,6 @@ html[data-member-binder] #root {
 }
 .member-binder.binder-canvas .dots {
   padding: 2px;
-}
-.binder-canvas .binder-help {
-  bottom: calc(env(safe-area-inset-bottom) + 54px);
 }
 @media (max-width: 759px) {
   .binder-practice-toolbar {

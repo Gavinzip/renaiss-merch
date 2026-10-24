@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import samples from "../../../shared/member-binder-samples.json";
 import type { MemberBinder } from "../../../shared/member-binder.js";
 import type { AppLocale } from "../../i18n/LocaleContext";
@@ -62,11 +62,11 @@ const badges = samples.map((b) => ({
 
 export function BinderPractice({
   locale,
-  toolsOpen,
+  renderTools,
   onExit,
 }: {
   locale: AppLocale;
-  toolsOpen: boolean;
+  renderTools: (contents: ReactNode) => ReactNode;
   onExit: () => void;
 }) {
   const text = practiceCopy[locale];
@@ -87,29 +87,31 @@ export function BinderPractice({
   };
   return (
     <>
-      <div className="binder-practice-tools" hidden={!toolsOpen}>
-        <div className="binder-toolbar binder-practice-toolbar">
-          <div>
-            <strong>{text.title}</strong>
-            <span>{text.note}</span>
+      {renderTools(
+        <>
+          <div className="binder-toolbar binder-practice-toolbar">
+            <div>
+              <strong>{text.title}</strong>
+              <span>{text.note}</span>
+            </div>
+            <div className="binder-save">
+              <button
+                type="button"
+                onClick={() => {
+                  setBinder(initialBinder());
+                  setGeneration((v) => v + 1);
+                }}
+              >
+                {text.reset}
+              </button>
+              <button type="button" onClick={onExit}>
+                {text.exit}
+              </button>
+            </div>
           </div>
-          <div className="binder-save">
-            <button
-              type="button"
-              onClick={() => {
-                setBinder(initialBinder());
-                setGeneration((v) => v + 1);
-              }}
-            >
-              {text.reset}
-            </button>
-            <button type="button" onClick={onExit}>
-              {text.exit}
-            </button>
-          </div>
-        </div>
-        <p className="binder-practice-guide">{text.guide}</p>
-      </div>
+          <p className="binder-practice-guide">{text.guide}</p>
+        </>,
+      )}
       <BinderWorkspace
         key={generation}
         binder={binder}
