@@ -40,6 +40,19 @@ export function HubNavigation({ locale, setLocale, onOpenCampaign, onOpenArchive
   useEffect(() => { if (disabled) dialog.current?.close(); }, [disabled]);
 
   useEffect(() => {
+    if (!open || !document.documentElement.dataset.memberBinder) return;
+    const theme = document.querySelector('meta[name="theme-color"]');
+    const previous = theme?.getAttribute("content");
+    theme?.setAttribute("content", "#f8e8ef");
+    return () => {
+      // The route restores its own theme when leaving the binder. Do not
+      // overwrite that restoration when this drawer unmounts with the route.
+      if (document.documentElement.dataset.memberBinder && previous != null)
+        theme?.setAttribute("content", previous);
+    };
+  }, [open]);
+
+  useEffect(() => {
     if (!open || desktop) return;
     const { overflow, paddingRight } = document.body.style;
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;

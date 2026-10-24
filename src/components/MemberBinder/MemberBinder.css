@@ -46,14 +46,23 @@ html[data-member-binder] #root {
   display: none !important;
 }
 .binder-canvas {
+  --binder-bottom-inset: calc(env(safe-area-inset-bottom) + 100lvh - 100dvh);
   position: fixed;
   inset: 0;
+  height: 100lvh;
   padding-top: 0;
+  padding-bottom: 0;
   overflow: clip;
 }
 .binder-site-chrome {
+  --text: #332d38;
+  --muted: #746c7b;
+  --line: #4c3f5726;
   flex: none;
+  background: linear-gradient(150deg, #ffe6ef, #fffaf0 65%, #f5eaf4);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
+.binder-site-chrome .hub-brand-wordmark { width: 103px; height: auto; }
 .member-binder * {
   box-sizing: border-box;
 }
@@ -95,10 +104,6 @@ html[data-member-binder] #root {
 .member-binder .binder-wordmark {
   width: 103px;
   height: auto;
-}
-.member-binder .hub-navigation__trigger {
-  color: var(--muted);
-  width: 26px;
 }
 .member-binder .hub-home__controls {
   color: var(--text);
@@ -774,12 +779,40 @@ html[data-member-binder] #root {
   font: 10px var(--sans);
   text-align: center;
 }
-/* The dock floats below the book. Header, account and editing tools are an
-   overlay, so showing them never recomputes/squashes the page proportions. */
+/* Paint through the bottom safe area. Protect content above the floating dock
+   and Safari address pill instead of shortening the entire cover. */
+.member-binder.binder-canvas .binder-workspace {
+  position: relative;
+  padding-bottom: calc(48px + var(--binder-bottom-inset));
+}
+.member-binder.binder-canvas .binder-workspace:has(.stage[data-fit="fill"]) {
+  padding-bottom: 0;
+}
+.member-binder.binder-canvas .stage[data-fit="fill"] {
+  --binder-content-bottom: calc(58px + var(--binder-bottom-inset));
+}
+.member-binder .stage[data-fit="fill"] .cov {
+  padding-bottom: max(8.5%, var(--binder-content-bottom));
+}
+.member-binder .stage[data-fit="fill"] .grid {
+  padding-bottom: calc(var(--pw) * 0.07 + var(--binder-content-bottom));
+}
+.member-binder .stage[data-fit="fill"] .layout-ctl,
+.member-binder .stage[data-fit="fill"] .page-num {
+  bottom: calc(var(--binder-content-bottom) + var(--pw) * 0.008);
+}
 .member-binder.binder-canvas .controls {
-  flex: 0 0 44px;
-  padding: 2px 52px 4px;
-  gap: 18px;
+  position: absolute;
+  inset: auto 92px calc(var(--binder-bottom-inset) + 4px) 52px;
+  height: 40px;
+  padding: 2px 8px;
+  gap: 12px;
+  border: 1px solid #ffffff26;
+  border-radius: 30px;
+  background: #11121cf2;
+  width: fit-content;
+  max-width: calc(100% - 144px);
+  margin: 0 auto;
 }
 .member-binder.binder-canvas .controls .nav {
   width: 34px;
@@ -791,9 +824,16 @@ html[data-member-binder] #root {
 }
 .member-binder.binder-canvas .binder-readout {
   font-size: 9px;
+  white-space: nowrap;
 }
+.member-binder.binder-canvas .pager { min-width: 0; }
 .member-binder.binder-canvas .dots {
   padding: 2px;
+}
+@media (max-width: 450px) {
+  .member-binder.binder-canvas .controls { gap: 3px; padding-inline: 3px; }
+  .member-binder.binder-canvas .controls .nav { width: 28px; height: 32px; }
+  .member-binder.binder-canvas .binder-readout { font-size: 8px; letter-spacing: 0; }
 }
 @media (max-width: 759px) {
   .binder-practice-toolbar {

@@ -17,7 +17,6 @@ import { binderCopy } from "./binderCopy";
 import { useMemberBinder } from "./useMemberBinder";
 import { BinderWorkspace } from "./BinderWorkspace";
 import { BinderPractice, practiceCopy } from "./BinderPractice";
-import { BinderWordmark } from "./BinderWordmark";
 import { BinderAccount } from "./BinderAccount";
 import { BinderViewControls } from "./BinderViewControls";
 import { BinderToolsPanel } from "./BinderToolsPanel";
@@ -77,7 +76,9 @@ export function MemberBinderPage({
     const viewport = document.querySelector('meta[name="viewport"]');
     const viewportContent = viewport?.getAttribute("content");
     html.dataset.memberBinder = "true";
-    theme?.setAttribute("content", "#0b0812");
+    // Safari owns the area behind its address control. Continue the cover's
+    // material there instead of tinting that browser-owned area near black.
+    theme?.setAttribute("content", canvas ? "#24262f" : "#f8e8ef");
     // Paint edge to edge; the canvas applies safe-area padding once, while the
     // book measures the remaining space instead of subtracting the insets twice.
     viewport?.setAttribute(
@@ -132,12 +133,11 @@ export function MemberBinderPage({
           : "";
   const header = (
     <HubSiteHeader
-      brand={<BinderWordmark />}
       locale={locale}
       setLocale={setLocale}
       location={user ? `${user.name || "Renaiss"}'s Binder` : copy.title}
       onBack={onBack}
-      navigation={navigation}
+      navigation={canvas ? <></> : navigation}
       accountAction={
         user ? (
           <BinderAccount user={user}>{accountAction}</BinderAccount>
@@ -267,6 +267,7 @@ export function MemberBinderPage({
       )}
       {canvas ? (
         <BinderViewControls
+          navigation={navigation}
           locale={locale}
           toolsOpen={toolsOpen}
           toolsId={toolsId}

@@ -67,10 +67,11 @@ export function BinderBook({
       const width = el.clientWidth,
         height = el.clientHeight;
       const fill = !wide || (window.innerWidth <= 1100 && window.innerHeight <= 820);
+      el.dataset.fit = fill ? "fill" : "proportional";
       const pw = fill
         ? (width - 16) / (wide ? 2 : 1)
         : Math.min((width - 48) / 2, ((height - 22) * 5) / 7, 620);
-      const ph = fill ? height - 16 : (pw * 7) / 5;
+      const ph = fill ? height - 8 : (pw * 7) / 5;
       el.style.setProperty("--pw", `${Math.max(80, pw)}px`);
       el.style.setProperty("--ph", `${Math.max(112, ph)}px`);
     };

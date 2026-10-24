@@ -1,22 +1,22 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import type { AppLocale } from "../../i18n/LocaleContext";
 import "./BinderViewControls.css";
 
 const viewCopy = {
   en: {
-    tools: "Menu", close: "Close", practice: "Sample badges", dirty: "Unsaved",
+    tools: "Binder tools", close: "Close tools", practice: "Sample badges", dirty: "Unsaved",
     enter: "Full screen", exit: "Exit full screen", safari: "Hide Safari toolbar",
     hint: "In Safari, open the page menu beside the address and choose Hide Toolbar. The book resizes to the extra space automatically. Tap the address to restore the toolbar.",
     error: "The browser could not enter full screen. Please try again.",
   },
   "zh-TW": {
-    tools: "選單", close: "收起", practice: "操作示範", dirty: "未儲存",
+    tools: "收藏冊工具", close: "收起工具", practice: "操作示範", dirty: "未儲存",
     enter: "全螢幕", exit: "離開全螢幕", safari: "隱藏 Safari 工具列",
     hint: "在 Safari 網址旁的「頁面選單」選擇「隱藏工具列」，卡冊會自動延伸到增加的空間。點上方網址可恢復工具列。",
     error: "瀏覽器無法進入全螢幕，請再試一次。",
   },
   ko: {
-    tools: "메뉴", close: "닫기", practice: "샘플 배지", dirty: "저장 안 됨",
+    tools: "바인더 도구", close: "도구 닫기", practice: "샘플 배지", dirty: "저장 안 됨",
     enter: "전체 화면", exit: "전체 화면 종료", safari: "Safari 도구 막대 숨기기",
     hint: "Safari 주소 옆 페이지 메뉴에서 도구 막대 가리기를 선택하세요. 바인더가 늘어난 공간에 맞춰집니다. 주소를 누르면 도구 막대가 다시 표시됩니다.",
     error: "전체 화면을 열 수 없습니다. 다시 시도해 주세요.",
@@ -25,7 +25,8 @@ const viewCopy = {
 
 // Browser chrome belongs to Safari. Offer its native instruction when element
 // fullscreen is unavailable, rather than pretending CSS can hide that toolbar.
-export function BinderViewControls({ locale, toolsOpen, toolsId, dirty }: {
+export function BinderViewControls({ locale, toolsOpen, toolsId, dirty, navigation }: {
+  navigation: ReactNode;
   locale: AppLocale;
   toolsOpen: boolean;
   toolsId: string;
@@ -51,9 +52,11 @@ export function BinderViewControls({ locale, toolsOpen, toolsId, dirty }: {
     }
   }
   return <>
-    <button type="button" className="binder-view-tools" aria-expanded={toolsOpen} aria-controls={toolsId} popoverTarget={toolsId}>
-      <span aria-hidden="true">{toolsOpen ? "×" : "☰"}</span>
-      <span>{toolsOpen ? text.close : text.tools}</span>
+    <div className="binder-view-navigation">{navigation}</div>
+    <button type="button" className="binder-view-tools" aria-label={toolsOpen ? text.close : text.tools} title={toolsOpen ? text.close : text.tools} aria-expanded={toolsOpen} aria-controls={toolsId} popoverTarget={toolsId}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+        {toolsOpen ? <path d="m6 6 12 12M18 6 6 18" /> : <><path d="M3 7h18M3 17h18" /><circle cx="9" cy="7" r="3" fill="currentColor" /><circle cx="15" cy="17" r="3" fill="currentColor" /></>}
+      </svg>
       {dirty ? <span className="binder-view-dirty" role="status">{text.dirty}</span> : null}
     </button>
     <button type="button" className="binder-view-fullscreen" aria-label={supported ? fullscreen ? text.exit : text.enter : text.safari}

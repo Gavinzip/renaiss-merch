@@ -1,7 +1,11 @@
 .member-binder .binder-tools-panel {
+  --line: #4c3f5726;
+  --text: #332d38;
+  --muted: #746c7b;
+  --accent: #946d46;
   position: fixed;
   inset: auto max(12px, env(safe-area-inset-right))
-    calc(env(safe-area-inset-bottom) + 52px)
+    calc(var(--binder-bottom-inset) + 52px)
     max(12px, env(safe-area-inset-left));
   width: min(680px, calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)));
   max-height: min(70dvh, 420px);
@@ -11,9 +15,10 @@
   overscroll-behavior: contain;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: #14161b;
+  background: linear-gradient(150deg, #ffe6ef, #fffaf0 65%, #f5eaf4);
   color: var(--text);
-  box-shadow: 0 12px 60px #0009;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  box-shadow: 0 12px 60px #0006;
 }
 .member-binder .binder-tools-panel .hub-site-header {
   min-height: 60px;
@@ -22,6 +27,7 @@
   gap: 10px;
 }
 .member-binder .binder-tools-panel .hub-site-header__location { display: none; }
+.member-binder .binder-tools-panel .hub-brand-wordmark { width: 103px; height: auto; }
 .binder-tools-panel__body { padding: 12px 16px; }
 .member-binder .binder-tools-panel .binder-toolbar {
   position: static;
@@ -67,7 +73,7 @@
 }
 .member-binder .binder-tools-panel .binder-account-menu {
   inset: auto max(16px, env(safe-area-inset-right))
-    calc(env(safe-area-inset-bottom) + 104px) auto;
+    calc(var(--binder-bottom-inset) + 104px) auto;
   max-width: calc(100vw - 32px);
   flex-wrap: wrap;
 }

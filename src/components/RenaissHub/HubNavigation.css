@@ -46,13 +46,15 @@
 .hub-sidebar {
   --sidebar-ink: #332d38;
   position: fixed;
-  inset: env(safe-area-inset-top) auto env(safe-area-inset-bottom) env(safe-area-inset-left);
+  inset: 0 auto 0 0;
   z-index: 40;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   width: 216px;
-  height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  height: 100lvh;
+  padding: env(safe-area-inset-top) 0
+    calc(env(safe-area-inset-bottom) + 100lvh - 100dvh) env(safe-area-inset-left);
   overflow: visible;
   border-right: 1px solid #4c3f571a;
   background:
@@ -74,7 +76,7 @@
 .hub-sidebar__brand-art { display: block; width: 130px; }
 .hub-sidebar__brand-art .hub-brand-wordmark { width: 130px; height: 32px; max-width: none; }
 .hub-sidebar__brand-art .hub-brand-logo { display: block; width: 28px; height: 32px; stroke: none; }
-.hub-sidebar__destinations { display: grid; gap: 6px; padding: 30px 12px 20px; }
+.hub-sidebar__destinations { display: grid; gap: 6px; padding: 30px 12px 20px; overflow-y: auto; min-height: 0; }
 .hub-sidebar__destination {
   display: flex;
   align-items: center;
@@ -149,7 +151,7 @@
   inset: 0;
   box-sizing: border-box;
   width: 100%;
-  height: 100dvh;
+  height: 100lvh;
   max-width: none;
   max-height: none;
   margin: 0;
