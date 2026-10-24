@@ -52,6 +52,10 @@ html[data-member-binder] #root {
   padding-top: 0;
   padding-bottom: 0;
   overflow: clip;
+  /* A fixed dark background also becomes Safari's minimized toolbar tint.
+     Paint the material on the in-flow workspace, leaving browser tinting to
+     the Community document background in both toolbar states. */
+  background: transparent;
 }
 .binder-site-chrome {
   --text: #332d38;
@@ -782,6 +786,7 @@ html[data-member-binder] #root {
    and Safari address pill instead of shortening the entire cover. */
 .member-binder.binder-canvas .binder-workspace {
   position: relative;
+  background: var(--bg);
   padding-bottom: calc(48px + var(--binder-bottom-inset));
 }
 .member-binder.binder-canvas .binder-workspace:has(.stage[data-fit="fill"]) {
