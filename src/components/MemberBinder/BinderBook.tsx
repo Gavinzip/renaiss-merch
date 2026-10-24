@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, type CSSProperties } from "react";
 import type { BinderWriting } from "../../../shared/binder-writing.js";
 import type {
   MemberBinder,
@@ -12,7 +12,6 @@ import { BinderSheet } from "./BinderSheet";
 import { BinderTitle } from "./BinderTitle";
 import { useBinderBook } from "./useBinderBook";
 import { leafOrder } from "./binderMotion";
-import { BinderElasticBand, type ElasticBandHandle } from "./BinderElasticBand";
 import { BinderWritingLayer } from "./BinderWritingLayer";
 import { BinderWritingToolbar } from "./BinderWritingToolbar";
 import { useBinderWriting } from "./useBinderWriting";
@@ -53,12 +52,9 @@ export function BinderBook({
   onWriting: (writing: BinderWriting) => void;
 }) {
   const ink = useBinderWriting(binder, onWriting, disabled);
-  const [bandBusy, setBandBusy] = useState(false);
-  const strap = useRef<ElasticBandHandle>(null);
   const motion = useBinderBook(
     binder.pages.length,
-    Boolean(picking) || ink.busy || bandBusy,
-    (resume) => strap.current!.release(resume),
+    Boolean(picking) || ink.busy,
   );
   const { spread, wide, subPage, leafCount } = motion;
   const stage = useRef<HTMLDivElement>(null);
@@ -180,16 +176,9 @@ export function BinderBook({
     <>
       <section className="stage" ref={stage} aria-label={copy.title}>
         <BinderTitle name={name} />
-        {spread > 0 && spread < leafCount ? (
-          <BinderWritingToolbar
-            ink={ink}
-            copy={copy.writing}
-            disabled={disabled}
-          />
-        ) : null}
         <div
           ref={motion.bookRef}
-          className={`book has-elastic ${spread === 0 ? "at-front" : spread === leafCount ? "at-back" : "open"} ${!wide && spread > 0 && spread < leafCount ? "mob-shift" : ""}`}
+          className={`book ${spread === 0 ? "at-front idle" : spread === leafCount ? "at-back" : "open"} ${!wide && spread > 0 && spread < leafCount ? "mob-shift" : ""}`}
           data-writing={ink.tool !== "read"}
           style={
             {
@@ -197,24 +186,8 @@ export function BinderBook({
                 subPage === 0 ? "calc(var(--pw) / 2)" : "calc(var(--pw) / -2)",
             } as CSSProperties
           }
-          onMouseMove={(event) => {
-            if (
-              spread !== 0 &&
-              !(
-                event.target instanceof Element &&
-                event.target.closest(".binder-elastic-band")
-              )
-            )
-              motion.onMouseMove(event);
-          }}
+          onMouseMove={motion.onMouseMove}
           onMouseLeave={motion.onMouseLeave}
-          onPointerDownCapture={(event) => {
-            if (
-              event.target instanceof Element &&
-              event.target.closest(".binder-elastic-band")
-            )
-              motion.onMouseLeave();
-          }}
         >
           <div className="glow" aria-hidden="true" />
           <div className="rings" aria-hidden="true">
@@ -295,13 +268,6 @@ export function BinderBook({
                           </span>
                         </span>
                       </button>
-                      <BinderElasticBand
-                        ref={strap}
-                        closed={spread === 0}
-                        label={copy.writing.strap}
-                        onOpen={() => motion.step(1)}
-                        onBusyChange={setBandBusy}
-                      />
                       <div className="shade" />
                     </div>
                     {inside("back", back, "inside-front")}
@@ -352,12 +318,19 @@ export function BinderBook({
           />
         </div>
       </section>
+      {spread > 0 && spread < leafCount ? (
+        <BinderWritingToolbar
+          ink={ink}
+          copy={copy.writing}
+          disabled={disabled || Boolean(picking)}
+        />
+      ) : null}
       <footer className="controls">
         <button
           className="nav"
           type="button"
           aria-label={copy.previous}
-          disabled={spread === 0 || ink.busy || bandBusy}
+          disabled={spread === 0 || ink.busy}
           onClick={() => motion.step(-1)}
         >
           ‹
@@ -384,7 +357,7 @@ export function BinderBook({
                   type="button"
                   aria-label={label}
                   title={label}
-                  disabled={ink.busy || bandBusy}
+                  disabled={ink.busy}
                   aria-current={index === spread ? "page" : undefined}
                   onClick={() => motion.go(index)}
                 />
@@ -400,7 +373,7 @@ export function BinderBook({
           className="nav"
           type="button"
           aria-label={copy.next}
-          disabled={spread === leafCount || ink.busy || bandBusy}
+          disabled={spread === leafCount || ink.busy}
           onClick={() => motion.step(1)}
         >
           ›

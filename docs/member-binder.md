@@ -96,17 +96,16 @@ The original Hub viewport is restored on exit.
 Compact wide screens fill the available width and height with a two-page spread;
 artwork retains its own aspect ratio. Folded widths start with the cover closed.
 
-## Elastic closure and writing
+## Cover motion and writing
 
-The front cover has a woven elastic band along its right side, pinned at both
-ends. Drag to pluck/stretch it; releasing the pointer lets tension propagate
-along the band. Pressing Enter on the band or opening the cover releases the
-band before the original cover turn. Plucking the band leaves the cover shut. The
-fastened cover no longer performs the old automatic opening/peek animation.
-Reduced motion keeps direct dragging and suppresses the release oscillation.
+The front cover retains the original idle micro-opening, hover peek and tilt.
+There is no elastic closure. Opening and dragging page edges use the original
+page-turn motion directly. Reduced motion suppresses the decorative motion.
 
 Inside the binder, **Write / 書寫** enables freehand pen, positioned multiline
 text, eraser, four ink colors, three sizes and up to 40 writing undo steps.
+The writing toolbar is a flat sibling of the perspective stage, so book faces
+and page-turn hit areas cannot intercept its mouse input.
 Writing mode shields pockets and page edges from accidental badge edits/turns;
 the pager still works after lifting the finger or finishing text. Ink lives
 on each mounted face and turns with that face. Page-relative coordinates follow

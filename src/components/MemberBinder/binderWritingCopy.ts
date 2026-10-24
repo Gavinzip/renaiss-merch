@@ -16,8 +16,6 @@ export const binderWritingCopy = {
     cancel: "Cancel",
     limit: "Writing limit reached. Erase a mark or undo before adding more.",
     surface: "Writing surface",
-    strap:
-      "Elastic closure: drag to stretch and release to rebound; press Enter to open",
   },
   "zh-TW": {
     write: "書寫",
@@ -36,7 +34,6 @@ export const binderWritingCopy = {
     cancel: "取消",
     limit: "這本收藏冊的筆跡已達上限，請先擦除或復原後再繼續。",
     surface: "書寫區域",
-    strap: "彈力束帶：拖曳拉動、放開回彈；按 Enter 開啟收藏冊",
   },
   ko: {
     write: "쓰기",
@@ -55,7 +52,6 @@ export const binderWritingCopy = {
     cancel: "취소",
     limit: "필기 한도에 도달했습니다. 지우거나 실행을 취소해 주세요.",
     surface: "필기 영역",
-    strap: "고무 밴드: 드래그하여 늘리고 놓아서 튕기기; Enter를 눌러 열기",
   },
 } as const;
 export type BinderWritingCopy =

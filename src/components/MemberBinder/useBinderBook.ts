@@ -12,7 +12,6 @@ import { bendLeaf, clearLeaf, leafOrder, TURN_MS } from "./binderMotion";
 export function useBinderBook(
   pageCount: number,
   blocked: boolean,
-  beforeOpen: (resume: () => void) => () => void,
 ) {
   const leafCount = Math.ceil((pageCount + 1) / 2) + 2;
   const [spread, setSpread] = useState(0);
@@ -31,15 +30,6 @@ export function useBinderBook(
     matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
   const busy = useRef(false);
-  const prepareOpen = useRef(beforeOpen);
-  prepareOpen.current = beforeOpen;
-  const openingEpoch = useRef(0);
-  const pendingOpen = useRef<(() => void) | null>(null);
-  const cancelOpening = useCallback(() => {
-    openingEpoch.current++;
-    pendingOpen.current?.();
-    pendingOpen.current = null;
-  }, []);
   const drag = useRef<{
     index: number;
     side: "left" | "right";
@@ -51,7 +41,6 @@ export function useBinderBook(
   } | null>(null);
 
   const reset = useCallback(() => {
-    cancelOpening();
     cancelAnimationFrame(frame.current);
     epoch.current++;
     busy.current = false;
@@ -60,22 +49,12 @@ export function useBinderBook(
     const book = bookRef.current;
     book?.classList.remove("peek", "tilting");
     book?.style.removeProperty("transform");
-  }, [cancelOpening]);
+  }, []);
   const go = useCallback(
-    function turn(target: number, startAngle?: number, released = false) {
-      if (!released) cancelOpening();
+    (target: number, startAngle?: number) => {
       const from = current.current,
         to = Math.max(0, Math.min(leafCount, target));
       if (from === to && startAngle === undefined) return;
-      if (from === 0 && to > 0 && !released) {
-        const request = openingEpoch.current;
-        pendingOpen.current = prepareOpen.current(() => {
-          if (request !== openingEpoch.current) return;
-          pendingOpen.current = null;
-          turn(target, startAngle, true);
-        });
-        return;
-      }
       const draggedIndex = drag.current?.index;
       reset();
       const version = epoch.current;
@@ -136,7 +115,7 @@ export function useBinderBook(
       };
       frame.current = requestAnimationFrame(animate);
     },
-    [leafCount, reset, cancelOpening],
+    [leafCount, reset],
   );
   const goRef = useRef(go);
   goRef.current = go;
@@ -233,11 +212,6 @@ export function useBinderBook(
   const pointerProps = (side: "left" | "right") => ({
     onPointerDown(event: PointerEvent<HTMLDivElement>) {
       if (blocked || busy.current) return;
-      if (current.current === 0 && side === "right") {
-        event.preventDefault();
-        step(1);
-        return;
-      }
       const index = side === "right" ? current.current : current.current - 1;
       const leaf = leaves.current.get(index),
         book = bookRef.current;

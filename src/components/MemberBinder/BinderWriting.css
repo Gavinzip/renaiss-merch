@@ -28,6 +28,8 @@
   pointer-events: none;
 }
 .member-binder .binder-writing-dock {
+  /* A flat sibling of the perspective stage, above the entire 3D book.
+     Only the controls receive pointer input; the surrounding ink stays usable. */
   position: absolute;
   z-index: 72;
   top: 12px;
@@ -38,6 +40,7 @@
   align-items: center;
   gap: 7px;
   max-width: calc(100% - 24px);
+  pointer-events: none;
 }
 .member-binder .binder-write-start,
 .member-binder .binder-writing-toolbar {
@@ -50,6 +53,7 @@
   color: #57415f;
   border: 1px solid #fff9;
   box-shadow: 0 3px 18px #140b1726;
+  pointer-events: auto;
 }
 .member-binder .binder-write-start {
   font: 500 12px var(--sans);
