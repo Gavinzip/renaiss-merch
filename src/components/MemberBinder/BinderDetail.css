@@ -293,6 +293,7 @@
   line-height: 1.5;
 }
 .member-binder .d-remove {
+  position: relative;
   font-family: var(--mono);
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -307,6 +308,11 @@
   margin-top: 8px;
   padding: 0px;
   font-size: 10px;
+}
+.member-binder .d-remove::after {
+  content: "";
+  position: absolute;
+  inset: -14px -7px;
 }
 .member-binder .d-remove:hover {
   opacity: 1;
