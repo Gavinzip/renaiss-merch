@@ -71,14 +71,9 @@ export function MemberBinderPage({
     scrollTo({ top: 0, behavior: "instant" });
     root.current?.focus({ preventScroll: true });
     const html = document.documentElement;
-    const theme = document.querySelector('meta[name="theme-color"]');
-    const color = theme?.getAttribute("content");
     const viewport = document.querySelector('meta[name="viewport"]');
     const viewportContent = viewport?.getAttribute("content");
     html.dataset.memberBinder = "true";
-    // Safari owns the area behind its address control. Continue the cover's
-    // material there instead of tinting that browser-owned area near black.
-    theme?.setAttribute("content", canvas ? "#24262f" : "#f8e8ef");
     // Paint edge to edge; the canvas applies safe-area padding once, while the
     // book measures the remaining space instead of subtracting the insets twice.
     viewport?.setAttribute(
@@ -87,8 +82,6 @@ export function MemberBinderPage({
     );
     return () => {
       delete html.dataset.memberBinder;
-      if (color !== null && color !== undefined)
-        theme?.setAttribute("content", color);
       if (viewportContent !== null && viewportContent !== undefined)
         viewport?.setAttribute("content", viewportContent);
     };

@@ -1,7 +1,6 @@
-html[data-member-binder],
-html[data-community-app][data-member-binder] body {
-  background: #0b0812;
-}
+/* Keep the document background owned by the Community shell: Safari on Duo
+   extends that color behind its side controls and address bar. Only the book's
+   content canvas uses the original dark material. */
 html[data-member-binder] .store-page-transition,
 html[data-member-binder] .hub-route-motion,
 html[data-member-binder] #root {
