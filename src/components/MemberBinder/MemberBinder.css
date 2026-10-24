@@ -5,7 +5,7 @@ html[data-member-binder] .store-page-transition,
 html[data-member-binder] .hub-route-motion,
 html[data-member-binder] #root {
   min-height: 0;
-  background: #0b0812;
+  background: transparent;
 }
 .member-binder {
   --bg: hsl(256 41% 5%);
