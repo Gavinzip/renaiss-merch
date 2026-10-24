@@ -1,0 +1,38 @@
+{
+  "access": "public",
+  "bucket": "renaiss-merch-pilot-20261018",
+  "prefix": "merch/binder-card-samples",
+  "assets": {
+    "1": {
+      "type": "image",
+      "source": "work/member-binder-release/cards/reference-1.jpg",
+      "contentType": "image/avif",
+      "path": "reference-1.avif",
+      "upstream": "https://8nothtoc5ds7a0x3.public.blob.vercel-storage.com/graded-cards-renders/PSA131679214/nft_image_silver.jpg",
+      "encodedBytes": 598463,
+      "encodedSha256": "b2724eb8e5917617c611ae06bcc65184d5a35617e009eed34c82fa51b4a3256d"
+    },
+    "2": {
+      "type": "image",
+      "source": "work/member-binder-release/cards/reference-2.jpg",
+      "contentType": "image/avif",
+      "path": "reference-2.avif",
+      "upstream": "https://8nothtoc5ds7a0x3.public.blob.vercel-storage.com/graded-cards-renders/PSA140896456/nft_image.jpg",
+      "encodedBytes": 654040,
+      "encodedSha256": "47759fc289f2d450b7907193f197f5f87824ff1ceff2b0b6856f4f5ffab3546b"
+    },
+    "3": {
+      "type": "image",
+      "source": "work/member-binder-release/cards/reference-3.jpg",
+      "contentType": "image/avif",
+      "path": "reference-3.avif",
+      "upstream": "https://8nothtoc5ds7a0x3.public.blob.vercel-storage.com/graded-cards-renders/PSA80483792/nft_image.jpg",
+      "encodedBytes": 553185,
+      "encodedSha256": "56f15ebae69c65c839dea96ec43284548a1ceac4efe757c9486d2a1b1512064b"
+    }
+  },
+  "contentHash": "ffaadeec9c848c89186ee69739b8f7ba5662f72c45d158b5964603951e141465",
+  "fileCount": 3,
+  "release": "rffaadeec9c848c89186e",
+  "totalBytes": 1805688
+}

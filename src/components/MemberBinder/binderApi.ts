@@ -8,6 +8,7 @@ export type BinderBadge = {
   howToEarn: string;
   imageUrl: string;
   balance: number;
+  card?: { tokenId: string; setName: string; gradingCompany: string; grade: string };
 };
 export type BinderLibrary = {
   badges: BinderBadge[];

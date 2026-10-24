@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import type { BinderBadge } from "./binderApi";
+import { isSampleCard, isPortraitCard, type BinderCollectible } from "./binderCollectible";
+import { BinderCollectibleArt } from "./BinderCollectibleArt";
 import type { BinderCopy } from "./binderCopy";
 import type { RenaissUser } from "../../lib/renaissAuth";
 import "./BinderDetail.css";
@@ -13,7 +14,7 @@ export function BinderDetail({
   onRemove,
   practice = false,
 }: {
-  badge: BinderBadge;
+  badge: BinderCollectible;
   user: RenaissUser;
   copy: BinderCopy;
   onClose: () => void;
@@ -50,7 +51,7 @@ export function BinderDetail({
   return (
     <dialog
       ref={dialog}
-      className={`binder-detail detail sbt on ${closing ? "closing" : ""}`}
+      className={`binder-detail detail ${isPortraitCard(badge) ? "sample-card" : "sbt"} on ${closing ? "closing" : ""}`}
       aria-label={copy.detail}
       onCancel={(event) => {
         event.preventDefault();
@@ -84,13 +85,13 @@ export function BinderDetail({
           }}
         >
           <div ref={art} className={`d-card-inner ${entering ? "enter" : ""}`}>
-            <img src={badge.imageUrl} alt={badge.name} />
+            <BinderCollectibleArt item={badge} />
             <div className="d-glare" />
           </div>
         </div>
         <div className="d-info">
           <span className="d-setline">
-            {practice ? copy.practice : "Soulbound"}
+            {practice ? copy.practice : badge.card ? [badge.card.gradingCompany, badge.card.grade].filter(Boolean).join(" · ") : "Soulbound"}
           </span>
           <h2 className="d-name">{badge.name}</h2>
           <div className="d-ownerrow">
@@ -121,7 +122,7 @@ export function BinderDetail({
             </span>
             <span className="d-cell">
               <span className="d-lbl">{copy.tokenId}</span>
-              <span className="d-val">SBT-{badge.tokenId}</span>
+              <span className="d-val" title={badge.card?.tokenId}>{isSampleCard(badge) ? `SAMPLE-${String(badge.sampleCard.edition).padStart(3, "0")}` : badge.card ? `${badge.card.tokenId.slice(0,8)}…${badge.card.tokenId.slice(-6)}` : `SBT-${badge.tokenId}`}</span>
             </span>
           </div>
           <div className="d-sbt-about">

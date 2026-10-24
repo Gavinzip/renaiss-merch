@@ -854,6 +854,15 @@
   height: 74%;
   inset: 13%;
 }
+.member-binder .slot.filled.slot--card img {
+  position: absolute;
+  width: 92%;
+  height: 92%;
+  inset: 4%;
+  pointer-events: none;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px #0008);
+}
 @keyframes bnd-card-drop {
   0% {
     opacity: 0;
@@ -892,6 +901,12 @@
 .member-binder .slot.filled .slot-crop.bnd-card-lift {
   animation: 0.3s cubic-bezier(0.5, 0, 0.75, 0.3) 0s 1 normal both running
     bnd-card-lift;
+}
+@media (prefers-reduced-motion: reduce) {
+  .member-binder .slot.filled .bnd-card-drop,
+  .member-binder .slot.filled .bnd-card-lift {
+    animation: none;
+  }
 }
 @keyframes bnd-slot-shine {
   100% {

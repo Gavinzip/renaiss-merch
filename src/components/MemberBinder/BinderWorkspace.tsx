@@ -5,7 +5,7 @@ import {
   type MemberBinder,
 } from "../../../shared/member-binder.js";
 import type { RenaissUser } from "../../lib/renaissAuth";
-import type { BinderBadge } from "./binderApi";
+import type { BinderCollectible } from "./binderCollectible";
 import type { BinderCopy } from "./binderCopy";
 import { BinderBook, type PocketTarget } from "./BinderBook";
 import { BinderDetail } from "./BinderDetail";
@@ -23,7 +23,7 @@ export function BinderWorkspace({
   onChange,
 }: {
   binder: MemberBinder;
-  badges: BinderBadge[];
+  badges: BinderCollectible[];
   user: RenaissUser;
   copy: BinderCopy;
   locked?: boolean;

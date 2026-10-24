@@ -1,3 +1,4 @@
+import { prepareBinderCard } from './binder-card.js';
 const ALLOWED_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 const DEFAULT_SIGNED_URL_MAX_TTL_SECONDS = 300;
 const PRIVATE_MEDIA_PREFIX = 'merch/v1.2/';
@@ -13,6 +14,12 @@ export default {
 
     if (request.method === 'OPTIONS') {
       return createPreflightResponse(corsHeaders);
+    }
+
+    if (new URL(request.url).pathname === '/prepare-binder-card' && request.method === 'POST') {
+      if (!env.MEDIA_PROXY_TOKEN || !await hasValidToken(request, env.MEDIA_PROXY_TOKEN))
+        return privateResponse('Unauthorized.', 401);
+      return prepareBinderCard(request, env.PRIVATE_MEDIA);
     }
 
     if (!ALLOWED_METHODS.has(request.method)) {

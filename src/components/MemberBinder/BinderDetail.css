@@ -80,6 +80,10 @@
   position: absolute;
   inset: 0px;
 }
+.member-binder .detail.sample-card .d-wrap {
+  padding-top: 56px;
+  padding-bottom: 30px;
+}
 .member-binder .detail.sbt .d-card-inner {
   aspect-ratio: 1 / 1;
   box-sizing: border-box;
@@ -359,6 +363,9 @@
   }
   .member-binder .detail.sbt .d-card-inner {
     width: min(72vh, 92vw, 640px);
+  }
+  .member-binder .detail.sample-card .d-card-inner {
+    width: min(82vw, calc(66dvh * 63 / 88));
   }
   .member-binder .d-info {
     flex: 0 0 auto;

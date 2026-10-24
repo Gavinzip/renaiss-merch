@@ -5,9 +5,11 @@ The normal application route is `/#binder`; refreshing or returning from SSO
 preserves that destination.
 
 The binder uses the verified Renaiss session and its Safe wallet. Its library
-contains held SBT badge IDs, with names and images from the official Renaiss
-achievement catalog. It does not present token balances as badge counts or
-invent prices for soulbound badges. This version supports SBT badges.
+contains held SBT badge IDs plus general trading cards. Cards come from the same
+user-scoped `collectible.list` query used by the Renaiss binder. The verified OIDC
+subject supplies `userId`; each card's owner must match the verified Safe or legacy
+wallet. The library includes card names, sets, grades and image references.
+It does not invent prices. Badge metadata still comes from the official catalog.
 
 Choose a pocket to add, replace, or remove a badge. Each badge may appear once.
 Each page supports 1, 6, or 9 pockets, with up to 24 pages. Smaller screens show
@@ -39,7 +41,13 @@ the animated title, idle movement and page-turn animation.
 ## Persistence and authentication
 
 - `GET /api/binder`: the authenticated account's saved configuration and revision.
-- `GET /api/binder/library`: verified holdings and official badge metadata.
+- `GET /api/binder/library`: verified card and badge holdings and metadata.
+- `GET /api/binder/card-media?tokenId=…`: recheck card ownership, request a
+  Cloudflare R2 ingest using only control-plane metadata, then issue a short-lived
+  signed Cloudflare URL. Image bodies never pass through the application.
+  Image batches reuse a verified user-and-wallet-scoped ownership snapshot for
+  at most 30 seconds; explicit library refresh and Save always query afresh.
+  A full paginated inventory query has a total 20-second deadline.
 - `PUT /api/binder`: same-origin, authenticated write with ownership and revision
   validation. Stale revisions return 409; invalid or unowned references are rejected.
 - No browser wallet input, Demo identity, or local-storage document substitutes
@@ -80,14 +88,34 @@ switch to a different origin or an application-server media proxy.
 
 ## Explicit practice mode
 
-From the same normal binder route, **Try with sample badges / 用示範徽章試玩**
+From the same normal binder route, **Try with sample cards / 用模擬卡片試玩**
 opens a clearly marked practice collection. A shareable entry is
 `/?binderPractice=1#binder`. It requires no login and uses the same
 `BinderWorkspace`, book, picker and detail animation as an account collection.
-Eight official sample badges start in the first sheet, with two available to
-insert. Practice changes live only while this view is mounted and can be reset.
+Practice defaults to 18 portrait trading-card samples with a 63:88
+aspect ratio. Seventeen start across three sheets (nine and six pocket layouts),
+with one available to insert. Three public reference card images from the same
+Renaiss collectible catalog are versioned AVIFs on public Cloudflare R2, recorded
+in `media/member-binder-card-samples-release.json`. Source JPGs stay in the ignored
+`work/member-binder-release/cards/`. The readout and inspection view identify
+these as simulated cards, not a token, price, ownership record or image fallback.
+Cards retain the shared pocket, inspection, replacement and turn animations.
+The tools panel switches between **Trading cards / 一般卡片** and the existing
+official SBT samples; switching resets the transient practice collection.
+`binderSamples=cards` or `binderSamples=badges` selects the practice dataset.
+The badge dataset still starts with eight placed and two available.
+Practice changes live only while this view is mounted and can be reset.
 There is no sample session, ownership grant, eligibility bypass or database write.
 Returning to the account collection restores its own loaded/draft state.
+Authenticated storage keeps existing numeric badge references and adds
+`card:<uint256>` references without changing the JSON version or database schema.
+Save rechecks both holdings sources and rejects every unowned reference. Practice
+cards have no real token reference and are never written through this endpoint.
+The Cloudflare worker ingests only images under the fixed official Renaiss Blob
+origin and `/graded-cards-renders/` path, validates type/size/ETag, and stores the
+body in private R2 before serving it. Source ETags version the R2 object key.
+Preparation accepts the server bearer token only; public signed URLs cannot
+ingest content. Existing signed GET/HEAD and MP4 range delivery are unchanged.
 
 Safari's ready binder viewport uses `viewport-fit=cover`, with safe-area insets
 applied once by the canvas. Native Safari control areas sample the shared pink

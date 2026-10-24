@@ -19,8 +19,9 @@ export function validateBinder(value) {
     pageIds.add(page.id);
     const slots = page.slots.map(token => {
       if (token === null) return null;
-      if (typeof token !== 'string' || !/^(0|[1-9]\d{0,4})$/.test(token) ||
-          Number(token) > 10000 || tokenIds.has(token)) throw new Error('invalid_binder');
+      const badge = typeof token === 'string' && /^(0|[1-9]\d{0,4})$/.test(token) && Number(token) <= 10000;
+      const card = typeof token === 'string' && /^card:(0|[1-9]\d{0,77})$/.test(token) && BigInt(token.slice(5)) < 2n ** 256n;
+      if ((!badge && !card) || tokenIds.has(token)) throw new Error('invalid_binder');
       tokenIds.add(token);
       return token;
     });

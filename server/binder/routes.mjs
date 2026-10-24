@@ -5,9 +5,10 @@ import { getPool } from '../postgres/database.mjs';
 import { createEmptyBinder, validateBinder } from '../../shared/member-binder.js';
 import { readBinderLibrary } from './library.mjs';
 import { BINDER_BODY_BYTES } from '../../shared/binder-writing.js';
+import { redirectOwnedCardMedia } from './card-media.mjs';
 
 export async function handleBinderRoutes(req, res, url) {
-  if (!['/api/binder', '/api/binder/library'].includes(url.pathname)) return false;
+  if (!['/api/binder', '/api/binder/library', '/api/binder/card-media'].includes(url.pathname)) return false;
   if (!['GET', 'PUT'].includes(req.method) || url.pathname.endsWith('/library') && req.method !== 'GET') {
     throw new HttpError(405, 'method_not_allowed');
   }
@@ -15,6 +16,11 @@ export async function handleBinderRoutes(req, res, url) {
   const sub = session?.user?.sub;
   if (!sub) throw new HttpError(401, 'authentication_required');
   if (session.user.isDemo) throw new HttpError(403, 'binder_requires_real_account');
+  if (url.pathname === '/api/binder/card-media') {
+    if (req.method !== 'GET') throw new HttpError(405, 'method_not_allowed');
+    await redirectOwnedCardMedia(res, session, url.searchParams.get('tokenId'));
+    return true;
+  }
   if (url.pathname.endsWith('/library')) {
     sendJson(res, 200, await readBinderLibrary(session, { forceRefresh: url.searchParams.get('refresh') === '1' }));
     return true;

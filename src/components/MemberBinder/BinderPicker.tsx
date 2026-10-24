@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import type { BinderBadge } from "./binderApi";
+import type { BinderCollectible } from "./binderCollectible";
+import { BinderCollectibleArt } from "./BinderCollectibleArt";
 import type { BinderCopy } from "./binderCopy";
 
 export function BinderPicker({
@@ -10,7 +11,7 @@ export function BinderPicker({
   onSelect,
   onClose,
 }: {
-  badges: BinderBadge[];
+  badges: BinderCollectible[];
   used: Set<string>;
   current: string | null;
   copy: BinderCopy;
@@ -75,7 +76,7 @@ export function BinderPicker({
           />
           {copy.hideAdded}
         </label>
-        <span>{matches.length} SBT</span>
+        <span>{matches.length} {copy.itemUnit}</span>
       </div>
       <div className="member-binder-picker__scroll">
         {current !== null ? (
@@ -100,12 +101,10 @@ export function BinderPicker({
               aria-pressed={current === badge.tokenId}
               onClick={() => onSelect(badge.tokenId)}
             >
-              <img
-                src={badge.imageUrl}
-                alt=""
+              <BinderCollectibleArt
+                item={badge}
+                decorative
                 loading="lazy"
-                width="150"
-                height="150"
                 onError={() =>
                   setFailed((value) => new Set(value).add(badge.tokenId))
                 }

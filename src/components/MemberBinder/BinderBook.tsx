@@ -4,7 +4,8 @@ import type {
   MemberBinder,
   BinderPage,
 } from "../../../shared/member-binder.js";
-import type { BinderBadge } from "./binderApi";
+import type { BinderCollectible } from "./binderCollectible";
+import { BinderCollectibleArt } from "./BinderCollectibleArt";
 import type { BinderCopy } from "./binderCopy";
 import type { RenaissUser } from "../../lib/renaissAuth";
 import { BinderWordmark } from "./BinderWordmark";
@@ -36,7 +37,7 @@ export function BinderBook({
   onWriting,
 }: {
   binder: MemberBinder;
-  badges: BinderBadge[];
+  badges: BinderCollectible[];
   user: RenaissUser;
   copy: BinderCopy;
   disabled: boolean;
@@ -243,7 +244,7 @@ export function BinderBook({
                               key={b.tokenId}
                               className="cov-badge cov-badge--img"
                             >
-                              <img src={b.imageUrl} alt={b.name} />
+                              <BinderCollectibleArt item={b} />
                             </span>
                           ))}
                           {badges.length > 4 ? (

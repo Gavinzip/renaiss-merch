@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { BinderPage } from "../../../shared/member-binder.js";
 import { BINDER_LAYOUTS } from "../../../shared/member-binder.js";
-import type { BinderBadge } from "./binderApi";
+import { isPortraitCard, type BinderCollectible } from "./binderCollectible";
+import { BinderCollectibleArt } from "./BinderCollectibleArt";
 import type { BinderCopy } from "./binderCopy";
 import type { PocketTarget } from "./BinderBook";
 
@@ -26,7 +27,7 @@ export function BinderSheet({
   number: number;
   side: "front" | "back";
   visible: boolean;
-  library: Map<string, BinderBadge>;
+  library: Map<string, BinderCollectible>;
   copy: BinderCopy;
   disabled: boolean;
   picking: number | null;
@@ -63,7 +64,7 @@ export function BinderSheet({
           return (
             <div
               key={index}
-              className={`slot ${badge ? "filled slot--sbt" : ""} ${picking === index ? "pick-target" : ""} ${over === index ? "drag" : ""}`}
+              className={`slot ${badge ? `filled ${isPortraitCard(badge) ? "slot--card" : "slot--sbt"}` : ""} ${picking === index ? "pick-target" : ""} ${over === index ? "drag" : ""}`}
               draggable={Boolean(badge) && !disabled}
               onDragStart={(event) => {
                 event.dataTransfer.setData(
@@ -119,14 +120,11 @@ export function BinderSheet({
               >
                 {badge ? (
                   <>
-                    <img
+                    <BinderCollectibleArt
                       key={token}
-                      src={badge.imageUrl}
-                      alt={badge.name}
-                      draggable={false}
+                      item={badge}
+                      loading={visible ? "eager" : "lazy"}
                       className={added.includes(index) ? "bnd-card-drop" : ""}
-                      width="240"
-                      height="240"
                       onError={() =>
                         setFailed((value) => new Set(value).add(badge.tokenId))
                       }

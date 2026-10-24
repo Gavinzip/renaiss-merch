@@ -1,4 +1,5 @@
 import release from "../../../media/member-binder-asset-release.json";
+import sampleCards from "../../../media/member-binder-card-samples-release.json";
 import {
   prefix as badgePrefix,
   release as badgeRelease,
@@ -18,6 +19,11 @@ export function binderBadgeUrl(id: number) {
   if (!origin || !badgeRelease)
     throw new Error("Binder badge release is not configured.");
   return `${origin}/${badgePrefix}/${badgeRelease}/badge-${id}.avif`;
+}
+export function binderSampleCardUrl(id: 1 | 2 | 3) {
+  if (!origin || !sampleCards.release)
+    throw new Error("Binder sample card release is not configured.");
+  return `${origin}/${sampleCards.prefix}/${sampleCards.release}/${sampleCards.assets[String(id) as keyof typeof sampleCards.assets].path}`;
 }
 
 export const binderFonts = [
