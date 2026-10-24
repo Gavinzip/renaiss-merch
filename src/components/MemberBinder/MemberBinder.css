@@ -1,6 +1,6 @@
 /* Keep the document background owned by the Community shell: Safari on Duo
-   extends that color behind its side controls and address bar. Only the book's
-   content canvas uses the original dark material. */
+   extends that color behind its side controls and address bar. The workspace
+   uses the same color; dark material belongs to the book itself. */
 html[data-member-binder] .store-page-transition,
 html[data-member-binder] .hub-route-motion,
 html[data-member-binder] #root {
@@ -8,7 +8,8 @@ html[data-member-binder] #root {
   background: transparent;
 }
 .member-binder {
-  --bg: hsl(256 41% 5%);
+  --bg: var(--community-page-background);
+  --binder-material-ground: #0b0812;
   --cover: hsl(222.2 84% 4.9%);
   --cover-edge: hsl(217.2 32.6% 17.5%);
   --page: hsl(222.2 84% 4.9%);
@@ -52,9 +53,7 @@ html[data-member-binder] #root {
   padding-top: 0;
   padding-bottom: 0;
   overflow: clip;
-  /* A fixed dark background also becomes Safari's minimized toolbar tint.
-     Paint the material on the in-flow workspace, leaving browser tinting to
-     the Community document background in both toolbar states. */
+  /* Let Safari use the shared document background in both toolbar states. */
   background: transparent;
 }
 .binder-site-chrome {
@@ -202,6 +201,8 @@ html[data-member-binder] #root {
     opacity 0.5s;
 }
 .member-binder .stage-title {
+  --text: #332d38;
+  --muted: #746c7b;
   transform: translateY(calc(-100% - var(--ph) / 2 + 20px));
   z-index: 0;
   text-align: center;
@@ -251,6 +252,9 @@ html[data-member-binder] #root {
 }
 .member-binder .book {
   flex: none;
+}
+.member-binder .glow {
+  display: none;
 }
 .member-binder .cov {
   border: 0;
@@ -380,6 +384,9 @@ html[data-member-binder] #root {
   font-size: 20px;
 }
 .binder-state {
+  --text: #332d38;
+  --muted: #746c7b;
+  --line: #4c3f5726;
   flex: 1;
   display: flex;
   flex-direction: column;

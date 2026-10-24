@@ -19,7 +19,8 @@
       }
     </script>
     <style>
-      html[data-community-app], html[data-community-app] body { background: #f5e3ec; color-scheme: light; }
+      html[data-community-app] { --community-page-background: #f5e3ec; }
+      html[data-community-app], html[data-community-app] body { background: var(--community-page-background); color-scheme: light; }
       html[data-community-app] body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
       #root:empty { display: grid; place-items: center; min-height: 100svh; color: #675b68; font: 500 15px system-ui, sans-serif; }
       #root:empty::before { content: 'Renaiss'; letter-spacing: .04em; }
