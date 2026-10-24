@@ -17,7 +17,7 @@ type State =
       library: BinderLibrary;
     }
   | { identity: string; status: "loading" | "error" };
-export function useMemberBinder(identity: string, wallet: string) {
+export function useMemberBinder(identity: string, wallet: string, pendingEdit = false) {
   const [state, setState] = useState<State>({ identity, status: "loading" });
   const [draft, setDraft] = useState<MemberBinder | null>(null);
   const [saving, setSaving] = useState(false);
@@ -61,14 +61,14 @@ export function useMemberBinder(identity: string, wallet: string) {
   }, [identity, wallet, request]);
 
   useEffect(() => {
-    if (!dirty) return;
+    if (!dirty && !pendingEdit) return;
     const protect = (event: BeforeUnloadEvent) => {
       event.preventDefault();
       event.returnValue = "";
     };
     window.addEventListener("beforeunload", protect);
     return () => window.removeEventListener("beforeunload", protect);
-  }, [dirty]);
+  }, [dirty, pendingEdit]);
 
   const ready =
     state.identity === identity && state.status === "ready" ? state : null;
@@ -87,10 +87,11 @@ export function useMemberBinder(identity: string, wallet: string) {
       }
     },
     reload() {
+      if (pendingEdit) return;
       setRequest((value) => value + 1);
     },
     async save() {
-      if (!ready || !draft || saving) return;
+      if (!ready || !draft || saving || pendingEdit) return;
       const owner = identity;
       const abort = new AbortController();
       controller.current = abort;

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { BinderCollectible } from "./binderCollectible";
+import { isPortraitCard, type BinderCollectible } from "./binderCollectible";
 import { BinderCollectibleArt } from "./BinderCollectibleArt";
 import type { BinderCopy } from "./binderCopy";
 
@@ -93,6 +93,7 @@ export function BinderPicker({
             <button
               type="button"
               key={badge.tokenId}
+              className={isPortraitCard(badge) ? "picker-card" : undefined}
               disabled={
                 failed.has(badge.tokenId) ||
                 (used.has(badge.tokenId) && badge.tokenId !== current)
@@ -109,7 +110,7 @@ export function BinderPicker({
                   setFailed((value) => new Set(value).add(badge.tokenId))
                 }
               />
-              <span>{badge.name}</span>
+              <span className="member-binder-picker__name">{badge.name}</span>
               {failed.has(badge.tokenId) ? (
                 <small role="alert">{copy.error}</small>
               ) : null}

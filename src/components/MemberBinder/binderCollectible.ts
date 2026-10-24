@@ -1,7 +1,7 @@
 import type { BinderBadge } from "./binderApi";
 
 // Sample cards belong only to the explicitly selected practice collection.
-// The authenticated library remains the server's verified SBT response.
+// The authenticated library remains the server's verified card and SBT response.
 export type BinderSampleCard = Omit<BinderBadge, "imageUrl"> & {
   sampleCard: { image: 1 | 2 | 3; edition: number };
 };

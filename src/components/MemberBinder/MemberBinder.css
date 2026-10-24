@@ -570,6 +570,13 @@ html[data-member-binder] #root {
   width: 100%;
   height: 100%;
 }
+.member-binder-picker__grid .picker-card .binder-card-art {
+  height: 81.2%;
+  position: absolute;
+  top: 6.8%;
+  left: 0;
+  right: 0;
+}
 .member-binder .binder-practice-kinds {
   display: flex;
   gap: 8px;
@@ -587,7 +594,7 @@ html[data-member-binder] #root {
   background: #e5ccde;
   border-color: #8a678b;
 }
-.member-binder-picker__grid button > span {
+.member-binder-picker__name {
   position: absolute;
   bottom: 8px;
   left: 7px;

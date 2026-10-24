@@ -35,6 +35,7 @@ export function BinderBook({
   onMove,
   onEmpty,
   onWriting,
+  leaving,
 }: {
   binder: MemberBinder;
   badges: BinderCollectible[];
@@ -51,6 +52,7 @@ export function BinderBook({
   onMove: (from: PocketTarget, to: PocketTarget) => void;
   onEmpty: (target: PocketTarget) => void;
   onWriting: (writing: BinderWriting) => void;
+  leaving: ReadonlySet<string>;
 }) {
   const ink = useBinderWriting(binder, onWriting, disabled);
   const motion = useBinderBook(
@@ -120,6 +122,7 @@ export function BinderBook({
           side={side}
           visible={visible}
           library={library}
+          leaving={leaving}
           copy={copy}
           disabled={disabled}
           picking={picking?.page === page.id ? picking.pocket : null}

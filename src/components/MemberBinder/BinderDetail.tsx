@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { isSampleCard, isPortraitCard, type BinderCollectible } from "./binderCollectible";
 import { BinderCollectibleArt } from "./BinderCollectibleArt";
+import { BINDER_CARD_ASPECT } from "./binderCardCrop";
 import type { BinderCopy } from "./binderCopy";
 import type { RenaissUser } from "../../lib/renaissAuth";
 import "./BinderDetail.css";
@@ -31,7 +32,7 @@ export function BinderDetail({
   useEffect(() => {
     const node = dialog.current;
     node?.showModal();
-    const intro = setTimeout(() => setEntering(false), 850);
+    const intro = setTimeout(() => setEntering(false), 900);
     return () => {
       clearTimeout(intro);
       clearTimeout(timer.current);
@@ -51,7 +52,7 @@ export function BinderDetail({
   return (
     <dialog
       ref={dialog}
-      className={`binder-detail detail ${isPortraitCard(badge) ? "sample-card" : "sbt"} on ${closing ? "closing" : ""}`}
+      className={`binder-detail detail ${isPortraitCard(badge) ? "trading-card" : "sbt"} on ${closing ? "closing" : ""}`}
       aria-label={copy.detail}
       onCancel={(event) => {
         event.preventDefault();
@@ -84,7 +85,8 @@ export function BinderDetail({
             art.current?.style.removeProperty("transform");
           }}
         >
-          <div ref={art} className={`d-card-inner ${entering ? "enter" : ""}`}>
+          <div ref={art} className={`d-card-inner ${isPortraitCard(badge) ? "with-stand" : ""} ${entering ? "enter" : ""}`}
+            style={isPortraitCard(badge) ? { "--car": BINDER_CARD_ASPECT } as CSSProperties : undefined}>
             <BinderCollectibleArt item={badge} />
             <div className="d-glare" />
           </div>
@@ -145,7 +147,11 @@ export function BinderDetail({
             <button
               className="d-remove"
               type="button"
-              onClick={() => close(onRemove)}
+              onClick={() => {
+                if (closing) return;
+                onRemove();
+                close();
+              }}
             >
               {copy.remove} →
             </button>

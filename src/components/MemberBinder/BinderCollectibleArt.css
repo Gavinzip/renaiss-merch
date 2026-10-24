@@ -1,0 +1,17 @@
+.binder-card-art {
+  display: block;
+  position: relative;
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  margin-inline: auto;
+  aspect-ratio: var(--slab-ar);
+  border-radius: 5% 5% 7.5% 7.5% / 2.85% 2.85% 4.3% 4.3%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.binder-card-art > img {
+  display: block;
+  position: absolute;
+  pointer-events: none;
+}

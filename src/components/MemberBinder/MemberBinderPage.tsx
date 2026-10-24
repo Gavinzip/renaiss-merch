@@ -50,7 +50,8 @@ export function MemberBinderPage({
   const identity = user
     ? JSON.stringify([user.sub, user.safeWalletAddress])
     : "";
-  const data = useMemberBinder(identity, user?.safeWalletAddress || "");
+  const [pocketMotionBusy, setPocketMotionBusy] = useState(false);
+  const data = useMemberBinder(identity, user?.safeWalletAddress || "", pocketMotionBusy);
   const [help, setHelp] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const toolsId = useId();
@@ -94,9 +95,9 @@ export function MemberBinderPage({
     };
   }, [copy.title]);
   useEffect(() => {
-    onDirtyChange(data.dirty);
+    onDirtyChange(data.dirty || pocketMotionBusy);
     return () => onDirtyChange(false);
-  }, [data.dirty, onDirtyChange]);
+  }, [data.dirty, pocketMotionBusy, onDirtyChange]);
   const locked = data.saving || data.saveError === "conflict";
   function showPractice(value: boolean) {
     setHelp(false);
@@ -119,7 +120,7 @@ export function MemberBinderPage({
       : copy.saveError
     : data.saving
       ? copy.saving
-      : data.dirty
+      : data.dirty || pocketMotionBusy
         ? copy.unsaved
         : data.persisted
           ? copy.saved
@@ -167,11 +168,11 @@ export function MemberBinderPage({
             <button
               type="button"
               onClick={() => void data.save()}
-              disabled={!data.dirty || locked}
+              disabled={!data.dirty || locked || pocketMotionBusy}
             >
               {data.saving ? copy.saving : copy.save}
             </button>
-            <button type="button" onClick={reload} disabled={data.saving}>
+            <button type="button" onClick={reload} disabled={data.saving || pocketMotionBusy}>
               {data.saveError === "conflict" ? copy.reload : copy.refresh}
             </button>
           </div>
@@ -249,6 +250,7 @@ export function MemberBinderPage({
         </section>
       ) : (
         <BinderWorkspace
+          onMotionBusyChange={setPocketMotionBusy}
           key={generation}
           binder={binder!}
           badges={data.library!.badges}
@@ -264,7 +266,7 @@ export function MemberBinderPage({
           locale={locale}
           toolsOpen={toolsOpen}
           toolsId={toolsId}
-          dirty={!practice && data.dirty}
+          dirty={!practice && (data.dirty || pocketMotionBusy)}
         />
       ) : null}
       {!ready && !practice ? (

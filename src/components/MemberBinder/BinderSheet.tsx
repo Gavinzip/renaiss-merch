@@ -1,8 +1,11 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { BinderPage } from "../../../shared/member-binder.js";
 import { BINDER_LAYOUTS } from "../../../shared/member-binder.js";
 import { isPortraitCard, type BinderCollectible } from "./binderCollectible";
 import { BinderCollectibleArt } from "./BinderCollectibleArt";
+import { BinderPocketShine } from "./BinderPocketShine";
+import { pocketKey } from "./useBinderPocketMotion";
+import { useBinderPocketInsertions } from "./useBinderPocketInsertions";
 import type { BinderCopy } from "./binderCopy";
 import type { PocketTarget } from "./BinderBook";
 
@@ -22,6 +25,7 @@ export function BinderSheet({
   onMove,
   onEmpty,
   writing,
+  leaving,
 }: {
   page: BinderPage;
   number: number;
@@ -38,20 +42,12 @@ export function BinderSheet({
   onMove: (from: PocketTarget, index: number) => void;
   onEmpty: (index: number) => void;
   writing: ReactNode;
+  leaving: ReadonlySet<string>;
 }) {
   const [failed, setFailed] = useState(new Set<string>());
-  const [over, setOver] = useState<number | null>(null),
-    [added, setAdded] = useState<number[]>([]);
-  const previous = useRef(page.slots);
-  useEffect(() => {
-    const changed = page.slots.flatMap((token, i) =>
-      token && token !== previous.current[i] ? [i] : [],
-    );
-    previous.current = page.slots;
-    setAdded(changed);
-    const timer = setTimeout(() => setAdded([]), 600);
-    return () => clearTimeout(timer);
-  }, [page.slots]);
+  const [over, setOver] = useState<number | null>(null);
+  const added = useBinderPocketInsertions(page.slots);
+  const pagePending = page.slots.some((_, pocket) => leaving.has(pocketKey({ page: page.id, pocket })));
   return (
     <article
       className={`face face--frost face--${side}`}
@@ -61,11 +57,12 @@ export function BinderSheet({
       <div className={`grid grid--${page.size}`}>
         {page.slots.map((token, index) => {
           const badge = token === null ? undefined : library.get(token);
+          const lifting = leaving.has(pocketKey({ page: page.id, pocket: index }));
           return (
             <div
               key={index}
               className={`slot ${badge ? `filled ${isPortraitCard(badge) ? "slot--card" : "slot--sbt"}` : ""} ${picking === index ? "pick-target" : ""} ${over === index ? "drag" : ""}`}
-              draggable={Boolean(badge) && !disabled}
+              draggable={Boolean(badge) && !disabled && !lifting}
               onDragStart={(event) => {
                 event.dataTransfer.setData(
                   "application/x-merch-binder-slot",
@@ -76,6 +73,7 @@ export function BinderSheet({
               onDragOver={(event) => {
                 if (
                   !disabled &&
+                  !lifting &&
                   event.dataTransfer.types.includes(
                     "application/x-merch-binder-slot",
                   )
@@ -87,7 +85,7 @@ export function BinderSheet({
               onDragLeave={() => setOver(null)}
               onDrop={(event) => {
                 setOver(null);
-                if (disabled) return;
+                if (disabled || lifting) return;
                 event.preventDefault();
                 try {
                   const from = JSON.parse(
@@ -108,7 +106,7 @@ export function BinderSheet({
               <button
                 type="button"
                 className="slot-hit"
-                disabled={disabled}
+                disabled={disabled || lifting}
                 aria-label={
                   badge
                     ? badge.name
@@ -124,7 +122,7 @@ export function BinderSheet({
                       key={token}
                       item={badge}
                       loading={visible ? "eager" : "lazy"}
-                      className={added.includes(index) ? "bnd-card-drop" : ""}
+                      className={`${isPortraitCard(badge) ? "slot-crop" : ""} ${lifting ? "bnd-card-lift" : added.has(index) ? "bnd-card-drop" : ""}`}
                       onError={() =>
                         setFailed((value) => new Set(value).add(badge.tokenId))
                       }
@@ -140,7 +138,8 @@ export function BinderSheet({
                   </span>
                 ) : null}
               </button>
-              {token ? (
+              {badge && added.has(index) && !lifting ? <BinderPocketShine key={badge.tokenId} /> : null}
+              {token && !lifting ? (
                 <button
                   type="button"
                   className="slot-x"
@@ -168,7 +167,7 @@ export function BinderSheet({
             key={size}
             aria-label={size + " " + copy.pocket}
             aria-pressed={page.size === size}
-            disabled={disabled}
+            disabled={disabled || pagePending}
             onClick={() => onLayout(size)}
           >
             {size}
@@ -190,7 +189,7 @@ export function BinderSheet({
             type="button"
             aria-label={`${copy.removePage} ${number}`}
             onClick={onRemove}
-            disabled={disabled}
+            disabled={disabled || pagePending}
           >
             ✕ {copy.pageWord}
           </button>

@@ -27,6 +27,16 @@ the central spine using the reference's 860 ms cosine easing, curved clipping,
 and shading. The surrounding canvas is the shared pink background; page materials
 remain dark. The distorted background name retains the reference motion values.
 
+General cards use the reference's normalized square-render crop (left 0.27,
+top 0.07, width 0.462, height 0.81), preserving the slab and stand in pockets,
+the picker, cover thumbnails and inspection view. Pocket art occupies 81.2% of
+the pocket height at a 6.8% top inset. The same crop is applied to the explicit
+practice card photos; the photos themselves remain unchanged CDN assets.
+Insertion uses the reference's 500 ms drop, 750 ms shine and five sparks, retained
+for 900 ms independently per pocket. Removal lifts for 300 ms before changing
+the pocket; Save and conflicting slot edits wait for that lift to finish.
+Inspection preserves the 850 ms rotation in and 420 ms rotation/fade out.
+
 `BinderBook` sizes the book from the actual available stage, including Safari
 chrome and safe-area padding. Below 760 CSS pixels, initial entry and a
 wide-to-narrow transition close the cover. Returning to a wide viewport restores

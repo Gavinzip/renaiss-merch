@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import {
   BINDER_MAX_PAGES,
   type BinderPage,
@@ -10,6 +10,7 @@ import type { BinderCopy } from "./binderCopy";
 import { BinderBook, type PocketTarget } from "./BinderBook";
 import { BinderDetail } from "./BinderDetail";
 import { BinderPicker } from "./BinderPicker";
+import { pocketKey, useBinderPocketMotion } from "./useBinderPocketMotion";
 
 // Real collections and the explicitly selected practice use the same book,
 // pocket editing and animation. Only their data and persistence owners differ.
@@ -21,6 +22,7 @@ export function BinderWorkspace({
   locked = false,
   practice = false,
   onChange,
+  onMotionBusyChange,
 }: {
   binder: MemberBinder;
   badges: BinderCollectible[];
@@ -29,18 +31,25 @@ export function BinderWorkspace({
   locked?: boolean;
   practice?: boolean;
   onChange: (binder: MemberBinder) => void;
+  onMotionBusyChange?: (busy: boolean) => void;
 }) {
   const [picker, setPicker] = useState<PocketTarget | null>(null);
-  const [detail, setDetail] = useState<PocketTarget | null>(null);
+  const [detail, setDetail] = useState<{ target: PocketTarget; item: BinderCollectible } | null>(null);
   const library = new Map(badges.map((b) => [b.tokenId, b]));
   const used = new Set(
     binder.pages.flatMap((p) => p.slots.filter((t): t is string => t !== null)),
   );
   const pickerPage = binder.pages.find((p) => p.id === picker?.page);
-  const token = detail
-    ? binder.pages.find((p) => p.id === detail.page)?.slots[detail.pocket]
-    : null;
-  const detailBadge = token ? library.get(token) : null;
+  const pocketMotion = useBinderPocketMotion((target, expectedToken) => {
+    editPage(target.page, (page) => ({ ...page, slots: page.slots.map((token, index) =>
+      index === target.pocket && token === expectedToken ? null : token),
+    }));
+  });
+  const motionBusy = pocketMotion.leaving.size > 0;
+  useLayoutEffect(() => {
+    onMotionBusyChange?.(motionBusy);
+    return () => onMotionBusyChange?.(false);
+  }, [motionBusy, onMotionBusyChange]);
   function editPage(id: string, update: (page: BinderPage) => BinderPage) {
     if (!locked)
       onChange({
@@ -49,13 +58,21 @@ export function BinderWorkspace({
       });
   }
   function choose(target: PocketTarget, token: string | null) {
+    if (pocketMotion.leaving.has(pocketKey(target))) return;
     editPage(target.page, (p) => ({
       ...p,
       slots: p.slots.map((v, i) => (i === target.pocket ? token : v)),
     }));
   }
+  function remove(target: PocketTarget) {
+    if (locked) return;
+    const token = binder.pages.find((page) => page.id === target.page)?.slots[target.pocket];
+    if (token) pocketMotion.remove(target, token);
+  }
   function move(from: PocketTarget, to: PocketTarget) {
-    if (locked || (from.page === to.page && from.pocket === to.pocket)) return;
+    if (locked || pocketMotion.leaving.has(pocketKey(from)) ||
+      pocketMotion.leaving.has(pocketKey(to)) ||
+      (from.page === to.page && from.pocket === to.pocket)) return;
     const source = binder.pages.find((p) => p.id === from.page),
       target = binder.pages.find((p) => p.id === to.page);
     if (
@@ -96,9 +113,14 @@ export function BinderWorkspace({
           if (!locked) onChange({ ...binder, writing });
         }}
         onPocket={setPicker}
-        onDetail={setDetail}
+        onDetail={(target) => {
+          const token = binder.pages.find((p) => p.id === target.page)?.slots[target.pocket];
+          const item = token ? library.get(token) : undefined;
+          if (item) setDetail({ target, item });
+        }}
         onMove={move}
-        onEmpty={(target) => choose(target, null)}
+        onEmpty={remove}
+        leaving={pocketMotion.leaving}
         onLayout={(id, size) => {
           const page = binder.pages.find((p) => p.id === id);
           if (
@@ -163,20 +185,19 @@ export function BinderWorkspace({
           }}
         />
       ) : null}
-      {detail && detailBadge ? (
+      {detail ? (
         <BinderDetail
-          badge={detailBadge}
+          badge={detail.item}
           user={user}
           copy={copy}
           practice={practice}
           onClose={() => setDetail(null)}
           onReplace={() => {
             setDetail(null);
-            setPicker(detail);
+            setPicker(detail.target);
           }}
           onRemove={() => {
-            choose(detail, null);
-            setDetail(null);
+            remove(detail.target);
           }}
         />
       ) : null}
