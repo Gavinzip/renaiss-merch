@@ -18,12 +18,12 @@ stored independently of the binder on renaiss.xyz.
 ## Reference presentation and folding layout
 
 The presentation follows the live `https://www.renaiss.xyz/binder` inspected on
-2026-10-24: dark cover, frosted pocket sheets, center rings, colored glow,
+2026-10-24: dark cover, frosted pocket sheets, center rings,
 Poppins / JetBrains Mono typography, profile cover, right-hand badge drawer,
 and page navigation. Leaves remain mounted as front/back faces and turn about
 the central spine using the reference's 860 ms cosine easing, curved clipping,
-and shading. Cover hover/idle movement and the distorted background name use
-the same reference motion values.
+and shading. The surrounding canvas is the shared pink background; page materials
+remain dark. The distorted background name retains the reference motion values.
 
 `BinderBook` sizes the book from the actual available stage, including Safari
 chrome and safe-area padding. Below 760 CSS pixels, initial entry and a
@@ -89,7 +89,35 @@ insert. Practice changes live only while this view is mounted and can be reset.
 There is no sample session, ownership grant, eligibility bypass or database write.
 Returning to the account collection restores its own loaded/draft state.
 
-Safari's binder viewport uses `viewport-fit=contain` so its browser controls do
-not cover the header. The original Hub viewport and theme are restored on exit.
+Safari's ready binder viewport uses `viewport-fit=cover`, with safe-area insets
+applied once by the canvas. Native Safari control areas sample the shared pink
+background; Safari 27.1 cannot place actual web content behind those controls.
+The original Hub viewport is restored on exit.
 Compact wide screens fill the available width and height with a two-page spread;
 artwork retains its own aspect ratio. Folded widths start with the cover closed.
+
+## Elastic closure and writing
+
+The front cover has a woven elastic band along its right side, pinned at both
+ends. Drag to pluck/stretch it; releasing the pointer lets tension propagate
+along the band. Pressing Enter on the band or opening the cover releases the
+band before the original cover turn. Plucking the band leaves the cover shut. The
+fastened cover no longer performs the old automatic opening/peek animation.
+Reduced motion keeps direct dragging and suppresses the release oscillation.
+
+Inside the binder, **Write / 書寫** enables freehand pen, positioned multiline
+text, eraser, four ink colors, three sizes and up to 40 writing undo steps.
+Writing mode shields pockets and page edges from accidental badge edits/turns;
+the pager still works after lifting the finger or finishing text. Ink lives
+on each mounted face and turns with that face. Page-relative coordinates follow
+Duo resizing; text glyph proportions remain undistorted. The front/back inside
+covers are also writable.
+
+The optional `writing` document is validated with the existing binder on both
+client and server, uses the same explicit Save action, revision locking and
+authenticated PostgreSQL row, and needs no schema migration. Limits: 240 marks,
+16,000 total points, 1,600 points per stored stroke segment (a long gesture is
+split without losing its trajectory), 240 characters per text mark.
+Only the binder PUT accepts up to 512 KiB; shipping requests retain 16 KiB.
+No SVG/HTML input is accepted. Practice writing uses the already authorized
+practice workspace and remains unsaved, like practice badge changes.

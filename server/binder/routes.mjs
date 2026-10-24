@@ -4,6 +4,7 @@ import { readSession, sameOrigin } from '../postgres/auth.mjs';
 import { getPool } from '../postgres/database.mjs';
 import { createEmptyBinder, validateBinder } from '../../shared/member-binder.js';
 import { readBinderLibrary } from './library.mjs';
+import { BINDER_BODY_BYTES } from '../../shared/binder-writing.js';
 
 export async function handleBinderRoutes(req, res, url) {
   if (!['/api/binder', '/api/binder/library'].includes(url.pathname)) return false;
@@ -26,7 +27,7 @@ export async function handleBinderRoutes(req, res, url) {
     return true;
   }
   sameOrigin(req);
-  const input = await readJsonBody(req);
+  const input = await readJsonBody(req, BINDER_BODY_BYTES);
   let binder;
   try { binder = validateBinder(input.binder); }
   catch { throw new HttpError(400, 'invalid_binder'); }

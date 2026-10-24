@@ -1,0 +1,60 @@
+.member-binder .binder-elastic-band {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 6;
+  pointer-events: none;
+  overflow: visible;
+  transition:
+    transform 0.28s cubic-bezier(0.3, 0.8, 0.3, 1),
+    opacity 0.23s;
+}
+.member-binder .binder-elastic-band path {
+  fill: none;
+  pointer-events: none;
+}
+.member-binder .binder-elastic-band .band-shadow {
+  transform: translate(3px, 0);
+  filter: blur(3px);
+}
+.member-binder .binder-elastic-band .band-stitch {
+  transform: translate(-6px, 0);
+}
+.member-binder .binder-elastic-band .band-hit {
+  pointer-events: stroke;
+  cursor: grab;
+  touch-action: none;
+}
+.member-binder .binder-elastic-band .band-hit:active {
+  cursor: grabbing;
+}
+.member-binder .binder-elastic-band .band-hit:focus-visible {
+  stroke: #e9c78c80;
+  outline: none;
+}
+.member-binder .binder-elastic-band.is-unfastening {
+  transform: translateX(35%) rotate(7deg);
+  opacity: 0;
+}
+.member-binder
+  .book.has-elastic
+  .leaf--cover-front:not(.flipped):not(.dragging) {
+  animation: none;
+}
+.member-binder .book.has-elastic.peek .leaf--cover-front:not(.flipped),
+.member-binder .book.has-elastic.peek .leaf--p1:not(.flipped),
+.member-binder .book.has-elastic.peek .leaf--p2:not(.flipped),
+.member-binder .book.has-elastic.peek .leaf--p3:not(.flipped) {
+  transform: rotateY(0deg);
+}
+.member-binder
+  .book.has-elastic.at-front.idle
+  .leaf--page:not(.flipped):not(.dragging) {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .member-binder .binder-elastic-band {
+    transition: none;
+  }
+}

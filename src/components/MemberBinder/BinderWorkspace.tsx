@@ -92,6 +92,9 @@ export function BinderWorkspace({
         disabled={locked}
         picking={picker}
         practice={practice}
+        onWriting={(writing) => {
+          if (!locked) onChange({ ...binder, writing });
+        }}
         onPocket={setPicker}
         onDetail={setDetail}
         onMove={move}
@@ -117,12 +120,23 @@ export function BinderWorkspace({
             !page ||
             locked ||
             binder.pages.length <= 1 ||
-            (page.slots.some(Boolean) && !confirm(copy.removeConfirm))
+            ((page.slots.some(Boolean) ||
+              binder.writing?.["page:" + id]?.length) &&
+              !confirm(copy.removeConfirm))
           )
             return;
           onChange({
             ...binder,
             pages: binder.pages.filter((p) => p.id !== id),
+            ...(binder.writing
+              ? {
+                  writing: Object.fromEntries(
+                    Object.entries(binder.writing).filter(
+                      ([surface]) => surface !== "page:" + id,
+                    ),
+                  ),
+                }
+              : {}),
           });
         }}
         onAdd={() => {

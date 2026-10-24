@@ -1,3 +1,5 @@
+import { validateWriting } from './binder-writing.js';
+
 export const BINDER_MAX_PAGES = 24;
 export const BINDER_LAYOUTS = [1, 6, 9];
 
@@ -24,5 +26,6 @@ export function validateBinder(value) {
     });
     return { id: page.id, size: page.size, slots };
   });
-  return { version: 1, pages };
+  const writing = validateWriting(value.writing, pages.map(page => page.id));
+  return { version: 1, pages, ...(writing ? { writing } : {}) };
 }

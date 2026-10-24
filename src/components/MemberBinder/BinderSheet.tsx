@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { BinderPage } from "../../../shared/member-binder.js";
 import { BINDER_LAYOUTS } from "../../../shared/member-binder.js";
 import type { BinderBadge } from "./binderApi";
@@ -20,6 +20,7 @@ export function BinderSheet({
   onRemove,
   onMove,
   onEmpty,
+  writing,
 }: {
   page: BinderPage;
   number: number;
@@ -35,6 +36,7 @@ export function BinderSheet({
   onRemove?: () => void;
   onMove: (from: PocketTarget, index: number) => void;
   onEmpty: (index: number) => void;
+  writing: ReactNode;
 }) {
   const [failed, setFailed] = useState(new Set<string>());
   const [over, setOver] = useState<number | null>(null),
@@ -196,6 +198,7 @@ export function BinderSheet({
           </button>
         ) : null}
       </div>
+      {writing}
       <div className="shade" />
     </article>
   );

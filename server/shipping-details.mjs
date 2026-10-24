@@ -13,14 +13,14 @@ const sevenElevenSelectionTokenPattern = /^[A-Za-z0-9]{20}$/;
 const sizePattern = /^(S|M|L|XL|ONE_SIZE)$/;
 const braceletColorPattern = /^(GOLD|SILVER)$/;
 
-export async function readJsonBody(req) {
+export async function readJsonBody(req, maxBytes = MAX_REQUEST_BODY_BYTES) {
   const chunks = [];
   let size = 0;
 
   for await (const chunk of req) {
     size += chunk.length;
 
-    if (size > MAX_REQUEST_BODY_BYTES) {
+    if (size > maxBytes) {
       throw new HttpError(413, 'request_too_large');
     }
 

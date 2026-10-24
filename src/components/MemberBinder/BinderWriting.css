@@ -1,0 +1,181 @@
+.member-binder .binder-ink-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.member-binder .binder-ink-layer svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: hidden;
+  font-family: var(--sans);
+}
+.member-binder .binder-ink-layer.is-writing {
+  pointer-events: auto;
+  touch-action: none;
+}
+.member-binder .binder-ink-layer.is-writing svg {
+  touch-action: none;
+  cursor: crosshair;
+}
+.member-binder .binder-ink-layer[data-tool="erase"] svg [data-ink-mark] {
+  pointer-events: visiblePainted;
+  cursor: cell;
+}
+.member-binder .book[data-writing="true"] .grid,
+.member-binder .book[data-writing="true"] .layout-ctl {
+  pointer-events: none;
+}
+.member-binder .binder-writing-dock {
+  position: absolute;
+  z-index: 72;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  max-width: calc(100% - 24px);
+}
+.member-binder .binder-write-start,
+.member-binder .binder-writing-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px;
+  border-radius: 24px;
+  background: #fbf0f4f5;
+  color: #57415f;
+  border: 1px solid #fff9;
+  box-shadow: 0 3px 18px #140b1726;
+}
+.member-binder .binder-write-start {
+  font: 500 12px var(--sans);
+  padding: 9px 14px;
+  gap: 7px;
+  cursor: pointer;
+}
+.member-binder .binder-writing-toolbar button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.member-binder .binder-writing-toolbar button[aria-pressed="true"] {
+  background: #dfc9da;
+}
+.member-binder .binder-writing-toolbar button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.member-binder .binder-writing-toolbar button:focus-visible,
+.member-binder .binder-write-start:focus-visible {
+  outline: 2px solid #875c94;
+  outline-offset: 2px;
+}
+.member-binder .binder-ink-colors {
+  display: flex;
+  gap: 2px;
+  padding: 0 5px;
+  border-left: 1px solid #dacbd7;
+  border-right: 1px solid #dacbd7;
+}
+.member-binder .binder-ink-colors button {
+  width: 22px;
+  height: 28px;
+  background: transparent;
+}
+.member-binder .binder-ink-colors button::after {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ink-color);
+  box-shadow: inset 0 0 0 1px #382c3830;
+}
+.member-binder .binder-ink-colors button[aria-pressed="true"] {
+  background: transparent;
+  outline: 1.5px solid #8a678b;
+  outline-offset: -1px;
+}
+.member-binder .binder-ink-size i {
+  background: currentColor;
+  border-radius: 50%;
+}
+.member-binder .binder-ink-message {
+  margin: 0;
+  max-width: 100%;
+  padding: 4px 10px;
+  border-radius: 14px;
+  background: #201d28d9;
+  color: #f7edf1;
+  font: 11px/1.5 var(--sans);
+  text-align: center;
+}
+.member-binder .binder-ink-message[role="alert"] {
+  background: #733e53;
+}
+.member-binder .binder-ink-composer {
+  position: absolute;
+  z-index: 6;
+  padding: 9px;
+  width: min(250px, 52%);
+  border-radius: 12px;
+  background: #fcf3f7;
+  border: 1px solid #dac9d7;
+  box-shadow: 0 8px 30px #0004;
+  pointer-events: auto;
+}
+.member-binder .binder-ink-composer textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 80px;
+  resize: none;
+  border: 0;
+  border-radius: 7px;
+  padding: 7px;
+  background: white;
+  color: #362c3b;
+  font: 16px/1.4 var(--sans);
+  user-select: text;
+  -webkit-user-select: text;
+}
+.member-binder .binder-ink-composer div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-top: 7px;
+}
+.member-binder .binder-ink-composer button {
+  border: 0;
+  border-radius: 8px;
+  padding: 7px 9px;
+  background: #eadbe8;
+  color: #4b3654;
+  cursor: pointer;
+  font: 11px var(--sans);
+}
+@media (max-width: 420px) {
+  .member-binder .binder-writing-toolbar {
+    gap: 0;
+  }
+  .member-binder .binder-writing-toolbar button {
+    width: 28px;
+    height: 32px;
+  }
+  .member-binder .binder-ink-colors {
+    padding: 0 3px;
+  }
+  .member-binder .binder-ink-colors button {
+    width: 20px;
+  }
+}

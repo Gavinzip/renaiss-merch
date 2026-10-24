@@ -1,5 +1,7 @@
+import { binderWritingCopy } from './binderWritingCopy';
 export const binderCopy = {
   en: {
+    writing: binderWritingCopy.en,
     practice: "Sample badge",
     sampleOnly: "Not owned",
     ownedBy: "Owned by",
@@ -38,7 +40,7 @@ export const binderCopy = {
     page: "Page",
     addPage: "Add page",
     removePage: "Remove page",
-    removeConfirm: "Remove this page and return its badges to your collection?",
+    removeConfirm: "Remove this page and its writing, and return its badges to your collection?",
     layoutConfirm:
       "Some badges will no longer fit. They will return to your collection. Continue?",
     pocket: "pockets",
@@ -66,6 +68,7 @@ export const binderCopy = {
     back: "Back to overview",
   },
   "zh-TW": {
+    writing: binderWritingCopy['zh-TW'],
     practice: "示範徽章",
     sampleOnly: "僅供試玩",
     ownedBy: "持有者",
@@ -102,7 +105,7 @@ export const binderCopy = {
     page: "第",
     addPage: "新增頁面",
     removePage: "移除頁面",
-    removeConfirm: "移除此頁，並將頁內徽章放回收藏清單？",
+    removeConfirm: "移除此頁及頁上的字跡，並將徽章放回收藏清單？",
     layoutConfirm: "部分徽章將無法放入新的格數，會放回收藏清單。要繼續嗎？",
     pocket: "格",
     choose: "選擇徽章",
@@ -128,6 +131,7 @@ export const binderCopy = {
     back: "返回總覽",
   },
   ko: {
+    writing: binderWritingCopy.ko,
     practice: "샘플 배지",
     sampleOnly: "체험 전용",
     ownedBy: "소유자",
@@ -164,7 +168,7 @@ export const binderCopy = {
     page: "페이지",
     addPage: "페이지 추가",
     removePage: "페이지 삭제",
-    removeConfirm: "페이지를 삭제하고 배지를 컬렉션으로 돌려보낼까요?",
+    removeConfirm: "페이지와 필기를 삭제하고 배지를 컬렉션으로 돌려보낼까요?",
     layoutConfirm: "맞지 않는 배지는 컬렉션으로 돌아갑니다. 계속할까요?",
     pocket: "칸",
     choose: "배지 선택",

@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import type { BinderWriting } from "../../../shared/binder-writing.js";
 import type {
   MemberBinder,
   BinderPage,
@@ -11,6 +12,10 @@ import { BinderSheet } from "./BinderSheet";
 import { BinderTitle } from "./BinderTitle";
 import { useBinderBook } from "./useBinderBook";
 import { leafOrder } from "./binderMotion";
+import { BinderElasticBand, type ElasticBandHandle } from "./BinderElasticBand";
+import { BinderWritingLayer } from "./BinderWritingLayer";
+import { BinderWritingToolbar } from "./BinderWritingToolbar";
+import { useBinderWriting } from "./useBinderWriting";
 import "./BinderBook.css";
 
 export type PocketTarget = { page: string; pocket: number };
@@ -29,6 +34,7 @@ export function BinderBook({
   onAdd,
   onMove,
   onEmpty,
+  onWriting,
 }: {
   binder: MemberBinder;
   badges: BinderBadge[];
@@ -44,8 +50,16 @@ export function BinderBook({
   onAdd: () => void;
   onMove: (from: PocketTarget, to: PocketTarget) => void;
   onEmpty: (target: PocketTarget) => void;
+  onWriting: (writing: BinderWriting) => void;
 }) {
-  const motion = useBinderBook(binder.pages.length, Boolean(picking));
+  const ink = useBinderWriting(binder, onWriting, disabled);
+  const [bandBusy, setBandBusy] = useState(false);
+  const strap = useRef<ElasticBandHandle>(null);
+  const motion = useBinderBook(
+    binder.pages.length,
+    Boolean(picking) || ink.busy || bandBusy,
+    (resume) => strap.current!.release(resume),
+  );
   const { spread, wide, subPage, leafCount } = motion;
   const stage = useRef<HTMLDivElement>(null);
   const library = new Map(badges.map((b) => [b.tokenId, b]));
@@ -66,7 +80,8 @@ export function BinderBook({
     const size = () => {
       const width = el.clientWidth,
         height = el.clientHeight;
-      const fill = !wide || (window.innerWidth <= 1100 && window.innerHeight <= 820);
+      const fill =
+        !wide || (window.innerWidth <= 1100 && window.innerHeight <= 820);
       el.dataset.fit = fill ? "fill" : "proportional";
       const pw = fill
         ? (width - 16) / (wide ? 2 : 1)
@@ -80,9 +95,21 @@ export function BinderBook({
     size();
     return () => observer.disconnect();
   }, [wide]);
-  const inside = (side: "front" | "back", visible: boolean) => (
+  const inside = (
+    side: "front" | "back",
+    visible: boolean,
+    surface?: string,
+  ) => (
     <div className={`face face--inside face--${side}`} inert={!visible}>
       <span className="inside-mark">◈</span>
+      {surface ? (
+        <BinderWritingLayer
+          surface={surface}
+          visible={visible}
+          ink={ink}
+          copy={copy.writing}
+        />
+      ) : null}
       <div className="shade" />
     </div>
   );
@@ -107,6 +134,14 @@ export function BinderBook({
           }
           onMove={(from, pocket) => onMove(from, { page: page.id, pocket })}
           onEmpty={(pocket) => onEmpty({ page: page.id, pocket })}
+          writing={
+            <BinderWritingLayer
+              surface={"page:" + page.id}
+              visible={visible}
+              ink={ink}
+              copy={copy.writing}
+            />
+          }
         />
       );
     if (index === binder.pages.length)
@@ -145,17 +180,41 @@ export function BinderBook({
     <>
       <section className="stage" ref={stage} aria-label={copy.title}>
         <BinderTitle name={name} />
+        {spread > 0 && spread < leafCount ? (
+          <BinderWritingToolbar
+            ink={ink}
+            copy={copy.writing}
+            disabled={disabled}
+          />
+        ) : null}
         <div
           ref={motion.bookRef}
-          className={`book ${spread === 0 ? "at-front idle" : spread === leafCount ? "at-back" : "open"} ${!wide && spread > 0 && spread < leafCount ? "mob-shift" : ""}`}
+          className={`book has-elastic ${spread === 0 ? "at-front" : spread === leafCount ? "at-back" : "open"} ${!wide && spread > 0 && spread < leafCount ? "mob-shift" : ""}`}
+          data-writing={ink.tool !== "read"}
           style={
             {
               "--mob-shift":
                 subPage === 0 ? "calc(var(--pw) / 2)" : "calc(var(--pw) / -2)",
             } as CSSProperties
           }
-          onMouseMove={motion.onMouseMove}
+          onMouseMove={(event) => {
+            if (
+              spread !== 0 &&
+              !(
+                event.target instanceof Element &&
+                event.target.closest(".binder-elastic-band")
+              )
+            )
+              motion.onMouseMove(event);
+          }}
           onMouseLeave={motion.onMouseLeave}
+          onPointerDownCapture={(event) => {
+            if (
+              event.target instanceof Element &&
+              event.target.closest(".binder-elastic-band")
+            )
+              motion.onMouseLeave();
+          }}
         >
           <div className="glow" aria-hidden="true" />
           <div className="rings" aria-hidden="true">
@@ -236,13 +295,20 @@ export function BinderBook({
                           </span>
                         </span>
                       </button>
+                      <BinderElasticBand
+                        ref={strap}
+                        closed={spread === 0}
+                        label={copy.writing.strap}
+                        onOpen={() => motion.step(1)}
+                        onBusyChange={setBandBusy}
+                      />
                       <div className="shade" />
                     </div>
-                    {inside("back", back)}
+                    {inside("back", back, "inside-front")}
                   </>
                 ) : index === leafCount - 1 ? (
                   <>
-                    {inside("front", front)}
+                    {inside("front", front, "inside-back")}
                     <div className="face face--cover face--back" inert={!back}>
                       <div className="cov-noise" />
                       <button
@@ -269,13 +335,19 @@ export function BinderBook({
           <div
             className="edge edge--l"
             aria-hidden="true"
-            hidden={spread === 0 || (!wide && subPage !== 0)}
+            hidden={
+              ink.tool !== "read" || spread === 0 || (!wide && subPage !== 0)
+            }
             {...motion.pointerProps("left")}
           />
           <div
             className="edge edge--r"
             aria-hidden="true"
-            hidden={spread === leafCount || (!wide && subPage !== 1)}
+            hidden={
+              ink.tool !== "read" ||
+              spread === leafCount ||
+              (!wide && subPage !== 1)
+            }
             {...motion.pointerProps("right")}
           />
         </div>
@@ -285,7 +357,7 @@ export function BinderBook({
           className="nav"
           type="button"
           aria-label={copy.previous}
-          disabled={spread === 0}
+          disabled={spread === 0 || ink.busy || bandBusy}
           onClick={() => motion.step(-1)}
         >
           ‹
@@ -312,6 +384,7 @@ export function BinderBook({
                   type="button"
                   aria-label={label}
                   title={label}
+                  disabled={ink.busy || bandBusy}
                   aria-current={index === spread ? "page" : undefined}
                   onClick={() => motion.go(index)}
                 />
@@ -319,14 +392,15 @@ export function BinderBook({
             })}
           </nav>
           <span className="binder-readout" aria-live="polite">
-            {practice ? `${copy.practice} · ` : ""}{title}
+            {practice ? `${copy.practice} · ` : ""}
+            {title}
           </span>
         </div>
         <button
           className="nav"
           type="button"
           aria-label={copy.next}
-          disabled={spread === leafCount}
+          disabled={spread === leafCount || ink.busy || bandBusy}
           onClick={() => motion.step(1)}
         >
           ›
