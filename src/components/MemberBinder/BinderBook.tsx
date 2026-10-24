@@ -64,14 +64,11 @@ export function BinderBook({
     const size = () => {
       const width = el.clientWidth,
         height = el.clientHeight;
-      const compact =
-        wide && window.innerWidth <= 1100 && window.innerHeight <= 820;
-      const pw = wide
-        ? compact
-          ? (width - 32) / 2
-          : Math.min((width - 48) / 2, ((height - 22) * 5) / 7, 620)
-        : Math.min(width - 32, ((height - 28) * 5) / 7, 540);
-      const ph = compact ? height - 28 : (pw * 7) / 5;
+      const fill = !wide || (window.innerWidth <= 1100 && window.innerHeight <= 820);
+      const pw = fill
+        ? (width - 16) / (wide ? 2 : 1)
+        : Math.min((width - 48) / 2, ((height - 22) * 5) / 7, 620);
+      const ph = fill ? height - 16 : (pw * 7) / 5;
       el.style.setProperty("--pw", `${Math.max(80, pw)}px`);
       el.style.setProperty("--ph", `${Math.max(112, ph)}px`);
     };

@@ -18,6 +18,7 @@ import { BinderWorkspace } from "./BinderWorkspace";
 import { BinderPractice, practiceCopy } from "./BinderPractice";
 import { BinderWordmark } from "./BinderWordmark";
 import { BinderAccount } from "./BinderAccount";
+import { BinderViewControls } from "./BinderViewControls";
 import { binderFonts } from "./binderAssets";
 import "./MemberBinder.css";
 
@@ -50,6 +51,7 @@ export function MemberBinderPage({
     : "";
   const data = useMemberBinder(identity, user?.safeWalletAddress || "");
   const [help, setHelp] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const [practice, setPractice] = useState(
     () => new URLSearchParams(location.search).get("binderPractice") === "1",
   );
@@ -71,11 +73,11 @@ export function MemberBinderPage({
     const viewportContent = viewport?.getAttribute("content");
     html.dataset.memberBinder = "true";
     theme?.setAttribute("content", "#0b0812");
-    // Fit the book to Safari's usable area. The Hub's full-bleed cover viewport
-    // extends behind browser chrome, which must not obscure binder controls.
+    // Paint edge to edge; the canvas applies safe-area padding once, while the
+    // book measures the remaining space instead of subtracting the insets twice.
     viewport?.setAttribute(
       "content",
-      "width=device-width, initial-scale=1.0, viewport-fit=contain",
+      "width=device-width, initial-scale=1.0, viewport-fit=cover",
     );
     return () => {
       delete html.dataset.memberBinder;
@@ -97,6 +99,7 @@ export function MemberBinderPage({
     return () => onDirtyChange(false);
   }, [data.dirty, onDirtyChange]);
   const ready = Boolean(user?.safeWalletAddress && binder && data.library);
+  const canvas = ready || practice;
   const locked = data.saving || data.saveError === "conflict";
   function showPractice(value: boolean) {
     setHelp(false);
@@ -125,29 +128,31 @@ export function MemberBinderPage({
           : "";
   return (
     <main
-      className="member-binder member-binder-page"
+      className={`member-binder member-binder-page${canvas ? " binder-canvas" : ""}${toolsOpen ? " binder-tools-open" : ""}`}
       lang={locale}
       ref={root}
       tabIndex={-1}
       aria-label={copy.title}
     >
       <style>{binderFonts}</style>
-      <HubSiteHeader
-        brand={<BinderWordmark />}
-        locale={locale}
-        setLocale={setLocale}
-        location={user ? `${user.name || "Renaiss"}'s Binder` : copy.title}
-        onBack={onBack}
-        navigation={navigation}
-        accountAction={
-          user ? (
-            <BinderAccount user={user}>{accountAction}</BinderAccount>
-          ) : (
-            accountAction
-          )
-        }
-      />
-      {ready && !practice ? (
+      <div className="binder-site-chrome" hidden={canvas && !toolsOpen}>
+        <HubSiteHeader
+          brand={<BinderWordmark />}
+          locale={locale}
+          setLocale={setLocale}
+          location={user ? `${user.name || "Renaiss"}'s Binder` : copy.title}
+          onBack={onBack}
+          navigation={navigation}
+          accountAction={
+            user ? (
+              <BinderAccount user={user}>{accountAction}</BinderAccount>
+            ) : (
+              accountAction
+            )
+          }
+        />
+      </div>
+      {ready && !practice && toolsOpen ? (
         <div className="binder-toolbar">
           <span
             className="binder-inventory"
@@ -175,7 +180,11 @@ export function MemberBinderPage({
         </div>
       ) : null}
       {practice ? (
-        <BinderPractice locale={locale} onExit={() => showPractice(false)} />
+        <BinderPractice
+          locale={locale}
+          toolsOpen={toolsOpen}
+          onExit={() => showPractice(false)}
+        />
       ) : account.status !== "ready" ? (
         <section className="binder-state" aria-live="polite">
           <p>{account.status === "error" ? copy.error : copy.loading}</p>
@@ -218,6 +227,15 @@ export function MemberBinderPage({
           onChange={data.edit}
         />
       )}
+      {canvas ? (
+        <BinderViewControls
+          locale={locale}
+          toolsOpen={toolsOpen}
+          onToggleTools={() => setToolsOpen((value) => !value)}
+          practice={practice}
+          dirty={!practice && data.dirty}
+        />
+      ) : null}
       {!ready && !practice ? (
         <div className="binder-practice-entry">
           <button type="button" onClick={() => showPractice(true)}>
@@ -225,7 +243,7 @@ export function MemberBinderPage({
           </button>
         </div>
       ) : null}
-      {ready && !practice ? (
+      {ready && !practice && toolsOpen ? (
         <button
           className="binder-help"
           type="button"

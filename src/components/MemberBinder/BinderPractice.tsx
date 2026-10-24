@@ -62,9 +62,11 @@ const badges = samples.map((b) => ({
 
 export function BinderPractice({
   locale,
+  toolsOpen,
   onExit,
 }: {
   locale: AppLocale;
+  toolsOpen: boolean;
   onExit: () => void;
 }) {
   const text = practiceCopy[locale];
@@ -85,27 +87,29 @@ export function BinderPractice({
   };
   return (
     <>
-      <div className="binder-toolbar binder-practice-toolbar">
-        <div>
-          <strong>{text.title}</strong>
-          <span>{text.note}</span>
+      <div className="binder-practice-tools" hidden={!toolsOpen}>
+        <div className="binder-toolbar binder-practice-toolbar">
+          <div>
+            <strong>{text.title}</strong>
+            <span>{text.note}</span>
+          </div>
+          <div className="binder-save">
+            <button
+              type="button"
+              onClick={() => {
+                setBinder(initialBinder());
+                setGeneration((v) => v + 1);
+              }}
+            >
+              {text.reset}
+            </button>
+            <button type="button" onClick={onExit}>
+              {text.exit}
+            </button>
+          </div>
         </div>
-        <div className="binder-save">
-          <button
-            type="button"
-            onClick={() => {
-              setBinder(initialBinder());
-              setGeneration((v) => v + 1);
-            }}
-          >
-            {text.reset}
-          </button>
-          <button type="button" onClick={onExit}>
-            {text.exit}
-          </button>
-        </div>
+        <p className="binder-practice-guide">{text.guide}</p>
       </div>
-      <p className="binder-practice-guide">{text.guide}</p>
       <BinderWorkspace
         key={generation}
         binder={binder}
