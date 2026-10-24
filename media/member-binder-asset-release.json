@@ -1,0 +1,44 @@
+{
+  "access": "public",
+  "bucket": "renaiss-merch-pilot-20261018",
+  "prefix": "merch/member-binder",
+  "assets": {
+    "mono": {
+      "type": "binary",
+      "source": "src/assets/binder/jetbrains-mono.woff2",
+      "contentType": "font/woff2",
+      "path": "jetbrains-mono.woff2",
+      "encodedBytes": 40480,
+      "encodedSha256": "1e06740a02a443fb7f3eeda8fcaa685a0f6c620e3f01e6666e847295469ce3ad"
+    },
+    "regular": {
+      "type": "binary",
+      "source": "src/assets/binder/poppins-regular.woff2",
+      "contentType": "font/woff2",
+      "path": "poppins-regular.woff2",
+      "encodedBytes": 7900,
+      "encodedSha256": "3dc5d0c52428fe1696264907a1054ebbaac07f8cbe45832c105f819c2ae397c0"
+    },
+    "semibold": {
+      "type": "binary",
+      "source": "src/assets/binder/poppins-semibold.woff2",
+      "contentType": "font/woff2",
+      "path": "poppins-semibold.woff2",
+      "encodedBytes": 7992,
+      "encodedSha256": "872e862918591a9e824dc03ed92f05729435ffbb8ebbb10eff7eda26592b1798"
+    },
+    "wordmark": {
+      "type": "binary",
+      "source": "src/assets/binder/wordmark.svg",
+      "contentType": "image/svg+xml",
+      "contentEncoding": "gzip",
+      "path": "wordmark.svg",
+      "encodedBytes": 3499,
+      "encodedSha256": "0a1ff115b7519d6a876d0541edbae6608dece06fb65e62faba91e9fbf60e5485"
+    }
+  },
+  "contentHash": "4ad50bbb59810151320fd1b303178952ac4d428812a63f854116019de348c7b0",
+  "fileCount": 4,
+  "release": "r4ad50bbb59810151320f",
+  "totalBytes": 59871
+}

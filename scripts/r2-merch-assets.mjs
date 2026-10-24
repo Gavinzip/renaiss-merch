@@ -549,6 +549,13 @@ async function assertConfiguration() {
       throw new Error('Publish and verify the archive media release before production: ' + name);
     }
   }
+  for (const name of ['member-binder-asset-release.json', 'member-binder-badges-release.json']) {
+    const binder = JSON.parse(await readFile(resolve(projectRoot, 'media', name), 'utf8'));
+    if (!/^r[a-f0-9]{20}$/.test(binder.release) || !binder.contentHash || !binder.fileCount ||
+        Object.values(binder.assets).some(asset => !asset.encodedSha256 || !asset.encodedBytes)) {
+      throw new Error('Publish and verify the binder media release before production: ' + name);
+    }
+  }
   const drawBase = normalizeBase(String(process.env.VITE_SURF_DRAW_MOTION_CDN_BASE_URL || ''));
   const expectedDrawBase = `${base}/${drawCatalog.prefix}/${drawCatalog.release}`;
   if (drawBase !== expectedDrawBase) {
@@ -585,6 +592,10 @@ async function assertBuild() {
   const hubCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/hub-asset-release.json'), 'utf8'));
   if (!combinedText.includes(hubCatalog.release) || /\/api\/hub\/hero-preview\/|["']\/work\//.test(combinedText)) {
     throw new Error('Hidden Hub build must use its published CDN release, without local authoring URLs.');
+  }
+  for (const name of ['member-binder-asset-release.json', 'member-binder-badges-release.json']) {
+    const binder = JSON.parse(await readFile(resolve(projectRoot, 'media', name), 'utf8'));
+    if (!combinedText.includes(binder.release)) throw new Error('Binder build is missing the published CDN release: ' + name);
   }
   for (const name of ['hub-event-asset-release.json', 'event-experience-asset-release.json']) {
     const archive = JSON.parse(await readFile(resolve(projectRoot, 'media', name), 'utf8'));

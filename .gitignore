@@ -22,6 +22,7 @@ src/components/TShirtPhysicsLab/
 src/three/
 src/assets/merch/*.glb
 .media-assets/
+work/member-binder-release/
 
 /server/vendor/backup/
 .vercel/

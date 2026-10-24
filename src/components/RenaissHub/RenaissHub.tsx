@@ -1,4 +1,5 @@
 import "./RenaissHubStyles";
+import { useBinderRoute } from "../MemberBinder/useBinderRoute";
 import { lazy, useEffect, useRef, useState, type CSSProperties } from "react";
 import { useLocale } from "../../i18n/LocaleContext";
 import { readRenaissSession, signOutRenaiss, startRenaissLogin } from "../../lib/renaissAuth";
@@ -32,6 +33,7 @@ import { useHubInitialReadiness } from './useHubInitialReadiness';
 import { HubPageLoading } from './HubPageLoading';
 import { editableHubLayout, visibleHubLayout } from "./hubLayout";
 
+const MemberBinderPage = lazy(() => import('../MemberBinder/MemberBinderPage').then(module => ({ default: module.MemberBinderPage })));
 const DrawSiteRedirect = lazy(() => import('../DrawRoom/DrawSiteRedirect').then(module => ({ default: module.DrawSiteRedirect })));
 
 type RenaissHubProps = {
@@ -51,6 +53,7 @@ export function RenaissHub({
 }: RenaissHubProps) {
   const { locale, setLocale } = useLocale();
   const copy = renaissHubCopy[locale];
+  const binderRoute = useBinderRoute({ "zh-TW": "有尚未儲存的收藏冊變更。確定離開並放棄變更？", en: "Leave without saving your binder changes?", ko: "바인더 변경 사항을 저장하지 않고 나갈까요?" }[locale]);
   const campaignRoute = useHubCampaignRoute();
   const archiveRoute = useHubArchiveRoute();
   const [drawActive, setDrawActive] = useState(() => isDrawRoomHash(window.location.hash));
@@ -82,7 +85,7 @@ export function RenaissHub({
   useHubWidgetEntrance(
     widgetMotion.gridRef,
     initialReadiness === 'ready' && settings.status !== 'error',
-    !campaignRoute.active && !archiveRoute.route && !drawActive,
+    !campaignRoute.active && !archiveRoute.route && !drawActive && !binderRoute.active,
     editing,
   );
 
@@ -191,18 +194,18 @@ export function RenaissHub({
 
   const accountAction = editing ? undefined : <>
     <HubAccountAction account={account} locale={locale} onRetry={retryAccount}
-      onLogout={() => void logout()} loggingOut={loggingOut} disabled={settings.saving} />
+      onLogout={() => binderRoute.guard(() => void logout())} loggingOut={loggingOut} disabled={settings.saving} />
     {logoutError ? <span className="hub-site-header__error" role="alert">{inlineCopy[locale].signOutFailedTryAgain}</span> : null}
   </>;
-  const navigation = <HubNavigation locale={locale} setLocale={setLocale}
-    current={campaignRoute.active ? "campaign" : archiveRoute.route ? "events" : "home"}
+  const navigation = <HubNavigation drawerOnly={binderRoute.active} locale={locale} setLocale={setLocale}
+    current={binderRoute.active ? "binder" : campaignRoute.active ? "campaign" : archiveRoute.route ? "events" : "home"}
     onGoHome={campaignRoute.back} onOpenCampaign={campaignRoute.open} onOpenArchive={archiveRoute.open}
-    onEnterMerch={enterMerch} preparing={enterRequested && loadState === "loading"}
+    onOpenBinder={binderRoute.open} onEnterMerch={() => binderRoute.guard(enterMerch)} preparing={enterRequested && loadState === "loading"}
     disabled={editing || settings.saving || campaignRoute.busy} />;
 
   return (
     <div className="hub-route-motion" ref={campaignRoute.ref} data-route-motion="true" data-route-transitioned={campaignRoute.hasTransitioned} data-route-busy={campaignRoute.busy} inert={campaignRoute.busy}>
-    {campaignRoute.active ? drawActive
+    {binderRoute.active ? <MemberBinderPage key={account.status === "ready" && account.session.authenticated ? account.session.user.sub : "guest"} locale={locale} setLocale={setLocale} account={account} navigation={navigation} accountAction={accountAction} onBack={campaignRoute.back} onDirtyChange={binderRoute.onDirtyChange} onRetryAccount={retryAccount} /> : campaignRoute.active ? drawActive
       ? <DrawSiteRedirect />
       : <SurfCampaignPage locale={locale} setLocale={setLocale} account={account} navigation={navigation} motionRevision={campaignRoute.revision} onBack={campaignRoute.back} onLogin={() => startRenaissLogin()} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} /> : archiveRoute.route
       ? <HubEventArchive route={archiveRoute.route} locale={locale} setLocale={setLocale} navigation={navigation} accountAction={accountAction} onBack={archiveRoute.route === 'index' ? campaignRoute.back : archiveRoute.open} /> : <main

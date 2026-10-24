@@ -1,0 +1,72 @@
+[
+  {
+    "id": 115,
+    "name": "2026 Community Awards — Top Contributor Award",
+    "description": "Issued to the ten most influential contributors officially selected by the Renaiss team.",
+    "howToEarn": "Be selected by the Renaiss team as one of the ten most influential contributors during the designated evaluation period, based on overall contribution quality, influence, visibility, and impact across the community.",
+    "imageUrl": "https://8nothtoc5ds7a0x3.public.blob.vercel-storage.com/SBT/minified/115-2026-community-awards-top-contributor-award.png"
+  },
+  {
+    "id": 89,
+    "name": "PSA 1",
+    "description": "Issued to collectors who pulled a PSA 1 card from the Renacrypt Pack. Only 12 PSA 1 cards exist in total.",
+    "howToEarn": "Pull a PSA 1 card from the Renacrypt Pack.",
+    "imageUrl": "https://8nothtoc5ds7a0x3.public.blob.vercel-storage.com/SBT/minified/89-psa-1.png"
+  },
+  {
+    "id": 78,
+    "name": "Renacrypt Epic Card",
+    "description": "Awarded to collectors who pulled an Epic-tier card from the Renacrypt Pack.",
+    "howToEarn": "Pull an Epic card from the Renacrypt Pack.",
+    "imageUrl": "https://8nothtoc5ds7a0x3.public.blob.vercel-storage.com/SBT/minified/78-renacrypt-epic-card.png"
+  },
+  {
+    "id": 118,
+    "name": "Beyond 10M",
+    "description": "Issued to celebrate the milestone of Renaiss surpassing 10M in total platform trading volume. This SBT commemorates a key moment in the growth of the Renaiss ecosystem.",
+    "howToEarn": "Be eligible during the campaign period when the platform officially surpasses 10M in total trading volume, subject to the rules and verification set by the Renaiss team.",
+    "imageUrl": "https://8nothtoc5ds7a0x3.public.blob.vercel-storage.com/SBT/minified/118-beyond-10m.png"
+  },
+  {
+    "id": 101,
+    "name": "Bless & Bust",
+    "description": "Issued to participants of the Easter Pack drop as part of the Blessing and Bust event.",
+    "howToEarn": "Buy ≥1 Easter Pack.",
+    "imageUrl": "https://8nothtoc5ds7a0x3.public.blob.vercel-storage.com/SBT/minified/101-bless-and-bust.png"
+  },
+  {
+    "id": 232,
+    "name": "CEO Birthday",
+    "description": "A badge for everyone who celebrated Winchman's birthday with us across X and Renaiss Discord.",
+    "howToEarn": "Celebrate Winchman's birthday with Renaiss across X and Discord.",
+    "imageUrl": "https://8nothtoc5ds7a0x3.public.blob.vercel-storage.com/SBT/minified/232-ceo-birthday.png"
+  },
+  {
+    "id": 44,
+    "name": "Community Developer",
+    "description": "Awarded to developers who build applications, tools, or AI systems for Renaiss that support the on-chain lifecycle of physical collectibles — including on-chain representation, financialization, or liquidity. This badge recognizes meaningful technical contributions that extend Renaiss beyond the core platform.",
+    "howToEarn": "Develop and submit an application, tool, or AI system supporting Renaiss, and be verified by the Renaiss team as an active and relevant contribution.",
+    "imageUrl": "https://8nothtoc5ds7a0x3.public.blob.vercel-storage.com/SBT/minified/44-community-dev.png"
+  },
+  {
+    "id": 203,
+    "name": "EASY Residency Signal",
+    "description": "Issued to users who helped amplify EASY Residency's featured post about Renaiss.",
+    "howToEarn": "Like, repost, and comment on EASY Residency's featured Renaiss post.",
+    "imageUrl": "https://8nothtoc5ds7a0x3.public.blob.vercel-storage.com/SBT/minified/203-easy-residency-signal.png"
+  },
+  {
+    "id": 1,
+    "name": "The Trader",
+    "description": "Awarded to users who actively contribute to marketplace liquidity through consistent trading. Your activity helps build a healthy and dynamic economy in Renaiss.",
+    "howToEarn": "Complete 3 or more valid trades",
+    "imageUrl": "https://8nothtoc5ds7a0x3.public.blob.vercel-storage.com/SBT/minified/1-the-trader.png"
+  },
+  {
+    "id": 2,
+    "name": "Pack Opener",
+    "description": "Awarded to users who consistently engage in pack opening, uncovering new cards and fueling ecosystem excitement.",
+    "howToEarn": "Perform 5 pack openings",
+    "imageUrl": "https://8nothtoc5ds7a0x3.public.blob.vercel-storage.com/SBT/minified/2-pack-opener.png"
+  }
+]

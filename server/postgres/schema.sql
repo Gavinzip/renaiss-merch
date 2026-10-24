@@ -6,6 +6,13 @@ CREATE TABLE fulfillment_exports (
         recipient_count BIGINT NOT NULL
       , product_id TEXT);
 
+CREATE TABLE member_binders (
+  user_sub text PRIMARY KEY,
+  document jsonb NOT NULL,
+  revision integer NOT NULL CHECK (revision > 0),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE TABLE hub_preferences (
     user_sub TEXT PRIMARY KEY,
     preferences_json TEXT NOT NULL,

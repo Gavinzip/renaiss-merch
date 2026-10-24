@@ -81,12 +81,13 @@ export async function readMerchEligibility(session, options = {}) {
   }
 
   const config = getEligibilityConfig(productId);
-  const counts = await readDualSourceSbtBalance(walletAddress, config, options);
+  const { balances, ...counts } = await readDualSourceSbtBalance(walletAddress, config, options);
 
   return applyCurrentMerchEligibilityRule(productId, {
     productId,
     walletAddress,
     ...counts,
+    ...(options.includeBalances ? { balances } : {}),
     minimumSbtBalance: config.minimumSbtBalance,
     sbtContract: config.sbtContract
   });

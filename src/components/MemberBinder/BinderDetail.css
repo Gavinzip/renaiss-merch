@@ -1,0 +1,374 @@
+/* Card inspection material and motion from the reference binder. */
+.member-binder .detail {
+  overscroll-behavior: contain;
+  z-index: 100;
+  cursor: default;
+  background: rgba(7, 8, 10, 0.85);
+  display: none;
+  position: fixed;
+  inset: 0px;
+  overflow-y: auto;
+}
+@supports (
+  (-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))
+) {
+  .member-binder .detail {
+    backdrop-filter: blur(24px);
+    background: rgba(7, 8, 10, 0.62);
+  }
+}
+.member-binder .detail.on {
+  display: flex;
+}
+.member-binder .d-close {
+  width: 38px;
+  height: 38px;
+  color: var(--muted);
+  cursor: pointer;
+  background: 0px 0px;
+  border-width: medium;
+  border-style: none;
+  border-color: currentcolor;
+  border-image: none;
+  border-radius: 50%;
+  font-size: 17px;
+  position: fixed;
+  top: 22px;
+  right: 26px;
+}
+.member-binder .d-close:hover {
+  color: var(--text);
+}
+.member-binder .d-close:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+.member-binder .d-wrap {
+  box-sizing: border-box;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(28px, 4vw, 64px);
+  width: auto;
+  max-width: 96vw;
+  margin: auto;
+  padding: 84px 0px;
+  display: flex;
+}
+.member-binder .d-card {
+  perspective: 1600px;
+  flex: 0 0 auto;
+}
+.member-binder .detail.sbt .d-wrap {
+  gap: clamp(4px, 1vw, 16px);
+}
+.member-binder .d-card-inner {
+  --car: 0.716;
+  --cw: min(calc(62.7vh * var(--car)), 38vw, 532px);
+  width: var(--cw);
+  aspect-ratio: var(--car);
+  will-change: transform;
+  border-radius: clamp(14px, 2.6vw, 24px);
+  transition: transform 0.25s;
+  position: relative;
+  overflow: hidden;
+  box-shadow: rgba(0, 0, 0, 0.75) 0px 34px 90px;
+}
+.member-binder .d-card-inner img {
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0px;
+}
+.member-binder .detail.sbt .d-card-inner {
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+  width: min(72vh, 92vw, 640px);
+  box-shadow: none;
+  background: 0px 0px;
+  border-width: medium;
+  border-style: none;
+  border-color: currentcolor;
+  border-image: none;
+  border-radius: 0px;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+  display: flex;
+  overflow: visible;
+}
+.member-binder .detail.sbt .d-card-inner img {
+  object-fit: contain;
+  position: static;
+  inset: auto;
+}
+@keyframes bnd-card-enter {
+  0% {
+    opacity: 0;
+    transform: rotateY(-150deg) scale(0.82);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: rotateY(0deg) scale(1);
+  }
+}
+.member-binder .d-card-inner.enter {
+  animation: 0.85s cubic-bezier(0.3, 0.75, 0.25, 1) 0s 1 normal both running
+    bnd-card-enter;
+}
+@keyframes bnd-card-exit {
+  100% {
+    opacity: 0;
+    transform: rotateY(125deg) scale(0.85);
+  }
+}
+@keyframes bnd-detail-fade {
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes bnd-card-float {
+  0%,
+  100% {
+    transform: translateY(0px) rotateY(0deg) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotateY(4deg) rotate(0.5deg);
+  }
+}
+.member-binder
+  .detail:not(.closing)
+  .d-card:not(:hover)
+  .d-card-inner:not(.enter) {
+  animation: 6.5s ease-in-out 1s infinite normal none running bnd-card-float;
+}
+.member-binder .detail.closing {
+  pointer-events: none;
+  animation: 0.3s ease 0.12s 1 normal both running bnd-detail-fade;
+}
+.member-binder .detail.closing .d-card-inner {
+  animation: 0.4s cubic-bezier(0.5, 0.05, 0.75, 0.35) 0s 1 normal both running
+    bnd-card-exit !important;
+}
+.member-binder .detail.closing .d-info {
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .member-binder .d-card-inner.enter,
+  .member-binder .detail.closing,
+  .member-binder .detail.closing .d-card-inner {
+    animation: auto ease 0s 1 normal none running none !important;
+  }
+  .member-binder
+    .detail:not(.closing)
+    .d-card:not(:hover)
+    .d-card-inner:not(.enter) {
+    animation: auto ease 0s 1 normal none running none;
+  }
+}
+.member-binder .d-glare {
+  background: radial-gradient(
+    52% 44% at var(--gx, 50%) var(--gy, 40%),
+    #fffaeb29,
+    #fffaeb0d 45%,
+    transparent 70%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  position: absolute;
+  inset: 0px;
+}
+.member-binder .d-card:hover .d-glare {
+  opacity: 1;
+}
+.member-binder .detail.sbt .d-glare {
+  background: radial-gradient(
+    52% 44% at 50% 40%,
+    rgba(255, 250, 235, 0.16),
+    rgba(255, 250, 235, 0.05) 45%,
+    rgba(0, 0, 0, 0) 70%
+  );
+}
+.member-binder .d-info {
+  flex-direction: column;
+  flex: 0 1 430px;
+  align-items: flex-start;
+  gap: 16px;
+  min-width: 0px;
+  display: flex;
+}
+.member-binder .d-setline {
+  color: rgba(255, 255, 255, 0.5);
+  overflow-wrap: anywhere;
+  align-self: stretch;
+  font-size: clamp(16px, 1.6vw, 20px);
+  font-weight: 500;
+  line-height: 1.2;
+}
+.member-binder .d-name {
+  font-family: var(--sans);
+  letter-spacing: 0.005em;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  font-size: clamp(26px, 3.4vw, 40px);
+  font-weight: 600;
+  line-height: 1.05;
+}
+.member-binder .d-ownerrow {
+  border-top: 1px solid var(--line);
+  flex-wrap: nowrap;
+  align-self: stretch;
+  align-items: center;
+  gap: clamp(16px, 2vw, 32px);
+  padding-top: 20px;
+  display: flex;
+}
+.member-binder .d-owner {
+  align-items: center;
+  gap: 12px;
+  display: flex;
+}
+.member-binder .d-owner-av {
+  color: rgb(207, 210, 216);
+  background: rgb(42, 45, 52);
+  border-radius: 50%;
+  flex: 0 0 auto;
+  justify-content: center;
+  align-items: center;
+  width: 44px;
+  height: 44px;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  overflow: hidden;
+}
+.member-binder .d-owner-av img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+.member-binder .d-cell {
+  flex-direction: column;
+  gap: 5px;
+  display: flex;
+}
+.member-binder .d-lbl {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+}
+.member-binder .d-val {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+}
+.member-binder .d-sbt-about {
+  flex-direction: column;
+  align-self: stretch;
+  gap: 16px;
+  margin-top: 16px;
+  display: flex;
+}
+.member-binder .d-sbt-desc {
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.member-binder .d-sbt-earn {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 20px;
+  display: flex;
+}
+.member-binder .d-sbt-earn-val {
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+}
+.member-binder .d-remove {
+  font-family: var(--mono);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgb(255, 111, 94);
+  cursor: pointer;
+  opacity: 0.85;
+  background: 0px 0px;
+  border-width: medium;
+  border-style: none;
+  border-color: currentcolor;
+  border-image: none;
+  margin-top: 8px;
+  padding: 0px;
+  font-size: 10px;
+}
+.member-binder .d-remove:hover {
+  opacity: 1;
+  text-underline-offset: 4px;
+  text-decoration: underline;
+}
+.member-binder .d-remove:focus-visible {
+  outline-offset: 3px;
+  outline: rgb(255, 111, 94) solid 1px;
+}
+.member-binder .d-actions {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.member-binder .binder-detail {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--text);
+  font-family: var(--sans);
+}
+.member-binder .binder-detail::backdrop {
+  background: transparent;
+}
+.member-binder .d-name {
+  margin: 8px 0 0;
+}
+@media (max-width: 759px) {
+  .member-binder .d-wrap {
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    width: 92vw;
+    padding: 60px 2px 40px;
+  }
+  .member-binder .d-card {
+    perspective: 1000px;
+  }
+  .member-binder .detail.sbt .d-card-inner {
+    width: min(72vh, 92vw, 640px);
+  }
+  .member-binder .d-info {
+    flex: 0 0 auto;
+    align-items: flex-start;
+    gap: 14px;
+    width: 100%;
+  }
+  .member-binder .d-name {
+    font-size: clamp(22px, 7vw, 30px);
+  }
+  .member-binder .d-close {
+    top: 12px;
+    right: 14px;
+  }
+  .member-binder .d-ownerrow {
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+}

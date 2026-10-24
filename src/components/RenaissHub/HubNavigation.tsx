@@ -9,16 +9,16 @@ import "./HubNavigation.css";
 
 const desktopSidebarQuery = "(min-width: 1024px)";
 
-export function HubNavigation({ locale, setLocale, onOpenCampaign, onOpenArchive, onEnterMerch, onGoHome, current = "home", preparing, disabled }: {
+export function HubNavigation({ locale, setLocale, onOpenCampaign, onOpenArchive, onOpenBinder, onEnterMerch, onGoHome, current = "home", preparing, disabled, drawerOnly = false }: {
   locale: AppLocale; setLocale: (locale: AppLocale) => void; onOpenCampaign: () => void; onEnterMerch: () => void;
-  onOpenArchive: () => void; onGoHome?: () => void; current?: HubNavigationPage;
-  preparing: boolean; disabled: boolean;
+  onOpenArchive: () => void; onOpenBinder: () => void; onGoHome?: () => void; current?: HubNavigationPage;
+  preparing: boolean; disabled: boolean; drawerOnly?: boolean;
 }) {
   const copy = navigationCopy[locale];
   const panelId = useId();
   const trigger = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
-  const [desktop, setDesktop] = useState(() => window.matchMedia(desktopSidebarQuery).matches);
+  const [desktop, setDesktop] = useState(() => !drawerOnly && window.matchMedia(desktopSidebarQuery).matches);
   const { collapsed, toggle, busy: pageBusy } = useHubNavigationState();
   const [open, setOpen] = useState(false);
   const expanded = desktop ? !collapsed : open;
@@ -30,11 +30,12 @@ export function HubNavigation({ locale, setLocale, onOpenCampaign, onOpenArchive
     const sync = () => {
       dialog.current?.close();
       setOpen(false);
-      setDesktop(query.matches);
+      setDesktop(!drawerOnly && query.matches);
     };
+    sync();
     query.addEventListener("change", sync);
     return () => query.removeEventListener("change", sync);
-  }, []);
+  }, [drawerOnly]);
 
   useEffect(() => { if (disabled) dialog.current?.close(); }, [disabled]);
 
@@ -52,7 +53,7 @@ export function HubNavigation({ locale, setLocale, onOpenCampaign, onOpenArchive
   }, [open, desktop]);
 
   const panel = <HubNavigationPanel locale={locale} setLocale={setLocale} compact={desktop && collapsed} current={current} preparing={preparing} disabled={disabled || pageBusy}
-    onGoHome={onGoHome} onOpenCampaign={onOpenCampaign} onOpenArchive={onOpenArchive} onEnterMerch={onEnterMerch}
+    onGoHome={onGoHome} onOpenCampaign={onOpenCampaign} onOpenArchive={onOpenArchive} onOpenBinder={onOpenBinder} onEnterMerch={onEnterMerch}
     onNavigate={close} onClose={desktop ? undefined : close} />;
 
   return <div className="hub-navigation" data-desktop={desktop} data-expanded={expanded}>

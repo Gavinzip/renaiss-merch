@@ -1,8 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-community-app>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#f5e3ec" />
     <meta
       name="description"
       content="Renaiss Community: member dashboard, official updates, partner activities, and Merch."
@@ -17,7 +19,8 @@
       }
     </script>
     <style>
-      html, body { background: #f8f6f3; }
+      html[data-community-app], html[data-community-app] body { background: #f5e3ec; color-scheme: light; }
+      html[data-community-app] body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
       #root:empty { display: grid; place-items: center; min-height: 100svh; color: #675b68; font: 500 15px system-ui, sans-serif; }
       #root:empty::before { content: 'Renaiss'; letter-spacing: .04em; }
     </style>

@@ -18,6 +18,7 @@ import { preloadStoreAssets } from './lib/storePreload';
 import { HubPageLoading } from './components/RenaissHub/HubPageLoading';
 import { useLocale } from './i18n/LocaleContext';
 import { HubNavigationProvider } from './components/RenaissHub/HubNavigationState';
+import { approveLocationChange } from './lib/navigationGuards';
 
 const STORE_ADMISSION_QUERY = 'storeAdmission';
 const STORE_ADMISSION_SESSION_KEY = 'renaiss-merch-store-admitted';
@@ -203,6 +204,7 @@ export default function App() {
 
   useEffect(() => {
     function syncView() {
+      if (!approveLocationChange()) return;
       const requestedView = readViewFromLocation();
 
       if (
@@ -219,12 +221,12 @@ export default function App() {
       if (isCommunityEntry) setCommunityEntered(Boolean(window.location.hash));
     }
 
-    window.addEventListener('hashchange', syncView);
-    window.addEventListener('popstate', syncView);
+    window.addEventListener('hashchange', syncView, true);
+    window.addEventListener('popstate', syncView, true);
 
     return () => {
-      window.removeEventListener('hashchange', syncView);
-      window.removeEventListener('popstate', syncView);
+      window.removeEventListener('hashchange', syncView, true);
+      window.removeEventListener('popstate', syncView, true);
     };
   }, [isCommunityEntry, revealMediaController]);
 
@@ -265,6 +267,7 @@ export default function App() {
     onExitStore={invalidateStoreAdmission}
     onOpenCampaign={() => { invalidateStoreAdmission(); window.location.hash = '#campaign/surf'; }}
     onOpenArchive={() => { invalidateStoreAdmission(); window.location.hash = '#events'; }}
+    onOpenBinder={() => { invalidateStoreAdmission(); window.location.hash = '#binder'; }}
     onLogin={() => startRenaissLogin(buildStoreAdmissionReturnTo())}
     revealMediaController={revealMediaController}
   />;

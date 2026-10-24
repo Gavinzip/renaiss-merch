@@ -4,17 +4,17 @@ import { HubWordmark } from "./HubWordmark";
 import { HubLogo } from "./HubLogo";
 import { HubLanguageMenu } from "./HubLanguageMenu";
 
-export type HubNavigationPage = "home" | "store" | "campaign" | "events";
+export type HubNavigationPage = "home" | "store" | "campaign" | "events" | "binder";
 
 export const navigationCopy = {
-  "zh-TW": { open: "展開側邊欄", close: "收合側邊欄", label: "Renaiss 導覽", home: "總覽", quest: "Partner Quest", events: "活動回顧", merch: "Renaiss Merch", preparing: "準備商店中…" },
-  ko: { open: "사이드바 펼치기", close: "사이드바 접기", label: "Renaiss 메뉴", home: "홈", quest: "협업 미션", events: "지난 이벤트", merch: "Renaiss Merch", preparing: "스토어 준비 중…" },
-  en: { open: "Expand sidebar", close: "Collapse sidebar", label: "Renaiss navigation", home: "Overview", quest: "Partner Quest", events: "Past events", merch: "Renaiss Merch", preparing: "Preparing Store…" },
+  "zh-TW": { open: "展開側邊欄", close: "收合側邊欄", label: "Renaiss 導覽", home: "總覽", binder: "我的收藏冊", quest: "Partner Quest", events: "活動回顧", merch: "Renaiss Merch", preparing: "準備商店中…" },
+  ko: { open: "사이드바 펼치기", close: "사이드바 접기", label: "Renaiss 메뉴", home: "홈", binder: "내 바인더", quest: "협업 미션", events: "지난 이벤트", merch: "Renaiss Merch", preparing: "스토어 준비 중…" },
+  en: { open: "Expand sidebar", close: "Collapse sidebar", label: "Renaiss navigation", home: "Overview", binder: "My Binder", quest: "Partner Quest", events: "Past events", merch: "Renaiss Merch", preparing: "Preparing Store…" },
 };
 
-export function HubNavigationPanel({ locale, setLocale, compact, current, preparing, disabled, onGoHome, onOpenCampaign, onOpenArchive, onEnterMerch, onNavigate, onClose }: {
+export function HubNavigationPanel({ locale, setLocale, compact, current, preparing, disabled, onGoHome, onOpenCampaign, onOpenArchive, onOpenBinder, onEnterMerch, onNavigate, onClose }: {
   locale: AppLocale; setLocale: (locale: AppLocale) => void; compact: boolean; current: HubNavigationPage; preparing: boolean; disabled: boolean;
-  onGoHome?: () => void; onOpenCampaign: () => void; onOpenArchive: () => void; onEnterMerch: () => void;
+  onOpenBinder: () => void; onGoHome?: () => void; onOpenCampaign: () => void; onOpenArchive: () => void; onEnterMerch: () => void;
   onNavigate: () => void; onClose?: () => void;
 }) {
   const copy = navigationCopy[locale];
@@ -44,6 +44,10 @@ export function HubNavigationPanel({ locale, setLocale, compact, current, prepar
         onClick={() => { onNavigate(); onOpenArchive(); }}>
         <NavigationIcon kind="events" /><span>{copy.events}</span>
       </button>
+      <button className="hub-sidebar__destination" type="button" disabled={disabled} title={copy.binder} aria-label={copy.binder} aria-current={current === "binder" ? "page" : undefined}
+        onClick={() => { onNavigate(); onOpenBinder(); }}>
+        <NavigationIcon kind="binder" /><span>{copy.binder}</span>
+      </button>
       <div className="hub-sidebar__separator" />
       <button className="hub-sidebar__destination" type="button" disabled={disabled || preparing || current === "store"}
         title={copy.merch} aria-label={preparing ? copy.preparing : copy.merch} aria-current={current === "store" ? "page" : undefined}
@@ -55,8 +59,9 @@ export function HubNavigationPanel({ locale, setLocale, compact, current, prepar
   </>;
 }
 
-export function NavigationIcon({ kind }: { kind: "home" | "quest" | "events" | "merch" | "sidebar" | "close" }) {
+export function NavigationIcon({ kind }: { kind: "home" | "quest" | "events" | "merch" | "sidebar" | "close" | "binder" }) {
   const paths = {
+    binder: <><rect x="3" y="2" width="14" height="16" rx="2" /><path d="M7 2v16M10 6h4M10 10h4M10 14h4" /></>,
     home: <><path d="m3 9 7-6 7 6v8h-5v-5H8v5H3Z" /></>,
     quest: <path d="M4 17V3m0 0h6l1 2h5v8h-6l-1-2H4" />,
     events: <><circle cx="10" cy="10" r="7" /><path d="M10 6v4l3 2" /></>,

@@ -46,13 +46,13 @@
 .hub-sidebar {
   --sidebar-ink: #332d38;
   position: fixed;
-  inset: 0 auto 0 0;
+  inset: env(safe-area-inset-top) auto env(safe-area-inset-bottom) env(safe-area-inset-left);
   z-index: 40;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   width: 216px;
-  height: 100dvh;
+  height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   overflow: visible;
   border-right: 1px solid #4c3f571a;
   background:

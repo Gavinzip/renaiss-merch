@@ -24,6 +24,7 @@ export function selectMaximumSbtResult(explorer, onchain) {
     ? 'bscscan' : 'onchain';
   return {
     ...(selectedSource === 'bscscan' ? oldCount : newCount),
+    balances: { ...(selectedSource === 'bscscan' ? explorer.balances : onchain.balances) },
     verificationVersion: SBT_VERIFICATION_VERSION,
     source: 'dual_source_max',
     selectedSource,

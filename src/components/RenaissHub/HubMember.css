@@ -42,7 +42,7 @@
 .hub-member__sync button { display: inline-flex; align-items: center; gap: .3rem; min-height: 30px; padding: 0; border: 0; background: transparent; color: #816393; font: inherit; cursor: pointer; }
 .hub-member :is(button,a):focus-visible { outline: 2px solid #a48aba; outline-offset: 3px; border-radius: 5px; }
 @keyframes hub-member-count-enter { from { opacity: .08; transform: translateY(7px); filter: blur(4px); } to { opacity: 1; transform: translateY(0); filter: none; } }
-@media (min-width: 1101px) {
+@media (min-width: 901px) {
   .renaiss-hub[data-density="compact"] .hub-member.is-authenticated .renaiss-hub__identity { margin-top: .85rem; }
   .renaiss-hub[data-density="compact"] .hub-member__avatar { width: 38px; height: 38px; }
   .renaiss-hub[data-density="compact"] .hub-member.is-authenticated .renaiss-hub__account-details { gap: 0; margin: 0; }

@@ -38,10 +38,13 @@ import { createPrivateMediaSignedUrl } from "../server/private-media-signed-url.
 
 import { handleBackupRoute } from "../server/postgres/backup.mjs";
 import { handleWorkflowRoutes } from "../server/postgres/workflow-routes.mjs";
+import { handleBinderRoutes } from '../server/binder/routes.mjs';
 
 const tables = sqlTables();
 const handleSurfStoreRoutes = createSurfStoreRoutes();
 const allowedPaths = [
+  '/api/binder',
+  '/api/binder/library',
   "/api/storefront/features",
   "/api/surf-store/access",
   "/api/surf-store/claim",
@@ -84,6 +87,7 @@ export default async function handler(req, res) {
     if (getStorefrontMode() !== "production")
       throw new HttpError(503, "pilot_requires_production_storefront_mode");
     const url = new URL(req.url, "http://localhost");
+    if (await handleBinderRoutes(req, res, url)) return;
     if (url.pathname === "/healthz") {
       method(req, "GET", "HEAD");
       await getPool().query("SELECT 1");

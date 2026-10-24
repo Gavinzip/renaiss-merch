@@ -72,6 +72,11 @@ export function createSbtCatalogReader({ fetchImpl = fetch, now = Date.now } = {
 // Export names change between official builds. Identify literal badge records
 // by their fields and SBT media paths, without evaluating remote code.
 export function parseSbtCatalogMaximum(source) {
+  const objects = readSbtCatalogObjects(source);
+  return objects ? Math.max(...objects.map(object => Number(object.masked.match(/^\{\s*id\s*:\s*(\d+)\s*,/)[1]))) : null;
+}
+
+function readSbtCatalogObjects(source) {
   if (!source.includes('/SBT/') || !source.includes('howToEarn:')) return null;
   const masked = source.replace(
     /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\/\/[^\r\n]*|\/\*[\s\S]*?\*\//g,
@@ -118,10 +123,53 @@ export function parseSbtCatalogMaximum(source) {
       }
       ids.add(id);
     }
-    matches.push(Math.max(...ids));
+    matches.push(objects);
   }
   if (matches.length > 1) throw new HttpError(502, 'sbt_catalog_format_changed');
   return matches.length === 1 ? matches[0] : null;
 }
 
 export const readSbtCatalog = createSbtCatalogReader();
+
+export function parseSbtCatalogRecords(source) {
+  const objects = readSbtCatalogObjects(source);
+  if (!objects) return null;
+  return objects.map(object => {
+      const id = Number(object.masked.match(/^\{\s*id\s*:\s*(\d+)\s*,/)[1]);
+      const record = { id };
+      for (const field of ['name', 'description', 'howToEarn', 'imageUrl']) {
+        const literal = object.source.match(new RegExp('\\b' + field + '\\s*:\\s*("(?:\\\\.|[^"\\\\])*")'));
+        if (!literal) throw new HttpError(502, 'sbt_catalog_format_changed');
+        try { record[field] = JSON.parse(literal[1]); }
+        catch { throw new HttpError(502, 'sbt_catalog_format_changed'); }
+      }
+      const image = new URL(record.imageUrl);
+      if (!record.name || record.name.length > 300 || image.protocol !== 'https:' ||
+          image.username || image.password || !image.pathname.startsWith('/SBT/')) {
+        throw new HttpError(502, 'sbt_catalog_format_changed');
+      }
+      return record;
+  });
+}
+
+// Metadata is a separate reader: a metadata format change must not alter the
+// existing badge-count verification policy used for Merch eligibility.
+const badgeCatalogs = new Map();
+export async function readSbtBadgeCatalog() {
+  const catalog = await readSbtCatalog();
+  if (!badgeCatalogs.has(catalog.source)) {
+    const request = (async () => {
+      const response = await fetch(catalog.source, { signal: AbortSignal.timeout(20000) });
+      if (!response.ok) throw new HttpError(502, 'sbt_catalog_request_failed');
+      const source = await response.text();
+      if (source.length > 8000000) throw new HttpError(502, 'sbt_catalog_format_changed');
+      const badges = parseSbtCatalogRecords(source);
+      if (!badges) throw new HttpError(502, 'sbt_catalog_not_found');
+      return { ...catalog, badges };
+    })();
+    badgeCatalogs.set(catalog.source, request);
+    void request.catch(() => badgeCatalogs.delete(catalog.source));
+    if (badgeCatalogs.size > 3) badgeCatalogs.delete(badgeCatalogs.keys().next().value);
+  }
+  return badgeCatalogs.get(catalog.source);
+}
