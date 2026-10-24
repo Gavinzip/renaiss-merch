@@ -104,7 +104,7 @@ export function BinderPractice({
       <BinderWorkspace
         key={generation}
         binder={binder}
-        badges={practiceLibrary(kind)}
+        badges={practiceLibrary(kind, locale)}
         user={user}
         copy={practiceBinderCopy(locale, kind)}
         onChange={setBinder}

@@ -9,11 +9,11 @@ import type { BinderCollectible, BinderSampleCard } from "./binderCollectible";
 export type PracticeKind = "cards" | "badges";
 const cards: BinderSampleCard[] = Array.from({ length: 18 }, (_, index) => {
   const image = ([1, 2, 3] as const)[index % 3];
-  const title = cardSamples[image - 1].name;
+  const title = cardSamples[image - 1].displayName;
   return {
     tokenId: String(9001 + index), name: `${title} · ${String(index + 1).padStart(3, "0")}`,
-    description: "Public Renaiss card image used for layout and interaction practice. This sample does not represent your ownership.",
-    howToEarn: "Practice only. Remove this card, then select it in an empty pocket to put it back.",
+    description: "Public reference card. Practice only; not in your collection.",
+    howToEarn: "",
     balance: 1, sampleCard: { image, edition: index + 1 },
   };
 });
@@ -21,8 +21,9 @@ const badges: BinderCollectible[] = samples.map((b) => ({
   tokenId: String(b.id), name: b.name, description: b.description,
   howToEarn: b.howToEarn, imageUrl: binderBadgeUrl(b.id), balance: 1,
 }));
-export function practiceLibrary(kind: PracticeKind): BinderCollectible[] {
-  return kind === "cards" ? cards : badges;
+export function practiceLibrary(kind: PracticeKind, locale: AppLocale = "en"): BinderCollectible[] {
+  const description = { en: "Public reference card. Practice only; not in your collection.", "zh-TW": "原站公開卡圖，僅供試玩，不代表你持有此卡。", ko: "공개 참고 카드입니다. 체험 전용이며 보유 카드가 아닙니다." }[locale];
+  return kind === "cards" ? cards.map(card => ({ ...card, description })) : badges;
 }
 export function createPracticeBinder(kind: PracticeKind): MemberBinder {
   const tokens = practiceLibrary(kind).map((item) => item.tokenId);
