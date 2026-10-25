@@ -60,7 +60,6 @@ export function BinderBook({
     Boolean(picking) || ink.busy,
   );
   const { spread, wide, subPage, leafCount } = motion;
-  const stage = useRef<HTMLDivElement>(null);
   const library = new Map(badges.map((b) => [b.tokenId, b]));
   const placed = binder.pages.reduce(
     (sum, p) => sum + p.slots.filter(Boolean).length,
@@ -80,27 +79,6 @@ export function BinderBook({
     previousCount.current = binder.pages.length;
     return () => { active = false; };
   }, [binder.pages.length]);
-  useLayoutEffect(() => {
-    const el = stage.current;
-    if (!el) return;
-    const size = () => {
-      const width = el.clientWidth,
-        height = el.clientHeight;
-      const fill =
-        !wide || (window.innerWidth <= 1100 && window.innerHeight <= 820);
-      el.dataset.fit = fill ? "fill" : "proportional";
-      const pw = fill
-        ? (width - 16) / (wide ? 2 : 1)
-        : Math.min((width - 48) / 2, ((height - 22) * 5) / 7, 620);
-      const ph = fill ? height - 8 : (pw * 7) / 5;
-      el.style.setProperty("--pw", `${Math.max(80, pw)}px`);
-      el.style.setProperty("--ph", `${Math.max(112, ph)}px`);
-    };
-    const observer = new ResizeObserver(size);
-    observer.observe(el);
-    size();
-    return () => observer.disconnect();
-  }, [wide]);
   const inside = (
     side: "front" | "back",
     visible: boolean,
@@ -185,7 +163,7 @@ export function BinderBook({
           : copy.addPage;
   return (
     <>
-      <section className="stage" ref={stage} aria-label={copy.title}>
+      <section className="stage" aria-label={copy.title}>
         <BinderTitle name={name} />
         <div
           ref={motion.bookRef}

@@ -37,8 +37,13 @@ for 900 ms independently per pocket. Removal lifts for 300 ms before changing
 the pocket; Save and conflicting slot edits wait for that lift to finish.
 Inspection preserves the 850 ms rotation in and 420 ms rotation/fade out.
 
-`BinderBook` sizes the book from the actual available stage, including Safari
-chrome and safe-area padding. Below 760 CSS pixels, initial entry and a
+`BinderBook` sizes the book directly from its CSS size container, including Safari
+chrome and safe-area padding, so a resize cannot paint cached page dimensions.
+`useBinderViewport` applies both current layout-viewport axes in the resize event;
+Safari's fixed insets and viewport units can otherwise retain the previous screen
+width during a Duo display handoff. The canvas uses the dynamic height and applies
+safe-area padding once, without subtracting the large/dynamic viewport difference
+again. Below 760 CSS pixels, initial entry and a
 wide-to-narrow transition close the cover. Returning to a wide viewport restores
 the last spread. A wide, short viewport gets adapted page proportions so the
 open book fits the Duo display. This responds to the browser viewport, not a

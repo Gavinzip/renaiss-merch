@@ -15,6 +15,7 @@ import {
 } from "../../lib/renaissAuth";
 import { binderCopy } from "./binderCopy";
 import { useMemberBinder } from "./useMemberBinder";
+import { useBinderViewport } from "./useBinderViewport";
 import { BinderWorkspace } from "./BinderWorkspace";
 import { BinderPractice, practiceCopy } from "./BinderPractice";
 import { BinderAccount } from "./BinderAccount";
@@ -63,6 +64,7 @@ export function MemberBinderPage({
   const binder = data.binder;
   const ready = Boolean(user?.safeWalletAddress && binder && data.library);
   const canvas = ready || practice;
+  useBinderViewport(root, canvas);
   const used = new Set(
     binder?.pages.flatMap((p) =>
       p.slots.filter((t): t is string => t !== null),
