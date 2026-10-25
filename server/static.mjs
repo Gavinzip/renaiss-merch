@@ -54,7 +54,9 @@ export async function serveStatic(
     storefrontMode
   );
   const fileStat = await stat(filePath);
-  const contentType = mimeTypes.get(path.extname(filePath)) || 'application/octet-stream';
+  const contentType = path.basename(filePath) === 'apple-app-site-association'
+    ? 'application/json; charset=utf-8'
+    : mimeTypes.get(path.extname(filePath)) || 'application/octet-stream';
   const contentEncoding = pickContentEncoding(req, contentType, fileStat.size);
   const headers = {
     'Cache-Control': cacheControlFor(filePath),
@@ -82,6 +84,14 @@ export async function serveStatic(
 async function resolveFilePath(pathname, distDir, storefrontMode) {
   const resolvedDistDir = path.resolve(distDir);
   const safePathname = decodeURIComponent(pathname);
+
+  // This extensionless JSON must never resolve to the SPA document. Apple uses
+  // it to verify the native app before accepting its HTTPS login callback.
+  if (safePathname === '/.well-known/apple-app-site-association') {
+    const association = path.join(resolvedDistDir, '.well-known', 'apple-app-site-association');
+    if (!await isFile(association)) throw new HttpError(404, 'not_found');
+    return association;
+  }
 
   if (isDrawSitePath(safePathname)) return path.join(resolvedDistDir, 'draw', 'index.html');
   if (safePathname.startsWith('/draw/')) throw new HttpError(404, 'not_found');

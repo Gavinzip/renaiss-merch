@@ -26,3 +26,8 @@ work/member-binder-release/
 
 /server/vendor/backup/
 .vercel/
+
+# Xcode build products and personal editor state.
+ios/build/
+ios/**/xcuserdata/
+ios/**/*.xcuserstate

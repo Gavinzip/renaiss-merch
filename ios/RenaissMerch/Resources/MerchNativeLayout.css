@@ -1,0 +1,65 @@
+/* The browser document reserves a solid gutter around the entire body. Native
+   WebKit already provides a full scene and CSS safe-area values: inset the
+   controls' surfaces instead, so the real backgrounds paint to every edge. */
+html[data-community-app] body { padding: 0; }
+
+html[data-community-app] :is(.renaiss-hub, .merch-store--hub, .surf-page--hub, .hub-event-archive) {
+  padding-top: env(safe-area-inset-top);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+}
+
+/* The cover and two-page spread own the full canvas. Their bottom controls,
+   dialogs and ink toolbar retain their own safe-area placement. */
+html[data-community-app] .member-binder.binder-canvas { padding-inline: 0; }
+html[data-community-app] .member-binder.binder-canvas .controls {
+  left: calc(52px + env(safe-area-inset-left));
+  right: calc(92px + env(safe-area-inset-right));
+  max-width: calc(100% - 144px - env(safe-area-inset-left) - env(safe-area-inset-right));
+}
+html[data-community-app] .member-binder .binder-writing-dock {
+  top: max(12px, env(safe-area-inset-top));
+}
+html[data-community-app] .member-binder .d-close {
+  top: max(22px, env(safe-area-inset-top));
+  right: max(26px, env(safe-area-inset-right));
+}
+html[data-community-app] .member-binder-picker__header {
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-right: max(22px, env(safe-area-inset-right));
+}
+html[data-community-app] .binder-practice-entry button { color: #332d38; }
+@media (max-width: 759px) {
+  html[data-community-app] .member-binder .d-close {
+    top: max(12px, env(safe-area-inset-top));
+    right: max(14px, env(safe-area-inset-right));
+  }
+  html[data-community-app] .member-binder-picker__header {
+    padding-top: max(18px, env(safe-area-inset-top));
+    padding-right: max(18px, env(safe-area-inset-right));
+  }
+}
+
+/* Existing separate product documents keep their own full-width art/video.
+   Protect their navigation rather than narrowing those backgrounds. */
+html[data-merch-native] .pokemon-header {
+  padding-top: max(15px, env(safe-area-inset-top));
+  padding-left: max(22px, env(safe-area-inset-left));
+  padding-right: max(22px, env(safe-area-inset-right));
+}
+html[data-merch-native] .control-room.football-archive[data-view] .control-header {
+  top: max(14px, env(safe-area-inset-top));
+  width: min(calc(100% - 52px - env(safe-area-inset-left) - env(safe-area-inset-right)), 980px) !important;
+  margin-inline: auto;
+  translate: calc((env(safe-area-inset-left) - env(safe-area-inset-right)) / 2) 0;
+}
+html[data-merch-native] .draw-site .draw-site-exit {
+  top: max(24px, env(safe-area-inset-top));
+  right: max(32px, env(safe-area-inset-right));
+}
+@media (max-width: 820px) {
+  html[data-merch-native] .control-room.football-archive[data-view] .control-header {
+    width: min(calc(100% - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)), 450px) !important;
+  }
+}

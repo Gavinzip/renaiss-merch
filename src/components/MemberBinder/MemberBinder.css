@@ -467,7 +467,7 @@ html[data-member-binder] #root {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 22px 16px;
+  padding: max(20px, env(safe-area-inset-top)) max(22px, env(safe-area-inset-right)) 16px 22px;
   border-bottom: 1px solid var(--line);
 }
 .member-binder-picker__header h2 {
@@ -754,7 +754,7 @@ html[data-member-binder] #root {
     gap: 12px;
   }
   .member-binder-picker__header {
-    padding: 18px 18px 12px;
+    padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) 12px 18px;
   }
   .member-binder-picker__scroll {
     padding: 16px 18px 24px;
@@ -804,7 +804,7 @@ html[data-member-binder] #root {
   border: 1px solid var(--accent);
   border-radius: 30px;
   background: #c7a15c18;
-  color: var(--text);
+  color: #332d38;
   font-size: 12px;
 }
 .binder-practice-toolbar > div:first-child {
