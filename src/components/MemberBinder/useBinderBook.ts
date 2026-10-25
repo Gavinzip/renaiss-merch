@@ -9,6 +9,8 @@ import {
 import { flushSync } from "react-dom";
 import { bendLeaf, clearLeaf, leafOrder, TURN_MS } from "./binderMotion";
 
+type TurnOptions = { startAngle?: number; animate?: boolean };
+
 export function useBinderBook(
   pageCount: number,
   blocked: boolean,
@@ -51,10 +53,10 @@ export function useBinderBook(
     book?.style.removeProperty("transform");
   }, []);
   const go = useCallback(
-    (target: number, startAngle?: number) => {
+    (target: number, { startAngle, animate = true }: TurnOptions = {}) => {
       const from = current.current,
         to = Math.max(0, Math.min(leafCount, target));
-      if (from === to && startAngle === undefined) return;
+      if (from === to && startAngle === undefined && animate) return;
       const draggedIndex = drag.current?.index;
       reset();
       const version = epoch.current;
@@ -65,12 +67,16 @@ export function useBinderBook(
       const forward = to > from;
       const starts = indices.map((i) => startAngle ?? (i < from ? Math.PI : 0));
       const ends = indices.map((i) => (i < to ? Math.PI : 0));
+      const book = bookRef.current;
+      // A display handoff must settle every leaf before its first paint. The
+      // old 180-degree cover is outside the clipped outer-display viewport.
+      if (!animate) book?.setAttribute("data-reframing", "");
       current.current = to;
       flushSync(() => setSpread(to));
       // Commit the new spread before applying imperative turn classes. React's
       // className update would otherwise remove `dragging`, allowing the closed
       // cover's idle animation to override its in-progress rotation.
-      if (!reduced.current)
+      if (animate && !reduced.current)
         indices.forEach((index, j) => {
           const leaf = leaves.current.get(index);
           if (leaf) {
@@ -86,13 +92,19 @@ export function useBinderBook(
         });
         busy.current = false;
       };
-      if (reduced.current) {
+      if (!animate || reduced.current) {
         finish();
+        if (!animate && book) {
+          // Resolve the settled pose while CSS transitions/idle motion are
+          // suppressed, so removing the handoff flag cannot replay the turn.
+          book.getBoundingClientRect();
+          book.removeAttribute("data-reframing");
+        }
         return;
       }
       busy.current = true;
       const start = performance.now();
-      const animate = (now: number) => {
+      const animateFrame = (now: number) => {
         if (epoch.current !== version) return;
         let done = true;
         indices.forEach((index, j) => {
@@ -114,9 +126,9 @@ export function useBinderBook(
           );
         });
         if (done) finish();
-        else frame.current = requestAnimationFrame(animate);
+        else frame.current = requestAnimationFrame(animateFrame);
       };
-      frame.current = requestAnimationFrame(animate);
+      frame.current = requestAnimationFrame(animateFrame);
     },
     [leafCount, reset],
   );
@@ -139,9 +151,11 @@ export function useBinderBook(
     const sync = () => {
       setWide(media.matches);
       setSubPage(1);
-      // A folding-width transition closes the cover, without modifying saved pages.
+      // The inner display has room for the full turn. The outer display must
+      // start at its closed pose instead of replaying a turn from offscreen.
       goRef.current(
         media.matches ? Math.min(resting.current, leafCount - 1) : 0,
+        { animate: media.matches },
       );
     };
     media.addEventListener("change", sync);
@@ -256,15 +270,15 @@ export function useBinderBook(
         step(d.side === "right" ? 1 : -1);
         return;
       }
-      go(d.theta > Math.PI / 2 ? d.index + 1 : d.index, d.theta);
+      go(d.theta > Math.PI / 2 ? d.index + 1 : d.index, { startAngle: d.theta });
     },
     onPointerCancel() {
       const d = drag.current;
-      if (d) go(current.current, d.theta);
+      if (d) go(current.current, { startAngle: d.theta });
     },
     onLostPointerCapture() {
       const d = drag.current;
-      if (d) go(current.current, d.theta);
+      if (d) go(current.current, { startAngle: d.theta });
     },
   });
   function onMouseMove(event: MouseEvent<HTMLDivElement>) {

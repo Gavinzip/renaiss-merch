@@ -154,6 +154,12 @@
 .member-binder .leaf.dragging .shade {
   transition: none;
 }
+.member-binder .book[data-reframing],
+.member-binder .book[data-reframing] .leaf,
+.member-binder .book[data-reframing] .shade {
+  transition: none !important;
+  animation: none !important;
+}
 .member-binder .edge {
   z-index: 60;
   cursor: grab;

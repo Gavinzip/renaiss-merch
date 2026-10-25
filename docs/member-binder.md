@@ -46,7 +46,12 @@ hardware hinge-angle API. Page navigation remains available while folded.
 The narrow closed-cover position changes without a second horizontal centering
 transition. Turn initialization follows the committed spread update, so React
 cannot remove the imperative turn class and let the idle cover animation take
-over mid-close. Page-count navigation is queued after the current React commit.
+over mid-close. A wide-to-narrow display handoff settles the cover and all leaves
+in the same commit, without replaying a turn from the now-clipped left side.
+This also cancels an interrupted turn; book, leaf and shade transitions are
+suppressed only while resolving that handoff pose. Manual closing/page turns
+and wide-display restoration retain the reference animation and idle motion.
+Page-count navigation is queued after the current React commit.
 
 `BinderTitle` retains the original static-text behavior when WebGL is unavailable;
 the binder and persistence are unaffected. Reduced-motion preferences suppress
