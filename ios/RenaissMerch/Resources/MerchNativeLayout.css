@@ -10,14 +10,9 @@ html[data-community-app] :is(.renaiss-hub, .merch-store--hub, .surf-page--hub, .
   padding-left: env(safe-area-inset-left);
 }
 
-/* The cover and two-page spread own the full canvas. Their bottom controls,
+/* The cover and two-page spread own the full canvas. Their corner controls,
    dialogs and ink toolbar retain their own safe-area placement. */
 html[data-community-app] .member-binder.binder-canvas { padding-inline: 0; }
-html[data-community-app] .member-binder.binder-canvas .controls {
-  left: calc(52px + env(safe-area-inset-left));
-  right: calc(92px + env(safe-area-inset-right));
-  max-width: calc(100% - 144px - env(safe-area-inset-left) - env(safe-area-inset-right));
-}
 html[data-community-app] .member-binder .binder-writing-dock {
   top: max(12px, env(safe-area-inset-top));
 }

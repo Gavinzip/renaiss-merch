@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState, type ReactNode } from "react";
 import {
   BINDER_MAX_PAGES,
   type BinderPage,
@@ -15,6 +15,7 @@ import { pocketKey, useBinderPocketMotion } from "./useBinderPocketMotion";
 // Real collections and the explicitly selected practice use the same book,
 // pocket editing and animation. Only their data and persistence owners differ.
 export function BinderWorkspace({
+  viewControls,
   binder,
   badges,
   user,
@@ -24,6 +25,7 @@ export function BinderWorkspace({
   onChange,
   onMotionBusyChange,
 }: {
+  viewControls: ReactNode;
   binder: MemberBinder;
   badges: BinderCollectible[];
   user: RenaissUser;
@@ -102,13 +104,13 @@ export function BinderWorkspace({
   return (
     <div className={`binder-workspace ${picker ? "picking" : ""}`}>
       <BinderBook
+        viewControls={viewControls}
         binder={binder}
         badges={badges}
         user={user}
         copy={copy}
         disabled={locked}
         picking={picker}
-        practice={practice}
         onWriting={(writing) => {
           if (!locked) onChange({ ...binder, writing });
         }}

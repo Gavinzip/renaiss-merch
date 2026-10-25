@@ -823,59 +823,32 @@ html[data-member-binder] #root {
   font: 10px var(--sans);
   text-align: center;
 }
-/* Keep a pink action row below the book in every viewport. The bottom inset
-   keeps the controls above Safari's address pill and the system home indicator. */
+/* The book owns the entire canvas; corner actions overlay its material. */
 .member-binder.binder-canvas .binder-workspace {
   position: relative;
   background: var(--bg);
-  padding-bottom: calc(48px + var(--binder-bottom-inset));
+}
+.member-binder .stage .cov {
+  padding-bottom: max(8.5%, calc(64px + env(safe-area-inset-bottom)));
+}
+.member-binder .stage .layout-ctl {
+  left: max(calc(var(--pw) * 0.055), 64px);
+  bottom: max(calc(var(--pw) * 0.008), calc(env(safe-area-inset-bottom) + 12px));
+}
+.member-binder .stage .page-num {
+  top: max(calc(var(--pw) * 0.015), env(safe-area-inset-top));
+  right: max(calc(var(--pw) * 0.025), env(safe-area-inset-right));
+  bottom: auto;
 }
 @media (max-width: 759px), (max-width: 1100px) and (max-height: 820px) {
   .member-binder .stage {
     --pw: max(80px, calc((100cqw - 16px) / 2));
     --ph: max(112px, calc(100cqh - 8px));
   }
-  .member-binder .stage .cov { padding-bottom: 8.5%; }
   .member-binder .stage .grid { padding-bottom: calc(var(--pw) * 0.07); }
-  .member-binder .stage .layout-ctl,
-  .member-binder .stage .page-num { bottom: calc(var(--pw) * 0.008); }
 }
 @media (max-width: 759px) {
   .member-binder .stage { --pw: max(80px, calc(100cqw - 16px)); }
-}
-.member-binder.binder-canvas .controls {
-  position: absolute;
-  inset: auto 92px calc(var(--binder-bottom-inset) + 4px) 52px;
-  height: 40px;
-  padding: 2px 8px;
-  gap: 12px;
-  border: 1px solid #ffffff26;
-  border-radius: 30px;
-  background: #11121cf2;
-  width: fit-content;
-  max-width: calc(100% - 144px);
-  margin: 0 auto;
-}
-.member-binder.binder-canvas .controls .nav {
-  width: 34px;
-  height: 34px;
-  flex: none;
-}
-.member-binder.binder-canvas .pager {
-  gap: 2px;
-}
-.member-binder.binder-canvas .binder-readout {
-  font-size: 9px;
-  white-space: nowrap;
-}
-.member-binder.binder-canvas .pager { min-width: 0; }
-.member-binder.binder-canvas .dots {
-  padding: 2px;
-}
-@media (max-width: 450px) {
-  .member-binder.binder-canvas .controls { gap: 3px; padding-inline: 3px; }
-  .member-binder.binder-canvas .controls .nav { width: 28px; height: 32px; }
-  .member-binder.binder-canvas .binder-readout { font-size: 8px; letter-spacing: 0; }
 }
 @media (max-width: 759px) {
   .binder-practice-toolbar {

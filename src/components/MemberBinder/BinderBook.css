@@ -12,10 +12,10 @@
   position: relative;
 }
 .member-binder .book.at-front {
-  transform: translateX(calc(var(--pw) / -2));
+  transform: translateX(-25%);
 }
 .member-binder .book.at-back {
-  transform: translateX(calc(var(--pw) / 2));
+  transform: translateX(25%);
 }
 .member-binder .book.tilting {
   transition: transform 0.14s ease-out;

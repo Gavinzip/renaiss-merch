@@ -39,10 +39,12 @@ export const practiceCopy = {
 };
 
 export function BinderPractice({
+  viewControls,
   locale,
   renderTools,
   onExit,
 }: {
+  viewControls: ReactNode;
   locale: AppLocale;
   renderTools: (contents: ReactNode) => ReactNode;
   onExit: () => void;
@@ -102,6 +104,7 @@ export function BinderPractice({
         </>,
       )}
       <BinderWorkspace
+        viewControls={viewControls}
         key={generation}
         binder={binder}
         badges={practiceLibrary(kind, locale)}

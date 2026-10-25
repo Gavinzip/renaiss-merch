@@ -81,7 +81,7 @@ export function MemberBinderPage({
     // book measures the remaining space instead of subtracting the insets twice.
     viewport?.setAttribute(
       "content",
-      `width=device-width, initial-scale=1.0, viewport-fit=${canvas ? "cover" : "contain"}`,
+      `width=device-width, initial-scale=1.0, viewport-fit=${canvas || html.hasAttribute("data-merch-native") ? "cover" : "contain"}`,
     );
     return () => {
       delete html.dataset.memberBinder;
@@ -203,6 +203,13 @@ export function MemberBinderPage({
       </>
     );
   }
+  const viewControls = <BinderViewControls
+    navigation={navigation}
+    locale={locale}
+    toolsOpen={toolsOpen}
+    toolsId={toolsId}
+    dirty={!practice && (data.dirty || pocketMotionBusy)}
+  />;
   return (
     <main
       className={`member-binder member-binder-page${canvas ? " binder-canvas" : ""}${toolsOpen ? " binder-tools-open" : ""}`}
@@ -215,6 +222,7 @@ export function MemberBinderPage({
       {!practice ? renderTools(ready ? renderMemberTools() : null) : null}
       {practice ? (
         <BinderPractice
+          viewControls={viewControls}
           locale={locale}
           renderTools={renderTools}
           onExit={() => showPractice(false)}
@@ -252,6 +260,7 @@ export function MemberBinderPage({
         </section>
       ) : (
         <BinderWorkspace
+          viewControls={viewControls}
           onMotionBusyChange={setPocketMotionBusy}
           key={generation}
           binder={binder!}
@@ -262,15 +271,6 @@ export function MemberBinderPage({
           onChange={data.edit}
         />
       )}
-      {canvas ? (
-        <BinderViewControls
-          navigation={navigation}
-          locale={locale}
-          toolsOpen={toolsOpen}
-          toolsId={toolsId}
-          dirty={!practice && (data.dirty || pocketMotionBusy)}
-        />
-      ) : null}
       {!ready && !practice ? (
         <div className="binder-practice-entry">
           <button type="button" onClick={() => showPractice(true)}>

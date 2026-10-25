@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import type { BinderWriting } from "../../../shared/binder-writing.js";
 import type {
   MemberBinder,
@@ -20,13 +20,13 @@ import "./BinderBook.css";
 
 export type PocketTarget = { page: string; pocket: number };
 export function BinderBook({
+  viewControls,
   binder,
   badges,
   user,
   copy,
   disabled,
   picking,
-  practice = false,
   onPocket,
   onDetail,
   onLayout,
@@ -37,13 +37,13 @@ export function BinderBook({
   onWriting,
   leaving,
 }: {
+  viewControls: ReactNode;
   binder: MemberBinder;
   badges: BinderCollectible[];
   user: RenaissUser;
   copy: BinderCopy;
   disabled: boolean;
   picking: PocketTarget | null;
-  practice?: boolean;
   onPocket: (target: PocketTarget) => void;
   onDetail: (target: PocketTarget) => void;
   onLayout: (id: string, size: 1 | 6 | 9) => void;
@@ -163,7 +163,7 @@ export function BinderBook({
           : copy.addPage;
   return (
     <>
-      <section className="stage" aria-label={copy.title}>
+      <section className="stage" aria-label={copy.title} data-single-page={!wide || spread === 0 || spread === leafCount}>
         <BinderTitle name={name} />
         <div
           ref={motion.bookRef}
@@ -172,7 +172,7 @@ export function BinderBook({
           style={
             {
               "--mob-shift":
-                subPage === 0 ? "calc(var(--pw) / 2)" : "calc(var(--pw) / -2)",
+                subPage === 0 ? "25%" : "-25%",
             } as CSSProperties
           }
           onMouseMove={motion.onMouseMove}
@@ -306,6 +306,13 @@ export function BinderBook({
             {...motion.pointerProps("right")}
           />
         </div>
+        <div className="binder-corner-controls">{viewControls}</div>
+        <button type="button" className="binder-page-turn binder-page-turn--previous"
+          aria-label={copy.previous} disabled={spread === 0 || ink.busy || Boolean(picking)}
+          hidden={ink.tool !== "read"} onClick={() => motion.step(-1)}>‹</button>
+        <button type="button" className="binder-page-turn binder-page-turn--next"
+          aria-label={copy.next} disabled={spread === leafCount || ink.busy || Boolean(picking)}
+          hidden={ink.tool !== "read"} onClick={() => motion.step(1)}>›</button>
       </section>
       {spread > 0 && spread < leafCount ? (
         <BinderWritingToolbar
@@ -314,60 +321,7 @@ export function BinderBook({
           disabled={disabled || Boolean(picking)}
         />
       ) : null}
-      <footer className="controls">
-        <button
-          className="nav"
-          type="button"
-          aria-label={copy.previous}
-          disabled={spread === 0 || ink.busy}
-          onClick={() => motion.step(-1)}
-        >
-          ‹
-        </button>
-        <div className="pager">
-          <nav className="dots" aria-label={copy.title}>
-            {Array.from({ length: leafCount + 1 }, (_, index) => {
-              const left = 2 * index - 3;
-              const label =
-                index === 0
-                  ? copy.front
-                  : index === leafCount
-                    ? copy.backCover
-                    : `${copy.page} ${
-                        [left, left + 1]
-                          .filter((i) => i >= 0 && i < binder.pages.length)
-                          .map((i) => String(i + 1).padStart(2, "0"))
-                          .join("–") || copy.end
-                      }`;
-              return (
-                <button
-                  key={index}
-                  className={`dot ${index === spread ? "on" : ""}`}
-                  type="button"
-                  aria-label={label}
-                  title={label}
-                  disabled={ink.busy}
-                  aria-current={index === spread ? "page" : undefined}
-                  onClick={() => motion.go(index)}
-                />
-              );
-            })}
-          </nav>
-          <span className="binder-readout" aria-live="polite">
-            {practice ? `${copy.practice} · ` : ""}
-            {title}
-          </span>
-        </div>
-        <button
-          className="nav"
-          type="button"
-          aria-label={copy.next}
-          disabled={spread === leafCount || ink.busy}
-          onClick={() => motion.step(1)}
-        >
-          ›
-        </button>
-      </footer>
+      <span className="binder-page-status" role="status">{title}</span>
     </>
   );
 }

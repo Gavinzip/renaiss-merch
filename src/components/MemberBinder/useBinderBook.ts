@@ -9,18 +9,25 @@ import {
 import { flushSync } from "react-dom";
 import { bendLeaf, clearLeaf, leafOrder, TURN_MS } from "./binderMotion";
 
-type TurnOptions = { startAngle?: number; animate?: boolean };
+type TurnOptions = {
+  startAngle?: number;
+  animate?: boolean;
+  layout?: { wide: boolean; subPage: number };
+};
 
 export function useBinderBook(
   pageCount: number,
   blocked: boolean,
 ) {
   const leafCount = Math.ceil((pageCount + 1) / 2) + 2;
-  const [spread, setSpread] = useState(0);
-  const [wide, setWide] = useState(
-    () => matchMedia("(min-width: 760px)").matches,
-  );
-  const [subPage, setSubPage] = useState(1);
+  // Responsive geometry and the visible leaf are one committed pose. A media
+  // change must never paint a new page width with the old display's spread.
+  const [{ spread, wide, subPage }, setView] = useState(() => ({
+    spread: 0,
+    wide: matchMedia("(min-width: 760px)").matches,
+    subPage: 1,
+  }));
+  const setSubPage = (subPage: number) => setView((view) => ({ ...view, subPage }));
   const bookRef = useRef<HTMLDivElement>(null);
   const leaves = useRef(new Map<number, HTMLDivElement>());
   const frame = useRef(0),
@@ -53,10 +60,10 @@ export function useBinderBook(
     book?.style.removeProperty("transform");
   }, []);
   const go = useCallback(
-    (target: number, { startAngle, animate = true }: TurnOptions = {}) => {
+    (target: number, { startAngle, animate = true, layout }: TurnOptions = {}) => {
       const from = current.current,
         to = Math.max(0, Math.min(leafCount, target));
-      if (from === to && startAngle === undefined && animate) return;
+      if (from === to && startAngle === undefined && animate && !layout) return;
       const draggedIndex = drag.current?.index;
       reset();
       const version = epoch.current;
@@ -70,9 +77,10 @@ export function useBinderBook(
       const book = bookRef.current;
       // A display handoff must settle every leaf before its first paint. The
       // old 180-degree cover is outside the clipped outer-display viewport.
-      if (!animate) book?.setAttribute("data-reframing", "");
+      const reframing = !animate || Boolean(layout);
+      if (reframing) book?.setAttribute("data-reframing", "");
       current.current = to;
-      flushSync(() => setSpread(to));
+      flushSync(() => setView((view) => ({ ...view, ...layout, spread: to })));
       // Commit the new spread before applying imperative turn classes. React's
       // className update would otherwise remove `dragging`, allowing the closed
       // cover's idle animation to override its in-progress rotation.
@@ -94,13 +102,19 @@ export function useBinderBook(
       };
       if (!animate || reduced.current) {
         finish();
-        if (!animate && book) {
+        if (reframing && book) {
           // Resolve the settled pose while CSS transitions/idle motion are
           // suppressed, so removing the handoff flag cannot replay the turn.
           book.getBoundingClientRect();
           book.removeAttribute("data-reframing");
         }
         return;
+      }
+      if (reframing && book) {
+        // Commit the new book geometry and the turn's start angle together.
+        // Only the leaf animates; the old display's centering never replays.
+        book.getBoundingClientRect();
+        book.removeAttribute("data-reframing");
       }
       busy.current = true;
       const start = performance.now();
@@ -149,13 +163,11 @@ export function useBinderBook(
   useEffect(() => {
     const media = matchMedia("(min-width: 760px)");
     const sync = () => {
-      setWide(media.matches);
-      setSubPage(1);
       // The inner display has room for the full turn. The outer display must
       // start at its closed pose instead of replaying a turn from offscreen.
       goRef.current(
         media.matches ? Math.min(resting.current, leafCount - 1) : 0,
-        { animate: media.matches },
+        { animate: media.matches, layout: { wide: media.matches, subPage: 1 } },
       );
     };
     media.addEventListener("change", sync);
@@ -185,9 +197,9 @@ export function useBinderBook(
       if (page >= 0 && page <= pageCount) mobileSteps.push({ spread: i, sub });
     }
   mobileSteps.push({ spread: leafCount, sub: 0 });
-  function step(direction: number) {
+  function step(direction: number, options: TurnOptions = {}) {
     if (blocked) return;
-    if (wide) go(spread + direction);
+    if (wide) go(spread + direction, options);
     else {
       const index = mobileSteps.findIndex(
         (p) => p.spread === spread && p.sub === subPage,
@@ -200,7 +212,7 @@ export function useBinderBook(
           )
         ];
       setSubPage(next.sub);
-      go(next.spread);
+      go(next.spread, options);
     }
   }
   function goDot(target: number) {
@@ -269,6 +281,15 @@ export function useBinderBook(
         drag.current = null;
         step(d.side === "right" ? 1 : -1);
         return;
+      }
+      if (!wide) {
+        // Narrow pages are adjacent half-spreads. A completed drag follows the
+        // same sequence as a tap, rather than jumping over the other half.
+        const completed = d.side === "right" ? d.theta > Math.PI / 2 : d.theta < Math.PI / 2;
+        if (completed) {
+          step(d.side === "right" ? 1 : -1, { startAngle: d.theta });
+          return;
+        }
       }
       go(d.theta > Math.PI / 2 ? d.index + 1 : d.index, { startAngle: d.theta });
     },

@@ -37,8 +37,11 @@ The native controller requests an immersive presentation without a permanent
 status/home-indicator rail. `MerchNativeLayout.css`, installed only in the exact
 Merch HTTPS main frame, removes the browser document's whole-body safe-area
 padding. Backgrounds and the book can then paint to the scene edges, while
-normal content surfaces, navigation, dialogs, the ink toolbar and the bottom
-pager retain their own safe insets. This is the App's layout integration, not a
+normal content surfaces, navigation, dialogs and the ink toolbar retain their
+own safe insets. Menu, tools and fullscreen actions overlay the book's bottom
+corners; no pager or sample-label row reserves space below it. Page edges and
+keyboard arrows retain the original page-turn interaction.
+This is the App's layout integration, not a
 replacement page or a static-color extension. Separate archive/draw documents
 also opt into cover within the App and protect their navigation controls.
 The binder responds to its available viewport: the outer display shows its
