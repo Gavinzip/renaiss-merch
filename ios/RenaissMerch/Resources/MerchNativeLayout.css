@@ -13,6 +13,12 @@ html[data-community-app] :is(.renaiss-hub, .merch-store--hub, .surf-page--hub, .
 /* The cover and two-page spread own the full canvas. Their corner controls,
    dialogs and ink toolbar retain their own safe-area placement. */
 html[data-community-app] .member-binder.binder-canvas { padding-inline: 0; }
+/* Native has no Safari side controls. The camera only occupies the top corner,
+   so bottom and middle actions can use the actual book edges. */
+html[data-community-app] .member-binder .stage {
+  --binder-safe-left: 0px;
+  --binder-safe-right: 0px;
+}
 html[data-community-app] .member-binder .binder-writing-dock {
   top: max(12px, env(safe-area-inset-top));
 }
