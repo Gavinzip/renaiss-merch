@@ -65,6 +65,11 @@ export function useBinderBook(
       const forward = to > from;
       const starts = indices.map((i) => startAngle ?? (i < from ? Math.PI : 0));
       const ends = indices.map((i) => (i < to ? Math.PI : 0));
+      current.current = to;
+      flushSync(() => setSpread(to));
+      // Commit the new spread before applying imperative turn classes. React's
+      // className update would otherwise remove `dragging`, allowing the closed
+      // cover's idle animation to override its in-progress rotation.
       if (!reduced.current)
         indices.forEach((index, j) => {
           const leaf = leaves.current.get(index);
@@ -73,8 +78,6 @@ export function useBinderBook(
             bendLeaf(leaf, starts[j]);
           }
         });
-      current.current = to;
-      flushSync(() => setSpread(to));
       if (to > 0 && to < leafCount) resting.current = to;
       const finish = () => {
         leaves.current.forEach((leaf, index) => {
@@ -145,7 +148,10 @@ export function useBinderBook(
     return () => media.removeEventListener("change", sync);
   }, [leafCount]);
   useEffect(() => {
-    if (current.current > leafCount) goRef.current(leafCount);
+    let active = true;
+    if (current.current > leafCount)
+      queueMicrotask(() => { if (active) goRef.current(leafCount); });
+    return () => { active = false; };
   }, [leafCount]);
   useEffect(() => {
     // Open to the first spread on a large display; the outer display starts closed.

@@ -43,6 +43,10 @@ wide-to-narrow transition close the cover. Returning to a wide viewport restores
 the last spread. A wide, short viewport gets adapted page proportions so the
 open book fits the Duo display. This responds to the browser viewport, not a
 hardware hinge-angle API. Page navigation remains available while folded.
+The narrow closed-cover position changes without a second horizontal centering
+transition. Turn initialization follows the committed spread update, so React
+cannot remove the imperative turn class and let the idle cover animation take
+over mid-close. Page-count navigation is queued after the current React commit.
 
 `BinderTitle` retains the original static-text behavior when WebGL is unavailable;
 the binder and persistence are unaffected. Reduced-motion preferences suppress

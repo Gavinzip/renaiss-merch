@@ -68,11 +68,18 @@ export function BinderBook({
   );
   const name = user.name || "Renaiss";
   const previousCount = useRef(binder.pages.length);
+  const goToPage = useRef(motion.go);
+  goToPage.current = motion.go;
   useLayoutEffect(() => {
-    if (binder.pages.length > previousCount.current)
-      motion.go(Math.floor(previousCount.current / 2) + 1);
+    let active = true;
+    if (binder.pages.length > previousCount.current) {
+      const target = Math.floor(previousCount.current / 2) + 1;
+      // Page-turn initialization flushes the spread. Run it after this commit.
+      queueMicrotask(() => { if (active) goToPage.current(target); });
+    }
     previousCount.current = binder.pages.length;
-  }, [binder.pages.length, motion]);
+    return () => { active = false; };
+  }, [binder.pages.length]);
   useLayoutEffect(() => {
     const el = stage.current;
     if (!el) return;

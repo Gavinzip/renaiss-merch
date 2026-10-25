@@ -691,6 +691,11 @@ html[data-member-binder] #root {
   .member-binder .book.mob-shift {
     transform: translateX(var(--mob-shift));
   }
+  /* The folded viewport already changes the stage and page dimensions. Center
+     its cover immediately so it cannot slide again underneath the closing leaf. */
+  .member-binder .book.at-front {
+    transition: none;
+  }
   .member-binder .stage {
     overflow: clip;
   }
