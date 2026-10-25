@@ -105,18 +105,27 @@ The Foundation-only navigation/download-location checks passed 111 assertions;
 the real static server returned the exact association JSON with the correct MIME
 type. The existing pilot web build passed. Native authentication, social mission
 completion, real collection saving/reloading, shipping and permission-gated
-exports are still pending the published association file and authenticated QA.
+exports still require authenticated QA. The association file was published on
+2026-10-26 and returned the matching app ID with HTTP 200 from both the production
+domain and Apple's association CDN. Both simulator architectures embed the same
+app ID and webcredentials entitlement in their executable. These association
+checks do not establish a successful login.
 The system authentication handoff is not yet an end-to-end success claim. The
 expected WebKit policy-cancellation error (domain/code 102) no longer replaces
 the page with a network-error panel. They have not been replaced with mocked
 sessions or data. The approved detail/drawer close-control insets and dark guest
-practice-button text are included in the App; matching web CSS is prepared but
-has not been published.
+practice-button text are included in the App; matching web CSS has also been published.
 
 Actual Duo recordings cover the full-bleed landing, original sidebar, cover,
 spread, page turn, sample-card removal/reinsertion and fullscreen restoration.
-The first visible frames of display handoff are retained, including the system
-rotation/scale transition; first-frame motion still needs final visual review.
+A 2026-10-26 entry recording verifies that the cover keeps the same width for
+its first visible second. The viewport remains cover within the native app,
+book centering uses percentages, and responsive geometry and spread commit as
+one pose. Bottom actions overlay the book; page-edge buttons preserve complete
+forward/back navigation and VoiceOver after removing the pager. Browser checks
+covered every narrow half-spread and return to the cover. A new full native
+fold/unfold recording is still pending because the host locked during QA;
+earlier handoff recordings retain the system rotation/scale transition.
 No physical-device result or simulator-bug attribution is claimed.
 
 ## Release boundary
