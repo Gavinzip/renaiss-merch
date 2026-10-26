@@ -156,7 +156,7 @@ export function useBinderBook(
   useEffect(() => {
     if (!nativeBinderViewport()) return;
     reportNativeBinderCover(current.current === 0 && !busy.current);
-    return () => reportNativeBinderCover(false);
+    return () => reportNativeBinderCover(false, false);
   }, []);
 
   useEffect(() => {

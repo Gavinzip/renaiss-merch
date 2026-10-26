@@ -11,12 +11,12 @@ export function nativeBinderViewport() {
   return { width, height, preparing: data.merchNativePreparing === "true" };
 }
 
-export function reportNativeBinderCover(closed: boolean) {
+export function reportNativeBinderCover(closed: boolean, mounted = true) {
   const native = window as Window & { webkit?: { messageHandlers?: {
-    merchBinderState?: { postMessage: (state: { document: string; closed: boolean }) => void };
+    merchBinderState?: { postMessage: (state: { document: string; closed: boolean; mounted: boolean }) => void };
   } } };
   const documentID = document.documentElement.dataset.merchNativeDocument;
-  if (documentID) native.webkit?.messageHandlers?.merchBinderState?.postMessage({ document: documentID, closed });
+  if (documentID) native.webkit?.messageHandlers?.merchBinderState?.postMessage({ document: documentID, closed, mounted });
 }
 
 export function binderViewportIsWide() {

@@ -118,7 +118,15 @@ final class MerchViewController: UIViewController {
             if publishedViewport.width < 760, size.width >= 760,
                policy.isMerch(webView.url ?? MerchNavigationPolicy.origin),
                webView.url?.fragment == "binder", !webView.isLoading, binderPresentation.coverVisible {
-                do { preparingPresentation = try binderPresentation.begin(webView: webView, host: view, size: size) }
+                do { preparingPresentation = try binderPresentation.begin(host: view, size: size) }
+                catch {
+                    showLoadError()
+                    super.viewWillTransition(to: size, with: coordinator)
+                    return
+                }
+            } else if publishedViewport.width >= 760, size.width < 760,
+                      webView.url?.fragment == "binder", !webView.isLoading, binderPresentation.binderMounted {
+                do { preparingPresentation = try binderPresentation.begin(host: view, size: size) }
                 catch {
                     showLoadError()
                     super.viewWillTransition(to: size, with: coordinator)
@@ -178,6 +186,7 @@ final class MerchViewController: UIViewController {
     }
 
     private func publishViewport(_ size: CGSize) {
+        if !binderPresentation.isPreparing { preparingPresentation = nil }
         let preparing = preparingPresentation != nil
         guard size.width > 0, size.height > 0,
               size != publishedViewport || preparing != publishedPreparing else { return }
@@ -226,7 +235,7 @@ final class MerchViewController: UIViewController {
     }
 
     func stop() {
-        binderPresentation.cancel()
+        binderPresentation.resetDocument()
         authentication.cancel()
         downloads.cancelActive()
         webView.stopLoading()
