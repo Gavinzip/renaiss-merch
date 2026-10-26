@@ -1,4 +1,5 @@
 export const BINDER_NATIVE_VIEWPORT_EVENT = "merch-native-viewport";
+export const BINDER_NATIVE_COVER_CACHED_EVENT = "merch-native-cover-cached";
 
 /** The App publishes one geometry before notifying the responsive book. */
 export function nativeBinderViewport() {
@@ -11,12 +12,12 @@ export function nativeBinderViewport() {
   return { width, height, preparing: data.merchNativePreparing === "true" };
 }
 
-export function reportNativeBinderCover(closed: boolean, mounted = true) {
+export function reportNativeBinderCover(closed: boolean, instance: string, mounted = true, failed = false) {
   const native = window as Window & { webkit?: { messageHandlers?: {
-    merchBinderState?: { postMessage: (state: { document: string; closed: boolean; mounted: boolean }) => void };
+    merchBinderState?: { postMessage: (state: { document: string; instance: string; closed: boolean; mounted: boolean; failed: boolean }) => void };
   } } };
   const documentID = document.documentElement.dataset.merchNativeDocument;
-  if (documentID) native.webkit?.messageHandlers?.merchBinderState?.postMessage({ document: documentID, closed, mounted });
+  if (documentID) native.webkit?.messageHandlers?.merchBinderState?.postMessage({ document: documentID, instance, closed, mounted, failed });
 }
 
 export function binderViewportIsWide() {

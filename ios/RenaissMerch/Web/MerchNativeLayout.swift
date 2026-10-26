@@ -15,7 +15,12 @@ enum MerchNativeLayout {
         if (location.origin === "https://merch.renaisscltb.com") {
             const root = document.documentElement;
             root.dataset.merchNative = "true";
+            root.dataset.merchNativeCoverStaging = "true";
+            const newDocument = !root.dataset.merchNativeDocument;
             root.dataset.merchNativeDocument ??= crypto.randomUUID();
+            if (newDocument) window.webkit.messageHandlers.merchBinderState.postMessage({
+                registered: true, document: root.dataset.merchNativeDocument
+            });
             root.dataset.merchNativeWidth = "\(size.width)";
             root.dataset.merchNativeHeight = "\(size.height)";
             root.dataset.merchNativeViewport = "\(size.width >= 760 ? "wide" : "narrow")";

@@ -9,7 +9,7 @@ import {
 } from "react";
 import { flushSync } from "react-dom";
 import { bendLeaf, clearLeaf, leafOrder, TURN_MS } from "./binderMotion";
-import { BINDER_NATIVE_VIEWPORT_EVENT, binderViewportIsWide, nativeBinderViewport, reportNativeBinderCover } from "./binderViewport";
+import { BINDER_NATIVE_VIEWPORT_EVENT, BINDER_NATIVE_COVER_CACHED_EVENT, binderViewportIsWide, nativeBinderViewport, reportNativeBinderCover } from "./binderViewport";
 
 type TurnOptions = {
   startAngle?: number;
@@ -50,6 +50,32 @@ export function useBinderBook(
     theta: number;
     moved: boolean;
   } | null>(null);
+  const coverReportEpoch = useRef(0);
+  const coverInstance = useRef(nativeBinderViewport() ? crypto.randomUUID() : "");
+  const coverCached = useRef(false);
+  const pendingNativeTurn = useRef<{ target: number; options: TurnOptions } | null>(null);
+  const reportCover = useCallback((closed: boolean, mounted = true) => {
+    if (!nativeBinderViewport()) return;
+    const version = ++coverReportEpoch.current;
+    const book = bookRef.current;
+    if (book) {
+      book.dataset.nativeCoverReady = "false";
+      book.dataset.nativeCoverInstance = coverInstance.current;
+    }
+    reportNativeBinderCover(false, coverInstance.current, mounted);
+    if (!closed || !mounted || !book) return;
+    const images = Array.from(book.querySelectorAll<HTMLImageElement>(".face--profile img, .leaf--p1 > .face--front img"));
+    for (const image of images) image.loading = "eager";
+    // A cover snapshot must contain the decoded art, not the empty image slots
+    // from the first render. Older decode completions cannot revive a turn.
+    Promise.all(images.map((image) => image.decode())).then(() => {
+      if (version !== coverReportEpoch.current || current.current !== 0 || busy.current) return;
+      book.dataset.nativeCoverReady = "true";
+      reportNativeBinderCover(true, coverInstance.current);
+    }).catch(() => {
+      if (version === coverReportEpoch.current) reportNativeBinderCover(false, coverInstance.current, true, true);
+    });
+  }, []);
 
   const reset = useCallback(() => {
     cancelAnimationFrame(frame.current);
@@ -65,8 +91,21 @@ export function useBinderBook(
     (target: number, { startAngle, animate = true, layout }: TurnOptions = {}) => {
       const from = current.current,
         to = Math.max(0, Math.min(leafCount, target));
+      if (to === 0) pendingNativeTurn.current = null;
+      if (from === 0 && to > 0 && !coverCached.current &&
+          document.documentElement.dataset.merchNativeCoverStaging === "true") {
+        pendingNativeTurn.current = { target: to, options: { animate } };
+        if (layout) {
+          const book = bookRef.current;
+          book?.setAttribute("data-reframing", "");
+          flushSync(() => setView((view) => ({ ...view, ...layout })));
+          book?.getBoundingClientRect();
+          book?.removeAttribute("data-reframing");
+        }
+        return;
+      }
       if (from === to && startAngle === undefined && animate && !layout) return;
-      if (nativeBinderViewport()) reportNativeBinderCover(false);
+      reportCover(false);
       const draggedIndex = drag.current?.index;
       reset();
       const version = epoch.current;
@@ -102,7 +141,7 @@ export function useBinderBook(
           leaf.style.zIndex = String(leafOrder(index, to, leafCount));
         });
         busy.current = false;
-        if (nativeBinderViewport()) reportNativeBinderCover(to === 0);
+        reportCover(to === 0);
       };
       if (!animate || reduced.current) {
         finish();
@@ -148,16 +187,27 @@ export function useBinderBook(
       };
       frame.current = requestAnimationFrame(animateFrame);
     },
-    [leafCount, reset],
+    [leafCount, reset, reportCover],
   );
   const goRef = useRef(go);
   goRef.current = go;
+  useLayoutEffect(() => {
+    const ready = (event: Event) => {
+      if (!(event instanceof CustomEvent) || event.detail !== coverInstance.current) return;
+      coverCached.current = true;
+      const pending = pendingNativeTurn.current;
+      pendingNativeTurn.current = null;
+      if (pending) goRef.current(pending.target, pending.options);
+    };
+    window.addEventListener(BINDER_NATIVE_COVER_CACHED_EVENT, ready);
+    return () => window.removeEventListener(BINDER_NATIVE_COVER_CACHED_EVENT, ready);
+  }, []);
   const awaitingNativeOpen = useRef(false);
   useEffect(() => {
     if (!nativeBinderViewport()) return;
-    reportNativeBinderCover(current.current === 0 && !busy.current);
-    return () => reportNativeBinderCover(false, false);
-  }, []);
+    reportCover(current.current === 0 && !busy.current);
+    return () => reportCover(false, false);
+  }, [reportCover]);
 
   useEffect(() => {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
@@ -223,6 +273,21 @@ export function useBinderBook(
   useEffect(() => {
     // Open to the first spread on a large display; the outer display starts closed.
     if (!wide) return;
+    if (document.documentElement.dataset.merchNativeCoverStaging === "true") {
+      let timer: ReturnType<typeof setTimeout>;
+      const ready = (event: Event) => {
+        if (!(event instanceof CustomEvent) || event.detail !== coverInstance.current) return;
+        window.removeEventListener(BINDER_NATIVE_COVER_CACHED_EVENT, ready);
+        timer = setTimeout(() => {
+          if (binderViewportIsWide() && current.current === 0) goRef.current(1);
+        }, 450);
+      };
+      window.addEventListener(BINDER_NATIVE_COVER_CACHED_EVENT, ready);
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener(BINDER_NATIVE_COVER_CACHED_EVENT, ready);
+      };
+    }
     const timer = setTimeout(() => {
       if (binderViewportIsWide()) goRef.current(1);
     }, 450);
@@ -285,13 +350,18 @@ export function useBinderBook(
   const pointerProps = (side: "left" | "right") => ({
     onPointerDown(event: PointerEvent<HTMLDivElement>) {
       if (blocked || busy.current) return;
+      if (current.current === 0 && !coverCached.current &&
+          document.documentElement.dataset.merchNativeCoverStaging === "true") {
+        pendingNativeTurn.current = { target: 1, options: {} };
+        return;
+      }
       const index = side === "right" ? current.current : current.current - 1;
       const leaf = leaves.current.get(index),
         book = bookRef.current;
       if (!leaf || !book) return;
       reset();
       const rect = book.getBoundingClientRect();
-      if (nativeBinderViewport()) reportNativeBinderCover(false);
+      reportCover(false);
       drag.current = {
         index,
         side,

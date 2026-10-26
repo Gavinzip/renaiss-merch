@@ -40,6 +40,7 @@ final class MerchViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        binderPresentation.onFailure = { [weak self] in self?.showLoadError() }
         // The existing product is intentionally a light pink canvas. Keep
         // native text and dialogs legible on that same material.
         overrideUserInterfaceStyle = .light
@@ -117,16 +118,17 @@ final class MerchViewController: UIViewController {
             preparingPresentation = nil
             if publishedViewport.width < 760, size.width >= 760,
                policy.isMerch(webView.url ?? MerchNavigationPolicy.origin),
-               webView.url?.fragment == "binder", !webView.isLoading, binderPresentation.coverVisible {
-                do { preparingPresentation = try binderPresentation.begin(host: view, size: size) }
+               webView.url?.fragment == "binder", !webView.isLoading, errorView == nil,
+               binderPresentation.binderMounted, binderPresentation.coverVisible || !binderPresentation.hasCover {
+                do { preparingPresentation = try binderPresentation.begin(webView: webView, host: view, size: size) }
                 catch {
                     showLoadError()
                     super.viewWillTransition(to: size, with: coordinator)
                     return
                 }
             } else if publishedViewport.width >= 760, size.width < 760,
-                      webView.url?.fragment == "binder", !webView.isLoading, binderPresentation.binderMounted {
-                do { preparingPresentation = try binderPresentation.begin(host: view, size: size) }
+                      webView.url?.fragment == "binder", !webView.isLoading, errorView == nil, binderPresentation.binderMounted {
+                do { preparingPresentation = try binderPresentation.begin(webView: webView, host: view, size: size) }
                 catch {
                     showLoadError()
                     super.viewWillTransition(to: size, with: coordinator)
@@ -242,7 +244,7 @@ final class MerchViewController: UIViewController {
     }
 
     func beginDocumentNavigation() {
-        binderPresentation.resetDocument()
+        binderPresentation.resetDocument(preservingCover: true)
         preparingPresentation = nil
     }
 

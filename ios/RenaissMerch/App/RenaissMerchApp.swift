@@ -27,4 +27,8 @@ final class MerchSceneDelegate: UIResponder, UIWindowSceneDelegate {
         (window?.rootViewController as? MerchViewController)?.stop()
         window = nil
     }
+
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        (window?.rootViewController as? MerchViewController)?.finishDocumentNavigation()
+    }
 }
