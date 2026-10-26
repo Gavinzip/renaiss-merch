@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type PointerEvent,
@@ -8,6 +9,7 @@ import {
 } from "react";
 import { flushSync } from "react-dom";
 import { bendLeaf, clearLeaf, leafOrder, TURN_MS } from "./binderMotion";
+import { BINDER_NATIVE_VIEWPORT_EVENT, binderViewportIsWide, nativeBinderViewport } from "./binderViewport";
 
 type TurnOptions = {
   startAngle?: number;
@@ -24,7 +26,7 @@ export function useBinderBook(
   // change must never paint a new page width with the old display's spread.
   const [{ spread, wide, subPage }, setView] = useState(() => ({
     spread: 0,
-    wide: matchMedia("(min-width: 760px)").matches,
+    wide: binderViewportIsWide(),
     subPage: 1,
   }));
   const setSubPage = (subPage: number) => setView((view) => ({ ...view, subPage }));
@@ -160,19 +162,33 @@ export function useBinderBook(
       reset();
     };
   }, [reset]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const media = matchMedia("(min-width: 760px)");
+    let previousWide = wide;
+    let active = true;
     const sync = () => {
+      const nextWide = binderViewportIsWide();
+      if (nextWide === previousWide) return;
+      previousWide = nextWide;
       // The inner display has room for the full turn. The outer display must
       // start at its closed pose instead of replaying a turn from offscreen.
       goRef.current(
-        media.matches ? Math.min(resting.current, leafCount - 1) : 0,
-        { animate: media.matches, layout: { wide: media.matches, subPage: 1 } },
+        nextWide ? Math.min(resting.current, leafCount - 1) : 0,
+        { animate: nextWide, layout: { wide: nextWide, subPage: 1 } },
       );
     };
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, [leafCount]);
+    const browserSync = () => { if (!nativeBinderViewport()) sync(); };
+    media.addEventListener("change", browserSync);
+    window.addEventListener(BINDER_NATIVE_VIEWPORT_EVENT, sync);
+    // Reconcile any publish between render and subscription against the pose
+    // React actually committed. Run outside the effect's flushSync boundary.
+    queueMicrotask(() => { if (active) sync(); });
+    return () => {
+      active = false;
+      media.removeEventListener("change", browserSync);
+      window.removeEventListener(BINDER_NATIVE_VIEWPORT_EVENT, sync);
+    };
+  }, [leafCount, wide]);
   useEffect(() => {
     let active = true;
     if (current.current > leafCount)
@@ -183,7 +199,7 @@ export function useBinderBook(
     // Open to the first spread on a large display; the outer display starts closed.
     if (!wide) return;
     const timer = setTimeout(() => {
-      if (matchMedia("(min-width: 760px)").matches) goRef.current(1);
+      if (binderViewportIsWide()) goRef.current(1);
     }, 450);
     return () => clearTimeout(timer);
     // Initial entry only. Later pose changes restore the reading position above.

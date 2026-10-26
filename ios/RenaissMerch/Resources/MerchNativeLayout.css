@@ -12,7 +12,28 @@ html[data-community-app] :is(.renaiss-hub, .merch-store--hub, .surf-page--hub, .
 
 /* The cover and two-page spread own the full canvas. Their corner controls,
    dialogs and ink toolbar retain their own safe-area placement. */
-html[data-community-app] .member-binder.binder-canvas { padding-inline: 0; }
+html[data-community-app] .member-binder.binder-canvas {
+  padding-inline: 0;
+}
+/* The scene reports one size before WebKit's three viewport APIs catch up. */
+html[data-merch-native-width] .member-binder.binder-canvas {
+  width: var(--merch-native-width);
+  height: var(--merch-native-height);
+}
+html[data-merch-native-width] .member-binder .stage {
+  --pw: max(80px, calc((100cqw - 16px) / 2));
+  --ph: max(112px, calc(100cqh - 8px));
+  overflow: clip;
+}
+html[data-merch-native-viewport="narrow"] .member-binder .stage {
+  --pw: max(80px, calc(100cqw - 16px));
+}
+html[data-merch-native-width] .member-binder .stage .grid {
+  padding-bottom: calc(var(--pw) * 0.07);
+}
+html[data-merch-native-width] .member-binder .book.mob-shift {
+  transform: translateX(var(--mob-shift));
+}
 /* Native has no Safari side controls. The camera only occupies the top corner,
    so bottom and middle actions can use the actual book edges. */
 html[data-community-app] .member-binder .stage {

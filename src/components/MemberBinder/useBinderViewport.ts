@@ -1,4 +1,5 @@
 import { useLayoutEffect, type RefObject } from "react";
+import { nativeBinderViewport } from "./binderViewport";
 
 /** Keep the canvas on Safari's current layout viewport during display handoff. */
 export function useBinderViewport(
@@ -8,6 +9,9 @@ export function useBinderViewport(
   useLayoutEffect(() => {
     const canvas = root.current;
     if (!active || !canvas) return;
+    // The App supplies both axes together. WebKit's innerWidth, viewport units
+    // and media queries can describe different displays during a Duo handoff.
+    if (nativeBinderViewport()) return;
     const previousWidth = canvas.style.width;
     const previousHeight = canvas.style.height;
     const sync = () => {

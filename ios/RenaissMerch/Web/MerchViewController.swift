@@ -9,7 +9,9 @@ final class MerchViewController: UIViewController {
     private let progress = UIProgressView(progressViewStyle: .bar)
     private var progressObservation: NSKeyValueObservation?
     private var fullscreenObservation: NSKeyValueObservation?
+    private var boundsObservation: NSKeyValueObservation?
     private var errorView: MerchLoadErrorView?
+    private var publishedViewport = CGSize.zero
     var loginStarted = false
     var selectingStore = false
     lazy var downloads = MerchDownloads(presenter: self)
@@ -22,7 +24,6 @@ final class MerchViewController: UIViewController {
         configuration.preferences.isElementFullscreenEnabled = true
         configuration.preferences.javaScriptCanOpenWindowsAutomatically = false
         configuration.applicationNameForUserAgent = "RenaissMerch/1.0 iOS"
-        MerchNativeLayout.install(on: configuration)
         webView = WKWebView(frame: .zero, configuration: configuration)
         super.init(nibName: nil, bundle: nil)
     }
@@ -54,6 +55,12 @@ final class MerchViewController: UIViewController {
         webView.frame = view.bounds
         webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(webView)
+        publishViewport(webView.bounds.size)
+        boundsObservation = webView.observe(\.bounds, options: [.new]) { [weak self] webView, _ in
+            MainActor.assumeIsolated {
+                self?.publishViewport(webView.bounds.size)
+            }
+        }
         progress.translatesAutoresizingMaskIntoConstraints = false
         progress.tintColor = UIColor(red: 0.67, green: 0.46, blue: 0.62, alpha: 1)
         view.addSubview(progress)
@@ -85,6 +92,25 @@ final class MerchViewController: UIViewController {
         if webView.superview === view, webView.fullscreenState == .notInFullscreen {
             webView.frame = view.bounds
         }
+        publishViewport(webView.bounds.size)
+    }
+
+    override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
+        // Send the target before WebKit begins independently updating its
+        // viewport APIs. Fullscreen's reparented view is owned by its window;
+        // its actual bounds observation supplies the geometry instead.
+        if webView.superview === view, webView.fullscreenState == .notInFullscreen {
+            publishViewport(size)
+        }
+        super.viewWillTransition(to: size, with: coordinator)
+    }
+
+    private func publishViewport(_ size: CGSize) {
+        guard size.width > 0, size.height > 0, size != publishedViewport else { return }
+        publishedViewport = size
+        MerchNativeLayout.install(on: webView.configuration, size: size)
+        // Exact-origin guarded script; no credentials or page-to-native bridge.
+        webView.evaluateJavaScript(MerchNativeLayout.viewportSource(size), completionHandler: nil)
     }
 
     func showLoadError() {
