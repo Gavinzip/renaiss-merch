@@ -2,6 +2,9 @@ import UIKit
 import WebKit
 
 extension MerchViewController: WKNavigationDelegate {
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        beginDocumentNavigation()
+    }
     func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction,
                  decisionHandler: @escaping @MainActor @Sendable (WKNavigationActionPolicy) -> Void) {
         guard let url = action.request.url else { decisionHandler(.cancel); return }
@@ -65,6 +68,7 @@ extension MerchViewController: WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        finishDocumentNavigation()
         loginStarted = false
         if let url = webView.url, policy.isMerch(url), url.path != MerchNavigationPolicy.mapStartPath {
             selectingStore = false
@@ -85,8 +89,13 @@ extension MerchViewController: WKNavigationDelegate {
         // WebKit reports policy-intercepted redirects with legacy error 102.
         // These include our system-auth handoff, external links and downloads;
         // presenting a network-error panel here interrupts that intended flow.
-        if failure.domain == NSURLErrorDomain && failure.code == NSURLErrorCancelled { return }
-        if failure.domain == "WebKitErrorDomain" && failure.code == 102 { return }
+        if (failure.domain == NSURLErrorDomain && failure.code == NSURLErrorCancelled) ||
+           (failure.domain == "WebKitErrorDomain" && failure.code == 102) {
+            // A policy handoff/cancel can leave the committed Merch document
+            // alive without another didFinish. Bind that actual context again.
+            finishDocumentNavigation()
+            return
+        }
         loginStarted = false
         showLoadError()
     }

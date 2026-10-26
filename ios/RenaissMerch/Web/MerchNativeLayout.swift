@@ -2,21 +2,24 @@ import WebKit
 
 /// App-only layout integration. Safari's document gutter must not shrink the
 /// native canvas; individual product surfaces still protect their controls.
+@MainActor
 enum MerchNativeLayout {
     private static let scriptMarker = "// Renaiss native layout\n"
 
     /// One native geometry owns both page size and responsive book state.
     /// WebKit's viewport units, media queries and innerWidth can lag separately
     /// during a Duo display handoff, so none of them can arbitrate this in App.
-    static func viewportSource(_ size: CGSize) -> String {
+    static func viewportSource(_ size: CGSize, preparing: Bool = false) -> String {
         precondition(size.width.isFinite && size.height.isFinite && size.width > 0 && size.height > 0)
         return scriptMarker + """
         if (location.origin === "https://merch.renaisscltb.com") {
             const root = document.documentElement;
             root.dataset.merchNative = "true";
+            root.dataset.merchNativeDocument ??= crypto.randomUUID();
             root.dataset.merchNativeWidth = "\(size.width)";
             root.dataset.merchNativeHeight = "\(size.height)";
             root.dataset.merchNativeViewport = "\(size.width >= 760 ? "wide" : "narrow")";
+            root.dataset.merchNativePreparing = "\(preparing)";
             root.style.setProperty("--merch-native-width", "\(size.width)px");
             root.style.setProperty("--merch-native-height", "\(size.height)px");
             window.dispatchEvent(new Event("merch-native-viewport"));
@@ -30,7 +33,7 @@ enum MerchNativeLayout {
         let controller = configuration.userContentController
         let otherScripts = controller.userScripts.filter { !$0.source.hasPrefix(scriptMarker) }
         controller.removeAllUserScripts()
-        otherScripts.forEach(controller.addUserScript)
+        for script in otherScripts { controller.addUserScript(script) }
         controller.addUserScript(WKUserScript(
             source: viewportSource(size), injectionTime: .atDocumentStart, forMainFrameOnly: true
         ))

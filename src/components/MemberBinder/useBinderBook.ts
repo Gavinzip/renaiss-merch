@@ -9,7 +9,7 @@ import {
 } from "react";
 import { flushSync } from "react-dom";
 import { bendLeaf, clearLeaf, leafOrder, TURN_MS } from "./binderMotion";
-import { BINDER_NATIVE_VIEWPORT_EVENT, binderViewportIsWide, nativeBinderViewport } from "./binderViewport";
+import { BINDER_NATIVE_VIEWPORT_EVENT, binderViewportIsWide, nativeBinderViewport, reportNativeBinderCover } from "./binderViewport";
 
 type TurnOptions = {
   startAngle?: number;
@@ -66,6 +66,7 @@ export function useBinderBook(
       const from = current.current,
         to = Math.max(0, Math.min(leafCount, target));
       if (from === to && startAngle === undefined && animate && !layout) return;
+      if (nativeBinderViewport()) reportNativeBinderCover(false);
       const draggedIndex = drag.current?.index;
       reset();
       const version = epoch.current;
@@ -101,6 +102,7 @@ export function useBinderBook(
           leaf.style.zIndex = String(leafOrder(index, to, leafCount));
         });
         busy.current = false;
+        if (nativeBinderViewport()) reportNativeBinderCover(to === 0);
       };
       if (!animate || reduced.current) {
         finish();
@@ -150,6 +152,12 @@ export function useBinderBook(
   );
   const goRef = useRef(go);
   goRef.current = go;
+  const awaitingNativeOpen = useRef(false);
+  useEffect(() => {
+    if (!nativeBinderViewport()) return;
+    reportNativeBinderCover(current.current === 0 && !busy.current);
+    return () => reportNativeBinderCover(false);
+  }, []);
 
   useEffect(() => {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
@@ -168,6 +176,23 @@ export function useBinderBook(
     let active = true;
     const sync = () => {
       const nextWide = binderViewportIsWide();
+      const native = nativeBinderViewport();
+      if (native?.preparing && nextWide) {
+        awaitingNativeOpen.current = true;
+        if (nextWide !== previousWide) {
+          previousWide = nextWide;
+          goRef.current(0, { animate: false, layout: { wide: true, subPage: 1 } });
+        }
+        return;
+      }
+      if (awaitingNativeOpen.current && nextWide) {
+        awaitingNativeOpen.current = false;
+        // Geometry is already painted in its centered closed pose. Keep the
+        // original book-centering transition and 860 ms leaf animation.
+        goRef.current(Math.min(resting.current, leafCount - 1));
+        return;
+      }
+      awaitingNativeOpen.current = false;
       if (nextWide === previousWide) return;
       previousWide = nextWide;
       // The inner display has room for the full turn. The outer display must
@@ -266,6 +291,7 @@ export function useBinderBook(
       if (!leaf || !book) return;
       reset();
       const rect = book.getBoundingClientRect();
+      if (nativeBinderViewport()) reportNativeBinderCover(false);
       drag.current = {
         index,
         side,
