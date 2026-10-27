@@ -33,7 +33,8 @@ At **2026-10-27 19:00 Asia/Taipei** (`2026-10-27T11:00:00.000Z`), add
 claimed and is retained. The **15 one-month Surf Pro memberships** were postponed
 to **2026-10-28 19:00 Asia/Taipei** (`2026-10-28T11:00:00.000Z`). Pro remains at
 **20 memberships** until then, and becomes **35** at that instant. The Pro card
-is hidden until the server confirms the new allocation; reveal access is blocked
+remains visible in the same muted, fully-claimed style as Mystery Box. Its button
+is disabled until live inventory confirms availability; reveal access is blocked
 before then. The original 20 receipts remain accessible in fulfillment.
 An additional database constraint also blocks the postponed slots in older
 running server versions. No claim records are deleted or changed.

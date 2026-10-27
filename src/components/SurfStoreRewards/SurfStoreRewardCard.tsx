@@ -22,6 +22,8 @@ export function SurfStoreRewardCard({ reward, release, onOpenReward, checking, b
   const copy = surfStoreCopy[locale];
   const inventory = useSurfStoreInventory();
   const isRetired = inventory.status === 'ready' && inventory.rewards[reward.id]?.soldOut === true;
+  // Pro stays visible in its existing retired style until live stock returns.
+  const proUnavailable = reward.id === 'pro-month' && (inventory.status !== 'ready' || isRetired);
   const benefit = copy.benefits[reward.id];
   const titleId = `surf-store-${reward.id}-title`;
   const opensAt = release ? new Intl.DateTimeFormat(locale, {
@@ -53,7 +55,7 @@ export function SurfStoreRewardCard({ reward, release, onOpenReward, checking, b
             <SurfStoreAvailability reward={reward} />
           </div>
           <p className="surf-store-card__description">{benefit.description}</p>
-          <button type="button" disabled={!release?.open || busy}
+          <button type="button" disabled={!release?.open || busy || proUnavailable}
             data-surf-reward-opener={reward.id} onClick={() => onOpenReward(reward.id)}>
             {checking ? releaseCopy.checking : release?.open ? benefit.view : release ? releaseCopy.opens : copy.unavailable}
           </button>
