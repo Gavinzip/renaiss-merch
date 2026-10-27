@@ -4,6 +4,7 @@ import { readHubMemberSbt } from './hub/member-sbt.mjs';
 import { getStorefrontFeatures } from './storefront-features.mjs';
 import { assertSurfStoreOpen } from './surf-store-release.mjs';
 import { identity } from './postgres/claims.mjs';
+import { getSurfStoreAllocation } from '../shared/surf-store-allocations.js';
 
 export function readSurfStoreReward(rewardId) {
   const reward = surfStoreRewards.find(item => item.id === rewardId && item.status !== 'ended');
@@ -17,6 +18,9 @@ export async function readSurfStoreAccess(session, rewardId, {
   if (!getStorefrontFeatures(environment, now).surfRewardsVisible) throw new HttpError(404, 'not_found');
   assertSurfStoreOpen(now);
   const reward = readSurfStoreReward(rewardId);
+  if (reward.id === 'pro-month' && getSurfStoreAllocation(reward.id, now) <= reward.plannedQuantity) {
+    throw new HttpError(403, 'surf_store_not_open');
+  }
   const { wallet } = identity(session);
   if (session.user.isDemo) throw new HttpError(403, 'surf_demo_forbidden');
   const holdings = await readHoldings(session, { forceRefresh });

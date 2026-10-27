@@ -346,9 +346,13 @@ CREATE TABLE surf_store_claims (
   allocation_number integer NOT NULL CONSTRAINT surf_store_claims_allocation_check CHECK (
     allocation_number >= 1 AND allocation_number <= CASE reward_id
       WHEN 'mystery-box' THEN CASE WHEN submitted_at >= TIMESTAMPTZ '2026-10-27 19:00:00+08' THEN 4 ELSE 3 END
-      WHEN 'pro-month' THEN CASE WHEN submitted_at >= TIMESTAMPTZ '2026-10-27 19:00:00+08' THEN 35 ELSE 20 END
+      WHEN 'pro-month' THEN CASE WHEN submitted_at >= TIMESTAMPTZ '2026-10-28 19:00:00+08' THEN 35 ELSE 20 END
       ELSE 0
     END
+  ),
+  CONSTRAINT surf_store_claims_pro_oct28_release_check CHECK (
+    reward_id <> 'pro-month' OR allocation_number <= 20
+    OR submitted_at >= TIMESTAMPTZ '2026-10-28 19:00:00+08'
   ),
   eligibility_json jsonb NOT NULL,
   submitted_at timestamptz NOT NULL,

@@ -26,11 +26,17 @@ A signed-in Renaiss account may claim each product once. The same wallet cannot
 claim the same product through a different account. SBT is a holding requirement;
 no SBT is spent. Current holdings are checked again on submission.
 
-## Scheduled restock — 27 October 2026
+## Scheduled restocks — 27 and 28 October 2026
 
 At **2026-10-27 19:00 Asia/Taipei** (`2026-10-27T11:00:00.000Z`), add
-**one Mystery Box** and **15 one-month Surf Pro memberships**. Cumulative limits
-become **4 boxes / 35 memberships**; before that instant they remain **3 / 20**.
+**one Mystery Box**. Its cumulative limit becomes **4 boxes**; this slot was
+claimed and is retained. The **15 one-month Surf Pro memberships** were postponed
+to **2026-10-28 19:00 Asia/Taipei** (`2026-10-28T11:00:00.000Z`). Pro remains at
+**20 memberships** until then, and becomes **35** at that instant. The Pro card
+is hidden until the server confirms the new allocation; reveal access is blocked
+before then. The original 20 receipts remain accessible in fulfillment.
+An additional database constraint also blocks the postponed slots in older
+running server versions. No claim records are deleted or changed.
 The schedule lives in `shared/surf-store-allocations.js`. The server evaluates
 the effective limit on every inventory read and again inside the submission
 transaction. The database CHECK also rejects additional slots with a submission
