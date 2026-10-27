@@ -11,7 +11,7 @@ export function createSurfStoreRoutes({ claims = () => surfStoreClaims(), sessio
     if (url.pathname === '/api/surf-store/inventory') {
       if (req.method !== 'GET') throw new HttpError(405, 'method_not_allowed');
       // Only aggregate quantities are public; account and Gmail records stay private.
-      sendJson(res, 200, { rewards: await claims().inventory() });
+      sendJson(res, 200, await claims().inventorySnapshot());
       return true;
     }
     if (url.pathname === '/api/admin/surf-store/claims') {

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { surfStoreRewards } from '../../shared/surf-store-rewards.js';
+import { getNextSurfStoreRestock, getSurfStoreAllocation } from '../../shared/surf-store-allocations.js';
 import { normalizeSurfStoreEmail } from '../../shared/surf-store-email.js';
 import { HttpError } from '../http.mjs';
 import { getStorefrontFeatures } from '../storefront-features.mjs';
@@ -33,13 +34,14 @@ export function surfStoreClaims({ database = getPool(), schema = 'public', clock
     if (session.user.isDemo) throw new HttpError(403, 'surf_demo_forbidden');
     return { reward, ...member };
   }
-  async function inventory(client = database) {
+  async function inventory(client = database, now = clock()) {
     const { rows } = await client.query(`SELECT reward_id, count(*)::integer AS claimed FROM ${table} GROUP BY reward_id`);
     return surfStoreRewards.filter(r => r.status !== 'ended').map(reward => {
       const claimed = rows.find(row => row.reward_id === reward.id)?.claimed ?? 0;
-      if (!Number.isSafeInteger(claimed) || claimed < 0 || claimed > reward.plannedQuantity) throw new Error('surf_allocation_invalid');
-      return { rewardId: reward.id, limit: reward.plannedQuantity, claimed,
-        remaining: reward.plannedQuantity - claimed, soldOut: claimed === reward.plannedQuantity };
+      const limit = getSurfStoreAllocation(reward.id, now);
+      if (!Number.isSafeInteger(claimed) || claimed < 0 || claimed > limit) throw new Error('surf_allocation_invalid');
+      return { rewardId: reward.id, limit, claimed,
+        remaining: limit - claimed, soldOut: claimed === limit };
     });
   }
   async function findExisting(client, rewardId, sub, wallet) {
@@ -54,6 +56,11 @@ export function surfStoreClaims({ database = getPool(), schema = 'public', clock
   }
   return {
     inventory,
+    async inventorySnapshot() {
+      const now = clock();
+      return { rewards: await inventory(database, now), serverNow: new Date(now).toISOString(),
+        nextRestockAt: getNextSurfStoreRestock(now) };
+    },
     async read(session, rewardId) {
       const { reward, sub } = requireOpen(session, rewardId);
       // A member still owns their saved receipt after changing wallets.

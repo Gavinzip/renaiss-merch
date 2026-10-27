@@ -9,7 +9,8 @@ type ClaimState = {
 };
 
 export function useSurfStoreClaim(rewardId: SurfActiveStoreReward['id'], enabled: boolean) {
-  const { refresh: refreshInventory } = useSurfStoreInventory();
+  const inventory = useSurfStoreInventory();
+  const { refresh: refreshInventory } = inventory;
   const [data, setData] = useState<ClaimState | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -18,6 +19,18 @@ export function useSurfStoreClaim(rewardId: SurfActiveStoreReward['id'], enabled
   const submittingRef = useRef(false);
   const submissionRevision = useRef(0);
   const pendingSubmission = useRef<AbortController | null>(null);
+  const previousSoldOut = useRef<boolean | undefined>(undefined);
+  const stock = inventory.rewards[rewardId];
+  useEffect(() => {
+    if (inventory.status !== 'ready' || !stock) return;
+    const reopened = previousSoldOut.current === true && !stock.soldOut;
+    previousSoldOut.current = stock.soldOut;
+    // A server-confirmed restock clears a previous sold-out submission error.
+    if (reopened && error === 'surf_sold_out') {
+      setError(null);
+      setRevision(value => value + 1);
+    }
+  }, [inventory.status, stock, error]);
   useEffect(() => () => pendingSubmission.current?.abort(), []);
   useEffect(() => {
     if (!enabled) return;

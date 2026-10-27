@@ -26,6 +26,29 @@ A signed-in Renaiss account may claim each product once. The same wallet cannot
 claim the same product through a different account. SBT is a holding requirement;
 no SBT is spent. Current holdings are checked again on submission.
 
+## Scheduled restock — 27 October 2026
+
+At **2026-10-27 19:00 Asia/Taipei** (`2026-10-27T11:00:00.000Z`), add
+**one Mystery Box** and **15 one-month Surf Pro memberships**. Cumulative limits
+become **4 boxes / 35 memberships**; before that instant they remain **3 / 20**.
+The schedule lives in `shared/surf-store-allocations.js`. The server evaluates
+the effective limit on every inventory read and again inside the submission
+transaction. The database CHECK also rejects additional slots with a submission
+timestamp before the restock instant. No cron or deployment runs at the deadline.
+
+Do not delete, reset, renumber or replace the original 23 claims. Account and
+wallet uniqueness remain scoped to each product for the lifetime of the store:
+a previous box recipient cannot claim another box, a previous Pro recipient
+cannot claim another Pro, and claiming one product does not disqualify someone
+from the other. Retrying an identical existing registration returns its receipt
+without taking a new allocation. SBT requirements stay at 120 / 100.
+
+Inventory responses include `serverNow` and `nextRestockAt`. An open page requests
+fresh inventory at the server-specified deadline, as well as every ten seconds
+and on visibility/focus changes. It never unlocks stock using the device clock.
+Cards return from the fully-claimed style only after the server confirms new
+availability. Existing receipts and fulfillment records remain accessible.
+
 Submitting a complete email address reserves an allocation immediately. Any email
 provider is accepted, including Gmail, 163, Outlook, QQ and company domains. The
 address should be the one used to sign in to SURF; it does not have to match the
@@ -74,8 +97,9 @@ eligibility, storage failures and rendering failures surface an error.
 
 ## Deployment
 
-Apply both `server/postgres/migrations/20261020-surf-store-claims.sql` and
-`server/postgres/migrations/20261021-surf-store-email.sql` using
+Apply `server/postgres/migrations/20261020-surf-store-claims.sql`,
+`server/postgres/migrations/20261021-surf-store-email.sql` and
+`server/postgres/migrations/20261027-surf-store-restock.sql` using
 `node scripts/migrate-surf-store.mjs` with the intended runtime configuration before
 publishing code. Set `MERCH_MIGRATION_DATABASE_URL_FILE` to the private owner
 connection-string file when the runtime role has no DDL privileges. The script

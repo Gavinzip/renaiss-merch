@@ -13,7 +13,8 @@ export function SurfRewardFacts({ reward, animate = false, inventory, inventoryS
 
   return (
     <dl className="surf-reward-facts">
-      <div data-motion-item={animate || undefined}><dt>{copy.allocation}</dt><dd>{copy.quantity(reward.plannedQuantity, reward.approximateQuantity)}</dd></div>
+      <div data-motion-item={animate || undefined}><dt>{copy.allocation}</dt><dd>{inventoryStatus === 'ready' && inventory
+        ? copy.quantity(inventory.limit, reward.approximateQuantity) : copy.pending}</dd></div>
       {inventoryStatus ? <div data-motion-item={animate || undefined} role="status">
         <dt>{surfAccountCopy[locale].remaining}</dt>
         <dd>{inventoryStatus === 'ready' && inventory

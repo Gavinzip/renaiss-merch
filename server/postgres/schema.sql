@@ -343,7 +343,13 @@ CREATE TABLE surf_store_claims (
     AND length(split_part(gmail, '@', 1)) <= 64
     AND gmail ~ '^[a-z0-9!#$%&''*+/=?^_`{|}~-]+([.][a-z0-9!#$%&''*+/=?^_`{|}~-]+)*@[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?([.][a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$'
   ),
-  allocation_number integer NOT NULL CHECK (allocation_number >= 1 AND allocation_number <= CASE reward_id WHEN 'mystery-box' THEN 3 ELSE 20 END),
+  allocation_number integer NOT NULL CONSTRAINT surf_store_claims_allocation_check CHECK (
+    allocation_number >= 1 AND allocation_number <= CASE reward_id
+      WHEN 'mystery-box' THEN CASE WHEN submitted_at >= TIMESTAMPTZ '2026-10-27 19:00:00+08' THEN 4 ELSE 3 END
+      WHEN 'pro-month' THEN CASE WHEN submitted_at >= TIMESTAMPTZ '2026-10-27 19:00:00+08' THEN 35 ELSE 20 END
+      ELSE 0
+    END
+  ),
   eligibility_json jsonb NOT NULL,
   submitted_at timestamptz NOT NULL,
   UNIQUE (reward_id, user_sub),

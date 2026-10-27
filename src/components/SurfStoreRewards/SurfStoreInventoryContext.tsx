@@ -9,14 +9,21 @@ const Context = createContext<InventoryContext | null>(null);
 export function SurfStoreInventoryProvider({ enabled, children }: { enabled: boolean; children: ReactNode }) {
   const [state, setState] = useState<InventoryState>({ status: 'loading', rewards: {} });
   const pending = useRef<AbortController | null>(null);
-  const refresh = useCallback(async () => {
+  const restockTimer = useRef<number | undefined>(undefined);
+  const refresh: InventoryContext['refresh'] = useCallback(async () => {
     if (!enabled) return;
+    window.clearTimeout(restockTimer.current);
     pending.current?.abort();
     const controller = new AbortController();
     pending.current = controller;
     try {
-      const rewards = await readSurfStoreInventory(AbortSignal.any([controller.signal, AbortSignal.timeout(15_000)]));
-      if (!controller.signal.aborted) setState({ status: 'ready', rewards });
+      const snapshot = await readSurfStoreInventory(AbortSignal.any([controller.signal, AbortSignal.timeout(15_000)]));
+      if (!controller.signal.aborted) {
+        setState({ status: 'ready', rewards: snapshot.rewards });
+        // Recheck the server at the deadline; the device clock never unlocks stock.
+        if (snapshot.refreshAfterMs !== null) restockTimer.current = window.setTimeout(
+          () => void refresh(), Math.max(250, Math.min(snapshot.refreshAfterMs, 2_147_483_647)));
+      }
     } catch {
       // Never substitute the configured allocation for unavailable live stock.
       if (!controller.signal.aborted) setState({ status: 'error', rewards: {} });
@@ -33,6 +40,7 @@ export function SurfStoreInventoryProvider({ enabled, children }: { enabled: boo
     document.addEventListener('visibilitychange', whenVisible);
     return () => {
       pending.current?.abort();
+      window.clearTimeout(restockTimer.current);
       window.clearInterval(interval);
       window.removeEventListener('focus', whenVisible);
       document.removeEventListener('visibilitychange', whenVisible);

@@ -32,7 +32,7 @@ export function SurfStoreAvailability({ reward }: { reward: SurfActiveStoreRewar
   if (ready && stock.soldOut) return <StoreReleaseStatus />;
 
   return <div className="surf-store-availability" data-state={state} role="status"
-    title={copy.limited(reward.plannedQuantity)} aria-live="polite" aria-atomic="true">
+    title={ready ? copy.limited(stock.limit) : undefined} aria-live="polite" aria-atomic="true">
     <span className="surf-store-availability__remaining" key={`${state}-${stock?.remaining}`}>
       {ready ? stock.soldOut ? copy.soldOut : <>
         {copy.before ? <span>{copy.before}</span> : null}
