@@ -80,6 +80,34 @@
       "destination": "/api/index"
     },
     {
+      "source": "/api/public-proofs/worlds-2026/rounds",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/public-proofs/worlds-2026/quarter/history",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/public-proofs/worlds-2026/quarter/bundle",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/public-proofs/worlds-2026/semi/history",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/public-proofs/worlds-2026/semi/bundle",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/public-proofs/worlds-2026/final/history",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/public-proofs/worlds-2026/final/bundle",
+      "destination": "/api/index"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/index"
     },
