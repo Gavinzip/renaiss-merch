@@ -1,4 +1,5 @@
 import { logNodeRuntimeVersion } from '../server/node-runtime-version.mjs';
+import { captureSourceVersion } from '../server/source-version.mjs';
 
 import { HttpError, sendJson, sendHttpError } from "../server/http.mjs";
 import { getStorefrontMode } from "../server/storefront-mode.mjs";
@@ -39,10 +40,15 @@ import { createPrivateMediaSignedUrl } from "../server/private-media-signed-url.
 import { handleBackupRoute } from "../server/postgres/backup.mjs";
 import { handleWorkflowRoutes } from "../server/postgres/workflow-routes.mjs";
 import { handleBinderRoutes } from '../server/binder/routes.mjs';
+import { createPublicProofRoutes } from '../server/public-proof/routes.mjs';
 
 const tables = sqlTables();
 const handleSurfStoreRoutes = createSurfStoreRoutes();
+const handlePublicProofRoutes = createPublicProofRoutes();
+const runtimeSourceVersion = captureSourceVersion();
 const allowedPaths = [
+  '/api/public-proofs/worlds-2026/rounds',
+  '/api/public-proofs/worlds-2026/:stage/bundle',
   '/api/binder',
   '/api/binder/library',
   "/api/storefront/features",
@@ -87,6 +93,7 @@ export default async function handler(req, res) {
     if (getStorefrontMode() !== "production")
       throw new HttpError(503, "pilot_requires_production_storefront_mode");
     const url = new URL(req.url, "http://localhost");
+    if (await handlePublicProofRoutes(req, res, url)) return;
     if (await handleBinderRoutes(req, res, url)) return;
     if (url.pathname === "/healthz") {
       method(req, "GET", "HEAD");
@@ -99,7 +106,7 @@ export default async function handler(req, res) {
         ok: true,
         service: "renaiss-merch-pilot",
         database: "postgres",
-        sourceCommit: "9115165d3c1d017b69cc8d5891ce77b74131ab32",
+        ...runtimeSourceVersion,
         migrationComplete: false,
         productionDataImported: Boolean(process.env.MERCH_PILOT_DATA_IMPORTED_AT),
         productionDataSnapshotAt: process.env.MERCH_PILOT_DATA_IMPORTED_AT || null,

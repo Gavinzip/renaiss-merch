@@ -4,7 +4,7 @@ import { HubWordmark } from "./HubWordmark";
 import { HubLogo } from "./HubLogo";
 import { HubLanguageMenu } from "./HubLanguageMenu";
 
-export type HubNavigationPage = "home" | "store" | "campaign" | "events" | "binder";
+export type HubNavigationPage = "home" | "store" | "campaign" | "events" | "binder" | "verify";
 
 export const navigationCopy = {
   "zh-TW": { open: "展開側邊欄", close: "收合側邊欄", label: "Renaiss 導覽", home: "總覽", binder: "我的收藏冊", quest: "Partner Quest", events: "活動回顧", merch: "Renaiss Merch", preparing: "準備商店中…" },

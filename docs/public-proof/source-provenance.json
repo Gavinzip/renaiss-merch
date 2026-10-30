@@ -1,0 +1,36 @@
+{
+  "sourceCheckout": "/Users/gavin/.codex/worktrees/lol-final-release/lol competion",
+  "sourceCommit": "4b7cd4a94874801006b31cfaaea53b878d276b3c",
+  "files": [
+    {
+      "path": "shared/public-proof/worlds/protocol.mjs",
+      "sha256": "c767a07960b4f28887d29570f4524b0dea0fbff60a1ed6db3b1840185de653e6"
+    },
+    {
+      "path": "shared/public-proof/worlds/chain.mjs",
+      "sha256": "798298b99568c886aeb8de5c413f7feb620a3f66d5eaf04dc04f7ca1e2186db0"
+    },
+    {
+      "path": "shared/public-proof/worlds/registry-build.json",
+      "sha256": "670a0633e7a43335a0bd7a8aa56107045ef0f478430deda550b845d84d294eae"
+    },
+    {
+      "path": "shared/public-proof/worlds/round-identity.mjs",
+      "sha256": "60288ddf43e684f08b60554ef1143c6b913a6c4b52477e530c25116920a00791"
+    },
+    {
+      "path": "shared/public-proof/worlds/authority.mjs",
+      "sha256": "7dfadb0a591289e7a123390556956ad367e11c150735a1264dae7e65e8a79c4f"
+    },
+    {
+      "path": "shared/public-proof/worlds/contract-build.json",
+      "sha256": "fdf5fe54485505cdb1c376c4d75a2eb00b5d47856854f1fe696757df530c227b"
+    }
+  ],
+  "visualSource": {
+    "repository": "/Users/gavin/Documents/ChatGPT/k_vrf",
+    "commit": "107263c2b484912e491a4e4340c7a91d44dd174a",
+    "variant": "six-section scrolling story",
+    "roleCodes": "W / R1 / R2 with full role captions"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "compiler": "0.8.24+commit.e11b9ed9.Emscripten.clang",
+  "optimizerRuns": 200,
+  "evmVersion": "paris",
+  "sourceHash": "0xc989f50e797fcb89f1e828d8a68779f4ebd24df751ce8df46279d741d3997485",
+  "runtimeHash": "0xf29b1c3187bfae6858fcec596bd9196ecacc8757074dc0292d33c508aec73389"
+}

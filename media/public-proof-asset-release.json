@@ -1,0 +1,52 @@
+{
+  "access": "public",
+  "bucket": "renaiss-merch-pilot-20261018",
+  "prefix": "public-proof/fair/v1",
+  "release": "r519087e5a9ed18b29d80",
+  "assets": {
+    "fair-die.webp": {
+      "source": "src/components/PublicVerification/art/fair-die.webp",
+      "path": "fair-die.webp",
+      "type": "binary",
+      "contentType": "image/webp",
+      "encodedBytes": 7258,
+      "encodedSha256": "b8ec637c1797230d78b33a4e1b9df19a8007755c5bb4f83edb56e6b381725326"
+    },
+    "fair-logo.svg": {
+      "source": "src/components/PublicVerification/art/fair-logo.svg",
+      "path": "fair-logo.svg",
+      "type": "binary",
+      "contentEncoding": "gzip",
+      "contentType": "image/svg+xml",
+      "encodedBytes": 3954,
+      "encodedSha256": "afe9f49acd9616ff9a9dd9888d19839d37a045a8a81bac838df91bea31586984"
+    },
+    "manrope-latin-variable": {
+      "source": "src/components/PublicVerification/fonts/manrope-latin-variable.woff2",
+      "path": "manrope-latin-variable.woff2",
+      "type": "binary",
+      "contentType": "font/woff2",
+      "encodedBytes": 24576,
+      "encodedSha256": "e310b55a7fd9677f5e3555e6c6c4d064fa1f1d24393f0ddbe217cea12a8c432f"
+    },
+    "poppins-latin-600": {
+      "source": "src/components/PublicVerification/fonts/poppins-latin-600.woff2",
+      "path": "poppins-latin-600.woff2",
+      "type": "binary",
+      "contentType": "font/woff2",
+      "encodedBytes": 7992,
+      "encodedSha256": "872e862918591a9e824dc03ed92f05729435ffbb8ebbb10eff7eda26592b1798"
+    },
+    "poppins-latin-700": {
+      "source": "src/components/PublicVerification/fonts/poppins-latin-700.woff2",
+      "path": "poppins-latin-700.woff2",
+      "type": "binary",
+      "contentType": "font/woff2",
+      "encodedBytes": 7848,
+      "encodedSha256": "197a3cbd7290c242c5c765268cdd69a9a39867fdc80cd13071f243a81c56fb76"
+    }
+  },
+  "contentHash": "519087e5a9ed18b29d80ad9de48d7510d9ad5bd2d8bf0130ecca55f029b8bd7a",
+  "fileCount": 5,
+  "totalBytes": 51628
+}

@@ -1,0 +1,16 @@
+{
+  "repository": "Gavinzip/renaiss-kbw-vrf-drama",
+  "commit": "28c9ca1a50a72e14ebf0583128a0f017dc17e43d",
+  "source": "packages/ecvrf/src",
+  "changes": "Relative TypeScript import extensions made explicit for Node 24. No cryptographic changes.",
+  "sha256": {
+    "data-conversions.ts": "716a512d9bc233298287fc5c18337ac6b8f1c768f3eb09edc0227d454a38e692",
+    "auxiliary.ts": "0598a7338a25abb0177db5c22a3241c15c33327a6eb3a4a7493e24341908229f",
+    "verify.ts": "98ac9976c30a172daeb3ea92257057ada75a681de3a0fc9203270c06840407ab",
+    "ciphersuite.ts": "4e3b04814b9958c96524009a070618727cde1c2d83f091bdab8499ad871d639c",
+    "prove.ts": "aff2a83ac5b8bf3a2adbb2c24ce30799911089f529f79ceb6d1cdc2114b05884",
+    "rfc8032-keys.ts": "78557bb597eb43aca7538819b7964332928fb87aa57d7497135e9e2f53388745",
+    "proof-to-hash.ts": "fc7181fa1fe2682ce521f3b5d7e1f0f4dfcb6ae0c24ac86d9104d12d80e81e3b",
+    "index.ts": "7e258d15691cd92ceec8bd49df4a2059b0607e50b298a3f8f284df119ced240f"
+  }
+}

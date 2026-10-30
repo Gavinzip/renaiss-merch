@@ -1,8 +1,9 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { developmentPreviewRoutes } from './vite/developmentPreviewRoutes';
+import { publicProofMedia } from './vite/publicProofMedia';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       input: {
@@ -14,7 +15,7 @@ export default defineConfig({
       }
     }
   },
-  plugins: [developmentPreviewRoutes(), react()],
+  plugins: [publicProofMedia(mode, { ...loadEnv(mode, process.cwd(), ''), ...process.env } as Record<string, string>), developmentPreviewRoutes(), react()],
   resolve: {
     dedupe: ['react', 'react-dom', 'three']
   },
@@ -27,4 +28,4 @@ export default defineConfig({
       'react/jsx-runtime'
     ]
   }
-});
+}));

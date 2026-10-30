@@ -4,6 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "build:local": "tsc -b && vite build --mode local-preview && node scripts/vercel-finalize.mjs",
+    "proof:test": "node --test tests/public-proof/*.test.mjs",
     "dev": "NODE_ENV=production node server/local.mjs --build",
     "dev:client": "vite --host 127.0.0.1",
     "build": "node scripts/draw-results/compile.mjs --check && node scripts/chainlink-surf/compile.mjs && node scripts/chainlink-surf/compile-reusable.mjs && node scripts/r2-merch-assets.mjs assert-config && tsc -b && vite build && node scripts/r2-merch-assets.mjs assert-build",
@@ -22,6 +24,8 @@
     "build:pilot": "npm run build && node scripts/vercel-finalize.mjs"
   },
   "dependencies": {
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0",
     "better-sqlite3": "^12.11.1",
     "ethers": "^6.17.0",
     "jose": "^6.2.3",
@@ -43,6 +47,7 @@
     "@vitejs/plugin-react": "^5.2.0",
     "ogl": "^1.0.11",
     "postcss": "^8.5.23",
+    "postcss-prefix-selector": "^2.2.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "sharp": "^0.35.3",

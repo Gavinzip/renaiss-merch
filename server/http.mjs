@@ -43,6 +43,13 @@ export function toHttpError(error) {
 }
 
 export function sendHttpError(res, error) {
+  // A cancelled download can reject its stream after headers were written.
+  // The response cannot be replaced with JSON at that point.
+  if (res.destroyed || res.writableEnded) return;
+  if (res.headersSent) {
+    res.destroy(error);
+    return;
+  }
   const httpError = toHttpError(error);
 
   sendJson(res, httpError.status, {
