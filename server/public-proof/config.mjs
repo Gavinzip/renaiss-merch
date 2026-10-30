@@ -1,5 +1,5 @@
 import { isAddress, ZeroAddress } from 'ethers';
-import { RUNTIME_HASH, supportedRuntime } from '../../shared/public-proof/worlds/chain.mjs';
+import { RUNTIME_HASH, supportedRuntime } from '../../shared/public-proof/worlds/runtime-catalog.mjs';
 import { HttpError } from '../http.mjs';
 
 export const stages = Object.freeze(['quarter', 'semi', 'final']);

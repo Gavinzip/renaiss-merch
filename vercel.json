@@ -10,7 +10,7 @@
   "functions": {
     "api/index.mjs": {
       "maxDuration": 800,
-      "includeFiles": "server/vendor/backup/**"
+      "includeFiles": "{server/vendor/backup/**,server/public-proof/**,shared/public-proof/worlds/*.json,shared/public-proof/worlds/runtime-catalog.mjs}"
     }
   },
   "redirects": [

@@ -76,3 +76,9 @@ fulfillment. Actual user visual acceptance remains separate.
 
 Existing Store, Surf quotas, Gmail/email handling, login, eligibility, voting,
 shipping and formal participant records are outside this change.
+
+The server control plane loads only the two reviewed build manifests through
+`runtime-catalog.mjs`. It does not import the browser/CLI cryptographic engine.
+Vercel explicitly packages this metadata and the existing backup tools. This
+separation prevents a vendor TypeScript packaging omission from failing shared
+API initialization. Cryptographic verification remains in the original Worker.
