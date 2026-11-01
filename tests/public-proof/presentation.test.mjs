@@ -5,7 +5,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createServer } from 'vite';
 import { fixture, testBundle } from './fixtures.mjs';
-import { digest } from '../../shared/public-proof/worlds/protocol.mjs';
+import { POLICY, digest } from '../../shared/public-proof/worlds/protocol.mjs';
 import { RUNTIME_HASH } from '../../shared/public-proof/worlds/chain.mjs';
 import { createWorldsVerification } from '../../shared/public-proof/worlds/steps.mjs';
 import { publicProofMedia } from '../../vite/publicProofMedia.ts';
@@ -56,10 +56,19 @@ test('latest complete scene renderer handles real adapter states without KBW mat
    const scene=renderToStaticMarkup(createElement(ProofScene,{chapter:5,progress:1,data:{
     verification:{ticket:{...pick,role,prizeName:bundle.manifest.matches[0].prize.name}}
    }}));
+   if(index>0){assert.equal(scene,'');continue;}
    assert.ok(scene.includes(`<small>${role}</small>`));
    assert.ok(scene.includes(`<strong aria-label="${role}">${code}</strong>`));
    assert.ok(!scene.includes(`<strong>${role}</strong>`));
   }
+  const currentBundle=testBundle(fixture('final',[3],POLICY),chain);
+  const currentProof={bundle:currentBundle,bundleHash:digest(currentBundle),authority};
+  const currentVerifier=createWorldsVerification({bundle:currentBundle,expectedBundleHash:currentProof.bundleHash,authority,readChain:async()=>chain});
+  const currentChecks=[];for(let n=1;n<=6;n++)currentChecks.push(await currentVerifier.run(n));
+  const current=renderToStaticMarkup(createElement(FairProofSequence,{...props,proof:currentProof,ready:true,checks:currentChecks}));
+  assert.ok(current.includes('All six checks completed in this browser'));
+  assert.equal((current.match(/class="ps-card-artifact"/g)||[]).length,1);
+  assert.ok(!current.includes('reserve 1'));assert.ok(!current.includes('reserve 2'));
   const stopped=renderToStaticMarkup(createElement(FairProofSequence,{...props,error:'RPC unavailable'}));
   assert.ok(stopped.includes('No browser-verified result is shown'));
   assert.ok(!stopped.includes('All six checks completed'));

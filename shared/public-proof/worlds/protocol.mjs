@@ -4,11 +4,12 @@ import {sha512} from '@noble/hashes/sha2.js';
 import {keccak_256} from '@noble/hashes/sha3.js';
 import {verify} from './vendor/verify.ts';
 import {registryRoundId} from './round-identity.mjs';
+import {selectionCountForPolicy,MIN_COMMITTED_TICKETS} from './draw-policy.mjs';
+export {POLICY,LEGACY_POLICY,selectionCountForPolicy} from './draw-policy.mjs';
 
 export const PROTOCOL='renaiss-worlds-ticket-ecvrf-v1';
 export const PROTOCOL_HASH=keccak256(toUtf8Bytes(PROTOCOL));
 export const CAMPAIGN='worlds-2026';
-export const POLICY=Object.freeze({primary:1,alternates:2,uniqueTicketsPerMatch:true,excludeOtherTicketsOfSamePerson:false});
 const abi=AbiCoder.defaultAbiCoder();
 export const hash32=(value)=>typeof value==='string'&&/^0x[0-9a-f]{64}$/i.test(value);
 export const same=(a,b)=>typeof a==='string'&&typeof b==='string'&&a.toLowerCase()===b.toLowerCase();
@@ -32,7 +33,7 @@ export function validateManifest(m){
     drawRoundId=registryRoundId(m.roundIdentity);
   }
   requireThat(m?.protocol===PROTOCOL&&m.campaignId===CAMPAIGN&&expected[m.stage]&&same(m.roundId,drawRoundId),'Wrong protocol, campaign or round.');
-  requireThat(canonical(m.policy)===canonical(POLICY),'Ticket or reserve policy differs.');
+  const selectionCount=selectionCountForPolicy(m.policy);
   requireThat(hash32(m.roundLedgerHash)&&Array.isArray(m.matches)&&Array.isArray(m.excluded),'Incomplete round manifest.');
   requireThat(typeof m.sourceRoundJson==='string','Original round bytes are missing.');
   const sourceRound=JSON.parse(m.sourceRoundJson);
@@ -44,8 +45,8 @@ export function validateManifest(m){
   let previous='';
   for(const match of m.matches){
     requireThat(match.matchId>previous&&same(match.matchKey,matchKeyFor(match.matchId))&&hash32(match.ledgerHash)&&/^[a-f0-9]{64}$/i.test(match.identityHash),'Invalid match ordering or identity.');previous=match.matchId;
-    requireThat(Number.isSafeInteger(match.totalTickets)&&match.totalTickets>=3&&match.totalTickets<=1_000_000,'Each match requires 3–1,000,000 eligible tickets.');
-    requireThat(match.prize?.units===1&&match.prize?.primary===1&&match.prize?.alternates===2&&typeof match.prize?.productId==='string','Invalid prize plan.');
+    requireThat(Number.isSafeInteger(match.totalTickets)&&match.totalTickets>=selectionCount&&match.totalTickets<=1_000_000,'Eligible tickets do not cover the committed selection count.');
+    requireThat(match.prize?.units===1&&match.prize?.primary===m.policy.primary&&match.prize?.alternates===m.policy.alternates&&typeof match.prize?.productId==='string','Invalid prize plan.');
     requireThat(Array.isArray(match.entries)&&match.entries.length>0,'Empty ticket mapping.');
     const votes=new Set();let cursor=1;
     for(const entry of match.entries){
@@ -54,12 +55,13 @@ export function validateManifest(m){
     }
     requireThat(cursor===match.totalTickets+1,'Ticket ranges and total disagree.');
     // This is the exact existing v1 ledger encoding, retained as a source binding.
-    const ledger={version:1,campaignId:CAMPAIGN,matchId:match.matchId,winner:match.winner,prizeSlotCount:1,alternateCount:2,totalTickets:match.totalTickets,entries:match.entries.map(e=>({voteId:e.voteId,participantId:e.participantId,start:e.start,end:e.end}))};
+    const ledger={version:1,campaignId:CAMPAIGN,matchId:match.matchId,winner:match.winner,prizeSlotCount:m.policy.primary,alternateCount:m.policy.alternates,totalTickets:match.totalTickets,entries:match.entries.map(e=>({voteId:e.voteId,participantId:e.participantId,start:e.start,end:e.end}))};
     requireThat(same(keccak256(toUtf8Bytes(JSON.stringify(ledger))),match.ledgerHash),'Ticket mapping differs from the locked source ledger.');
     const source=sourceRound.matches.find(x=>x.matchId===match.matchId);
     requireThat(source&&source.status==='finished'&&same(source.identityHash,match.identityHash)&&source.winner===match.winner&&same(source.manifest.matchKey,match.matchKey)&&same(source.manifest.roundId,sourceRound.roundId)&&same(source.manifest.ledgerHash,match.ledgerHash)&&JSON.stringify(source.manifest.publicLedger)===JSON.stringify(ledger),'Manifest no longer matches the original frozen round.');
   }
-  requireThat(m.matches.reduce((n,x)=>n+x.totalTickets,0)<=1_000_000,'Round ticket count exceeds v1 capacity.');
+  const total=m.matches.reduce((n,x)=>n+x.totalTickets,0);
+  requireThat(total>=MIN_COMMITTED_TICKETS&&total<=1_000_000,'Round ticket count is outside the approved contract limits.');
   for(const entry of m.excluded)requireThat(expected[m.stage].includes(entry.matchId)&&['cancelled','no-eligible-tickets'].includes(entry.reason),'Invalid excluded match.');
   return m;
 }
@@ -121,11 +123,12 @@ export function verifiedBeta(publicKey,alpha,proofHex){
 // Counter advances on every 512-bit word, including rejected words.
 export function selectTickets(manifest,betaHex,tree=buildTicketTree(manifest)){
   requireThat(/^0x[0-9a-f]{128}$/i.test(betaHex),'ECVRF beta must be 64 bytes.');
+  const selectionCount=selectionCountForPolicy(manifest.policy);
   let counter=0n;const picks=[],beta=getBytes(betaHex);
   const below=bound=>sampleBelow(bound,()=>{const bytes=getBytes(`0x${(counter++).toString(16).padStart(64,'0')}`);return BigInt(hexlify(sha512(getBytes(concat([beta,bytes])))));});
   for(const match of manifest.matches){
     const swaps=new Map(),offset=tree.offsets.get(match.matchId);
-    for(let rank=0;rank<3;rank++){
+    for(let rank=0;rank<selectionCount;rank++){
       const j=rank+below(match.totalTickets-rank),at=swaps.get(j)??j;
       swaps.set(j,swaps.get(rank)??rank);swaps.set(rank,at);
       const ticket=tree.tickets[offset+at];

@@ -3,6 +3,8 @@ export const PROTOCOL: string;
 export const PROTOCOL_HASH: string;
 export const CAMPAIGN: string;
 export const POLICY: object;
+export const LEGACY_POLICY: object;
+export function selectionCountForPolicy(policy: unknown): number;
 export function canonical(value: unknown): string;
 export function digest(value: unknown): string;
 export function same(a: unknown, b: unknown): boolean;

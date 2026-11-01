@@ -96,7 +96,7 @@ function PoolScene({ data, progress }: { data: ProofStoryData; progress: number 
   const left=total!==undefined&&used!==undefined?total-used:null;
   const shifted = motionPhase(progress, .42, .76);
   return <div className="ps-scene ps-pool-scene">
-    <SceneHeading source={data.replay ? "04 · REPLAYED IN YOUR BROWSER" : "04 · SELECTION NOT YET VERIFIED"} title="One stream. Ordered tickets." description="Worlds uses SHA-512, rejection sampling and forward Fisher–Yates: one winner and two ordered reserves per match." />
+    <SceneHeading source={data.replay ? "04 · REPLAYED IN YOUR BROWSER" : "04 · SELECTION NOT YET VERIFIED"} title="One stream. Committed rules." description="Worlds uses SHA-512, rejection sampling and forward Fisher–Yates. The committed prize plan fixes the number of winning tickets." />
     <div className="ps-pool-show">
       <div className="ps-pool-stack"><div className="ps-pool-card ps-pool-card-back" /><div className="ps-pool-card ps-pool-card-middle" /><div className="ps-pool-card ps-pool-card-front"><Layers3 size={27} strokeWidth={1.25} aria-hidden="true" /><small>SEALED SET</small><strong>{total || "—"}</strong><span>fixed tickets</span></div></div>
       <div className="ps-pool-flight" aria-hidden="true">
@@ -108,16 +108,17 @@ function PoolScene({ data, progress }: { data: ProofStoryData; progress: number 
       <ProofFlowArrow className="ps-pool-arrow" progress={progress} start={.68} end={.86} label="LEAVE" />
       <div className="ps-pool-left" style={focusStyle(progress, .79, 1)}><small>STILL AVAILABLE</small><strong>{left??"—"}</strong><span>unselected committed tickets</span></div>
     </div>
-    <SceneNote>The stream counter advances on every word, including rejected words. The exact committed match and reserve order are preserved.</SceneNote>
+    <SceneNote>The stream counter advances on every word, including rejected words. The exact committed match order and prize plan are preserved.</SceneNote>
   </div>;
 }
 
 function CardScene({ data, progress }: { data: ProofStoryData; progress: number }) {
   const slot = data.verification.ticket;
-  const roleCode = slot.rank === 0 ? 'W' : `R${slot.rank}`;
+  if(slot.rank!==0)return null;
+  const roleCode = 'W';
   const arrive = motionPhase(progress, .39, .84);
   return <div className="ps-scene ps-card-scene">
-    <SceneHeading source="05 · SITE PUBLISHED" title="Here is the published ticket." description="The event publishes each ticket, match and participant commitment. Browser replay independently checks the same winner and reserve order." />
+    <SceneHeading source="05 · SITE PUBLISHED" title="Here is the winning ticket." description="The event publishes the winning ticket, match and participant commitment. Browser replay independently checks that exact selection." />
     <div className="ps-publish-show"><div className="ps-publication-mark" style={{ opacity: .65 + motionPhase(progress, .2, .52) * .35 }}><span>RENAISS FAIR</span><strong>Published result</strong><small>THIS WEBSITE</small></div><ProofFlowArrow className="ps-publish-arrow" progress={progress} start={.35} end={.62} label="PUBLISH" />
       <div className="ps-card-artifact" style={{ transform: "perspective(900px) rotateY(" + ((1 - arrive) * -12) + "deg) translateY(" + ((1 - arrive) * 18) + "px) scale(" + (.91 + arrive * .09) + ")", opacity: .75 + arrive * .25 } as CSSProperties}><div className="ps-card-sheen" style={{ transform: "translateX(" + (-140 + 275 * arrive) + "%) skewX(-24deg)" }} /><div className="ps-card-top"><img src={publicProofMediaAsset("fair-die.webp")} alt="" /><span>RENAISS FAIR<br />WORLDS 2026 · PUBLIC PROOF</span></div><div className="ps-card-tier"><small>{slot.role}</small><strong aria-label={slot.role}>{roleCode}</strong><span>{slot.prizeName}</span></div><div className="ps-card-bottom"><span>TICKET #{slot.ticketNumber}</span><code>{slot.participantId}</code></div></div>
     </div>
@@ -138,7 +139,7 @@ function MerkleScene({ data, progress }: { data: ProofStoryData; progress: numbe
       <div className="ps-merkle-seal" style={{ opacity: .68 + matched * .32, transform: "scale(" + (.94 + matched * .06) + ")" }}><div><ShieldCheck size={34} strokeWidth={1.3} aria-hidden="true" /></div><small>ON-CHAIN ROOT</small><strong>{data.merkleRoot ? "Root matches" : "Checking…"}</strong></div>
     </div>
     <EvidenceTape items={[{ label: "Participant commitment", value: slot.participantId, source: "site" }, { label: "Path checks", value: steps, source: "site" }, { label: "Verified Merkle root", value: data.merkleRoot, source: "browser" }, { label: "Committed root", value: data.facts?.root, source: "chain" }]} />
-    <SceneNote checked={Boolean(data.merkleRoot)}>{data.merkleRoot ? "This proves committed roster membership. " : "Checking committed roster membership. "}Winner and reserve selection is independently checked in step 4.</SceneNote>
+    <SceneNote checked={Boolean(data.merkleRoot)}>{data.merkleRoot ? "This proves committed roster membership. " : "Checking committed roster membership. "}The winning ticket is independently checked in step 4.</SceneNote>
   </div>;
 }
 

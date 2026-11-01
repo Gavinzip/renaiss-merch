@@ -85,7 +85,7 @@ function PublicProofPage() {
       <section className="vf-hero" id="verify" aria-labelledby="vf-title">
         <div className="vf-kicker"><span className="vf-live-dot"/> {mainnetRehearsal ? 'MAINNET REHEARSAL' : 'WORLDS 2026 · PUBLIC DRAW VERIFIER'}</div>
         <h1 id="vf-title">Every draw.<br/><em>Open to verify.</em></h1>
-        <p>A committed round. A public proof. Replay the exact Worlds ticket math and independently check its chain commitment, winner and ordered reserves.</p>
+        <p>A committed round. A public proof. Replay the exact Worlds ticket math and independently check its chain commitment and winning ticket.</p>
         <form className="vf-search-form" onSubmit={event=>{event.preventDefault(); if(loading)return;
           if(hash.trim()&&!/^0x[0-9a-f]{64}$/i.test(hash.trim())){setProof(null);setError('Enter a complete 0x transaction hash (64 hexadecimal characters).');return;}
           const nextUrl=new URL(window.location.href);
@@ -124,10 +124,10 @@ function PublicProofPage() {
         </div>
         <div className="vf-info-card" id="method"><div className="vf-section-top"><span>02 / THE PROOF</span><ShieldCheck size={20} aria-hidden="true" /></div>
           <h2>Check each step.</h2><ol>{copy.steps.map(([title]) => <li key={title}>{title}</li>)}</ol>
-          <p className="vf-disclaimer">{copy.boundary} Worlds retains SHA-512 rejection sampling, forward Fisher–Yates, and one winner plus two ordered reserves per match.</p>
+          <p className="vf-disclaimer">{copy.boundary} Worlds uses SHA-512 rejection sampling and forward Fisher–Yates. New rounds select one winner per match, with no reserves.</p>
         </div>
       </section>
     </main>
-    <footer className="vf-footer"><span><img src={publicProofMediaAsset('fair-die.webp')} alt="" />WORLDS 2026 · PUBLIC VERIFICATION</span><span>Committed tickets · Public proof · Ordered reserves</span></footer>
+    <footer className="vf-footer"><span><img src={publicProofMediaAsset('fair-die.webp')} alt="" />WORLDS 2026 · PUBLIC VERIFICATION</span><span>Committed tickets · Public proof · Verified winner</span></footer>
   </div></div>;
 }

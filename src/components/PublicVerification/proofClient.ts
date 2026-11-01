@@ -1,4 +1,5 @@
 import { sha256 } from 'ethers';
+import {selectionCountForPolicy} from '../../../shared/public-proof/worlds/draw-policy.mjs';
 import type { LoadedProof, ProofOverview, ProofStage } from '../../../shared/public-proof/types';
 const hashPattern = /^0x[0-9a-f]{64}$/i;
 export function proofLocation(search: string) {
@@ -52,6 +53,11 @@ export async function readRoundProof(overview: ProofOverview, stage: ProofStage,
       !bundle.manifest.matches.some(m => m.matchId === p.matchId))) {
     throw new Error('Proof 結構不完整，尚未開始瀏覽器驗證。');
   }
+  const count=selectionCountForPolicy(bundle.manifest.policy);
+  if(bundle.result.picks.length!==bundle.manifest.matches.length*count||bundle.manifest.matches.some(match=>{
+    const picks=bundle.result.picks.filter(pick=>pick.matchId===match.matchId).sort((a,b)=>a.rank-b.rank);
+    return picks.length!==count||picks.some((pick,index)=>pick.rank!==index||pick.positionType!==(index===0?'winner':'alternate'));
+  }))throw new Error('公布票號與已承諾的獎項規則不一致。');
   const authority = overview.authorities.find(a => a.configured &&
     a.chainId === bundle.chain.chainId && a.contract?.toLowerCase() === bundle.chain.contract?.toLowerCase() &&
     a.runtimeHash.toLowerCase() === bundle.chain.runtimeHash?.toLowerCase());

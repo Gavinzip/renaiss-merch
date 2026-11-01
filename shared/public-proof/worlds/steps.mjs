@@ -46,7 +46,7 @@ export function createWorldsVerification({ bundle, expectedBundleHash, authority
         chip('result hash', digest(result), 'local', 'Canonical result digest, compared against the published result.')];
     } else if (step === 5) {
       chips = result.picks.map(pick => chip(`${pick.matchId} · ${pick.rank === 0 ? 'winner' : `reserve ${pick.rank}`}`,
-        `#${pick.ticketNumber}`, 'local', 'Derived from committed ticket order. One winner, two ordered reserves; no ticket repeats within a match.'));
+        `#${pick.ticketNumber}`, 'local', 'Derived from the committed ticket order and prize plan; role counts were fixed before the request.'));
     } else {
       for (const pick of result.picks) requireThat(verifyInclusion(pick, pick.path, tree.root, bundle.commitment.roundId), 'Ticket Merkle inclusion failed.');
       const verified = verifyBundle(bundle, expectedBundleHash, tree);

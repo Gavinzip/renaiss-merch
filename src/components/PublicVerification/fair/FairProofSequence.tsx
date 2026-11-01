@@ -13,20 +13,19 @@ export function FairProofSequence({ proof, checks, ready, running, error, run, l
   const attempted = useRef(new Set<number>());
   const copy = proofCopy[locale];
   const bundle = proof.bundle;
-  const pick = bundle.result.picks[0];
+  const pick = bundle.result.picks.find(pick=>pick.rank===0&&pick.positionType==='winner')!;
   useEffect(() => {
     if (!ready || running !== null || error || checks.length >= 6) return;
     const next = checks.length + 1;
     if (!attempted.current.has(next)) { attempted.current.add(next); run(next); }
     // Each real browser check runs once. Scrolling only animates explanations.
   }, [ready, running, error, checks.length, run]);
-  const role = (rank: number) => rank === 0 ? 'Winner' : `Reserve ${rank}`;
   const story: ProofStoryData = {
     verification: {
       transactionHash: bundle.chain.requestTx, chainId: bundle.chain.chainId,
       contractAddress: bundle.chain.contract, commitmentTransactionHash: bundle.chain.commitmentTx,
       roundId: bundle.commitment.roundId, stage: bundle.manifest.stage, bundleHash: proof.bundleHash,
-      ticket: { ...pick, role: role(pick.rank), prizeName: bundle.manifest.matches.find(m => m.matchId === pick.matchId)!.prize.name },
+      ticket: { ...pick, role: 'Winner', prizeName: bundle.manifest.matches.find(m => m.matchId === pick.matchId)!.prize.name },
       witness: { proof: bundle.proof, blockNumber: bundle.chain.requestBlockNumber }, merkleProof: pick.path,
     },
     completed: checks.length, working: running ?? 0,
@@ -39,7 +38,7 @@ export function FairProofSequence({ proof, checks, ready, running, error, run, l
   return <section className="vf-result" aria-labelledby="vf-result-title">
     <div className="vf-result-header"><div><span>PUBLIC EVENT RECORD · BROWSER CHECKS BELOW</span>
       <h2 id="vf-result-title">The committed round and published tickets.</h2></div></div>
-    <p className="vf-result-intro">Published data is not a verification verdict. This browser independently checks the approved chain, contract, ECVRF, original Worlds selector, winner and reserve order, and every Merkle inclusion.</p>
+    <p className="vf-result-intro">Published data is not a verification verdict. This browser independently checks the approved chain, contract, ECVRF, committed prize plan, winning ticket and every Merkle inclusion.</p>
     <ScrollProofStory {...story} />
     <div className="vf-walkthrough">
       <div className="vf-walkthrough-top"><div><span className="vf-eyebrow">THE PROOF, STEP BY STEP</span><h2>Inspect every check.</h2>
