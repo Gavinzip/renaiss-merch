@@ -38,6 +38,13 @@ is disabled until live inventory confirms availability; reveal access is blocked
 before then. The original 20 receipts remain accessible in fulfillment.
 An additional database constraint also blocks the postponed slots in older
 running server versions. No claim records are deleted or changed.
+
+On **2026-11-01**, the additional Pro allocation was reduced from **15 to 13**,
+for a cumulative limit of **33**. The existing **20 Pro receipts** remain intact,
+leaving **13 available memberships** at the time of the adjustment. Apply
+`20261101-surf-pro-allocation.sql` before publishing the corresponding code; its
+database constraint also caps older running functions at allocation 33.
+
 The schedule lives in `shared/surf-store-allocations.js`. The server evaluates
 the effective limit on every inventory read and again inside the submission
 transaction. The database CHECK also rejects additional slots with a submission

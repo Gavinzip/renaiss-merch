@@ -19,7 +19,8 @@ if (process.env.MERCH_MIGRATION_DATABASE_URL_FILE) {
   process.env.MERCH_DATABASE_URL = ownerUrl.href;
 }
 const migrations = ['20261020-surf-store-claims.sql', '20261021-surf-store-email.sql',
-  '20261027-surf-store-restock.sql', '20261027-surf-pro-delay.sql'];
+  '20261027-surf-store-restock.sql', '20261027-surf-pro-delay.sql',
+  '20261101-surf-pro-allocation.sql'];
 const statements = await Promise.all(migrations.map(name =>
   readFile(new URL(`../server/postgres/migrations/${name}`, import.meta.url), 'utf8')));
 try {

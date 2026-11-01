@@ -9,7 +9,7 @@ export const surfStoreRestocks = Object.freeze([
   }),
   Object.freeze({
     opensAt: '2026-10-28T19:00:00+08:00',
-    quantities: Object.freeze({ 'mystery-box': 0, 'pro-month': 15 }),
+    quantities: Object.freeze({ 'mystery-box': 0, 'pro-month': 13 }),
   }),
 ]);
 
