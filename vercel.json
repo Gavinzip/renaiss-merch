@@ -108,6 +108,34 @@
       "destination": "/api/index"
     },
     {
+      "source": "/api/public-proofs/worlds-2026/matches/qf-01/snapshot",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/public-proofs/worlds-2026/matches/qf-02/snapshot",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/public-proofs/worlds-2026/matches/qf-03/snapshot",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/public-proofs/worlds-2026/matches/qf-04/snapshot",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/public-proofs/worlds-2026/matches/sf-01/snapshot",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/public-proofs/worlds-2026/matches/sf-02/snapshot",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/public-proofs/worlds-2026/matches/gf-01/snapshot",
+      "destination": "/api/index"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/index"
     },

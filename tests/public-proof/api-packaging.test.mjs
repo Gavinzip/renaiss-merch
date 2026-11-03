@@ -31,3 +31,13 @@ test('public API metadata and relay initialize without loading browser cryptogra
     await rm(isolated, { recursive: true, force: true });
   }
 });
+
+test('every known match snapshot has a literal platform route before the generic API capture',async()=>{
+  const {readFile}=await import('node:fs/promises');
+  const config=JSON.parse(await readFile(new URL('../../vercel.json',import.meta.url),'utf8'));
+  const generic=config.rewrites.findIndex(r=>r.source==='/api/:path*');
+  for(const id of ['qf-01','qf-02','qf-03','qf-04','sf-01','sf-02','gf-01']){
+    const index=config.rewrites.findIndex(r=>r.source===`/api/public-proofs/worlds-2026/matches/${id}/snapshot`&&r.destination==='/api/index');
+    assert.ok(index>=0&&index<generic,'Strict proof queries must not receive the generic rewrite path capture: '+id);
+  }
+});
