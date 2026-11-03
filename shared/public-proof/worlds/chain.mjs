@@ -2,6 +2,8 @@ import {Contract,Interface,ZeroAddress,keccak256} from 'ethers';
 import {PROTOCOL_HASH,requireThat,same} from './protocol.mjs';
 import build from './contract-build.json' with {type:'json'};
 import registryBuild from './registry-build.json' with {type:'json'};
+import registryV3 from './registry-v3-build.json' with {type:'json'};
+import {verifyRoundMatchChain} from './match-chain.mjs';
 
 export const ECVRF_ABI=[
   'function CAMPAIGN() view returns(bytes32)',
@@ -19,7 +21,8 @@ export const ECVRF_ABI=[
 ];
 export const RUNTIME_HASH=build.runtimeHash;
 export const REGISTRY_RUNTIME_HASH=registryBuild.runtimeHash;
-export const supportedRuntime=hash=>[RUNTIME_HASH,REGISTRY_RUNTIME_HASH].some(value=>same(value,hash));
+export const MATCH_REGISTRY_RUNTIME_HASH=registryV3.runtimeHash;
+export const supportedRuntime=hash=>[RUNTIME_HASH,REGISTRY_RUNTIME_HASH,MATCH_REGISTRY_RUNTIME_HASH].some(value=>same(value,hash));
 const iface=new Interface(ECVRF_ABI);
 export async function inspectRound(provider,registry,commitment){
   const [network,finalized,code]=await Promise.all([provider.getNetwork(),provider.getBlock('finalized'),provider.getCode(registry.contract)]);
@@ -43,7 +46,7 @@ function oneEvent(receipt,address,name){
   requireThat(logs.length===1,`Expected exactly one ${name} event.`);return logs[0].args;
 }
 /** Independently retrieves receipts/code/state at one finalized checkpoint. No API attestation is trusted. */
-export async function collectChainFacts(provider,registry,commitment,transactions){
+export async function collectChainFacts(provider,registry,commitment,transactions,manifest){
   requireThat(/^0x[0-9a-f]{40}$/i.test(registry.contract)&&!same(registry.contract,ZeroAddress),'Event contract is not configured.');
   requireThat(supportedRuntime(registry.runtimeHash),'Event registry uses an unreviewed contract build.');
   const [network,finalized]=await Promise.all([provider.getNetwork(),provider.getBlock('finalized')]);
@@ -63,5 +66,7 @@ export async function collectChainFacts(provider,registry,commitment,transaction
   requireThat(c.ticketCount===BigInt(commitment.ticketCount)&&state.ticketCount===c.ticketCount&&state.commitmentBlock===BigInt(commitReceipt.blockNumber)&&state.requestBlock===BigInt(requestReceipt.blockNumber)&&r.requestBlock===state.requestBlock,'On-chain count, commitment or request sequence differs.');
   const [commitBlock,requestBlock]=await Promise.all([provider.getBlock(commitReceipt.blockNumber),provider.getBlock(requestReceipt.blockNumber)]);
   requireThat(commitBlock&&requestBlock&&same(commitBlock.hash,commitReceipt.blockHash)&&same(requestBlock.hash,requestReceipt.blockHash),'Receipt block is no longer canonical.');
+  if(same(registry.runtimeHash,MATCH_REGISTRY_RUNTIME_HASH))await verifyRoundMatchChain(provider,registry,manifest,commitReceipt.blockNumber);
+  else requireThat(manifest?.registryVersion!==3,'Early snapshot protocol requires the v3 registry.');
   return {chainId:registry.chainId,contract:registry.contract,runtimeHash:registry.runtimeHash,commitmentTx:commitReceipt.hash,requestTx:requestReceipt.hash,commitmentBlockNumber:commitReceipt.blockNumber,commitmentBlockHash:commitReceipt.blockHash,requestBlockNumber:requestReceipt.blockNumber,requestBlockHash:requestReceipt.blockHash};
 }

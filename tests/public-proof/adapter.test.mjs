@@ -72,3 +72,18 @@ test('invalid JSON roots, HTML and oversized payloads fail without copying sourc
   await assert.rejects(route({method:'GET'},responseCapture(),new URL('https://merch.test/api/public-proofs/worlds-2026/rounds')),e=>e.status===502);
  }
 });
+test('single-match relay preserves pinned bytes, uses only the fixed source and validates match/stage identity',async()=>{
+ const record={snapshot:{protocol:'renaiss-worlds-match-roster-v1',campaignId:'worlds-2026',stage:'quarter',matchId:'qf-02'},commitment:{snapshotHash:h(7)}};
+ const bytes=canonical(record);let captured;
+ const route=createPublicProofRoutes({environment,fetchPublic:async(url,options)=>{captured={url,options};return new Response(bytes,{headers:{'content-type':'application/json','x-snapshot-sha256':h(7)}});}});
+ const path='https://merch.test/api/public-proofs/worlds-2026/matches/qf-02/snapshot';
+ const res=responseCapture();await route({method:'GET',headers:{authorization:'must-not-forward',cookie:'must-not-forward'}},res,new URL(path+'?snapshotHash='+h(7)+'&download=1'));
+ assert.equal(res.body.toString(),bytes);assert.equal(res.headers['x-snapshot-sha256'],h(7));assert.match(res.headers['content-disposition'],/worlds-match-qf-02.json/);
+ assert.equal(captured.url,'https://example.com/api/ecvrf/matches/qf-02/snapshot?snapshotHash='+h(7));assert.deepEqual(captured.options.headers,{Accept:'application/json'});assert.equal(captured.options.redirect,'error');
+ await assert.rejects(route({method:'GET'},responseCapture(),new URL(path+'?snapshotHash='+h(8))),e=>e.code==='proof_record_changed');
+ for(const query of ['?tx='+h(1),'?snapshotHash='+h(7)+'&snapshotHash='+h(7),'?url=https://attacker.test','?download=0'])await assert.rejects(route({method:'GET'},responseCapture(),new URL(path+query)),e=>e.code==='proof_query_invalid');
+ for(const change of [r=>r.snapshot.stage='final',r=>r.snapshot.matchId='qf-01',r=>r.snapshot.campaignId='other']){
+  const altered=structuredClone(record);change(altered);const invalid=createPublicProofRoutes({environment,fetchPublic:async()=>Response.json(altered,{headers:{'x-snapshot-sha256':h(7)}})});
+  await assert.rejects(invalid({method:'GET'},responseCapture(),new URL(path)),e=>e.code==='match_snapshot_invalid');
+ }
+});

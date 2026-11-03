@@ -1,0 +1,4 @@
+import type {ProofStage} from '../types';
+export type MatchSnapshot={protocol:string;campaignId:string;stage:ProofStage;matchId:string;matchKey:string;identityHash:string;status:string;winner:string|null;score:number[]|null;sourceUrl:string;frozenAt:string;publicKey:string;ledgerHash:string;policy:object;prize:object;ledger:{totalTickets:number;entries:{voteId:string;participantId:string;start:number;end:number}[];[key:string]:unknown}};
+export type MatchChainFacts={chainId:number;contract:string;runtimeHash:string;commitmentTx:string;commitmentBlockNumber:number;commitmentBlockHash:string;committedAt:string};
+export type MatchSnapshotRecord={snapshot:MatchSnapshot;commitment:{matchKey:string;root:string;snapshotHash:string;publicKey:string;ticketCount:number};authority:{chainId:number;contract:string;runtimeHash:string};chain:MatchChainFacts|null;transactionHash:string|null;status:string};

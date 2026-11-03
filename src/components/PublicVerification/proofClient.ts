@@ -5,7 +5,7 @@ const hashPattern = /^0x[0-9a-f]{64}$/i;
 export function proofLocation(search: string) {
   const query = new URLSearchParams(search);
   for (const key of query.keys()) if (query.getAll(key).length !== 1) throw new Error('驗證連結包含重複的查詢參數。');
-  for (const key of query.keys()) if (!['event','stage','tx','bundleHash','lang'].includes(key)) {
+  for (const key of query.keys()) if (!['event','stage','tx','bundleHash','lang','match','snapshotHash'].includes(key)) {
     throw new Error('驗證連結包含不支援的查詢參數。');
   }
   const event = query.get('event') ?? 'worlds-2026';
@@ -15,7 +15,10 @@ export function proofLocation(search: string) {
   if (event !== 'worlds-2026' || !['quarter', 'semi', 'final'].includes(stage) ||
     (tx && !hashPattern.test(tx)) ||
     (bundleHash && !hashPattern.test(bundleHash))) throw new Error('驗證連結的活動、階段或紀錄識別碼無效。');
-  return { event, stage: stage as ProofStage, tx, bundleHash };
+  const match=query.get('match'),snapshotHash=query.get('snapshotHash');
+  const groups:Record<string,string[]>={quarter:['qf-01','qf-02','qf-03','qf-04'],semi:['sf-01','sf-02'],final:['gf-01']};
+  if((match||snapshotHash)&&(!match||!groups[stage].includes(match)||!snapshotHash||!hashPattern.test(snapshotHash)||tx||bundleHash))throw new Error('單場存證連結缺少正確的場次與版本。');
+  return { event, stage: stage as ProofStage, tx, bundleHash,...(match?{match,snapshotHash:snapshotHash!}:{}) };
 }
 export async function readProofOverview(signal: AbortSignal): Promise<ProofOverview> {
   const response = await fetch('/api/public-proofs/worlds-2026/rounds', { cache: 'no-store', signal });

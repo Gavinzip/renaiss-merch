@@ -12,7 +12,7 @@ test('public API metadata and relay initialize without loading browser cryptogra
     // The deployment's control-plane files; no protocol, chain or vendor TS.
     for (const name of ['server/http.mjs', 'server/public-proof/config.mjs', 'server/public-proof/routes.mjs',
       'shared/public-proof/worlds/runtime-catalog.mjs', 'shared/public-proof/worlds/contract-build.json',
-      'shared/public-proof/worlds/registry-build.json', 'package.json']) {
+      'shared/public-proof/worlds/registry-build.json','shared/public-proof/worlds/registry-v3-build.json', 'package.json']) {
       const target = path.join(isolated, name);
       await mkdir(path.dirname(target), { recursive: true });
       await copyFile(path.join(source, name), target);

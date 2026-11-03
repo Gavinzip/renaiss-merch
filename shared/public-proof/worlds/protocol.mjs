@@ -5,6 +5,7 @@ import {keccak_256} from '@noble/hashes/sha3.js';
 import {verify} from './vendor/verify.ts';
 import {registryRoundId} from './round-identity.mjs';
 import {selectionCountForPolicy,MIN_COMMITTED_TICKETS} from './draw-policy.mjs';
+import {validateRoundSnapshots} from './match-snapshot.mjs';
 export {POLICY,LEGACY_POLICY,selectionCountForPolicy} from './draw-policy.mjs';
 
 export const PROTOCOL='renaiss-worlds-ticket-ecvrf-v1';
@@ -13,7 +14,7 @@ export const CAMPAIGN='worlds-2026';
 const abi=AbiCoder.defaultAbiCoder();
 export const hash32=(value)=>typeof value==='string'&&/^0x[0-9a-f]{64}$/i.test(value);
 export const same=(a,b)=>typeof a==='string'&&typeof b==='string'&&a.toLowerCase()===b.toLowerCase();
-export function requireThat(test,message){if(!test){const error=new Error(message);error.name='EcvRfVerificationError';throw error;}}
+export function requireThat(test,message){if(!test){const error=new Error(message);error.name='EcvRfVerificationError';error.status=409;throw error;}}
 export function canonical(value){
   if(value===null||typeof value==='boolean'||typeof value==='string')return JSON.stringify(value);
   if(typeof value==='number'){requireThat(Number.isSafeInteger(value),'Manifest numbers must be safe integers.');return String(value);}
@@ -61,7 +62,9 @@ export function validateManifest(m){
     requireThat(source&&source.status==='finished'&&same(source.identityHash,match.identityHash)&&source.winner===match.winner&&same(source.manifest.matchKey,match.matchKey)&&same(source.manifest.roundId,sourceRound.roundId)&&same(source.manifest.ledgerHash,match.ledgerHash)&&JSON.stringify(source.manifest.publicLedger)===JSON.stringify(ledger),'Manifest no longer matches the original frozen round.');
   }
   const total=m.matches.reduce((n,x)=>n+x.totalTickets,0);
-  requireThat(total>=MIN_COMMITTED_TICKETS&&total<=1_000_000,'Round ticket count is outside the approved contract limits.');
+  requireThat(m.registryVersion===undefined||m.registryVersion===3,'Unsupported manifest registry version.');
+  if(m.registryVersion===3)validateRoundSnapshots(m);
+  requireThat(total>=(m.registryVersion===3?1:MIN_COMMITTED_TICKETS)&&total<=1_000_000,'Round ticket count is outside the approved contract limits.');
   for(const entry of m.excluded)requireThat(expected[m.stage].includes(entry.matchId)&&['cancelled','no-eligible-tickets'].includes(entry.reason),'Invalid excluded match.');
   return m;
 }
@@ -142,6 +145,7 @@ export function verifyBundle(bundle,expectedBundleHash,cachedTree){
   const bundleHash=digest(bundle);
   if(expectedBundleHash!==undefined)requireThat(same(bundleHash,expectedBundleHash),'Proof bundle hash mismatch.');
   const tree=cachedTree??buildTicketTree(bundle.manifest),computed=commitmentFor(bundle.manifest,tree),c=bundle.commitment;
+  if(bundle.manifest.registryVersion===3)for(const a of bundle.manifest.matchSnapshots)requireThat(same(a.snapshot.publicKey,c.publicKey)&&a.chain.commitmentBlockNumber<bundle.chain.commitmentBlockNumber&&same(a.chain.contract,bundle.chain.contract)&&a.chain.chainId===bundle.chain.chainId,'Draw differs from the earlier anchored authority, key or chronology.');
   for(const key of Object.keys(computed))requireThat(typeof computed[key]==='string'?same(computed[key],c?.[key]):computed[key]===c?.[key],`Commitment mismatch: ${key}`);
   const alpha=deriveAlpha(c,bundle.chain),beta=verifiedBeta(c.publicKey,alpha,bundle.proof);
   requireThat(same(alpha,bundle.alpha)&&same(beta,bundle.beta),'Published alpha or beta differs from recomputation.');

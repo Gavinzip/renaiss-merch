@@ -13,7 +13,7 @@ self.onmessage = async (event: MessageEvent<{ type: 'init'; data: LoadedProof } 
         if (!registry.publicRpc) throw new Error('本活動尚未核准公開 RPC。');
         const request = new FetchRequest(registry.publicRpc); request.timeout = 15_000;
         const provider = new JsonRpcProvider(request, undefined, { batchMaxCount: 1 });
-        try { return await collectChainFacts(provider, registry, commitment, claimed); }
+        try { return await collectChainFacts(provider, registry, commitment, claimed,bundle.manifest); }
         finally { provider.destroy(); }
       } });
     return;

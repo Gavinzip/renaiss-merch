@@ -3,6 +3,11 @@ import { RUNTIME_HASH, supportedRuntime } from '../../shared/public-proof/worlds
 import { HttpError } from '../http.mjs';
 
 export const stages = Object.freeze(['quarter', 'semi', 'final']);
+function publicRpcUrl(value,environment){
+  const url=new URL(value),local=environment.MERCH_PROOF_ALLOW_LOCAL_RPC==='true'&&environment.NODE_ENV!=='production'&&!environment.VERCEL&&['127.0.0.1','localhost','[::1]'].includes(url.hostname);
+  if((url.protocol!=='https:'&&!(local&&url.protocol==='http:'))||url.username||url.password||url.search||url.hash)throw new Error('Public proof RPC must be an approved HTTPS URL; loopback testing requires explicit local configuration.');
+  return url;
+}
 export function worldsProofConfig(environment = process.env) {
   const raw = environment.MERCH_WORLDS_PROOF_ORIGIN?.trim();
   let origin = null;
@@ -21,10 +26,7 @@ export function worldsProofConfig(environment = process.env) {
   const publicRpc = environment.MERCH_WORLDS_PROOF_PUBLIC_RPC?.trim() || null;
   const runtimeHash = environment.MERCH_WORLDS_PROOF_RUNTIME_HASH?.trim() || RUNTIME_HASH;
   if (!supportedRuntime(runtimeHash)) throw new Error('Unreviewed Worlds proof runtime.');
-  const rpc = publicRpc ? new URL(publicRpc) : null;
-  if (rpc && (rpc.protocol !== 'https:' || rpc.username || rpc.password || rpc.search || rpc.hash)) {
-    throw new Error('Public proof RPC must be an HTTPS URL without credentials or query secrets.');
-  }
+  if(publicRpc)publicRpcUrl(publicRpc,environment);
   const configured = [56, 97].includes(chainId) && !!contract && isAddress(contract) && contract !== ZeroAddress && !!publicRpc;
   const authority = { configured, chainId: [56, 97].includes(chainId) ? chainId : null,
     contract, runtimeHash, publicRpc, context: 'event',
@@ -33,9 +35,9 @@ export function worldsProofConfig(environment = process.env) {
   if (!Array.isArray(historical) || historical.length > 16) throw new Error('Invalid approved historical authorities.');
   const authorities = configured ? [authority] : [];
   for (const item of historical) {
-    const rpc = new URL(item.publicRpc);
+    const rpc = publicRpcUrl(item.publicRpc,environment);
     if (![56, 97].includes(item.chainId) || !isAddress(item.contract) || item.contract.toLowerCase() === ZeroAddress ||
-      !supportedRuntime(item.runtimeHash) || rpc.protocol !== 'https:' || rpc.username || rpc.password || rpc.search || rpc.hash ||
+      !supportedRuntime(item.runtimeHash) ||
       !['event', 'rehearsal'].includes(item.context)) throw new Error('Invalid approved historical authority.');
     if (authorities.some(a => a.chainId === item.chainId && a.contract.toLowerCase() === item.contract.toLowerCase())) throw new Error('Duplicate approved contract authority.');
     authorities.push({ configured: true, chainId: item.chainId, contract: item.contract, runtimeHash: item.runtimeHash,

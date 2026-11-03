@@ -15,7 +15,7 @@ try{
   assertEventAuthority(bundle,registry);
   const math=verifyBundle(bundle),request=new FetchRequest(process.env.ECVRF_VERIFY_RPC);request.timeout=15000;
   provider=new JsonRpcProvider(request,undefined,{batchMaxCount:1});
-  const chain=await collectChainFacts(provider,registry,bundle.commitment,bundle.chain);
+  const chain=await collectChainFacts(provider,registry,bundle.commitment,bundle.chain,bundle.manifest);
   for(const [key,value] of Object.entries(chain))requireThat(typeof value==='number'?bundle.chain[key]===value:same(String(value),bundle.chain[key]),`Chain evidence mismatch: ${key}`);
   console.log(JSON.stringify({verified:true,chainId:chain.chainId,contract:expectedContract,root:math.root,manifestHash:math.manifestHash,resultHash:math.resultHash,bundleHash:math.bundleHash,picks:math.picks.map(({matchId,ticketNumber,rank})=>({matchId,ticketNumber,rank}))},null,2));
 }catch(error){console.error(JSON.stringify({verified:false,error:error.code?'Chain or network verification failed.':error.message}));process.exitCode=1;}

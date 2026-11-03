@@ -22,6 +22,8 @@ test('latest complete scene renderer handles real adapter states without KBW mat
   const proof={bundle,bundleHash:digest(bundle),authority};
   const client=await vite.ssrLoadModule('/src/components/PublicVerification/proofClient.ts');
   assert.equal(client.proofLocation('?event=worlds-2026&stage=final').stage,'final');
+  assert.deepEqual(client.proofLocation('?event=worlds-2026&stage=quarter&match=qf-02&snapshotHash='+h(1)),{event:'worlds-2026',stage:'quarter',tx:'',bundleHash:'',match:'qf-02',snapshotHash:h(1)});
+  for(const query of ['?stage=final&match=qf-02&snapshotHash='+h(1),'?stage=quarter&match=qf-02','?snapshotHash='+h(1),'?stage=quarter&match=qf-02&snapshotHash='+h(1)+'&tx='+h(2)])assert.throws(()=>client.proofLocation(query));
   for(const query of ['?event=surf','?stage=bad','?url=https://attacker.test','?stage=final&stage=semi','?tx=bad'])assert.throws(()=>client.proofLocation(query));
   const originalFetch=globalThis.fetch;
   try{

@@ -26,14 +26,27 @@ export function createPublicProofRoutes({ environment = process.env, fetchPublic
   return async (req, res, url) => {
     if (!url.pathname.startsWith('/api/public-proofs/')) return false;
     if (req.method !== 'GET') throw new HttpError(405, 'method_not_allowed');
-    const path = /^\/api\/public-proofs\/worlds-2026\/(rounds|(?:quarter|semi|final)\/(?:bundle|history))$/.exec(url.pathname);
+    const path = /^\/api\/public-proofs\/worlds-2026\/(rounds|(?:quarter|semi|final)\/(?:bundle|history)|matches\/(?:qf-0[1-4]|sf-0[12]|gf-01)\/snapshot)$/.exec(url.pathname);
     if (!path) throw new HttpError(404, 'proof_event_not_supported');
-    for (const key of url.searchParams.keys()) if (!['download', 'bundleHash', 'tx', 'roundId'].includes(key) || url.searchParams.getAll(key).length !== 1) throw new HttpError(400, 'proof_query_invalid');
+    for (const key of url.searchParams.keys()) if (!['download', 'bundleHash', 'tx', 'roundId','snapshotHash'].includes(key) || url.searchParams.getAll(key).length !== 1) throw new HttpError(400, 'proof_query_invalid');
     const expectedHash = url.searchParams.get('bundleHash');
-    for (const key of ['bundleHash', 'tx', 'roundId']) if (url.searchParams.has(key) && !/^0x[0-9a-f]{64}$/i.test(url.searchParams.get(key))) throw new HttpError(400, 'proof_query_invalid');
+    for (const key of ['bundleHash', 'tx', 'roundId','snapshotHash']) if (url.searchParams.has(key) && !/^0x[0-9a-f]{64}$/i.test(url.searchParams.get(key))) throw new HttpError(400, 'proof_query_invalid');
     if (url.searchParams.has('download') && url.searchParams.get('download') !== '1') throw new HttpError(400, 'proof_query_invalid');
     const { origin, authority, authorities } = worldsProofConfig(environment);
     if (!origin) throw new HttpError(503, 'proof_source_not_configured');
+    if(path[1].startsWith('matches/')){
+      if([...url.searchParams.keys()].some(key=>!['download','snapshotHash'].includes(key)))throw new HttpError(400,'proof_query_invalid');
+      const remote=new URL('/api/ecvrf/'+path[1],origin);if(url.searchParams.has('snapshotHash'))remote.searchParams.set('snapshotHash',url.searchParams.get('snapshotHash'));
+      let response,payload;try{response=await fetchPublic(remote.href,{redirect:'error',headers:{Accept:'application/json'},signal:AbortSignal.timeout(20000)});payload=await readPublicResponse(response);}catch(error){if(error instanceof HttpError)throw error;throw new HttpError(502,'proof_source_unavailable');}
+      const {json,bytes}=payload;
+      const matchId=path[1].split('/')[1],hash=json.commitment?.snapshotHash,stage=matchId.startsWith('qf-')?'quarter':matchId.startsWith('sf-')?'semi':'final';
+      if(json.snapshot?.protocol!=='renaiss-worlds-match-roster-v1'||json.snapshot.matchId!==matchId||json.snapshot.stage!==stage||json.snapshot.campaignId!=='worlds-2026'||!/^0x[0-9a-f]{64}$/i.test(hash)||response.headers.get('x-snapshot-sha256')!==hash)throw new HttpError(502,'match_snapshot_invalid');
+      if(url.searchParams.has('snapshotHash')&&hash.toLowerCase()!==url.searchParams.get('snapshotHash').toLowerCase())throw new HttpError(409,'proof_record_changed');
+      res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type','application/json; charset=utf-8');res.setHeader('X-Snapshot-SHA256',hash);
+      if(url.searchParams.get('download')==='1')res.setHeader('Content-Disposition',`attachment; filename="worlds-match-${matchId}.json"`);
+      res.end(bytes);return true;
+    }
+    if(url.searchParams.has('snapshotHash'))throw new HttpError(400,'proof_query_invalid');
     const isOverview = path[1] === 'rounds';
     const isHistory = path[1].endsWith('/history');
     if ((isOverview || isHistory) && url.search) throw new HttpError(400, 'proof_query_invalid');

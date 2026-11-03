@@ -1,0 +1,10 @@
+import type {MatchSnapshot,MatchSnapshotRecord} from './match-types';
+import type {ProofManifest} from '../types';
+export const MATCH_PROTOCOL:string;
+export const MATCH_PROTOCOL_HASH:string;
+export const stageMatches:Record<string,string[]>;
+export function validateMatchSnapshot(snapshot:MatchSnapshot):MatchSnapshot;
+export function buildMatchTree(snapshot:MatchSnapshot):{root:string;proof(ticket:number):string[]};
+export function matchCommitmentFor(snapshot:MatchSnapshot):MatchSnapshotRecord['commitment'];
+export function validateRoundSnapshots(manifest:ProofManifest):void;
+export function verifyMatchInclusion(snapshot:MatchSnapshot,ticket:number,participant:string,path:string[]):boolean;

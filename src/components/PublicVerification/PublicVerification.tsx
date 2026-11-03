@@ -11,6 +11,7 @@ import { ArrowRight, Fingerprint, Menu, Search, ShieldCheck } from 'lucide-react
 import { publicProofMediaAsset } from 'virtual:public-proof-assets';
 import type { LoadedProof, ProofOverview, ProofStage } from '../../../shared/public-proof/types';
 import './golden.css';
+import {MatchCommitmentPanel} from './MatchCommitmentPanel';
 
 export default function PublicVerification() {
   return <HubNavigationProvider busy={false}><PublicProofPage /></HubNavigationProvider>;
@@ -44,6 +45,7 @@ function PublicProofPage() {
     void (async () => {
       try {
         const current = await readProofOverview(signal);
+        if(target?.match){if(!controller.signal.aborted)setOverview(current);return;}
         const loaded = lookup.tx || lookup.bundleHash
           ? await readProofByIdentity(current, lookup.bundleHash, lookup.tx, signal, lookup.stage)
           : await readRoundProof(current, proofLocation(window.location.search).stage, '', '', signal);
@@ -83,10 +85,10 @@ function PublicProofPage() {
     </header>
     <main className="vf-main">
       <section className="vf-hero" id="verify" aria-labelledby="vf-title">
-        <div className="vf-kicker"><span className="vf-live-dot"/> {mainnetRehearsal ? 'MAINNET REHEARSAL' : 'WORLDS 2026 · PUBLIC DRAW VERIFIER'}</div>
-        <h1 id="vf-title">Every draw.<br/><em>Open to verify.</em></h1>
-        <p>A committed round. A public proof. Replay the exact Worlds ticket math and independently check its chain commitment and winning ticket.</p>
-        <form className="vf-search-form" onSubmit={event=>{event.preventDefault(); if(loading)return;
+        <div className="vf-kicker"><span className="vf-live-dot"/> {mainnetRehearsal ? 'MAINNET REHEARSAL' : target?.match?'WORLDS 2026 · ROSTER COMMITMENT':'WORLDS 2026 · PUBLIC DRAW VERIFIER'}</div>
+        <h1 id="vf-title">{target?.match?'Every roster.':'Every draw.'}<br/><em>Open to verify.</em></h1>
+        <p>{target?.match?'A fixed roster. A public commitment. Independently rebuild its root and check the finalized chain record.':'A committed round. A public proof. Replay the exact Worlds ticket math and independently check its chain commitment and winning ticket.'}</p>
+        {!target?.match&&<form className="vf-search-form" onSubmit={event=>{event.preventDefault(); if(loading)return;
           if(hash.trim()&&!/^0x[0-9a-f]{64}$/i.test(hash.trim())){setProof(null);setError('Enter a complete 0x transaction hash (64 hexadecimal characters).');return;}
           const nextUrl=new URL(window.location.href);
           nextUrl.searchParams.delete('bundleHash');
@@ -96,30 +98,31 @@ function PublicProofPage() {
           <label className="vf-sr-only" htmlFor="vf-transaction">BSC request transaction hash (optional)</label><Search size={20} aria-hidden="true"/>
           <input id="vf-transaction" value={hash} onChange={event=>setHash(event.target.value)} placeholder="Request transaction hash (0x...) · optional" spellCheck={false} autoComplete="off"/>
           <button type="submit" disabled={loading}>{loading?'Checking…':'Verify'}<ArrowRight size={17} aria-hidden="true"/></button>
-        </form>
+        </form>}
         <div className="vf-search-caption"><span>{mainnetRehearsal ? 'QA ROSTER / NO REAL PRIZES' : 'NO LOGIN REQUIRED'}</span><span className={overview?.authority.configured?'vf-status is-ready':'vf-status'}><span className="vf-live-dot"/>{overview?.authority.configured?'Approved event authority':error?'Status unavailable':'Awaiting approved commitment'}</span></div>
         {error?<p className="vf-error" role="alert">{error}</p>:null}
       </section>
-      {target?<div className="proof-round-tools"><label>{copy.stage} <select aria-label={copy.stage} value={viewStage} onChange={event=>window.location.assign(link({stage:event.target.value}))}>
+      {target&&!target.match?<div className="proof-round-tools"><label>{copy.stage} <select aria-label={copy.stage} value={viewStage} onChange={event=>window.location.assign(link({stage:event.target.value}))}>
         {(['quarter','semi','final'] as const).map(stage=><option key={stage} value={stage}>{copy[stage]}</option>)}</select></label>
         <button type="button" onClick={()=>void copyRecordLink(window.location.href)}>{copied?copy.copied:copy.copy}</button>
       </div>:null}
       {copyError ? <p className="vf-error" role="alert">{copyError}</p> : null}
       {loading?<p role="status">{copy.loading}</p>:null}
-      {!loading&&!proof&&!error?<section className="proof-waiting" id="proof-waiting" role="status"><p>{copy.waiting}</p>
+      {!loading&&overview&&target?.match?<MatchCommitmentPanel matchId={target.match} snapshotHash={target.snapshotHash!} overview={overview} locale={locale}/>:null}
+      {!target?.match&&!loading&&!proof&&!error?<section className="proof-waiting" id="proof-waiting" role="status"><p>{overview?.rounds.find(r=>r.stage===viewStage)?.status==='no_eligible_tickets'?copy.emptyRound:copy.waiting}</p>
         {overview?.authority.reason?<p>{overview.authority.reason}</p>:null}
         <button className="vf-step-action" type="button" onClick={()=>setLookup(old=>({...old,revision:old.revision+1}))}>{copy.refresh}</button>
       </section>:null}
       {target && proof ? <FairProofSequence key={proof.bundleHash} proof={proof} {...displayProps} /> : null}
       <section className="vf-overview" aria-label="Current round summary">
-        <div><span>PUBLISHED TICKETS</span><strong>{proof?.bundle.commitment.ticketCount ?? '—'}</strong></div>
+        <div><span>{target?.match?'COMMITTED MATCH':'PUBLISHED TICKETS'}</span><strong>{target?.match?target.match.toUpperCase():proof?.bundle.commitment.ticketCount ?? '—'}</strong></div>
         <div><span>EVENT STAGES</span><strong>{overview?.rounds.length ?? '—'}</strong></div>
         <div><span>APPROVED NETWORK</span><strong>{overview?.authority.configured ? `BSC ${overview.authority.chainId === 97 ? 'TESTNET' : 'MAINNET'}` : 'PENDING'}</strong></div>
       </section>
       <section className="vf-bottom-grid" aria-label="Verification details">
         <div className="vf-info-card" id="commitment"><div className="vf-section-top"><span>01 / THE ROUND</span><Fingerprint size={20} aria-hidden="true" /></div>
           <h2>Fixed before the request.</h2><p>The ticket roster, prize plan and ECVRF key must be committed on the approved chain before the entropy-producing request block.</p>
-          <div className="vf-links">{overview?.rounds.map(round => <a key={round.stage} href={link({stage:round.stage})}>{round.name} · {round.status}</a>)}</div>
+          <div className="vf-links">{overview?.rounds.map(round => <a key={round.stage} href={'/verify?'+new URLSearchParams({event:'worlds-2026',stage:round.stage,lang:locale})}>{round.name} · {round.status}</a>)}</div>
           {proof ? <div className="vf-links"><a href={`/api/public-proofs/worlds-2026/${proof.bundle.manifest.stage}/bundle?download=1&bundleHash=${proof.bundleHash}&tx=${proof.bundle.chain.requestTx}`}>{copy.download}</a></div> : null}
         </div>
         <div className="vf-info-card" id="method"><div className="vf-section-top"><span>02 / THE PROOF</span><ShieldCheck size={20} aria-hidden="true" /></div>
