@@ -10,4 +10,4 @@
 
 2026-11-03：公開證明 42 個測試通過；與 LoL 真實本機 HTTP/Anvil/SQLite 出版流程交叉驗證。正常 `/verify` 瀏覽器實際完成六步核對。手機 320/375/390/414 px 無橫向溢出；修正單場核對按鈕繼承 42px 左邊距的根因，按鈕至少 44px 高。這是桌面手機 viewport 檢查，未代表實體手機驗收。
 
-共用 protocol.mjs、chain.mjs、match-snapshot.mjs、match-chain.mjs、registry-v3-build.json 必須與 LoL shared/ecvrf 相同；發布前以檔案 hash 核對。新主網 instance 尚待部署核准，兩站 authority 要共同切換並保留舊歷史設定。既有 production CDN 素材不變，沒有新增圖片／影片或替代公開媒體流程。
+共用 protocol.mjs、chain.mjs、match-snapshot.mjs、match-chain.mjs、registry-v3-build.json 必須與 LoL shared/ecvrf 相同；發布前以檔案 hash 核對。正式主網 v3 instance 已部署，兩站 authority 必須維持一致，並保留已核准的歷史設定。既有 production CDN 素材不變，沒有新增圖片／影片或替代公開媒體流程。

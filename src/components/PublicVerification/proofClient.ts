@@ -8,17 +8,18 @@ export function proofLocation(search: string) {
   for (const key of query.keys()) if (!['event','stage','tx','bundleHash','lang','match','snapshotHash'].includes(key)) {
     throw new Error('驗證連結包含不支援的查詢參數。');
   }
-  const event = query.get('event') ?? 'worlds-2026';
-  const stage = query.get('stage') ?? 'final';
+  const event = query.get('event');
+  const stage = query.get('stage') ?? undefined;
   const tx = query.get('tx') ?? '';
   const bundleHash = query.get('bundleHash') ?? '';
-  if (event !== 'worlds-2026' || !['quarter', 'semi', 'final'].includes(stage) ||
-    (tx && !hashPattern.test(tx)) ||
-    (bundleHash && !hashPattern.test(bundleHash))) throw new Error('驗證連結的活動、階段或紀錄識別碼無效。');
+  if ((event !== null && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(event)) || (event && event.length > 80) ||
+    (stage !== undefined && !['quarter', 'semi', 'final'].includes(stage)) ||
+    (query.has('tx') && !hashPattern.test(tx)) ||
+    (query.has('bundleHash') && !hashPattern.test(bundleHash))) throw new Error('驗證連結的活動、階段或紀錄識別碼無效。');
   const match=query.get('match'),snapshotHash=query.get('snapshotHash');
   const groups:Record<string,string[]>={quarter:['qf-01','qf-02','qf-03','qf-04'],semi:['sf-01','sf-02'],final:['gf-01']};
-  if((match||snapshotHash)&&(!match||!groups[stage].includes(match)||!snapshotHash||!hashPattern.test(snapshotHash)||tx||bundleHash))throw new Error('單場存證連結缺少正確的場次與版本。');
-  return { event, stage: stage as ProofStage, tx, bundleHash,...(match?{match,snapshotHash:snapshotHash!}:{}) };
+  if((match||snapshotHash)&&(event!=='worlds-2026'||!stage||!match||!groups[stage].includes(match)||!snapshotHash||!hashPattern.test(snapshotHash)||tx||bundleHash))throw new Error('單場存證連結缺少正確的場次與版本。');
+  return { event, stage: stage as ProofStage | undefined, tx, bundleHash,...(match?{match,snapshotHash:snapshotHash!}:{}) };
 }
 export async function readProofOverview(signal: AbortSignal): Promise<ProofOverview> {
   const response = await fetch('/api/public-proofs/worlds-2026/rounds', { cache: 'no-store', signal });

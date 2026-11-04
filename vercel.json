@@ -80,6 +80,10 @@
       "destination": "/api/index"
     },
     {
+      "source": "/api/public-proofs/resolve",
+      "destination": "/api/index"
+    },
+    {
       "source": "/api/public-proofs/worlds-2026/rounds",
       "destination": "/api/index"
     },

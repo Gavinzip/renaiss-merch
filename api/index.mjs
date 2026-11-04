@@ -47,6 +47,7 @@ const handleSurfStoreRoutes = createSurfStoreRoutes();
 const handlePublicProofRoutes = createPublicProofRoutes();
 const runtimeSourceVersion = captureSourceVersion();
 const allowedPaths = [
+  '/api/public-proofs/resolve',
   '/api/public-proofs/worlds-2026/rounds',
   '/api/public-proofs/worlds-2026/:stage/bundle',
   '/api/public-proofs/worlds-2026/:stage/history',

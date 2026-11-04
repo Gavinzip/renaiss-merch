@@ -14,3 +14,7 @@ export type ProofRound = { stage: ProofStage; name: string; roundId: string; sta
 export type ProofOverview = { event: 'worlds-2026'; authority: EventAuthority; authorities: EventAuthority[]; rounds: ProofRound[] };
 export type VerificationCheck = { step: number; chips: { label: string; value: string; source: 'onchain' | 'api' | 'local'; detail: string }[]; picks?: ProofPick[] };
 export type LoadedProof = { bundle: ProofBundle; bundleHash: string; authority: EventAuthority };
+export type ProofEvent = { id: string; name: string; verifier: string };
+export type ResolvedProofRecord = { event: ProofEvent; record:
+  | {kind:'draw'; stage:ProofStage; tx:string; bundleHash:string; roundId:string; transaction?:string}
+  | {kind:'roster'; stage:ProofStage; match:string; snapshotHash:string; transaction?:string} };

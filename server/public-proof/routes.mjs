@@ -1,6 +1,7 @@
 import { sha256 } from 'ethers';
 import { HttpError, sendJson } from '../http.mjs';
 import { requireProofStage, worldsProofConfig } from './config.mjs';
+import { createProofLookupRoutes } from './registry.mjs';
 
 const MAX_BYTES = 32 * 1024 * 1024;
 async function readPublicResponse(response) {
@@ -23,7 +24,9 @@ async function readPublicResponse(response) {
 // Only this operator-configured event origin is contacted. No cookies, tokens,
 // query-supplied URLs, admin routes, redirects or upstream authority are forwarded.
 export function createPublicProofRoutes({ environment = process.env, fetchPublic = fetch } = {}) {
+  const lookup = createProofLookupRoutes({ environment, fetchPublic });
   return async (req, res, url) => {
+    if (await lookup(req, res, url)) return true;
     if (!url.pathname.startsWith('/api/public-proofs/')) return false;
     if (req.method !== 'GET') throw new HttpError(405, 'method_not_allowed');
     const path = /^\/api\/public-proofs\/worlds-2026\/(rounds|(?:quarter|semi|final)\/(?:bundle|history)|matches\/(?:qf-0[1-4]|sf-0[12]|gf-01)\/snapshot)$/.exec(url.pathname);

@@ -11,6 +11,7 @@ test('public API metadata and relay initialize without loading browser cryptogra
   try {
     // The deployment's control-plane files; no protocol, chain or vendor TS.
     for (const name of ['server/http.mjs', 'server/public-proof/config.mjs', 'server/public-proof/routes.mjs',
+      'server/public-proof/registry.mjs','server/public-proof/worlds-adapter.mjs','server/public-proof/source.mjs',
       'shared/public-proof/worlds/runtime-catalog.mjs', 'shared/public-proof/worlds/contract-build.json',
       'shared/public-proof/worlds/registry-build.json','shared/public-proof/worlds/registry-v3-build.json', 'package.json']) {
       const target = path.join(isolated, name);
@@ -30,6 +31,13 @@ test('public API metadata and relay initialize without loading browser cryptogra
   } finally {
     await rm(isolated, { recursive: true, force: true });
   }
+});
+
+test('transaction resolver has a literal platform route without injected path query parameters',async()=>{
+  const {readFile}=await import('node:fs/promises');
+  const config=JSON.parse(await readFile(new URL('../../vercel.json',import.meta.url),'utf8'));
+  const index=config.rewrites.findIndex(r=>r.source==='/api/public-proofs/resolve'&&r.destination==='/api/index');
+  assert.ok(index>=0&&index<config.rewrites.findIndex(r=>r.source==='/api/:path*'));
 });
 
 test('every known match snapshot has a literal platform route before the generic API capture',async()=>{

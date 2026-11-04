@@ -1,13 +1,14 @@
-# Worlds public proof verifier
+# Renaiss public proof verifier
 
-Normal public entry: `/verify?event=worlds-2026&stage=final`.
+Normal public entry: `/verify`. See [transaction-first entry](transaction-entry.md) for the generic lookup and event-adapter contract. There is no default event or stage.
 The existing Merch locale, navigation shell and original six-section Fair scroll
 story are retained. There is no verification sidebar link or ticket/reserve
 picker. The main result animation shows the primary; verification step 5 lists
 and checks every winner and ordered reserve. W/R1/R2 retain full role captions.
 
-Submitting a request transaction hash searches all three event stages, then pins
-the resolved stage, request transaction and canonical bundle hash in the URL.
+Submitting a transaction hash searches registered event adapters, then pins the
+resolved transaction and canonical bundle hash in the URL. The current Worlds
+adapter searches all three of its stages internally.
 A shared URL retains every explicit constraint. Old publications are fetched
 with their exact identity, independently of the current round pointer. Unknown,
 conflicting or ambiguous identifiers fail visibly and cannot select latest.
@@ -19,8 +20,9 @@ is discarded. Operator approval separately pins chain, address, reviewed runtime
 and a credential-free HTTPS public RPC. The browser reads finalized code,
 receipts, events, commitments and canonical blocks directly from that RPC.
 
-Formal BSC56 registry: `0xc96b8DeD7048841e294a1Fc11F725C045F7da8B6`.
-Reviewed v2 runtime: `0xf29b1c3187bfae6858fcec596bd9196ecacc8757074dc0292d33c508aec73389`.
+Formal BSC56 v3 registry: `0x502aE1361207df515A68F0Beffef28D59be3f4D9`.
+Reviewed v3 runtime: `0x51d2ae9c45d66a149e5ece28547e3a9c0cbdbbe8b594cd8f3e4b4478d9e458b4`.
+Earlier instances remain usable only through separately approved historical authority settings.
 Source: `https://renaiss-lol.vercel.app`. At integration time all rounds await
 results; no formal proof exists. The site must show waiting, not QA results.
 
@@ -31,7 +33,7 @@ Required active settings:
 - MERCH_WORLDS_PROOF_RUNTIME_HASH (the legacy configuration retains its v1 default)
 - MERCH_WORLDS_PROOF_PUBLIC_RPC
 
-Both reviewed runtimes are supported. An old contract is usable only when
+The three reviewed v1, v2 and v3 runtimes are supported. An old contract is usable only when
 explicitly approved in MERCH_WORLDS_PROOF_HISTORICAL_AUTHORITIES, a JSON array of
 chainId, contract, runtimeHash, publicRpc and context (`event` or `rehearsal`).
 This is an address allowlist, not permission for any bundle-selected contract.
@@ -40,11 +42,13 @@ The production configuration does not import the old QA records or authority.
 
 Registry round identities bind event, stage and sequence. The existing v1
 six-word ticket leaves, SHA-512 rejection sampling, forward Fisher–Yates and
-one-primary/two-reserve policy are retained. The original legacy proof format
+original committed selection policy are retained. New rounds use one primary
+per match and no reserves; older proofs keep their original committed policy. The original legacy proof format
 remains valid. Source hashes are in `source-provenance.json`.
 
 ## Public endpoints
 
+- GET /api/public-proofs/resolve?tx=<transaction-hash>
 - GET /api/public-proofs/worlds-2026/rounds
 - GET /api/public-proofs/worlds-2026/{quarter|semi|final}/history
 - GET /api/public-proofs/worlds-2026/{stage}/bundle
@@ -77,7 +81,7 @@ fulfillment. Actual user visual acceptance remains separate.
 Existing Store, Surf quotas, Gmail/email handling, login, eligibility, voting,
 shipping and formal participant records are outside this change.
 
-The server control plane loads only the two reviewed build manifests through
+The server control plane loads only the reviewed build manifests through
 `runtime-catalog.mjs`. It does not import the browser/CLI cryptographic engine.
 Vercel explicitly packages this metadata and the existing backup tools. This
 separation prevents a vendor TypeScript packaging omission from failing shared
