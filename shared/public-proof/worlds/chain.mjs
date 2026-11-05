@@ -4,6 +4,7 @@ import build from './contract-build.json' with {type:'json'};
 import registryBuild from './registry-build.json' with {type:'json'};
 import registryV3 from './registry-v3-build.json' with {type:'json'};
 import {verifyRoundMatchChain} from './match-chain.mjs';
+import {receiptForCall} from './receipt.mjs';
 
 export const ECVRF_ABI=[
   'function CAMPAIGN() view returns(bytes32)',
@@ -36,8 +37,10 @@ export async function inspectRound(provider,registry,commitment){
   const result={status,commitmentBlock:Number(state.commitmentBlock),requestBlock:Number(state.requestBlock)};
   for(const [name,block,key] of [['RoundCommitted',state.commitmentBlock,'commitmentTx'],['RoundRequested',state.requestBlock,'requestTx']]){
     if(block===0n)continue;
-    const logs=await provider.getLogs({address:registry.contract,fromBlock:Number(block),toBlock:Number(block),topics:[iface.getEvent(name).topicHash,commitment.roundId]});
-    requireThat(logs.length===1,`Missing or duplicate ${name} history.`);result[key]=logs[0].transactionHash;
+    const {receipt}=await receiptForCall(provider,registry.contract,Number(block),iface,name==='RoundCommitted'?'commitRound':'requestRound',commitment.roundId);
+    const event=oneEvent(receipt,registry.contract,name);
+    requireThat(same(event.roundId,commitment.roundId),`Wrong ${name} round.`);
+    result[key]=receipt.hash;
   }
   return result;
 }
