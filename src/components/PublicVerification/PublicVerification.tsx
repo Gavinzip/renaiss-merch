@@ -4,6 +4,7 @@ import { publicProofMediaAsset } from 'virtual:public-proof-assets';
 import { useLocale, type AppLocale } from '../../i18n/LocaleContext';
 import { HubNavigation } from '../RenaissHub/HubNavigation';
 import { HubNavigationProvider } from '../RenaissHub/HubNavigationState';
+import { HubLanguageMenu } from '../RenaissHub/HubLanguageMenu';
 import type { LoadedProof, ProofOverview, ResolvedProofRecord } from '../../../shared/public-proof/types';
 import { DrawResultSummary } from './DrawResultSummary';
 import { FairProofSequence } from './fair/FairProofSequence';
@@ -96,6 +97,7 @@ function PublicProofPage() {
         <a className="vf-brand" href="/" aria-label={t("Renaiss Community")}><img src={publicProofMediaAsset('fair-die.webp')} alt=""/><span><img src={publicProofMediaAsset('fair-logo.svg')} alt="renaiss fair"/><small>{t("PUBLIC VERIFIER")}</small></span></a>
       </div>
       <nav className="vf-nav" aria-label={copy.title}><a className="is-current" href="#verify">{t("Verify a draw")}</a><a href="#commitment">{t("The record")}</a><a href="#method">{t("How it works")}</a></nav>
+      <HubLanguageMenu locale={locale} setLocale={setLocale}/>
       <details className="vf-mobile-menu"><summary aria-label={t("Open verification navigation")}><Menu size={20} aria-hidden="true"/></summary><nav aria-label={t("Mobile verification navigation")}><a href="#verify">{t("Verify a draw")}</a><a href="#commitment">{t("The record")}</a><a href="#method">{t("How it works")}</a></nav></details>
       <a className="vf-back" href="/">{t("Renaiss Community")}<ArrowRight size={16} aria-hidden="true"/></a>
     </header>

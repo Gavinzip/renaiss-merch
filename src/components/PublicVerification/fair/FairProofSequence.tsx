@@ -3,6 +3,7 @@ import type { AppLocale } from '../../../i18n/LocaleContext';
 import type { LoadedProof, VerificationCheck } from '../../../../shared/public-proof/types';
 import { fairCopy } from '../fairCopy';
 import { proofCopy } from '../proofCopy';
+import { worldsPrizeName } from '../worldsPrizeName';
 import { ScrollProofStory } from './ScrollProofStory';
 import type { ProofStoryData } from './ProofScenes';
 import { localizedEvidence } from './evidenceCopy';
@@ -28,7 +29,7 @@ export function FairProofSequence({ proof, eventName, checks, ready, running, er
       transactionHash: bundle.chain.requestTx, chainId: bundle.chain.chainId,
       contractAddress: bundle.chain.contract, commitmentTransactionHash: bundle.chain.commitmentTx,
       roundId: bundle.commitment.roundId, stage: bundle.manifest.stage, eventName, bundleHash: proof.bundleHash,
-      ticket: { ...pick, role: 'Winner', prizeName: bundle.manifest.matches.find(m => m.matchId === pick.matchId)!.prize.name },
+      ticket: { ...pick, role: 'Winner', prizeName: worldsPrizeName(bundle.manifest.matches.find(m => m.matchId === pick.matchId)!.prize.name, locale) },
       witness: { proof: bundle.proof, blockNumber: bundle.chain.requestBlockNumber }, merkleProof: pick.path,
     },
     completed: checks.length, working: running ?? 0,

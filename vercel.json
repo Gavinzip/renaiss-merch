@@ -88,6 +88,10 @@
       "destination": "/api/index"
     },
     {
+      "source": "/api/public-proofs/worlds-2026/winners",
+      "destination": "/api/index"
+    },
+    {
       "source": "/api/public-proofs/worlds-2026/quarter/history",
       "destination": "/api/index"
     },

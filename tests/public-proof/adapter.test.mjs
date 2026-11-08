@@ -38,6 +38,30 @@ test('loopback data source requires explicit local-only authorization',()=>{
 });
 const environment={MERCH_WORLDS_PROOF_ORIGIN:'https://example.com'};
 function responseCapture(){return {headers:{},setHeader(k,v){this.headers[k.toLowerCase()]=v;},writeHead(status,headers={}){this.status=status;for(const[k,v]of Object.entries(headers))this.setHeader(k,v);},end(body){this.body=body;}};}
+test('public winner profiles stay scoped to the exact proof and contain only public X handles', async () => {
+ const link = bundleHash => `https://merch.test/verify?event=worlds-2026&stage=quarter&tx=${h(2)}&bundleHash=${bundleHash}`;
+ const draw = (matchId, xUsername, proofUrl = link(h(3))) => ({
+   matchId, source: 'ecvrf', proofUrl,
+   winners: [{ position: 'winner', rank: 0, ticketNumber: 20, xUsername, name: 'Do not relay' },
+     { position: 'alternate', rank: 1, ticketNumber: 99, xUsername: 'reserve' }],
+ });
+ const route = createPublicProofRoutes({ environment, fetchPublic: async (url, options) => {
+   assert.equal(url, 'https://example.com/api/bootstrap');
+   assert.deepEqual(options.headers, { Accept: 'application/json' });
+   assert.equal(options.redirect, 'error');
+   return Response.json({ user: { id: 'Do not relay' }, draws: [
+     draw('qf-01', 'winner_1'), draw('qf-02', 'other_proof', link(h(4))),
+     draw('qf-03', 'bad/handle'), { ...draw('qf-04', 'rehearsal'), rehearsal: true },
+   ] });
+ } });
+ const endpoint = `https://merch.test/api/public-proofs/worlds-2026/winners?stage=quarter&tx=${h(2)}&bundleHash=${h(3)}`;
+ const res = responseCapture();
+ await route({ method: 'GET', headers: { cookie: 'private', authorization: 'private' } }, res, new URL(endpoint));
+ assert.equal(res.headers['cache-control'], 'no-store');
+ assert.deepEqual(JSON.parse(res.body), { winners: [{ matchId: 'qf-01', ticketNumber: 20, xUsername: 'winner_1' }] });
+ await assert.rejects(route({ method: 'GET' }, responseCapture(), new URL(endpoint + '&url=https://attacker.test')),
+   error => error.code === 'proof_query_invalid');
+});
 test('public relay ignores source authority and never forwards user credentials or arbitrary URLs',async()=>{
  let request;const rounds=['quarter','semi','final'].map(stage=>({stage,name:stage,status:'awaiting_results',roundId:h(1),bundleHash:null,proofUrl:null}));
  const route=createPublicProofRoutes({environment,fetchPublic:async(url,opts)=>{request={url,opts};return Response.json({registry:{...authority,contract:'0x2222222222222222222222222222222222222222'},rounds});}});

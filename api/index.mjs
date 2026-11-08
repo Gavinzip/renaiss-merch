@@ -49,6 +49,7 @@ const runtimeSourceVersion = captureSourceVersion();
 const allowedPaths = [
   '/api/public-proofs/resolve',
   '/api/public-proofs/worlds-2026/rounds',
+  '/api/public-proofs/worlds-2026/winners',
   '/api/public-proofs/worlds-2026/:stage/bundle',
   '/api/public-proofs/worlds-2026/:stage/history',
   '/api/public-proofs/worlds-2026/matches/:matchId/snapshot',
