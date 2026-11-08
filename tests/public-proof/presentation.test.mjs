@@ -37,7 +37,7 @@ test('latest complete scene renderer handles real adapter states without KBW mat
    await assert.rejects(client.readRoundProof(overview,'final',h(9),chain.requestTx,new AbortController().signal),/雜湊/);
    await assert.rejects(client.readRoundProof(overview,'final',proof.bundleHash,h(9),new AbortController().signal),/交易/);
   }finally{globalThis.fetch=originalFetch;}
-  const props={proof,checks:[],ready:false,running:null,error:null,run(){throw Error('SSR must not execute verification effects');},locale:'en'};
+  const props={proof,eventName:'Worlds 2026',checks:[],ready:false,running:null,error:null,run(){throw Error('SSR must not execute verification effects');},locale:'en'};
   const pending=renderToStaticMarkup(createElement(FairProofSequence,props));
   assert.equal((pending.match(/class="sp-chapter"/g)??[]).length,6);
   assert.ok(!pending.includes('CHECKED IN YOUR BROWSER'));
@@ -48,6 +48,11 @@ test('latest complete scene renderer handles real adapter states without KBW mat
   const checks=[];for(let i=1;i<=6;i++)checks.push(await verifier.run(i));
   const verified=renderToStaticMarkup(createElement(FairProofSequence,{...props,ready:true,checks}));
   assert.ok(verified.includes('All six checks completed in this browser'));
+  const localized=renderToStaticMarkup(createElement(FairProofSequence,{...props,locale:'zh-TW',ready:true,checks}));
+  assert.match(localized,/六步驗證動畫/);
+  assert.match(localized,/抽獎請求交易/);
+  assert.match(localized,/QF-01 · 正取|GF-01 · 正取/);
+  assert.doesNotMatch(localized,/CHECKED IN YOUR BROWSER|Copy full value|Expand |Collapse /);
   assert.ok(verified.includes('SHA-512'));
   assert.ok(verified.includes('04 · REPLAYED IN YOUR BROWSER'));
   assert.ok(verified.includes('Winner'));
@@ -59,7 +64,7 @@ test('latest complete scene renderer handles real adapter states without KBW mat
   for(const [index,code] of ['W','R1','R2'].entries()){
    const pick=bundle.result.picks[index],role=index===0?'Winner':`Reserve ${index}`;
    const scene=renderToStaticMarkup(createElement(ProofScene,{chapter:5,progress:1,data:{
-    verification:{ticket:{...pick,role,prizeName:bundle.manifest.matches[0].prize.name}}
+    locale:'en', verification:{eventName:'Worlds 2026',ticket:{...pick,role,prizeName:bundle.manifest.matches[0].prize.name}}
    }}));
    if(index>0){assert.equal(scene,'');continue;}
    assert.ok(scene.includes(`<small>${role}</small>`));

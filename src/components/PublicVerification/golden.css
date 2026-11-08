@@ -267,18 +267,24 @@
 .vf-draw-summary-status { display: flex; align-items: center; gap: 7px; padding: 8px 12px; border: 1px solid currentColor; border-radius: 999px; color: #dab989; font-size: 12px; }
 .vf-draw-summary-status[data-state="passed"] { color: #a5df9b; }
 .vf-draw-summary-status[data-state="failed"] { color: #ffb0bd; }
+.vf-draw-summary-description { margin: 14px 0 0; color: var(--vf-muted); font-size: 14px; line-height: 1.65; }
 .vf-draw-summary-tickets { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 154px), 1fr)); gap: 10px; margin: 23px 0 16px; padding: 0; list-style: none; }
 .vf-draw-summary-tickets li { display: grid; gap: 3px; padding: 12px 15px; border: 1px solid var(--vf-line); border-radius: 12px; background: var(--vf-surface); }
 .vf-draw-summary-tickets span, .vf-draw-summary-tickets small { color: var(--vf-muted); font-size: 12px; overflow-wrap: anywhere; }
-.vf-draw-summary-tickets strong { color: #f8d398; font-size: 26px; line-height: 1.2; }
+.vf-draw-summary-tickets .vf-draw-summary-prize { color: var(--vf-text); font-size: 15px; font-weight: 700; }
+.vf-draw-summary-tickets strong { color: #f8d398; font-size: 24px; line-height: 1.2; margin-inline-start: 4px; }
 .vf-draw-summary-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
 .vf-draw-summary-actions a, .vf-draw-summary-actions button { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 14px; border-radius: 999px; font-size: 13px; font-weight: 750; }
 .vf-draw-summary-actions a { background: #efbc80; color: #1c130e; }
 .vf-draw-summary-actions button { border: 1px solid var(--vf-line); background: var(--vf-surface); color: var(--vf-text); }
 .vf-draw-summary-actions a:hover { background: #f9d38f; }
+.vf-draw-summary-actions .vf-draw-summary-chain { background: transparent; color: var(--vf-text); border: 1px solid var(--vf-line); }
+.vf-draw-summary-actions .vf-draw-summary-chain:hover { border-color: #dab989; }
 .vf-draw-summary-actions button:hover { border-color: #dab989; }
 #proof-steps { scroll-margin-top: 105px; }
-.vf-result-lookup { margin: 0 0 32px; }
+.vf-result-lookup { margin: 0 0 32px; scroll-margin-top: 104px; }
+.vf-result-lookup[data-submitted="true"] { margin: 24px 0 0; }
+.vf-result-lookup[data-submitted="true"] + .vf-draw-summary { padding-top: 24px; }
 @media (max-width: 760px) {
   .vf-draw-summary { padding: 28px 0 36px; }
   .vf-draw-summary-tickets { margin-top: 16px; }
