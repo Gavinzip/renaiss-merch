@@ -35,7 +35,7 @@ export function FairProofSequence({ proof, checks, ready, running, error, run, l
     seed: checks.length >= 2 ? bundle.alpha : null, beta: checks.length >= 3 ? bundle.beta : null,
     replay: checks.length >= 4 ? bundle.result : null, merkleRoot: checks.length >= 6 ? bundle.commitment.root : null,
   };
-  return <section className="vf-result" aria-labelledby="vf-result-title">
+  return <section className="vf-result" id="proof-steps" aria-labelledby="vf-result-title">
     <div className="vf-result-header"><div><span>PUBLIC EVENT RECORD · BROWSER CHECKS BELOW</span>
       <h2 id="vf-result-title">The committed round and published tickets.</h2></div></div>
     <p className="vf-result-intro">Published data is not a verification verdict. This browser independently checks the approved chain, contract, ECVRF, committed prize plan, winning ticket and every Merkle inclusion.</p>

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Fingerprint, Menu, Search, ShieldCheck } from 'lucide-react';
 import { publicProofMediaAsset } from 'virtual:public-proof-assets';
-import { useLocale } from '../../i18n/LocaleContext';
+import { useLocale, type AppLocale } from '../../i18n/LocaleContext';
 import { HubNavigation } from '../RenaissHub/HubNavigation';
 import { HubNavigationProvider } from '../RenaissHub/HubNavigationState';
 import type { LoadedProof, ProofOverview, ResolvedProofRecord } from '../../../shared/public-proof/types';
+import { DrawResultSummary } from './DrawResultSummary';
 import { FairProofSequence } from './fair/FairProofSequence';
 import { MatchCommitmentPanel } from './MatchCommitmentPanel';
 import { proofLocation } from './proofClient';
@@ -30,9 +31,7 @@ function PublicProofPage() {
   const [resolved,setResolved]=useState<ResolvedProofRecord|null>(null),[loading,setLoading]=useState(false);
   const [error,setError]=useState<string|null>(initial.error),[errorCode,setErrorCode]=useState<string|null>(null);
   const {copied,copyError,copy:copyRecordLink}=usePublicValueCopy();
-  const verification=useProofVerification(proof);
   const roster=resolved?.record.kind==='roster'?resolved.record:null;
-  const rehearsal=proof?.authority.context==='rehearsal';
   const visibleError=errorCode?entry.errors[errorCode as keyof typeof entry.errors]??entry.errors.proof_lookup_unavailable:error;
   useEffect(()=>{document.title=`${copy.title} · Renaiss Fair`;},[copy.title]);
   useEffect(()=>{
@@ -69,7 +68,22 @@ function PublicProofPage() {
     return()=>controller.abort();
   },[target,revision]);
   const go=useCallback((hash:string)=>window.location.assign('/'+hash),[]);
-  const authority=proof?.authority??overview?.authority;
+  const authority=overview?.authority;
+  const lookupForm = (
+    <form className="vf-search-form" onSubmit={event=>{
+      event.preventDefault();if(loading)return;
+      const value=hash.trim();
+      if(!/^0x[0-9a-f]{64}$/i.test(value)){setProof(null);setOverview(null);setResolved(null);setErrorCode(null);setError(entry.invalid);return;}
+      const url=new URL('/verify',window.location.origin);
+      url.searchParams.set('lang',locale);url.searchParams.set('tx',value);
+      window.history.replaceState(null,'',url);
+      setTarget(proofLocation(url.search));setRevision(v=>v+1);
+    }}>
+      <label className="vf-sr-only" htmlFor="vf-transaction">{entry.label}</label><Search size={20} aria-hidden="true"/>
+      <input id="vf-transaction" value={hash} onChange={event=>setHash(event.target.value)} placeholder={entry.placeholder} spellCheck={false} autoComplete="off"/>
+      <button type="submit" disabled={loading}>{loading?entry.checking:entry.verify}<ArrowRight size={17} aria-hidden="true"/></button>
+    </form>
+  );
   return <div className="fair-proof"><div className="vf-page">
     <header className="vf-header">
       <div style={{display:'flex',alignItems:'center',gap:12}}>
@@ -83,35 +97,24 @@ function PublicProofPage() {
       <a className="vf-back" href="/">Renaiss Community<ArrowRight size={16} aria-hidden="true"/></a>
     </header>
     <main className="vf-main">
+      {proof && resolved ? <ResolvedDraw key={proof.bundleHash} proof={proof} eventName={resolved.event.name} locale={locale} copied={copied} copyError={copyError} onCopy={()=>void copyRecordLink(window.location.href)} /> :
       <section className="vf-hero" id="verify" aria-labelledby="vf-title">
-        <div className="vf-kicker"><span className="vf-live-dot"/>{rehearsal?'REHEARSAL · NO REAL PRIZES':'RENAISS FAIR · PUBLIC VERIFICATION'}</div>
+        <div className="vf-kicker"><span className="vf-live-dot"/>RENAISS FAIR · PUBLIC VERIFICATION</div>
         <h1 id="vf-title">Every draw.<br/><em>Open to verify.</em></h1>
         <p>{entry.description}</p>
-        <form className="vf-search-form" onSubmit={event=>{
-          event.preventDefault();if(loading)return;
-          const value=hash.trim();
-          if(!/^0x[0-9a-f]{64}$/i.test(value)){setProof(null);setOverview(null);setResolved(null);setErrorCode(null);setError(entry.invalid);return;}
-          const url=new URL('/verify',window.location.origin);
-          url.searchParams.set('lang',locale);url.searchParams.set('tx',value);
-          window.history.replaceState(null,'',url);
-          setTarget(proofLocation(url.search));setRevision(v=>v+1);
-        }}>
-          <label className="vf-sr-only" htmlFor="vf-transaction">{entry.label}</label><Search size={20} aria-hidden="true"/>
-          <input id="vf-transaction" value={hash} onChange={event=>setHash(event.target.value)} placeholder={entry.placeholder} spellCheck={false} autoComplete="off"/>
-          <button type="submit" disabled={loading}>{loading?entry.checking:entry.verify}<ArrowRight size={17} aria-hidden="true"/></button>
-        </form>
-        <div className="vf-search-caption"><span>{rehearsal?'TEST RECORD / NO REAL PRIZES':'NO LOGIN REQUIRED'}</span><span>{entry.caption}</span></div>
+        {lookupForm}
+        <div className="vf-search-caption"><span>NO LOGIN REQUIRED</span><span>{entry.caption}</span></div>
         {visibleError?<p className="vf-error" role="alert">{visibleError}</p>:null}
         {!resolved&&!loading&&!visibleError?<p className="vf-entry-hint">{entry.hint}</p>:null}
-      </section>
+      </section>}
       {loading?<p role="status">{entry.checking}</p>:null}
-      {resolved?<div className="proof-round-tools"><p>{resolved.event.name} · {roster?entry.roster:entry.draw}</p><button type="button" onClick={()=>void copyRecordLink(window.location.href)}>{copied?copy.copied:copy.copy}</button></div>:null}
-      {copyError?<p className="vf-error" role="alert">{copyError}</p>:null}
+      {roster&&resolved?<div className="proof-round-tools"><p>{resolved.event.name} · {entry.roster}</p><button type="button" onClick={()=>void copyRecordLink(window.location.href)}>{copied?copy.copied:copy.copy}</button></div>:null}
+      {!proof&&copyError?<p className="vf-error" role="alert">{copyError}</p>:null}
       {roster&&overview?<MatchCommitmentPanel key={roster.snapshotHash+roster.transaction} matchId={roster.match} snapshotHash={roster.snapshotHash} expectedTransaction={roster.transaction} overview={overview} locale={locale}/>:null}
-      {proof?<FairProofSequence key={proof.bundleHash} proof={proof} {...verification} locale={locale}/>:null}
-      {resolved?<section className="vf-overview" aria-label="Resolved record">
+      {proof?<section className="vf-result-lookup" aria-label={entry.label}>{lookupForm}</section>:null}
+      {roster&&resolved?<section className="vf-overview" aria-label="Resolved record">
         <div><span>{entry.event}</span><strong>{resolved.event.name}</strong></div>
-        <div><span>{entry.record}</span><strong>{roster?roster.match.toUpperCase():proof?.bundle.commitment.ticketCount??'—'}</strong></div>
+        <div><span>{entry.record}</span><strong>{roster.match.toUpperCase()}</strong></div>
         <div><span>{entry.network}</span><strong>{authority?.configured?`BSC ${authority.chainId===97?'TESTNET':'MAINNET'}`:'—'}</strong></div>
       </section>:null}
       <section className="vf-bottom-grid" aria-label="Verification details">
@@ -127,4 +130,15 @@ function PublicProofPage() {
     </main>
     <footer className="vf-footer"><span><img src={publicProofMediaAsset('fair-die.webp')} alt=""/>RENAISS FAIR · PUBLIC VERIFICATION</span><span>Committed records · Public proofs · Independent checks</span></footer>
   </div></div>;
+}
+
+function ResolvedDraw({proof,eventName,locale,copied,copyError,onCopy}: {
+  proof: LoadedProof; eventName: string; locale: AppLocale; copied: boolean; copyError: string | null; onCopy: () => void;
+}) {
+  const verification = useProofVerification(proof);
+  return <>
+    <DrawResultSummary proof={proof} eventName={eventName} locale={locale} completed={verification.checks.length}
+      error={verification.error} copied={copied} copyError={copyError} onCopy={onCopy}/>
+    <FairProofSequence proof={proof} {...verification} locale={locale}/>
+  </>;
 }
