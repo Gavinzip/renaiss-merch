@@ -265,7 +265,7 @@
 
 .vf-draw-summary { padding: 48px 0 46px; scroll-margin-top: 96px; }
 .vf-draw-summary-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
-.vf-draw-summary h1 { margin: 10px 0 6px; font-size: clamp(30px, 5vw, 48px); line-height: 1.16; }
+.vf-draw-summary h2 { margin: 10px 0 6px; font-size: clamp(30px, 5vw, 48px); line-height: 1.16; }
 .vf-draw-summary-head p { margin: 0; color: var(--vf-muted); font-size: 13px; }
 .vf-draw-summary-status { display: flex; align-items: center; gap: 7px; padding: 8px 12px; border: 1px solid currentColor; border-radius: 999px; color: #dab989; font-size: 12px; }
 .vf-draw-summary-status[data-state="passed"] { color: #a5df9b; }
@@ -291,9 +291,11 @@
 .vf-draw-summary-actions .vf-draw-summary-chain:hover { border-color: #dab989; }
 .vf-draw-summary-actions button:hover { border-color: #dab989; }
 #proof-steps { scroll-margin-top: 105px; }
-.vf-result-lookup { margin: 0 0 32px; scroll-margin-top: 104px; }
-.vf-result-lookup[data-submitted="true"] { margin: 24px 0 0; }
-.vf-result-lookup[data-submitted="true"] + .vf-draw-summary { padding-top: 24px; }
+.vf-hero[data-has-result="true"] { padding-bottom: 22px; }
+.vf-hero-result-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: #efbc80; font-size: 13px; }
+.vf-hero-result-link:hover { text-decoration: underline; }
+.vf-hero[data-has-result="true"] + .vf-draw-summary { padding-top: 24px; }
+#roster-result { scroll-margin-top: 104px; }
 @media (max-width: 760px) {
   .vf-draw-summary { padding: 28px 0 36px; }
   .vf-draw-summary-tickets { margin-top: 16px; }

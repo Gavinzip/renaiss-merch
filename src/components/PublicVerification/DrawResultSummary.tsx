@@ -54,11 +54,11 @@ export function DrawResultSummary({proof, eventName, locale, transaction, comple
   const isCommitment = transaction.toLowerCase() === bundle.chain.commitmentTx.toLowerCase();
   const explorer = isTestnet ? 'https://testnet.bscscan.com' : 'https://bscscan.com';
   const passed = completed === 6;
-  return <section id="draw-result" className="vf-draw-summary" aria-labelledby="vf-title">
+  return <section id="draw-result" className="vf-draw-summary" aria-labelledby="vf-draw-title">
     <div className="vf-draw-summary-head">
       <div>
         <div className="vf-kicker">{eventName}{authority.context === 'rehearsal' ? ` · ${copy.rehearsal}` : ''}</div>
-        <h1 id="vf-title">{title}</h1>
+        <h2 id="vf-draw-title">{title}</h2>
         <p>{t(isTestnet ? "BSC TESTNET" : "BSC MAINNET")} · {bundle.commitment.ticketCount.toLocaleString(locale)} {copy.eligible}</p>
       </div>
       <div className="vf-draw-summary-status" role="status" data-state={passed ? 'passed' : error ? 'failed' : 'pending'}>

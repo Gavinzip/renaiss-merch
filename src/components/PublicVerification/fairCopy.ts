@@ -1,6 +1,7 @@
 import type {AppLocale} from '../../i18n/LocaleContext';
 
 const fairText = {
+  "See the result below": ["查看下方結果", "아래 결과 보기"],
   "Verify a draw": ["查詢抽獎", "추첨 조회"],
   "The record": ["資料來源", "기록 출처"],
   "How it works": ["驗證方式", "검증 방법"],
