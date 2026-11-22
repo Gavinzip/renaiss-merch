@@ -4,6 +4,7 @@ import { getPublicOrigin } from "../config.mjs";
 import { HttpError, sendJson } from "../http.mjs";
 import { sessionIdHash } from "../auth-session-database.mjs";
 import { readJsonBody } from "../shipping-details.mjs";
+import { clientAddressHash } from "./client-address.mjs";
 import {
   parseSurfDrawPasswordHash,
   verifySurfDrawPassword,
@@ -208,11 +209,6 @@ export function createDrawRoomAccess({
     const left = createHash("sha256").update(a).digest(),
       right = createHash("sha256").update(b).digest();
     return timingSafeEqual(left, right);
-  }
-  function clientAddressHash(req) {
-    return createHash("sha256")
-      .update(req.socket.remoteAddress || "unknown")
-      .digest("hex");
   }
   function requireMethod(req, method) {
     if (req.method !== method) throw new HttpError(405, "method_not_allowed");
