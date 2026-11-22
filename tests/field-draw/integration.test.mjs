@@ -11,17 +11,28 @@ import { createRosterDrawRoute } from "../../server/roster-draw/routes.mjs";
 import { createRosterStore } from "../../server/roster-draw/store.mjs";
 import { sendHttpError } from "../../server/http.mjs";
 import { parseRoster } from "../../shared/roster-draw.js";
+import { readJsonBody } from "../../server/request-json.mjs";
 
 // Explicit disposable PostgreSQL owner URL only. Never uses MERCH_DATABASE_URL.
 const ownerFile = process.env.FIELD_DRAW_TEST_DATABASE_URL_FILE;
+const hosted = process.env.FIELD_DRAW_TEST_HOSTED === '1';
 test(
-  "isolated draw-room auth, persisted rounds and concurrent exclusion",
+  `${hosted ? 'Vercel request shape' : 'Node stream'}: isolated draw-room auth, persisted rounds and concurrent exclusion`,
   { skip: !ownerFile },
   async (t) => {
     const url = (await readFile(ownerFile, "utf8")).trim();
     const pool = createDatabasePool(url);
     t.after(() => pool.end());
-    const schemas = ["field_draw_test_20261122", "legacy_draw_test_20261122"];
+    const schemas = hosted
+      ? ["field_draw_hosted_test_20261122", "legacy_draw_hosted_test_20261122"]
+      : ["field_draw_test_20261122", "legacy_draw_test_20261122"];
+    const originalVercel = process.env.VERCEL;
+    if (hosted) process.env.VERCEL = '1';
+    else delete process.env.VERCEL;
+    t.after(() => {
+      if (originalVercel === undefined) delete process.env.VERCEL;
+      else process.env.VERCEL = originalVercel;
+    });
     for (const schema of schemas) {
       assert.equal(
         (
@@ -74,10 +85,15 @@ test(
     const server = createServer(async (req, res) => {
       try {
         const url = new URL(req.url, "http://localhost");
+        const request = hosted ? {
+          method: req.method,
+          headers: {...req.headers, 'x-forwarded-for':'203.0.113.23', 'x-forwarded-proto':'https'},
+          body: req.method === 'POST' ? await readJsonBody(req,4_000_000) : undefined,
+        } : req;
         if (
-          (await access.handleRoute(req, res, url)) ||
-          (await legacy.handleRoute(req, res, url)) ||
-          (await roster(req, res, url))
+          (await access.handleRoute(request, res, url)) ||
+          (await legacy.handleRoute(request, res, url)) ||
+          (await roster(request, res, url))
         )
           return;
         res.writeHead(404);

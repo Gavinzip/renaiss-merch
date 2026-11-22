@@ -5,7 +5,6 @@ import {
   readChineseShippingFieldErrorCode
 } from '../shared/shipping-address-policy.js';
 
-const MAX_REQUEST_BODY_BYTES = 16 * 1024;
 const countryPattern = /^[A-Z]{2}$/;
 const phonePattern = /^[+()\d\s.-]{6,32}$/;
 const taiwanMobilePattern = /^(?:09\d{8}|\+8869\d{8})$/;
@@ -13,30 +12,7 @@ const sevenElevenSelectionTokenPattern = /^[A-Za-z0-9]{20}$/;
 const sizePattern = /^(S|M|L|XL|ONE_SIZE)$/;
 const braceletColorPattern = /^(GOLD|SILVER)$/;
 
-export async function readJsonBody(req, maxBytes = MAX_REQUEST_BODY_BYTES) {
-  const chunks = [];
-  let size = 0;
-
-  for await (const chunk of req) {
-    size += chunk.length;
-
-    if (size > maxBytes) {
-      throw new HttpError(413, 'request_too_large');
-    }
-
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-  }
-
-  if (chunks.length === 0) {
-    throw new HttpError(400, 'request_body_required');
-  }
-
-  try {
-    return JSON.parse(Buffer.concat(chunks).toString('utf8'));
-  } catch {
-    throw new HttpError(400, 'invalid_json');
-  }
-}
+export { readJsonBody } from './request-json.mjs';
 
 export function normalizeShippingProfilePayload(payload) {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {

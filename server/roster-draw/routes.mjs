@@ -3,6 +3,7 @@ import { requireSurfDrawAccess } from "../surf-draw/access.mjs";
 import { getPublicOrigin } from "../config.mjs";
 import { HttpError, sendJson } from "../http.mjs";
 import { createRosterStore } from "./store.mjs";
+import { readJsonBody } from "../request-json.mjs";
 export function createRosterDrawRoute({
   root: ROOT,
   requireAccess,
@@ -25,19 +26,7 @@ export function createRosterDrawRoute({
       sendJson(res, 200, await store.state());
       return true;
     }
-    let size = 0;
-    const chunks = [];
-    for await (const chunk of req) {
-      size += chunk.length;
-      if (size > 4_000_000) throw new HttpError(413, "request_too_large");
-      chunks.push(Buffer.from(chunk));
-    }
-    let input;
-    try {
-      input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
-    } catch {
-      throw new HttpError(400, "invalid_json");
-    }
+    const input = await readJsonBody(req, 4_000_000);
     if (!input || typeof input !== "object" || Array.isArray(input))
       throw new HttpError(400, "invalid_json");
     sendJson(

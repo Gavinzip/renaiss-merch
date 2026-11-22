@@ -199,3 +199,29 @@ intermediate frames cover extraction, withdrawal, clearance, turn and landing at
 with a visible gap above the pouch. Browser viewport overrides were reset, and
 the normal picker remains open for user review. No draw API/business writes or
 new saved results were made in this review. No push, PR or release occurred.
+
+### Production configuration and hosted login, 2026-11-22
+
+Dedicated operator credentials and a pooled `field_draw_app` connection are now
+production-only Vercel secrets. The role has CRUD/sequence access to `field_draw`,
+without schema CREATE or access to the existing public roster tables. No database
+owner credential is supplied to this room. The merged migration was validated on
+a temporary branch of the actual production database, then applied after explicit
+operator approval. That temporary branch was deleted. Existing public roster and
+winner counts stayed at one and ten; field business tables started empty.
+
+Production login exposed a platform contract missing from the standalone HTTP
+checks: Vercel supplies a parsed `req.body` and edge client address instead of
+requiring a native request stream/socket. `server/request-json.mjs` now handles
+both delivery shapes with the same JSON/UTF-8 size limits; roster mutations reuse
+it. Vercel rate limits use its overwritten `x-forwarded-for` header; standalone
+Node uses only the socket peer and ignores forwarding headers. Missing addresses
+fail visibly instead of sharing an unknown-client limit bucket. No credential,
+authorization or persistence fallback is introduced.
+
+See Vercel's official Node runtime request-body documentation and request-header
+contract: https://vercel.com/docs/functions/runtimes/node-js and
+https://vercel.com/docs/headers/request-headers . Regression coverage includes
+`tests/field-draw/request-runtime.test.mjs` and the PostgreSQL/HTTP suite in native
+mode and with `FIELD_DRAW_TEST_HOSTED=1`. Hosted fixtures use the parsed-body/no-
+socket request contract; they are backend regression tests, never a product preview.
