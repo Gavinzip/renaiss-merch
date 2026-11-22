@@ -19,7 +19,9 @@ export function RenaissPackDraw({
   disabledReason,
   revision,
   visible,
+  field = false,
 }: {
+  field?: boolean;
   locale: AppLocale;
   revision: number;
   visible: boolean;
@@ -32,7 +34,7 @@ export function RenaissPackDraw({
   const root = useRef<HTMLDivElement>(null),
     canvas = useRef<HTMLCanvasElement>(null),
     opening = useRef(false);
-  useDrawViewportStage(root);
+  useDrawViewportStage(root, !field);
   const [phase, setPhase] = useState<RevealPhase>("settling"),
     [winner, setWinner] = useState<RosterWinner | null>(replay ?? null),
     [waiting, setWaiting] = useState(false);
@@ -59,16 +61,9 @@ export function RenaissPackDraw({
   useLayoutEffect(() => {
     opening.current = false; setPhase('settling'); setWinner(replay ?? null); setWaiting(false);
   }, [revision, replay]);
-  function bringStageIntoView() {
-    const rect = root.current?.getBoundingClientRect();
-    if (rect && (rect.top < 0 || rect.bottom > window.innerHeight)) {
-      root.current?.scrollIntoView({ block: "start", behavior: "instant" });
-    }
-  }
   async function open() {
     if (opening.current || !flight.ready || (!replay && disabledReason)) return false;
     unlockSurfDrawSound();
-    bringStageIntoView();
     opening.current = true;
     setWaiting(true);
     onActive(true);
@@ -94,6 +89,7 @@ export function RenaissPackDraw({
     <div
       ref={root}
       className="surf-batch-scene roster-pack-scene"
+      data-layout={field ? "field" : undefined}
       data-kind="surf-pro-month"
       data-brand="renaiss"
       data-count="1"
@@ -124,7 +120,8 @@ export function RenaissPackDraw({
           <SurfProBoosterInteraction
             key={revision}
             locale={locale}
-            onSpin={flight.spinPacks}
+            showPicker={!field}
+            onSpin={field ? undefined : flight.spinPacks}
             onBrowse={flight.browsePacks}
             onHover={flight.hoverPack}
             brand="renaiss"
@@ -134,10 +131,7 @@ export function RenaissPackDraw({
             onRelease={flight.releasePack}
             onSelect={flight.selectPack}
             onRotate={flight.rotatePack}
-            onFocus={focused => {
-              if (focused) bringStageIntoView();
-              flight.focusPack(focused);
-            }}
+            onFocus={flight.focusPack}
           />
         </div>
       ) : null}
@@ -175,7 +169,7 @@ export function RenaissPackDraw({
           className="roster-primary roster-pack-next"
           onClick={onDone}
         >
-          {replay ? "返回抽獎" : "準備下一張"} ↗
+          {replay ? "返回抽獎" : field ? "下一抽" : "準備下一張"} ↗
         </button>
       ) : null}
     </div>

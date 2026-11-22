@@ -32,6 +32,26 @@
   ],
   "rewrites": [
     {
+      "source": "/field-draw/roster",
+      "destination": "/draw/index.html"
+    },
+    {
+      "source": "/field-draw/roster/",
+      "destination": "/draw/index.html"
+    },
+    {
+      "source": "/field-draw",
+      "destination": "/draw/index.html"
+    },
+    {
+      "source": "/field-draw/",
+      "destination": "/draw/index.html"
+    },
+    {
+      "source": "/field-draw/index.html",
+      "destination": "/draw/index.html"
+    },
+    {
       "source": "/verify",
       "destination": "/v1.2/index.html"
     },
@@ -85,6 +105,10 @@
     },
     {
       "source": "/api/public-proofs/worlds-2026/rounds",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/api/public-proofs/worlds-2026/winners",
       "destination": "/api/index"
     },
     {

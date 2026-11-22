@@ -3,7 +3,7 @@ export type ProofView = 'walkthrough' | 'story' | 'flow';
 export type ProofPick = { matchId: string; ticketNumber: number; participantId: string; position: number; rank: number; positionType: string; path: string[] };
 export type ProofManifest = {
   protocol: string; campaignId: string; stage: ProofStage; roundId: string;
-  matches: { matchId: string; totalTickets: number; prize: { name: string }; entries: unknown[] }[];
+  matches: { matchId: string; totalTickets: number; prize: { name: string; units: number }; entries: unknown[] }[];
   [key: string]: unknown;
 };
 export type ProofCommitment = { roundId: string; root: string; manifestHash: string; prizePlanHash: string; publicKey: string; ticketCount: number; protocolHash: string };

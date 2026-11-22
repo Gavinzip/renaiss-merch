@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RosterKind, RosterState, RosterWinner } from "./types";
 
-const ROOT = "/api/draw-room/roster";
 const messages: Record<string, string> = {
   prize_name_required: "請填寫 1–60 字的獎項名稱。",
   roster_changed: "名單已被另一個視窗更新，請重新載入。",
   draw_state_changed: "另一個視窗已完成抽獎，請重新讀取後再操作。",
   roster_locked_after_first_draw: "已開始抽獎，名單已鎖定，不能覆蓋中獎紀錄。",
   roster_exhausted: "名單中的所有名額都已中獎。",
+  field_draw_access_required: "開獎室登入已過期，請重新登入。",
+  field_draw_database_not_configured: "現場開獎室資料庫尚未設定。",
   surf_draw_access_required: "開獎室登入已過期，請重新登入。",
 };
 class RosterRequestError extends Error {
@@ -18,7 +19,7 @@ class RosterRequestError extends Error {
     super(message);
   }
 }
-async function request(path = "", body?: unknown) {
+async function request(ROOT: string, path = "", body?: unknown) {
   const response = await fetch(ROOT + path, {
     method: body ? "POST" : "GET",
     credentials: "same-origin",
@@ -34,7 +35,7 @@ async function request(path = "", body?: unknown) {
     );
   return data;
 }
-export function useRosterDraw() {
+export function useRosterDraw(root = "/api/draw-room/roster") {
   const [state, setState] = useState<RosterState | null>(null),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
@@ -54,7 +55,7 @@ export function useRosterDraw() {
     const revision = ++readRevision.current;
     setRefreshing(true);
     try {
-      const next = await request();
+      const next = await request(root);
       if (revision !== readRevision.current) return;
       setState(next);
       setError("");
@@ -64,7 +65,7 @@ export function useRosterDraw() {
     } finally {
       if (revision === readRevision.current) setRefreshing(false);
     }
-  }, []);
+  }, [root]);
   useEffect(() => {
     void refresh();
     return () => { ++readRevision.current; };
@@ -82,7 +83,7 @@ export function useRosterDraw() {
     setError("");
     try {
       setState(
-        await request("/upload", {
+        await request(root, "/upload", {
           text,
           format,
           title,
@@ -114,7 +115,7 @@ export function useRosterDraw() {
       prize,
     };
     try {
-      const next = await request("/draw", attempt.current);
+      const next = await request(root, "/draw", attempt.current);
       setState(next);
       attempt.current = null;
       setPendingDraw(null);
@@ -141,7 +142,7 @@ export function useRosterDraw() {
     setBusy(true);
     setError("");
     try {
-      setState(await request("/clear", {
+      setState(await request(root, "/clear", {
         rosterId: state.roster.id,
         expectedCount: state.winners.length,
       }));

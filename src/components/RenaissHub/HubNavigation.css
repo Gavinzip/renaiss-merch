@@ -40,7 +40,7 @@
 .hub-navigation__trigger:hover,
 .hub-sidebar__close:hover { background: #3f34460a; color: #29232e; }
 .hub-navigation :focus-visible,
-.hub-sidebar :focus-visible { outline: 2px solid #a38db8; outline-offset: 3px; }
+.hub-sidebar :focus-visible { outline: none; box-shadow: none; color: #78649d; text-decoration: underline; text-underline-offset: .24em; }
 .hub-navigation button:disabled { opacity: .45; cursor: default; }
 
 .hub-sidebar {

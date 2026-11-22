@@ -1,12 +1,9 @@
 import type { LoadedProof, ResolvedProofRecord } from '../../../shared/public-proof/types';
-import { proofLocation, readProofOverview, readRoundProof } from './proofClient';
+import { ProofLookupError, proofLocation, readProofOverview, readRoundProof } from './proofClient';
 
 const hash32 = (value:unknown):value is string => typeof value==='string' && /^0x[0-9a-f]{64}$/i.test(value);
 const same = (a:string,b:string) => a.toLowerCase()===b.toLowerCase();
 export const worldsEvent = {id:'worlds-2026',name:'Worlds 2026',verifier:'worlds-ticket-ecvrf-v1'};
-export class ProofLookupError extends Error {
-  constructor(public code:string){super(code);}
-}
 export async function resolveProofRecord(target:ReturnType<typeof proofLocation>,signal:AbortSignal):Promise<ResolvedProofRecord> {
   const query=new URLSearchParams();
   if(target.tx)query.set('tx',target.tx);

@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import type { AppLocale } from '../../i18n/LocaleContext';
+import { fairCopy } from './fairCopy';
 
-export function usePublicValueCopy() {
+export function usePublicValueCopy(locale: AppLocale) {
+  const t = fairCopy(locale);
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState<string | null>(null);
   const timer = useRef<number | undefined>(undefined);
@@ -10,6 +13,6 @@ export function usePublicValueCopy() {
     try {
       await navigator.clipboard.writeText(value); setCopied(true);
       timer.current = window.setTimeout(() => setCopied(false), 1500);
-    } catch { setCopyError('Copy failed. Select and copy the full value manually.'); }
+    } catch { setCopyError(t('Copy failed. Select and copy the full value manually.')); }
   } };
 }

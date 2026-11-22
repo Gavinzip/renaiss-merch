@@ -7,12 +7,17 @@ export function getPool() {
     throw new Error("postgres_driver_required");
   const value = process.env.MERCH_DATABASE_URL?.trim();
   if (!value) throw new Error("merch_database_url_required");
+  pool = createDatabasePool(value);
+  return pool;
+}
+
+export function createDatabasePool(value) {
   const url = new URL(value);
   if (!["postgres:", "postgresql:"].includes(url.protocol))
     throw new Error("postgres_url_invalid");
   // Verify the server certificate explicitly, including on future pg versions.
   url.searchParams.set("sslmode", "verify-full");
-  pool = new pg.Pool({
+  return new pg.Pool({
     connectionString: url.href,
     max: 5,
     idleTimeoutMillis: 10000,
@@ -27,7 +32,6 @@ export function getPool() {
       return pg.types.getTypeParser(oid, format);
     } },
   });
-  return pool;
 }
 
 export async function transaction(operation, database = getPool()) {

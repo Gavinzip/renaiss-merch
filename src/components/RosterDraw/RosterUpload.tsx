@@ -1,3 +1,4 @@
+import { RosterPasteInput } from './RosterPasteInput';
 import { useRef, useState } from "react";
 import { parseRoster, type RosterEntry } from "../../../shared/roster-draw.js";
 
@@ -7,7 +8,9 @@ export function RosterUpload({
   hasRoster,
   onUpload,
   onClear,
+  clearLabel = "清空目前名單",
 }: {
+  clearLabel?: string;
   locked: boolean;
   busy: boolean;
   hasRoster: boolean;
@@ -79,16 +82,21 @@ export function RosterUpload({
               // The parent displays the server error and retains the current roster.
             }
           }}>
-          清空目前名單
+          {clearLabel}
         </button>
       </div>
+      <RosterPasteInput disabled={busy || locked} onPreview={(text, title) => {
+        setError(''); setDraft(null);
+        try { setDraft({ text, title, format: 'txt', entries: parseRoster(text, 'txt') }); }
+        catch (reason) { setError(reason instanceof Error ? reason.message : '名單檢查失敗。'); }
+      }} />
       {locked ? (
         <p className="roster-note">名單已鎖定，清空後可上傳新名單。</p>
       ) : (
         <div className="roster-note">
           <p>CSV／TSV 請包含 <code>name</code> 欄，<code>id</code> 選填；TXT 每行一個姓名。</p>
           <p>編號可以是 2、3、4 位數，例如 <code>12</code>、<code>123</code>、<code>1234</code>；每列代表一個名額。若要保留 <code>01</code> 等前導零，請先將 Excel 編號欄設為文字，再匯出 CSV UTF-8。</p>
-          <p>相同姓名、不同編號視為不同名額；已中獎名額會從兩種抽獎中排除。</p>
+          <p>相同姓名、不同編號視為不同名額；已中獎名額會從本輪後續抽獎中排除。</p>
           <a
             download="renaiss-roster-template.csv"
             href={
@@ -112,6 +120,8 @@ export function RosterUpload({
           <strong>
             {draft.title} · {draft.entries.length.toLocaleString()} 個名額
           </strong>
+          <ol className="roster-draft-entries">{draft.entries.slice(0, 10).map(entry => <li key={entry.id}>{entry.name}</li>)}</ol>
+          {draft.entries.length > 10 ? <p>另有 {draft.entries.length - 10} 個名額；保存後可查看完整名單。</p> : null}
           <button
             className="roster-primary"
             disabled={busy}

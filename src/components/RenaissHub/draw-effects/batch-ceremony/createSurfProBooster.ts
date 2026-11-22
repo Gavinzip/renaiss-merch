@@ -1,9 +1,10 @@
 import { PRO_PACK_ASPECT, PRO_PACK_VERTICAL_SCALE } from './proBoosterDimensions';
 import * as THREE from 'three';
 import type { CeremonyArtwork } from './ceremonyArtwork';
-import { proBoosterLayout, proBoosterMotion, proAgeForTear } from './proBoosterTimeline';
+import { proBoosterLayout, proBoosterMotion, proAgeForTear, proBoosterReleaseOffset } from './proBoosterTimeline';
 import { createProBoosterMaterials } from './proBoosterMaterials';
 import { createProFoilPack } from './createProFoilPack';
+import { createProBoosterGround } from './createProBoosterGround';
 import { createProBoosterCarousel, PRO_PACK_COUNT, packOrbit } from './proBoosterCarousel';
 import type { CeremonyLayout } from './ceremonyTimeline';
 import type { RevealPhase } from '../../useSurfDrawPresentation';
@@ -14,18 +15,16 @@ export function createSurfProBooster(scene: THREE.Scene, renderer: THREE.WebGLRe
   const packs = Array.from({ length: PRO_PACK_COUNT }, () => {
     const pack = createProFoilPack(materials); pack.deform(0, 0); root.add(pack.root); return pack;
   });
+  const ground = createProBoosterGround(root, packs.map(pack => pack.root));
   return {
     root, carousel,
-    render(phase: RevealPhase, age: number, layout: CeremonyLayout, opened: boolean, preview: number, reduced: boolean) {
+    render(phase: RevealPhase, age: number, layout: CeremonyLayout, opened: boolean, preview: number, reduced: boolean, displayTime = 0) {
       const base = proBoosterLayout(layout);
-      const stage = art.brand === 'renaiss' ? { ...base, width: base.width * .88, height: base.height * .88, y: base.y + base.height * .05 } : base;
+      const stage = art.brand === 'renaiss' ? { ...base, width: base.width * .88, height: base.height * .88 } : base;
       const active = phase === 'settling' && opened;
       const motion = proBoosterMotion(active ? age : proAgeForTear(preview));
-      // The single Renaiss reward pack has no large twenty-card stack to clear.
-      // Keep its exit within the visible stage while the reward card rises.
-      const sleeveTravel = art.brand === 'renaiss'
-        ? motion.sleeveY - (1.08 * PRO_PACK_VERTICAL_SCALE - .18) * motion.withdraw - 4.78 * motion.drop
-        : motion.sleeveY;
+      materials.animate(reduced ? 0 : displayTime);
+      const sleeveOffset = proBoosterReleaseOffset(stage, motion, layout.drawingBottom ?? layout.height + 32);
       root.visible = (phase === 'idle' || phase === 'spinning' || phase === 'settling') && !reduced;
       let selectedWidth = stage.width * .8;
       packs.forEach((pack, index) => {
@@ -35,9 +34,10 @@ export function createSurfProBooster(scene: THREE.Scene, renderer: THREE.WebGLRe
         const orbit = packOrbit(distance);
         const scale = width * orbit.scale * (pose.chosen ? 1 : 1 - .2 * focus);
         const x = orbit.x / 1.04 * (stage.width * 1.04 + (pose.chosen ? 0 : layout.width * focus));
-        const y = stage.y + orbit.lower * stage.height * .8 * (1 - focus) - (1 - focus) * 12;
+        const y = stage.y + orbit.lower * stage.height * .8 * (1 - focus);
         pack.root.visible = !(active && (!pose.chosen || motion.drop >= 1)) && (pose.chosen || focus < .995);
-        pack.root.position.set(x, layout.height / 2 - y + pose.lift * 3 - (pose.chosen ? sleeveTravel * stage.width : 0), 500 - orbit.depth * 380 + pose.lift * 18);
+        const float = reduced ? 0 : 2.4 * Math.sin(displayTime * 1.05 + index * .8) * (1 - motion.tear);
+        pack.root.position.set(x, layout.height / 2 - y + pose.lift * 3 + float - (pose.chosen ? sleeveOffset : 0), 500 - orbit.depth * 380 + pose.lift * 18);
         pack.root.scale.setScalar(scale * (1 + pose.lift * .018 + (pose.chosen ? motion.load * .014 : 0)));
         pack.root.rotation.set(pose.pitch + pose.tiltX, pose.rotation + pose.tiltY - Math.sin(angle) * .43 * (1 - focus), -Math.sin(angle) * .045 * (1 - focus));
         pack.deform(pose.chosen ? motion.tear : 0, pose.chosen ? motion.mouth : 0, pose.chosen ? motion.stripExit : 0);
@@ -52,10 +52,12 @@ export function createSurfProBooster(scene: THREE.Scene, renderer: THREE.WebGLRe
             (.09 * Math.sin(Math.PI * exit) - 2.7 * exit ** 2) * PRO_PACK_VERTICAL_SCALE, exit * .34);
           pack.strip.rotation.set(exit * .7, exit * .35, -exit * .58);
         } else { pack.strip.visible = true; pack.strip.position.set(0, 0, 0); pack.strip.rotation.set(0, 0, 0); }
+        const floorY = layout.height / 2 - y - scale * PRO_PACK_ASPECT / 2 - 18;
+        ground.render(index, floorY, scale * PRO_PACK_ASPECT, 1 - motion.withdraw);
       });
       return { ...stage, width: selectedWidth, height: selectedWidth * PRO_PACK_ASPECT,
-        y: stage.y - (1 - carousel.pose(carousel.selected).focus) * 12, opacity: 1 - motion.drop };
+        y: stage.y, opacity: 1 - motion.drop };
     },
-    dispose() { root.removeFromParent(); packs.forEach(pack => pack.dispose()); materials.dispose(); },
+    dispose() { root.removeFromParent(); ground.dispose(); packs.forEach(pack => pack.dispose()); materials.dispose(); },
   };
 }

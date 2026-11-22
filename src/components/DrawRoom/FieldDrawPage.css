@@ -1,0 +1,38 @@
+.field-draw-page.draw-site .surf-draw-page__shell { padding-top: 58px; }
+.field-draw-page .draw-room-heading { min-height: 72px; padding: 6px 0; }
+.field-draw-page .draw-room-heading h1 { font-size: clamp(24px, 2.4vw, 30px); margin-top: 5px; }
+.field-draw-page .draw-room-heading__status { display: block; flex-shrink: 0; }
+.field-draw-status { display: grid; justify-items: end; gap: 8px; }
+.field-draw-page .field-draw-status .roster-status { margin: 0; padding: 0; border: 0; gap: 22px; }
+.field-draw-page .field-draw-status > button { border: 0; background: transparent; padding: 5px 0; font-size: 10px; color: #777b82; }
+.field-draw-page .field-draw-status > button:hover { color: #34383c; }
+.field-draw-page .field-draw-status > button[aria-pressed=true] { color: #3d5c4c; text-decoration: underline; text-underline-offset: 4px; }
+/* A stationary stand, independent of the toolbar's document position. */
+.field-draw-page .roster-pack-scene {
+  --draw-stage-height: max(420px, calc(100svh - 176px));
+  container-type: size; height: var(--draw-stage-height); min-height: 0; padding: 0;
+}
+.field-draw-page .roster-pack-scene .surf-batch-heading { position: absolute; inset: 6px 0 auto; padding: 0; pointer-events: none; }
+.field-draw-page .roster-pack-scene .surf-batch-heading h2 { font-size: 13px; }
+.field-draw-page .roster-pack-scene .surf-batch-gallery { position: absolute; inset: 0; padding: 42px 16px 70px; overflow: visible; }
+.field-draw-page .roster-pack-scene .renaiss-reward-card {
+  flex: 0 1 min(680px, calc((100cqh - 112px) * 1.6)); max-width: min(680px, calc(100cqw - 32px));
+}
+.field-draw-page .roster-pack-scene .surf-pro-booster-picker,
+.field-draw-page .roster-pack-scene .surf-pro-booster-interaction[data-focused=true] .surf-pro-booster-picker {
+  inset: auto 0 6px; width: auto; text-align: center;
+}
+.field-draw-page .roster-pack-scene .surf-pro-booster-picker__controls { justify-content: center; }
+.field-draw-page .roster-pack-scene .surf-batch-webgl { clip-path: none; }
+.field-draw-page .roster-history { max-width: 1000px; margin: 20px auto 0; }
+.field-draw-page .roster-manager, .field-draw-page .surf-draw-access { animation: field-draw-enter .28s ease-out both; }
+@keyframes field-draw-enter { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+@media (max-width: 500px) {
+  .field-draw-page.draw-site .surf-draw-page__shell { padding-top: 62px; }
+  .field-draw-page .draw-room-heading { gap: 10px; }
+  .field-draw-page .field-draw-status .roster-status { align-items: end; flex-direction: column; gap: 4px; }
+  .field-draw-page .roster-pack-scene { --draw-stage-height: max(390px, calc(100svh - 208px)); }
+}
+@media (prefers-reduced-motion: reduce) { .field-draw-page .roster-manager, .field-draw-page .surf-draw-access { animation: none; } }
+.field-draw-page .roster-pack-scene[data-phase=settling] .surf-batch-heading { display: none; }
+.field-draw-page :is(.surf-pro-booster-hit,.surf-pro-booster-choice):focus-visible { background: #34383c08; }

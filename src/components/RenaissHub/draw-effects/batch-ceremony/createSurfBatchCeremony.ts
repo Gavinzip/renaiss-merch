@@ -11,7 +11,7 @@ import { createSurfCeremonyWhiteout } from './createSurfCeremonyWhiteout';
 import { prepareCeremonyArtwork, cardBack, cardTicketBack, credential, canvasTexture } from './ceremonyArtwork';
 import { createSurfProBooster } from './createSurfProBooster';
 import { PRO_PACK_COUNT } from './proBoosterCarousel';
-import { PRO_BOOSTER, proCardFlight, proDealDuration, proBoosterLayout, proAgeForTear } from './proBoosterTimeline';
+import { PRO_BOOSTER, proCardFlight, proDealDuration, proBoosterLayout, proAgeForTear, proCanvasTopPadding, PRO_TEAR_FINISH_AT } from './proBoosterTimeline';
 import { PRO_TEAR_FROM_TOP } from './proBoosterGeometry';
 import { createRewardLandingShadow } from './createRewardLandingShadow';
 import type { CardSpotFoil } from '../../../RosterDraw/card-foil/createCardSpotFoil';
@@ -75,19 +75,29 @@ export async function createSurfBatchCeremony(root: HTMLDivElement, canvas: HTML
     layout = { width, height, emitter: { x: width / 2, y: area.top - rect.top + area.height * .49, z: 100 }, safeTop: area.top - rect.top, safeBottom: Math.max(0, rect.bottom - area.bottom), center: { x: width / 2, y: area.top - rect.top + area.height * .49 },
       unit: Math.min(width * .78, area.height * .82, 480) / 1.8,
       cards: nodes.map(node => { const r = node.getBoundingClientRect(); return { x: r.left - rect.left + r.width / 2, y: r.top - rect.top + r.height / 2, width: r.width, height: r.height }; }) };
+    const displayStand = root.dataset.layout === 'field';
+    if (displayStand) Object.assign(layout, { safeTop: 20, safeBottom: 72, viewportCenterY: height / 2,
+      center: { x: width / 2, y: height / 2 } });
     const settled = state.phase === 'ticket' || state.phase === 'identity' || state.phase === 'revealed';
-    // The departing foil must clear the viewport, not hit an invisible stage
-    // boundary halfway down the page. Layout/card coordinates remain unchanged.
-    const drawingHeight = state.kind === 'surf-pro-month' && state.phase === 'settling'
-      ? Math.max(height, window.innerHeight - rect.top + 32) : height;
+    // Reserve the real flight/foil bounds without moving the stand or its targets.
+    const topPadding = displayStand ? proCanvasTopPadding(layout) : 0;
+    const exhibition = displayStand ? root.closest<HTMLElement>('.field-draw-page')?.getBoundingClientRect() : undefined;
+    const left = exhibition ? rect.left - exhibition.left : 0, right = exhibition ? exhibition.right - rect.right : 0;
+    const drawingWidth = width + left + right;
+    const bottom = displayStand ? Math.max(height, innerHeight - rect.top + 2, ...layout.cards.map(card => card.y + card.height / 2 + 32)) : height;
+    const drawingBottom = bottom + (state.kind === 'surf-pro-month' && state.phase === 'settling' ? 32 : 0);
+    layout.drawingBottom = drawingBottom;
+    const drawingHeight = topPadding + drawingBottom;
     const pixelBudget = settled ? 4_500_000 : 3_600_000;
-    ratio = Math.min(2, devicePixelRatio || 1, Math.sqrt(pixelBudget / (width * drawingHeight)));
-    if (width !== renderWidth || drawingHeight !== renderHeight || ratio !== renderer.getPixelRatio()) {
-      renderer.setPixelRatio(ratio); renderer.setSize(width, drawingHeight, false);
-      canvas.style.height = `${drawingHeight}px`;
-      retreat.resize(width, drawingHeight, ratio); renderWidth = width; renderHeight = drawingHeight;
+    ratio = Math.min(2, devicePixelRatio || 1, Math.sqrt(pixelBudget / (drawingWidth * drawingHeight)));
+    if (drawingWidth !== renderWidth || drawingHeight !== renderHeight || ratio !== renderer.getPixelRatio()) {
+      renderer.setPixelRatio(ratio); renderer.setSize(drawingWidth, drawingHeight, false);
+      retreat.resize(drawingWidth, drawingHeight, ratio); renderWidth = drawingWidth; renderHeight = drawingHeight;
     }
-    camera.left = -width / 2; camera.right = width / 2; camera.top = height / 2; camera.bottom = height / 2 - drawingHeight; camera.updateProjectionMatrix();
+    canvas.style.left = `${-left}px`; canvas.style.width = `${drawingWidth}px`;
+    canvas.style.top = `${-topPadding}px`; canvas.style.height = `${drawingHeight}px`;
+    camera.left = -width / 2 - left; camera.right = width / 2 + right;
+    camera.top = height / 2 + topPadding; camera.bottom = camera.top - drawingHeight; camera.updateProjectionMatrix();
     layout.cards.forEach((card, i) => {
       const face = nodes[i].querySelector<HTMLElement>('.surf-batch-card__face')!;
       models[i].resize(card.width, card.height, parseFloat(getComputedStyle(face).borderTopLeftRadius));
@@ -118,6 +128,13 @@ export async function createSurfBatchCeremony(root: HTMLDivElement, canvas: HTML
   }
   function paint() {
     if (disposed || failed || !layout) return;
+    canvas.dataset.packMotion = !packOpened ? 'sealed' : age < PRO_BOOSTER.lift ? 'unsealing' : age < 2.02 ? 'extracting' : age < 2.65 ? 'withdrawing' : age < PRO_BOOSTER.clear ? 'clearing' : age < PRO_BOOSTER.deal ? 'turning' : 'landing';
+    canvas.dataset.packAge = age.toFixed(3);
+    canvas.dataset.packFocused = String(booster.carousel.focused);
+    canvas.dataset.packSettled = String(booster.carousel.settled);
+    canvas.dataset.completed = String(completed);
+    canvas.dataset.panelActive = String(panelActive);
+    canvas.dataset.intersecting = String(visible);
     const boxFrame=box.render(state.kind === 'mystery-box' ? state.phase : 'revealed', age, layout, reduced.matches);
     if(state.kind !== 'mystery-box') layout.emitter={x:layout.center.x,y:layout.center.y,z:100};
     const proFrame = booster.render(state.kind === 'surf-pro-month' ? state.phase : 'revealed', age, layout, packOpened && booster.carousel.settled, packPreview, reduced.matches);
@@ -125,7 +142,7 @@ export async function createSurfBatchCeremony(root: HTMLDivElement, canvas: HTML
     root.style.setProperty('--pro-pack-y', `${proFrame.y}px`);
     root.style.setProperty('--pro-pack-width', `${proFrame.width}px`);
     root.style.setProperty('--pro-pack-height', `${proFrame.height}px`);
-    shadow.visible = state.kind === 'mystery-box' ? boxFrame.visible : booster.root.visible;
+    shadow.visible = state.kind === 'mystery-box' && boxFrame.visible;
     shadow.position.set(0, layout.height / 2 - (state.kind === 'mystery-box' ? boxFrame.floorY : proFrame.y + proFrame.height / 2 + 16), -500);
     shadow.scale.set(state.kind === 'mystery-box' ? boxFrame.size * 2.25 : proFrame.width * 1.3,
       state.kind === 'mystery-box' ? boxFrame.size * .3 : 30, 1);
@@ -194,12 +211,21 @@ export async function createSurfBatchCeremony(root: HTMLDivElement, canvas: HTML
     if (printGeometry() !== printedGeometry) updatePrints();
     paint();
   } catch (error) { fail(error); } }
-  const resizeObserver = new ResizeObserver(resize), visibilityObserver = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; visibility(); });
+  // A perspective scene can report a stale/non-intersecting IO entry after a
+  // viewport change even while its stage is visibly onscreen. The stage's real
+  // bounds own activity; IO/scroll only notify us to check, never refit its size.
+  function updateVisibility() {
+    const rect = root.getBoundingClientRect();
+    const next = rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth;
+    if (next === visible) return;
+    visible = next; visibility();
+  }
+  const resizeObserver = new ResizeObserver(resize), visibilityObserver = new IntersectionObserver(updateVisibility);
   const gallery = root.querySelector('.surf-batch-gallery')!;
   const lost = (event: Event) => { event.preventDefault(); fail(new Error('The 3D ceremony lost its graphics context. Reload to retry.')); };
   function dispose() {
     if (disposed) return; disposed = true; spinFinished?.(null); spinFinished = null; cancelAnimationFrame(frame); resizeObserver.disconnect(); visibilityObserver.disconnect();
-    reduced.removeEventListener('change', request); document.removeEventListener('visibilitychange', visibility); gallery.removeEventListener('scroll', resize); canvas.removeEventListener('webglcontextlost', lost);
+    reduced.removeEventListener('change', request); document.removeEventListener('visibilitychange', visibility); gallery.removeEventListener('scroll', resize); window.removeEventListener('scroll', updateVisibility, true); window.removeEventListener('resize', updateVisibility); canvas.removeEventListener('webglcontextlost', lost);
     signal.removeEventListener('abort', dispose);
     landingShadow?.dispose();
     spotFoil?.dispose();
@@ -224,11 +250,11 @@ export async function createSurfBatchCeremony(root: HTMLDivElement, canvas: HTML
     renderer.initTexture(sharedBack); renderer.render(scene, camera); renderer.getContext().finish();
     const gpuError = renderer.getContext().getError(); if (gpuError !== 0) throw new Error(`3D ceremony preparation failed (${gpuError})`);
     canvas.dataset.prepared = 'true'; canvas.dataset.preparedAt = performance.now().toFixed(1); models.forEach(model => { model.group.visible = false; }); paint();
-    resizeObserver.observe(root); resizeObserver.observe(gallery); visibilityObserver.observe(root); reduced.addEventListener('change', request); document.addEventListener('visibilitychange', visibility); gallery.addEventListener('scroll', resize, { passive: true }); canvas.addEventListener('webglcontextlost', lost);
+    resizeObserver.observe(root); resizeObserver.observe(gallery); visibilityObserver.observe(root); updateVisibility(); window.addEventListener('scroll', updateVisibility, { passive: true, capture: true }); window.addEventListener('resize', updateVisibility, { passive: true }); reduced.addEventListener('change', request); document.addEventListener('visibilitychange', visibility); gallery.addEventListener('scroll', resize, { passive: true }); canvas.addEventListener('webglcontextlost', lost);
     callbacks.onReady(); request();
   } catch (error) { dispose(); throw error; }
   return {
-    setActive(active: boolean) { panelActive = active; if (active) resize(); visibility(); },
+    setActive(active: boolean) { panelActive = active; if (active) { resize(); updateVisibility(); } visibility(); },
     spinPacks(): Promise<number | null> {
       if (disposed || failed || !panelActive || state.kind !== 'surf-pro-month' || state.phase !== 'settling' || packOpened || booster.carousel.focused || booster.carousel.spinning) return Promise.resolve(null);
       booster.carousel.spin(); canvas.dataset.carouselStartedAt = performance.now().toFixed(1); request();
@@ -264,9 +290,7 @@ export async function createSurfBatchCeremony(root: HTMLDivElement, canvas: HTML
       returningPreview = true; request();
     },
     openPack() {
-      if (disposed || failed || state.kind !== 'surf-pro-month' || state.phase !== 'settling' || packOpened || !booster.carousel.focused || packPreview < 1) return false;
-      // Focusing a pack scrolls its stage into view without a resize event.
-      measure();
+      if (disposed || failed || state.kind !== 'surf-pro-month' || state.phase !== 'settling' || packOpened || !booster.carousel.focused || packPreview < PRO_TEAR_FINISH_AT) return false;
       age = proAgeForTear(packPreview); packOpened = true; packPreview = 0; returningPreview = false; request(); return true;
     },
     revealCard(index: number) {
