@@ -1,0 +1,43 @@
+.hub-featured-campaign {
+  display: flex;
+  flex-direction: column;
+  min-height: 445px;
+  container-type: inline-size;
+  background: linear-gradient(145deg, #ffffffcc, #fff9ec99 32%, #eef8f085 62%, #edf7fc80);
+}
+.hub-featured-campaign a { color: var(--quest-ink); text-decoration: none; }
+.hub-featured-campaign__details { flex-shrink: 0; padding: .28rem .5rem; border: 1px solid #dce0da; border-radius: 99px; background: #ffffff66; font-size: .58rem; white-space: nowrap; }
+.hub-featured-campaign__brand { display: flex; align-items: center; gap: .7rem; margin-top: 1.1rem; }
+.hub-featured-campaign__emblem { display: block; flex: 0 0 2rem; }
+.hub-featured-campaign__emblem .hub-brand-logo { width: 2rem; height: 2.4rem; object-fit: contain; }
+.hub-featured-campaign h2 { min-width: 0; margin: 0; font-size: clamp(1rem, 5.4cqi, 1.5rem); }
+.hub-featured-campaign h2 a { display: inline; }
+.hub-featured-campaign__description { margin: .5rem 0 0; color: var(--hub-muted); font-size: .75rem; line-height: 1.65; }
+.hub-featured-campaign__steps { padding: 0; margin: 1.3rem 0 1.1rem; list-style: none; }
+.hub-featured-campaign__steps li { display: flex; align-items: center; gap: .65rem; padding: .8rem 0; border-top: 1px solid var(--hub-line); }
+.hub-featured-campaign__steps li:first-child { padding-top: 0; border-top: 0; }
+.hub-featured-campaign__steps li > span { display: grid; place-items: center; flex: 0 0 1.55rem; height: 1.55rem; border: 1px solid #dcdfda; border-radius: 50%; color: var(--quest-muted); font-size: .5rem; font-variant-numeric: tabular-nums; }
+.hub-featured-campaign h3 { margin: 0; font-size: .76rem; font-weight: 530; letter-spacing: -.02em; line-height: 1.55; }
+.hub-featured-campaign__action { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; min-height: 52px; padding: .65rem .9rem; border: 1px solid transparent; border-radius: 13px; background: var(--quest-prism-wash) padding-box, var(--quest-prism-edge) border-box; font-size: .74rem; font-weight: 500; transition: background-color 180ms var(--hub-ease), color 180ms var(--hub-ease); }
+.hub-featured-campaign__action svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.2; transition: transform 250ms var(--hub-ease); }
+.hub-featured-campaign__action:hover svg { transform: translate(2px,-2px); }
+.hub-featured-campaign__footer { margin-top: auto; padding-top: 1rem; color: var(--quest-muted); }
+.hub-featured-campaign__footer p { margin: 0; font-size: .58rem; line-height: 1.6; }
+.hub-featured-campaign__footer small { display: block; margin-top: .25rem; font-size: .58rem; line-height: 1.6; }
+.hub-featured-campaign :is(a, button):focus-visible { outline: none; box-shadow: none; color: var(--quest-focus); text-decoration: underline; text-underline-offset: .22em; }
+@media (min-width: 901px) {
+  .renaiss-hub[data-density="compact"] .hub-featured-campaign__brand { margin-top: .7rem; gap: .55rem; }
+  .renaiss-hub[data-density="compact"] .hub-featured-campaign__emblem { flex-basis: 1.65rem; }
+  .renaiss-hub[data-density="compact"] .hub-featured-campaign__emblem .hub-brand-logo { width: 1.65rem; height: 1.8rem; }
+  .renaiss-hub[data-density="compact"] .hub-featured-campaign__description { display: none; }
+  .renaiss-hub[data-density="compact"] .hub-featured-campaign__steps { margin: .7rem 0; }
+  .renaiss-hub[data-density="compact"] .hub-featured-campaign__steps li { padding: .35rem 0; }
+  .renaiss-hub[data-density="compact"] .hub-featured-campaign__steps li:first-child { padding-top: 0; }
+  .renaiss-hub[data-density="compact"] .hub-featured-campaign__action { min-height: 44px; padding-block: .5rem; }
+  .renaiss-hub[data-density="compact"] .hub-featured-campaign__footer { padding-top: .4rem; }
+  .renaiss-hub[data-density="compact"] .hub-featured-campaign__footer small { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hub-featured-campaign__action, .hub-featured-campaign__action svg { transition: none; }
+  .hub-featured-campaign__action:hover svg { transform: none; }
+}

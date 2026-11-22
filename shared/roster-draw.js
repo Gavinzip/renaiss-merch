@@ -3,7 +3,7 @@ export const ROSTER_LIMIT = 10000;
 // CSV and TSV accept a name column and an optional unique id column. Plain
 // text is deliberately simpler: each non-empty line is one entry.
 export function parseRoster(text, format = "csv") {
-  if (typeof text !== "string" || text.length > 1_000_000)
+  if (typeof text !== "string" || new TextEncoder().encode(text).byteLength > 1_000_000)
     throw new Error("名單檔案過大（上限 1 MB）。");
   text = text.replace(/^\uFEFF/, "");
   let rows;

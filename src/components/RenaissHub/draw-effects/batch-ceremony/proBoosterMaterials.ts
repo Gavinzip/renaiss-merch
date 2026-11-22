@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { canvasTexture, type CeremonyArtwork } from './ceremonyArtwork';
 import { proBoosterArtwork } from './proBoosterArtwork';
+import { createProFoilSweep } from './createProFoilSweep';
 
 // Long photographic softboxes and dark gaps illuminate only the foil. The
 // bright page and Mystery Box keep their own existing lighting.
@@ -32,9 +33,11 @@ export function createProBoosterMaterials(renderer: THREE.WebGLRenderer, art: Ce
   const insideFront = new THREE.MeshStandardMaterial({ color: '#bcc4c7', metalness: .85, roughness: .42,
     envMap: environment.texture, envMapIntensity: .8, side: THREE.BackSide });
   const insideBack = insideFront.clone(); insideBack.side = THREE.FrontSide;
-  return { front, back, insideFront, insideBack,
+  const seam = insideFront.clone(); seam.side = THREE.DoubleSide;
+  const animate = createProFoilSweep([front, back]);
+  return { front, back, insideFront, insideBack, seam, animate,
     dispose() {
-      front.dispose(); back.dispose(); insideFront.dispose(); insideBack.dispose();
+      front.dispose(); back.dispose(); insideFront.dispose(); insideBack.dispose(); seam.dispose();
       frontTexture.dispose(); backTexture.dispose(); environment.dispose();
     },
   };

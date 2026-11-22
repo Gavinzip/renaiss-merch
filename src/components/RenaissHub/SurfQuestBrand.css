@@ -1,6 +1,7 @@
 /* Shared Renaiss prism accents for the campaign and dashboard quest. */
 .surf-page,
-.hub-surf-quest {
+.hub-surf-quest,
+.hub-featured-campaign {
   --quest-ink: #29312f;
   --quest-muted: #707571;
   --quest-subtle: #969b97;

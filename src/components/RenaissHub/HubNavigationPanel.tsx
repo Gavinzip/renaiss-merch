@@ -3,6 +3,7 @@ import type { AppLocale } from "../../i18n/LocaleContext";
 import { HubWordmark } from "./HubWordmark";
 import { HubLogo } from "./HubLogo";
 import { HubLanguageMenu } from "./HubLanguageMenu";
+import { campaignUrl, featuredCampaignCopy, readFeaturedCampaign } from "../../config/hubCampaigns";
 
 export type HubNavigationPage = "home" | "store" | "campaign" | "events" | "binder" | "verify";
 
@@ -18,6 +19,8 @@ export function HubNavigationPanel({ locale, setLocale, compact, current, prepar
   onNavigate: () => void; onClose?: () => void;
 }) {
   const copy = navigationCopy[locale];
+  const campaign = readFeaturedCampaign();
+  const campaignLabel = featuredCampaignCopy[locale].label;
   function goHome(event: MouseEvent<HTMLAnchorElement>) {
     if (disabled) { event.preventDefault(); return; }
     onNavigate();
@@ -36,10 +39,14 @@ export function HubNavigationPanel({ locale, setLocale, compact, current, prepar
         aria-current={current === "home" ? "page" : undefined} aria-disabled={disabled || undefined} onClick={goHome}>
         <NavigationIcon kind="home" /><span>{copy.home}</span>
       </a>
-      <button className="hub-sidebar__destination" type="button" disabled={disabled} title={copy.quest} aria-label={copy.quest} aria-current={current === "campaign" ? "page" : undefined}
+      {campaign.kind === 'external' ? <a className="hub-sidebar__destination" href={campaignUrl(campaign, locale)} target="_blank" rel="noopener noreferrer"
+        title={campaignLabel} aria-label={campaignLabel} aria-disabled={disabled || undefined}
+        onClick={event => { if (disabled) { event.preventDefault(); return; } onNavigate(); }}>
+        <NavigationIcon kind="quest" /><span>{campaignLabel}</span>
+      </a> : <button className="hub-sidebar__destination" type="button" disabled={disabled} title={campaignLabel} aria-label={campaignLabel} aria-current={current === "campaign" ? "page" : undefined}
         onClick={() => { onNavigate(); onOpenCampaign(); }}>
-        <NavigationIcon kind="quest" /><span>{copy.quest}</span>
-      </button>
+        <NavigationIcon kind="quest" /><span>{campaignLabel}</span>
+      </button>}
       <button className="hub-sidebar__destination" type="button" disabled={disabled} title={copy.events} aria-label={copy.events} aria-current={current === "events" ? "page" : undefined}
         onClick={() => { onNavigate(); onOpenArchive(); }}>
         <NavigationIcon kind="events" /><span>{copy.events}</span>

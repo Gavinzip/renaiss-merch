@@ -11,8 +11,16 @@ type PackControls = {
   onOpen: () => boolean | void | Promise<boolean | void>; onPreview: (progress: number) => void; onRelease: () => void;
   onSelect: (index: number) => void; onRotate: (delta: number, animated?: boolean, pitchDelta?: number) => void; onFocus: (focused: boolean) => void;
 };
-export function SurfProBoosterInteraction({ locale, onOpen, onPreview, onRelease, onSelect, onRotate, onFocus, brand, disabledReason, onSpin, onBrowse, onHover }: PackControls & { locale: AppLocale; brand?: 'renaiss'; disabledReason?: string }) {
+export function SurfProBoosterInteraction({ locale, onOpen, onPreview, onRelease, onSelect, onRotate, onFocus, brand, disabledReason, onSpin, onBrowse, onHover, showPicker = true }: PackControls & { locale: AppLocale; brand?: 'renaiss'; disabledReason?: string; showPicker?: boolean }) {
+  const interaction = useRef<HTMLDivElement>(null);
+  const previousFocus = useRef(false);
   const [selected, setSelected] = useState(0), [focused, setFocused] = useState(false);
+  useEffect(() => {
+    if (!focused && !previousFocus.current) return;
+    previousFocus.current = focused;
+    const frame = requestAnimationFrame(() => interaction.current?.querySelector<HTMLElement>(focused ? '[role="slider"]' : '.surf-pro-booster-hit')?.focus({ preventScroll: true }));
+    return () => cancelAnimationFrame(frame);
+  }, [focused]);
   const [carouselStep, setCarouselStep] = useState<'intro' | 'spinning' | 'browse'>(onSpin ? 'intro' : 'browse');
   const live = useRef(true), spinLock = useRef(false);
   useEffect(() => { live.current = true; return () => { live.current = false; }; }, []);
@@ -65,13 +73,14 @@ export function SurfProBoosterInteraction({ locale, onOpen, onPreview, onRelease
     if (current.mode === 'browse' && Math.abs(current.distance) > 35) select(selected - Math.sign(current.distance));
   }
   const cancel = () => { onHover?.(null); onBrowse?.(0, true); drag.current = null; dragged.current = true; onRelease(); };
-  return <div className="surf-pro-booster-interaction" data-focused={focused} data-carousel={carouselStep} onPointerLeave={() => onHover?.(null)}>
+  return <div ref={interaction} className="surf-pro-booster-interaction" data-focused={focused} data-carousel={carouselStep} onPointerLeave={() => onHover?.(null)}
+    onKeyDown={event => { if (event.key === 'Escape' && focused) { event.preventDefault(); focus(false); } }}>
     {!focused && canBrowse ? <>
       <div className="surf-pro-booster-browse" aria-hidden="true" onPointerDown={event => pointerDown(event, 'browse')}
         onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={cancel} />
       {Array.from({ length: PRO_PACK_COUNT }, (_, index) => {
         const distance = ((index - selected + 10) % PRO_PACK_COUNT) - 3;
-        const orbit = onSpin ? packOrbit(distance) : null;
+        const orbit = onBrowse ? packOrbit(distance) : null;
         if (distance === 0) return null;
         return <button key={index} type="button" className="surf-pro-booster-choice" style={{ '--pack-distance': orbit ? orbit.x / .8 : Math.sin(distance * Math.PI * 2 / PRO_PACK_COUNT) / Math.sin(Math.PI * 2 / PRO_PACK_COUNT), zIndex: 4 - Math.abs(distance), '--pack-scale': orbit ? orbit.scale : 1 / (1 + .21 * Math.abs(distance)), '--pack-lower': orbit ? `calc(var(--pro-pack-height) * ${orbit.lower})` : `${Math.abs(distance) * 12}px`, ...(orbit ? { '--pro-pack-spacing': 'var(--pro-pack-width)' } : {}) } as CSSProperties}
           aria-label={`${zh ? '選擇卡包' : ko ? '팩 선택' : 'Select pack'} ${index + 1}`}
@@ -90,7 +99,7 @@ export function SurfProBoosterInteraction({ locale, onOpen, onPreview, onRelease
       }}
       onClick={() => { if (canBrowse && !dragged.current) focus(true); dragged.current = false; }}>
     </button> : focused ? <SurfProBoosterSeal locale={locale} onPreview={onPreview} onOpen={onOpen} disabled={Boolean(disabledReason)} /> : null}
-    <div className="surf-pro-booster-picker">
+    {showPicker && <div className="surf-pro-booster-picker">
       {canBrowse ? <p>{focused ? disabledReason || (zh ? '向右拖曳封口，放手可暫停。' : ko ? '드래그한 만큼 뜯어집니다. 놓으면 멈춥니다.' : 'Pull to tear. Let go to pause. Keep pulling to open.')
         : browseHint}</p> : null}
       <div className="surf-pro-booster-picker__controls">
@@ -108,6 +117,6 @@ export function SurfProBoosterInteraction({ locale, onOpen, onPreview, onRelease
           {brand !== 'renaiss' ? <span className="surf-pro-booster-manual">{zh ? '從上方封口開始' : 'START AT THE TOP SEAL'}</span> : null}
         </>}
       </div>
-    </div>
+    </div>}
   </div>;
 }

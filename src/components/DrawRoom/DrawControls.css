@@ -63,10 +63,10 @@
   mask: linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0); mask-composite: exclude;
   background-size: 250% 100%; background-position: 100% 0; opacity: 0;
 }
-.surf-draw-page.draw-site :is(.surf-reveal-button,.surf-pro-booster-reveal,.roster-primary,.roster-charizard-entry,.surf-pro-booster-open,.surf-draw-access form > button):is(:hover,:focus-visible):not(:disabled) {
+.surf-draw-page.draw-site :is(.surf-reveal-button,.surf-pro-booster-reveal,.roster-primary,.roster-charizard-entry,.surf-pro-booster-open,.surf-draw-access form > button):hover:not(:disabled) {
   transform: translateY(-1px); filter: brightness(1.07); box-shadow: inset 0 1px 0 #ffffff50, 0 7px 18px #282d3829;
 }
-.surf-draw-page.draw-site :is(.surf-reveal-button,.surf-pro-booster-reveal,.roster-primary,.roster-charizard-entry,.surf-pro-booster-open,.surf-draw-access form > button):is(:hover,:focus-visible):not(:disabled)::before { opacity: .8; animation: draw-control-rim .7s ease-out both; }
+.surf-draw-page.draw-site :is(.surf-reveal-button,.surf-pro-booster-reveal,.roster-primary,.roster-charizard-entry,.surf-pro-booster-open,.surf-draw-access form > button):hover:not(:disabled)::before { opacity: .8; animation: draw-control-rim .7s ease-out both; }
 @keyframes draw-control-rim { from { background-position: 100% 0; } to { background-position: 0 0; } }
 .surf-draw-page.draw-site :is(.surf-reveal-button,.surf-pro-booster-picker button,.roster-primary,.roster-charizard-entry,.surf-draw-access form > button):active:not(:disabled) { transform: translateY(1px) scale(.985); }
 .surf-draw-page.draw-site :is(.surf-reveal-button,.surf-pro-booster-picker button,.roster-primary,.roster-charizard-entry):disabled { opacity: .36; cursor: default; filter: none; transform: none; }
@@ -91,7 +91,7 @@
   color: #68666d; background: linear-gradient(150deg,#ffffffc9,#f0f1f38a);
   box-shadow: inset 0 1px 0 #fff, 0 2px 7px #34383c08;
 }
-.surf-draw-page.draw-site :is(button,a,summary):focus-visible { outline: 2px solid #617d79; outline-offset: 4px; }
+.surf-draw-page.draw-site :is(button,a,summary):focus-visible { outline: none; text-decoration: underline; text-underline-offset: 4px; }
 
 @media(max-width:900px) {
   .surf-draw-page.draw-site[data-theater=true] .draw-room-modes { top: 62px; }
@@ -106,3 +106,5 @@
 @media(prefers-reduced-motion:reduce) {
   .surf-draw-page.draw-site :is(button,button::before) { animation: none !important; transition: none !important; }
 }
+.surf-draw-page.draw-site :is(input,textarea):focus-visible { outline: none; border-color: #667b78; background: #fff; box-shadow: none; }
+.surf-draw-page.draw-site .surf-pro-booster-seal:focus-visible .surf-pro-booster-seal__grip { outline: none; background: #e4ece8; color: #314b40; }

@@ -42,7 +42,7 @@
 .hub-surf-quest a svg { width: .65rem; height: .65rem; fill: none; stroke: currentColor; stroke-width: 1.2; transition: transform var(--acc-chevron) var(--hub-ease); }
 .hub-surf-quest a:hover, .hub-surf-quest a:focus-visible { color: var(--quest-focus); }
 .hub-surf-quest a:hover svg, .hub-surf-quest a:focus-visible svg { transform: translate(1px, -1px); }
-.hub-surf-quest :is(a,button):focus-visible { outline: 2px solid var(--quest-focus); outline-offset: 4px; border-radius: 3px; }
+.hub-surf-quest :is(a,button):focus-visible { outline: none; box-shadow: none; color: var(--quest-focus); text-decoration: underline; text-underline-offset: .22em; }
 .hub-surf-quest__footer { margin-top: auto; padding-top: 1rem; }
 .hub-surf-quest__footer > span { display: flex; align-items: center; gap: .35rem; color: var(--quest-muted); font-size: .58rem; }
 .hub-surf-quest__footer > span::before { content: ""; width: 4px; height: 4px; border-radius: 50%; background: var(--quest-muted); }

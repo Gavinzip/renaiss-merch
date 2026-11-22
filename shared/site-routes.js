@@ -9,3 +9,11 @@ export function isDrawSitePath(pathname) {
 export function isHiddenHubPath(pathname) {
   return pathname === '/next' || pathname.startsWith(hiddenHubPath);
 }
+
+export function isFieldDrawSitePath(pathname) {
+  return pathname === '/field-draw' || pathname === '/field-draw/' || pathname === '/field-draw/index.html' || isFieldDrawRosterPath(pathname);
+}
+
+export function isFieldDrawRosterPath(pathname) {
+  return pathname === '/field-draw/roster' || pathname === '/field-draw/roster/';
+}

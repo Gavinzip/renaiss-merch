@@ -1,4 +1,11 @@
-import { lazy, Suspense, useCallback, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import type { AppLocale } from "../../i18n/LocaleContext";
 import { RosterDrawHistory } from "./RosterDrawHistory";
 import { RosterStatus } from "./RosterStatus";
@@ -22,14 +29,16 @@ export function RosterDrawRoom({
   onActive,
   visible,
   draw,
+  field = false,
 }: {
+  field?: boolean;
   kind: RosterKind;
   visible: boolean;
   draw: ReturnType<typeof useRosterDraw>;
   locale: AppLocale;
   onActive: (active: boolean) => void;
 }) {
-  const [preparationError, setPreparationError] = useState('');
+  const [preparationError, setPreparationError] = useState("");
   const [charizardReady, setCharizardReady] = useState(false);
   const charizardStage = useRef<HTMLElement>(null);
   useDrawViewportStage(charizardStage);
@@ -48,10 +57,28 @@ export function RosterDrawRoom({
   const roster = draw.state?.roster,
     winners = draw.state?.winners ?? [],
     remaining = (roster?.entries.length ?? 0) - winners.length;
+  const history = draw.state?.history ?? [];
+  // Keep earlier results in place during the next opening. The newly saved
+  // winner joins the list only after the deliberate card flip completes.
+  const shownHistory = field && active && holdingResult && !replay
+    ? history.filter(winner => winner.requestId !== winners[0]?.requestId) : history;
   const retryHere = draw.pendingDraw?.kind === kind;
   const retryElsewhere = Boolean(draw.pendingDraw && !retryHere);
-  const title = kind === "charizard" ? "噴火龍抽獎" : "額外加碼";
-  const prize = kind === "charizard" ? "噴火龍典藏禮盒" : "額外加碼";
+  useEffect(() => {
+    setReplay(undefined);
+    setHoldingResult(false);
+    setRun((value) => value + 1);
+  }, [roster?.id]);
+  const title = field
+    ? "現場名單抽獎"
+    : kind === "charizard"
+      ? "噴火龍抽獎"
+      : "額外加碼";
+  const prize = field
+    ? "現場抽獎"
+    : kind === "charizard"
+      ? "噴火龍典藏禮盒"
+      : "額外加碼";
   function close() {
     setCharizard(null);
     setReplay(undefined);
@@ -64,11 +91,56 @@ export function RosterDrawRoom({
   }
   return (
     <section className="roster-room" data-kind={kind} aria-label={title}>
-      <DrawRoomHeading title={title} eyebrow="RENAISS · ROSTER DRAW" />
-      <div className="roster-draw-controls">
-        <RosterStatus compact state={draw.state} refreshing={draw.refreshing} error={draw.error}
-          disabled={draw.busy || active} onRefresh={draw.refresh} />
-      </div>
+      <DrawRoomHeading
+        title={title}
+        eyebrow="RENAISS · ROSTER DRAW"
+        status={
+          field ? (
+            <div className="field-draw-status">
+              <RosterStatus
+                compact
+                state={draw.state}
+                refreshing={draw.refreshing}
+                error={draw.error}
+                disabled={draw.busy || active}
+                onRefresh={draw.refresh}
+              />{" "}
+              <button
+                className="field-draw-demo"
+                aria-pressed={replay?.requestId === "demo"}
+                type="button"
+                disabled={active || draw.busy || draw.retryPending}
+                onClick={() => {
+                  setReplay({
+                    sequence: 0,
+                    requestId: "demo",
+                    entryId: "demo",
+                    name: "示範得獎者",
+                    kind: "other",
+                    prize: "Demo · 示範獎項",
+                    drawnAt: new Date().toISOString(),
+                  });
+                  setRun((value) => value + 1);
+                }}
+              >
+                Demo 試開卡包 ↗
+              </button>
+            </div>
+          ) : undefined
+        }
+      />
+      {!field ? (
+        <div className="roster-draw-controls">
+          <RosterStatus
+            compact
+            state={draw.state}
+            refreshing={draw.refreshing}
+            error={draw.error}
+            disabled={draw.busy || active}
+            onRefresh={draw.refresh}
+          />
+        </div>
+      ) : null}
       {draw.error ? (
         <div className="roster-error" role="alert">
           {draw.error}
@@ -82,41 +154,86 @@ export function RosterDrawRoom({
         </div>
       ) : null}
       {kind === "charizard" ? (
-        <section ref={charizardStage} className="roster-charizard-invite" aria-label="噴火龍典藏禮盒">
+        <section
+          ref={charizardStage}
+          className="roster-charizard-invite"
+          aria-label="噴火龍典藏禮盒"
+        >
           <div className="roster-charizard-info">
             <h2>噴火龍典藏禮盒</h2>
             <p>公仔 × 1 · 特大卡牌 × 1 · 補充包 × 15</p>
           </div>
           <div className="roster-charizard-model">
-            <Suspense fallback={<p className="bonus-canvas-status" role="status">正在準備立體典藏禮盒…</p>}>
+            <Suspense
+              fallback={
+                <p className="bonus-canvas-status" role="status">
+                  正在準備立體典藏禮盒…
+                </p>
+              }
+            >
               <CharizardPrizePreview active={visible && !charizard} />
             </Suspense>
           </div>
-          {preparationError ? <p className="roster-error" role="alert">{preparationError}</p> : null}
+          {preparationError ? (
+            <p className="roster-error" role="alert">
+              {preparationError}
+            </p>
+          ) : null}
           <div className="roster-charizard-actions">
-              <button type="button" className="roster-charizard-entry"
-                disabled={!charizardReady || retryElsewhere || (!retryHere && (!roster || remaining <= 0)) || draw.busy || draw.refreshing}
-                onClick={(event) => {
-                  setReplay(undefined);
-                  setCharizard(event.currentTarget);
-                }}>
-                {preparationError ? "準備失敗" : !charizardReady ? "準備中…" : "Reveal ↗"}
-              </button>
+            <button
+              type="button"
+              className="roster-charizard-entry"
+              disabled={
+                !charizardReady ||
+                retryElsewhere ||
+                (!retryHere && (!roster || remaining <= 0)) ||
+                draw.busy ||
+                draw.refreshing
+              }
+              onClick={(event) => {
+                setReplay(undefined);
+                setCharizard(event.currentTarget);
+              }}
+            >
+              {preparationError
+                ? "準備失敗"
+                : !charizardReady
+                  ? "準備中…"
+                  : "Reveal ↗"}
+            </button>
           </div>
         </section>
       ) : null}
       {kind === "other" ? (
         <>
           <RenaissPackDraw
+            field={field}
             revision={run}
             visible={visible}
             locale={locale}
             replay={replay?.kind === "other" ? replay : undefined}
-            disabledReason={retryElsewhere ? "請先回到原獎項重試" : !draw.state ? (draw.error ? "請重新讀取名單" : "正在讀取名單…")
-              : !roster && !retryHere ? "請先上傳名單" : remaining <= 0 && !holdingResult && !retryHere ? "已抽完"
-                : draw.refreshing ? "正在讀取名單…" : undefined}
+            disabledReason={
+              field && !prize.trim()
+                ? "請輸入獎項名稱"
+                : retryElsewhere
+                  ? "請先回到原獎項重試"
+                  : !draw.state
+                    ? draw.error
+                      ? "請重新讀取名單"
+                      : "正在讀取名單…"
+                    : !roster && !retryHere
+                      ? "請先上傳名單"
+                      : remaining <= 0 && !holdingResult && !retryHere
+                        ? "已抽完"
+                        : draw.refreshing
+                          ? "正在讀取名單…"
+                          : undefined
+            }
             onDraw={async () => {
-              const result = await draw.draw("other", retryHere ? draw.pendingDraw!.prize : prize);
+              const result = await draw.draw(
+                "other",
+                retryHere ? draw.pendingDraw!.prize : prize,
+              );
               setHoldingResult(true);
               return result;
             }}
@@ -129,8 +246,14 @@ export function RosterDrawRoom({
           />
         </>
       ) : null}
-      {!active ? <RosterDrawHistory winners={winners} kind={kind}
-        busy={draw.busy} onReplay={replayResult} /> : null}
+      {!active || field ? (
+        <RosterDrawHistory
+          winners={shownHistory}
+          kind={kind}
+          busy={draw.busy || active || draw.retryPending}
+          onReplay={replayResult}
+        />
+      ) : null}
       {kind === "charizard" ? (
         <Suspense fallback={null}>
           <CharizardCeremony

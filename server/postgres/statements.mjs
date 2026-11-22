@@ -9,6 +9,7 @@ const tableNames = new Set([
   'mission_participant_exports','mission_participants','mission_participation_events',
   'mission_result_history','mission_results','mission_social_identity_locks',
   'mission_surf_accounts','mission_x_identity_locks','renaiss_identity_sessions',
+  'draw_room_access_sessions','draw_room_login_throttle',
   'roster_draw_archives','roster_draw_list','roster_draw_winners',
   'surf_draw_access_sessions','surf_draw_action_locks','surf_draw_active_round',
   'surf_draw_contact_snapshots','surf_draw_lifecycle','surf_draw_local_grants',

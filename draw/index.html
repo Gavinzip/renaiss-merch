@@ -7,10 +7,22 @@
     <meta name="description" content="Renaiss private draws." />
     <meta name="theme-color" content="#f8f6f3" />
     <title>Renaiss | Draw</title>
-    <style>html, body { margin: 0; background: #f8f6f3; }</style>
+    <style>
+      html, body { margin: 0; background: #f8f6f3; }
+      #draw-startup { min-height: 100svh; display: grid; place-content: center; gap: 16px; padding: 24px; box-sizing: border-box; color: #46484e; font: 15px/1.6 system-ui, sans-serif; }
+      #draw-startup p { margin: 0; } #draw-startup a { color: inherit; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><section id="draw-startup" role="status"><strong>RENAISS</strong><p id="draw-startup-message">正在載入開獎室…</p><a href="">重新載入 ↗</a><noscript>請啟用 JavaScript，才能登入及操作開獎室。</noscript></section></div>
+    <script>
+      (() => {
+        function failed() { const message = document.getElementById('draw-startup-message'); if (message) message.textContent = '開獎室未能完成載入，請重新載入。'; }
+        window.addEventListener('error', failed, { once: true, capture: true });
+        window.addEventListener('unhandledrejection', failed, { once: true });
+        window.setTimeout(failed, 20000);
+      })();
+    </script>
     <script type="module" src="/src/draw-main.tsx"></script>
   </body>
 </html>

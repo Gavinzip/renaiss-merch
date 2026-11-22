@@ -5,6 +5,8 @@ import { hubWidgetCopy } from "./HubWidgetCopy";
 import { HubQuestline, HubMerch, type AccountState } from "./RenaissHubFeatures";
 import { HubMember } from "./HubMember";
 import { HubSurfQuest } from "./HubSurfQuest";
+import { HubFeaturedCampaign } from "./HubFeaturedCampaign";
+import { readFeaturedCampaign } from "../../config/hubCampaigns";
 import { HubCommunityWidget } from "./HubCommunityWidget";
 import type { CommunityFeedState } from "./useCommunityFeed";
 
@@ -24,7 +26,12 @@ export function HubWidgetContent(props: HubWidgetContentProps) {
     case "member": return <HubMember account={account} copy={copy.member} locale={locale} preview={preview} onLogin={props.onLogin} onRetry={props.onRetryAccount} />;
     case "questline": return <HubQuestline copy={copy.questline} preview={preview} />;
     case "merch": return <HubMerch locale={locale} copy={copy.merch} preview={preview} enterRequested={props.enterRequested} loadProgress={props.loadProgress} loadState={props.loadState} onEnter={props.onEnter} />;
-    case "partner": return <HubSurfQuest key={account.status === 'ready' && account.session.authenticated ? account.session.user.sub : 'guest'} locale={locale} account={account} preview={preview} onOpenCampaign={props.onOpenCampaign} />;
+    case "partner": {
+      const campaign = readFeaturedCampaign();
+      return campaign.kind === 'external'
+        ? <HubFeaturedCampaign campaign={campaign} locale={locale} preview={preview} />
+        : <HubSurfQuest key={account.status === 'ready' && account.session.authenticated ? account.session.user.sub : 'guest'} locale={locale} account={account} preview={preview} onOpenCampaign={props.onOpenCampaign} />;
+    }
     case "feed": return <HubCommunityWidget settings={widget} feed={props.feed} locale={locale} copy={hubWidgetCopy[locale]} editing={props.editing} preview={preview} onRetry={props.onRetryFeed} />;
   }
 }

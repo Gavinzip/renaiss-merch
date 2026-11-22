@@ -1,8 +1,9 @@
 import { useLayoutEffect, type RefObject } from 'react';
 
 /** Fit the ceremony below its actual header/toolbar, including wrapped text. */
-export function useDrawViewportStage(ref: RefObject<HTMLElement | null>) {
+export function useDrawViewportStage(ref: RefObject<HTMLElement | null>, enabled = true) {
   useLayoutEffect(() => {
+    if (!enabled) return;
     const stage = ref.current;
     if (!stage) return;
     const page = stage.closest<HTMLElement>('.surf-draw-page');
@@ -27,5 +28,5 @@ export function useDrawViewportStage(ref: RefObject<HTMLElement | null>) {
       window.removeEventListener('resize', schedule);
       stage.style.removeProperty('--draw-stage-height');
     };
-  }, [ref]);
+  }, [ref, enabled]);
 }

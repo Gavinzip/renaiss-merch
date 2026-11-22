@@ -10,7 +10,7 @@ import {
 } from 'node:zlib';
 import { HttpError } from './http.mjs';
 import { isProductionStorefrontMode } from './storefront-mode.mjs';
-import { isDrawSitePath, isHiddenHubPath } from '../shared/site-routes.js';
+import { isDrawSitePath, isFieldDrawSitePath, isHiddenHubPath } from '../shared/site-routes.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const mimeTypes = new Map([
@@ -65,7 +65,7 @@ export async function serveStatic(
     'Cache-Control': cacheControlFor(filePath),
     'Content-Type': contentType,
     Vary: 'Accept-Encoding',
-    ...(isHiddenHubPath(url.pathname) || isDrawSitePath(url.pathname) ? { 'X-Robots-Tag': 'noindex, nofollow, noarchive' } : {})
+    ...(isHiddenHubPath(url.pathname) || isDrawSitePath(url.pathname) || isFieldDrawSitePath(url.pathname) ? { 'X-Robots-Tag': 'noindex, nofollow, noarchive' } : {})
   };
 
   if (contentEncoding) {
@@ -96,8 +96,8 @@ async function resolveFilePath(pathname, distDir, storefrontMode) {
     return association;
   }
 
-  if (isDrawSitePath(safePathname)) return path.join(resolvedDistDir, 'draw', 'index.html');
-  if (safePathname.startsWith('/draw/')) throw new HttpError(404, 'not_found');
+  if (isDrawSitePath(safePathname) || isFieldDrawSitePath(safePathname)) return path.join(resolvedDistDir, 'draw', 'index.html');
+  if (safePathname.startsWith('/draw/') || safePathname.startsWith('/field-draw/')) throw new HttpError(404, 'not_found');
 
   const archiveEvent = /^\/events\/(pokemon-30|football)\/?$/.exec(safePathname);
   if (archiveEvent) return path.join(resolvedDistDir, 'events', archiveEvent[1], 'index.html');

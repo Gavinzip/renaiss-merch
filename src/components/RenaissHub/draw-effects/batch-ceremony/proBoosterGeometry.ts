@@ -21,7 +21,8 @@ export function foilGeometry(strip = false) {
 function foilDepth(u: number, y: number) {
   const across = Math.max(0, Math.sin(Math.PI * u));
   const end = smooth((y - FOIL.bottom) / .15), top = smooth((FOIL.top - y) / .16);
-  const pillow = .045 * Math.pow(across, .65) * end * top;
+  const belly = Math.sin(Math.PI * (y - FOIL.bottom) / (FOIL.top - FOIL.bottom));
+  const pillow = .061 * Math.pow(across, .65) * (.82 + .18 * belly) * end * top;
   // Broad, irregular shoulder folds. Tiny corrugations belong only to the crimp.
   const shoulders = Math.exp(-Math.pow((y - .59) / .055, 2))
     + .7 * Math.exp(-Math.pow((y + .65) / .05, 2));
@@ -44,6 +45,8 @@ export function deformFoil(geometry: THREE.PlaneGeometry, side: number, tear: nu
     let x = u - .5;
     let y = strip ? FOIL.seam + v * (FOIL.top - FOIL.seam)
       : FOIL.bottom + v * (FOIL.seam - FOIL.bottom);
+    // Keep the original foil, adding only a gentle waist around the air pocket.
+    x *= 1 - .02 * Math.sin(Math.PI * (y - FOIL.bottom) / (FOIL.top - FOIL.bottom));
     let z = foilDepth(u, y) * side;
     if (strip) {
       const length = Math.max(0, tear - u);

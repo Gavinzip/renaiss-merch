@@ -1,3 +1,4 @@
+import { fieldDrawAccess, handleFieldRosterRoute } from '../draw-room/field.mjs';
 import { createMissionRouteHandler } from '../missions/routes.mjs';
 import { handleRosterDrawRoute } from '../roster-draw/routes.mjs';
 import { createSurfDrawHandler } from '../surf-draw/routes.mjs';
@@ -12,6 +13,8 @@ const missions = createMissionRouteHandler({readSession});
 const surf = createSurfDrawHandler({readSession});
 const operator = createSurfOperatorHandler();
 export async function handleWorkflowRoutes(req, res, url) {
+  if (await fieldDrawAccess.handleRoute(req,res,url)) return true;
+  if (await handleFieldRosterRoute(req,res,url)) return true;
   // Dedicated draw-room access is independent of Renaiss SSO.
   if (await handleSurfDrawAccessRoute(req,res,url)) return true;
   if (await handleRosterDrawRoute(req,res,url)) return true;
