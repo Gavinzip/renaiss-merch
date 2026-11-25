@@ -12,6 +12,7 @@ import { SurfCampaignTasks } from './SurfCampaignTasks';
 import { useSurfMissions } from './useSurfMissions';
 import { useSurfCampaignMotion } from './useSurfCampaignMotion';
 import './SurfQuestBrand.css';
+import './HubEventSurface.css';
 
 export function SurfCampaignPage({ locale, setLocale, account, navigation, motionRevision, onBack, onLogin, onRetry, onLogout, loggingOut }: {
   locale: AppLocale; setLocale: (locale: AppLocale) => void; account: AccountState;
@@ -44,7 +45,6 @@ export function SurfCampaignPage({ locale, setLocale, account, navigation, motio
   return <main className="surf-page surf-page--hub" lang={locale} ref={motionRoot}>
     <div className="surf-page__shell">
       <HubSiteHeader locale={locale} setLocale={setLocale} location={copy.pageLabel} onBack={onBack} navigation={navigation}
-        actions={<nav className="surf-page__hub-actions" aria-label={copy.pageNavigation}><button type="button" onClick={() => goTo('surf-campaign-rewards')}>{copy.viewRewards}</button><button type="button" onClick={() => goTo('surf-campaign-tasks')}>{copy.viewTasks}</button></nav>}
         accountAction={<div className="surf-page__account-controls">
           {administrator ? <button className="surf-page__logout" type="button" onClick={() => setShowParticipants(true)}>{inlineCopy[locale].participants}</button> : null}
           {account.status === 'error' || (account.status === 'ready' && !account.session.authenticated) ? <HubAccountAction account={account} locale={locale} onRetry={onRetry} onLogin={loginForMission} disabled={false} /> : null}
@@ -57,10 +57,10 @@ export function SurfCampaignPage({ locale, setLocale, account, navigation, motio
         <div><span className="surf-page__section-number" data-surf-reveal="0">{copy.detailsSection}</span><h2 id="surf-details-title" data-surf-reveal="1">{copy.details}</h2></div>
         <div className="surf-page__facts">
           <div><span data-surf-reveal="0">{copy.schedule}</span><strong data-surf-reveal="1">{copy.scheduleValue}</strong><p data-surf-reveal="2">{copy.scheduleDescription}</p></div>
-          <div><span data-surf-reveal="1">{copy.sbt}</span><strong data-surf-reveal="2">{copy.sbtValue}</strong><p data-surf-reveal="3">{copy.sbtDescription}</p></div>
+          <div><span data-surf-reveal="1">{copy.sbt}</span><strong data-surf-reveal="2">{copy.sbtValue}</strong></div>
         </div>
       </section>
-      <footer className="surf-page__footer"><div data-surf-reveal="0"><strong>Renaiss × Surf</strong><p>{copy.previewNote}</p></div><a data-surf-reveal="1" href={surfCampaign.campaignUrl ?? surfCampaign.xUrl} target="_blank" rel="noopener noreferrer">{surfCampaign.campaignUrl ? copy.openCampaign : copy.announcement}<span aria-hidden="true">↗</span></a></footer>
+      <footer className="surf-page__footer"><strong data-surf-reveal="0">Renaiss × Surf</strong><a data-surf-reveal="1" href={surfCampaign.campaignUrl ?? surfCampaign.xUrl} target="_blank" rel="noopener noreferrer">{surfCampaign.campaignUrl ? copy.openCampaign : copy.announcement}<span aria-hidden="true">↗</span></a></footer>
     </div>
     {showParticipants && administrator ? <FulfillmentConsole initialSection="surf" onClose={() => setShowParticipants(false)} /> : null}
   </main>;

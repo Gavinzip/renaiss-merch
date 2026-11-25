@@ -38,6 +38,13 @@ export async function readSnapshot(db, drawId = null) {
   drawId ??= await activeSurfDrawId(db);
   await ensureSurfDrawTables(db);
   const record = await db.prepare('SELECT * FROM surf_draw_snapshots WHERE draw_id=?').get(drawId);
+  const snapshot = decodeSurfSnapshot(record, drawId);
+  return snapshot ? { ...snapshot, contacts: await readSurfWinnerContacts(db, record) } : null;
+}
+
+// Shared integrity checks also serve the strictly read-only public history path.
+// Contact snapshots are loaded separately by the private ceremony path above.
+export function decodeSurfSnapshot(record, drawId) {
   if (!record) return null;
   const canonical = JSON.parse(record.canonical_json);
   const validPrizes = Array.isArray(canonical.prizes) && JSON.stringify(canonical.prizes) === JSON.stringify(SURF_DRAW_PRIZES);
@@ -51,7 +58,7 @@ export async function readSnapshot(db, drawId = null) {
   return {
     ...record,
     canonical,
-    contacts: await readSurfWinnerContacts(db, record)
+    contacts: {}
   };
 }
 export async function buildCandidateLedger(db, drawId = null) {

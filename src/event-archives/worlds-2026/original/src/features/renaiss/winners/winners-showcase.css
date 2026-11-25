@@ -1,0 +1,94 @@
+/* Winners only. The accepted cover, global header and prize data are independent. */
+#root .worlds-control-room .worlds-winners-page .worlds-competition-toolbar[data-presentation="football"]{width:100%;margin:0 0 32px}
+#root .worlds-winners-page>h1.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+.winners-showcase__layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(40px,5vw,80px);align-items:start}
+.winners-showcase__product{min-width:0;position:sticky;top:108px}
+.winner-prize-display{position:relative;isolation:isolate;min-width:0;padding:8px 0 0}
+.winner-prize-display__edition{display:flex;align-items:center;justify-content:space-between;color:#c3c0ad;font-size:11px;line-height:1.8;letter-spacing:.06em}
+.winner-prize-display__edition>span:last-child{color:#9daba9;letter-spacing:0}
+.winner-prize-display__stage{position:relative;display:grid;place-items:center;height:clamp(290px,29vw,386px);margin-top:12px;isolation:isolate}
+.winner-prize-display__halo{position:absolute;inset:-5% -10% -3%;z-index:-1;background:radial-gradient(ellipse at 50% 52%,color-mix(in srgb,var(--prize-tint) 16%,transparent),transparent 63%);pointer-events:none}
+.winner-prize-display__shadow{position:absolute;bottom:8%;left:12%;right:12%;height:12%;border-radius:50%;background:radial-gradient(ellipse,#000b,transparent 67%);transform:scaleX(1.18);pointer-events:none}
+.winner-prize-display__photo{display:block;position:absolute;inset:0;margin:auto;width:87%;height:92%;overflow:hidden;filter:drop-shadow(0 16px 19px #0005)}
+.winner-prize-display__copy{padding:18px 0 12px;text-align:center}
+.winner-prize-display__type{color:#9d967e;font:9px/1.7 ui-monospace,monospace;letter-spacing:.17em}
+#root .winner-prize-display h2{font-size:clamp(19px,1.7vw,25px);font-weight:500;letter-spacing:-.025em;line-height:1.6;color:#ece8db;margin:8px 0}
+.winner-prize-display__copy>p{margin:0;color:#9daba9;font-size:12px;line-height:1.9}
+.winner-prize-display__allocation{display:flex;align-items:center;justify-content:center;gap:24px;margin-top:19px;color:#a5aea7;font-size:12px}
+.winner-prize-display__allocation strong{font-size:20px;font-weight:450;color:#e1cf9f;margin:0 4px}
+.winners-showcase__board{min-width:0}
+.winner-board-head{display:flex;justify-content:space-between;gap:18px;align-items:center;margin:2px 0 0;padding-bottom:15px}
+.winner-board-head>div>span{color:#9b9278;font:9px/1.7 ui-monospace,monospace;letter-spacing:.1em}
+#root .winner-board-head h2{color:#ece8db;font-size:23px;font-weight:550;letter-spacing:-.025em;margin:7px 0 0;line-height:1.5}
+.winner-board-head__count{display:flex;align-items:baseline;gap:6px;font:12px/1.5 ui-monospace,monospace;color:#83918e;flex-wrap:wrap;justify-content:flex-end;max-width:100px}
+.winner-board-head__count strong{font-size:25px;font-weight:400;color:#cfc5aa;letter-spacing:-.05em}
+.winner-board-head__count small{flex-basis:100%;text-align:right;font-size:10px;line-height:1.7;color:#94a29d}
+#root .worlds-winners-page .winner-board-pending{font-size:12px;line-height:1.85;color:#98a5a3;max-width:44em;margin:0 0 18px}
+/* Compact match rows retain the original height and horizontal proportions. */
+.winner-board-matches{display:grid;gap:12px}
+.winner-match{position:relative;isolation:isolate;min-width:0;overflow:hidden;padding:16px 18px;background:linear-gradient(108deg,#c5b07a0c,transparent 48%,#bda66c05),#0b1114;border:1px solid #c6b99229;border-radius:8px}
+.winner-match::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 0 100%,#b89b5f1c,transparent 52%),repeating-linear-gradient(118deg,#d7c69b05 0 1px,transparent 1px 25px);opacity:.55;transition:opacity .3s ease}
+.winner-match::after{content:"";position:absolute;inset:18px auto 18px 0;width:1px;pointer-events:none;background:linear-gradient(transparent,#d7c29380,transparent)}
+.winner-match:hover::before{opacity:.95}
+.winner-match__head{display:flex;align-items:center;justify-content:space-between;gap:16px;min-width:0}
+.winner-match__fixture{display:flex;align-items:center;min-width:0;gap:12px}
+.winner-match__code{color:#cbbb91;font:11px/1.7 ui-monospace,monospace;letter-spacing:.025em;white-space:nowrap}
+.winner-match__versus{display:flex;align-items:center;flex-wrap:wrap;gap:6px;color:#9da9a3;font-size:11px;line-height:1.7;overflow-wrap:anywhere}
+.winner-match__versus>small{color:#8e977e;font:9px/1.7 ui-monospace,monospace;margin-inline:2px}
+#root .winner-match__versus .team-mark{width:20px;height:22px;min-width:20px;border:0;border-radius:0;box-shadow:none;background:none}
+.winner-match__date{flex-shrink:0;color:#a0adaa;font:10px/1.7 ui-monospace,monospace;white-space:nowrap}
+.winner-match__date small{color:#80918c;font:9px/1.7 ui-monospace,monospace;margin-left:3px}
+.winner-match__verify{display:flex;align-items:center;gap:7px;min-height:44px;flex-shrink:0;color:#cdbd94;font-size:11px;padding-left:8px;text-decoration:none}
+.winner-match__verify:hover{color:#f1dfb2}
+.winner-match__waiting{display:flex;align-items:center;gap:14px;margin-top:15px;min-height:43px}
+.winner-match__mark{position:relative;display:grid;place-items:center;flex:0 0 34px;align-self:stretch;min-height:40px;color:#c2ad79;background:radial-gradient(ellipse,#d4ba6f10,transparent 72%)}
+.winner-match__mark::before{content:"";position:absolute;inset:4px 2px;border:1px solid #c8b47b26;clip-path:polygon(0 0,77% 0,100% 20%,100% 100%,23% 100%,0 80%);pointer-events:none}
+.winner-match__pending-copy{min-width:0;flex:1 1 auto}
+#root .winner-match__pending-copy h3{margin:0;color:#d0d4c8;font-size:14px;font-weight:450;line-height:1.6;letter-spacing:.015em}
+#root .winner-match__pending-copy p{margin:4px 0 0;color:#94a198;font-size:10px;line-height:1.7}
+.winner-match__prize-label{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex:0 1 auto;max-width:47%;color:#b4b5a1;font-size:10px;line-height:1.8;text-align:right}
+.winner-match__prize-label>span{text-wrap:balance}
+.winner-match__prize-label>svg{flex-shrink:0;color:#c7b58780}
+.winner-match :is(button,a):focus-visible{outline:none;text-decoration:underline;text-underline-offset:4px}
+.winner-match__results{padding-top:6px}
+.winner-match__people{display:grid;gap:2px;list-style:none;padding:0;margin:0}
+.winner-match__people>li{display:grid;grid-template-columns:33px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 0}
+.winner-person__rank{display:grid;place-items:center;width:33px;min-height:38px;font:12px/1.7 ui-monospace,monospace;color:#8a9793}
+.is-primary .winner-person__rank{color:#deca91}
+.winner-person__identity{display:grid;gap:4px;min-width:0}
+.winner-person__status{font-size:10px;color:#9eaa9c;display:flex;align-items:center;gap:8px}
+.is-primary .winner-person__status{color:#d1be8f}
+.winner-person__status em{font-style:normal;font-size:9px;background:#d9c18f1a;color:#e3d0a2;padding:2px 6px;border-radius:3px}
+.winner-person__identity>strong{font-size:15px;color:#e5e6d9;font-weight:500;line-height:1.6;overflow-wrap:anywhere}
+.winner-person__profile{color:inherit;text-decoration:underline;text-underline-offset:.2em}
+.winner-person__profile:hover{color:#deca91}
+.winner-person__profile svg{display:inline-block;vertical-align:middle}
+.is-alternate .winner-person__identity>strong{color:#aeb9b4;font-size:13px}
+.winner-person__ticket{display:flex;align-items:center;gap:5px;font:11px/1.7 ui-monospace,monospace;color:#a2afa5}
+.winner-person__claim{display:flex;align-items:center;gap:6px;grid-column:2/-1;justify-self:start;min-height:44px;font-size:11px;color:#dcc99d;background:transparent;border:0;padding:0}
+.winner-match__people>li.is-me{background:#d7c39308;border-radius:6px}
+.winner-match__proof{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:10px;color:#82968e;line-height:1.8;margin-top:8px}
+.winner-match__proof>span:last-child{margin-left:auto}
+.winner-match__no-winners{font-size:13px;color:#9aa9a2;line-height:1.8}
+
+@keyframes winner-detail-enter{from{opacity:.08;transform:translate3d(0,9px,0);filter:blur(5px)}to{opacity:1;transform:translate3d(0,0,0);filter:blur(0)}}
+.winner-match,.winner-prize-display__copy>*{animation:winner-detail-enter .65s cubic-bezier(.22,1,.36,1) both}
+.winner-match:nth-child(2),.winner-prize-display__copy>*:nth-child(2){animation-delay:.08s}
+.winner-match:nth-child(3),.winner-prize-display__copy>*:nth-child(3){animation-delay:.16s}
+.winner-match:nth-child(4),.winner-prize-display__copy>*:nth-child(4){animation-delay:.24s}
+@media(prefers-reduced-motion:reduce){.winner-match,.winner-prize-display__copy>*{animation:none;opacity:1;transform:none;filter:none}}
+
+@media(max-width:1000px){.winners-showcase__layout{gap:34px;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}.winner-match{padding:14px}.winner-match__fixture{gap:9px;flex-wrap:wrap}.winner-match__date small{display:none}}
+@media(max-width:760px){
+ .winners-showcase__layout{grid-template-columns:1fr;gap:32px}.winners-showcase__product{position:relative;top:auto}.winner-prize-display{max-width:490px;margin-inline:auto}.winner-prize-display__stage{height:315px}.winner-prize-display__photo{width:84%;height:96%}
+ .winner-prize-display__copy{padding-top:12px}.winner-board-head{padding-bottom:16px}.winner-match__date small{display:inline}
+}
+@media(max-width:480px){
+ .winner-prize-display__stage{height:270px;margin-top:14px}.winner-prize-display__edition{font-size:10px}.winner-prize-display__copy{padding-top:17px}.winner-prize-display__type{font-size:8px}.winner-prize-display__allocation{margin-top:14px;gap:21px;font-size:11px}.winners-showcase__layout{gap:38px}
+ #root .winner-prize-display h2{font-size:20px}#root .winner-board-head h2{font-size:21px}.winner-match__head{gap:10px}.winner-match__fixture{gap:7px}.winner-match__date{font-size:9px}.winner-match__date small{display:none}.winner-match__versus{font-size:10px}
+ .winner-match__waiting{gap:10px}.winner-match__mark{flex-basis:29px}.winner-match__prize-label{max-width:43%;font-size:9px;gap:5px}.winner-match__prize-label>svg{display:none}.winner-person__ticket{font-size:10px}.winner-person__identity>strong{font-size:14px}
+}
+@media(prefers-reduced-motion:reduce){.winner-match::before{transition:none}}
+
+.winners-verification-link{display:flex;justify-content:flex-end;margin:9px 0 18px}.winners-verification-link a{display:flex;align-items:center;gap:8px;min-height:44px;font-size:11px;color:#c2af82;text-decoration:none}

@@ -1,0 +1,97 @@
+{
+  "sourceCheckout": "/Users/gavin/.codex/worktrees/worlds-auto-results/lol competion",
+  "sourceCommit": "2e7aefa76f78c7426216ad117c9e9ae23baf31f4",
+  "sourceDirty": true,
+  "sources": [
+    {
+      "source": "src/features/renaiss/prizes/productMedia.ts",
+      "sha256": "d6e11d8a57e821dbadb8084e03333e486bcaa9bcbc3c130afb10e47381247345",
+      "destination": "src/event-archives/worlds-2026/original/src/features/renaiss/prizes/productMedia.js",
+      "adapted": true
+    },
+    {
+      "source": "src/i18n/catalog.json",
+      "sha256": "cdade544b50063bc3b9188a2a5aac054703e6bfb1ffcbe5f7a21cd6d249e32cf",
+      "destination": "src/event-archives/worlds-2026/original/src/i18n/catalog.json",
+      "adapted": true
+    },
+    {
+      "source": "src/i18n/translation.ts",
+      "sha256": "ef15d7a7aa18adf94716d809b39d4ddb3c73214ee5ff604ea8e45add2895e3f4",
+      "destination": "src/event-archives/worlds-2026/original/src/i18n/translation.js",
+      "adapted": true
+    },
+    {
+      "source": "src/i18n/I18nProvider.ts",
+      "sha256": "4710b1740548a8faf8de3074e27799e79fa56d1459e57b1dfb7cde24f2b49030",
+      "destination": "src/event-archives/worlds-2026/original/src/i18n/I18nProvider.js",
+      "adapted": true
+    },
+    {
+      "source": "src/i18n/Message.ts",
+      "sha256": "8aee57722f43d471f4176a340c77eab9b34ea2fdb64209db6d5f9c5073b729bc",
+      "destination": "src/event-archives/worlds-2026/original/src/i18n/Message.js",
+      "adapted": true
+    },
+    {
+      "source": "src/i18n/Unit.ts",
+      "sha256": "87c6f1883daf3bdd449bac203b660d6c0f0bfb4aff95a6dc8da20c6d052bb509",
+      "destination": "src/event-archives/worlds-2026/original/src/i18n/Unit.js",
+      "adapted": true
+    },
+    {
+      "source": "src/features/renaiss/winners/WinnerPrizeDisplay.tsx",
+      "sha256": "3267a159185e2ca68c62441730a5de0c3e25efd1bd337c794db4e9f48752bfb4",
+      "destination": "src/event-archives/worlds-2026/original/src/features/renaiss/winners/WinnerPrizeDisplay.js",
+      "adapted": true
+    },
+    {
+      "source": "src/components/TeamMark.tsx",
+      "sha256": "967bca3820a80a54e42cd6e5d4170b3ac26cd27b7b4a6ab50e2394d29d035e05",
+      "destination": "src/event-archives/worlds-2026/original/src/components/TeamMark.js",
+      "adapted": true
+    },
+    {
+      "source": "src/lib/api.ts",
+      "sha256": "2510ac514329a1aac07cf65aa3a3946ce69223e6dd4f5968e4b76aecbc81aaad",
+      "destination": "src/event-archives/worlds-2026/original/src/lib/api.js",
+      "adapted": true
+    },
+    {
+      "source": "src/features/renaiss/winners/WinnerMatch.tsx",
+      "sha256": "e6fb565973deda6e47bb9f21a3baa5728e78c28d9d9803401f6aba8688368845",
+      "destination": "src/event-archives/worlds-2026/original/src/features/renaiss/winners/WinnerMatch.js",
+      "adapted": true
+    },
+    {
+      "source": "src/features/renaiss/winners/winners-showcase.css",
+      "sha256": "f07959b61acb2b2d00f416d418bda6c464141d38482211152a92914dc2df5fec",
+      "destination": "src/event-archives/worlds-2026/original/src/features/renaiss/winners/winners-showcase.css",
+      "adapted": true
+    },
+    {
+      "source": "src/features/renaiss/winners/WinnersShowcase.tsx",
+      "sha256": "2e7601131eaa78d495fc251a6d2beef6bbca82d2776f111381a60040c153c6ad",
+      "destination": "src/event-archives/worlds-2026/original/src/features/renaiss/winners/WinnersShowcase.js",
+      "adapted": true
+    },
+    {
+      "source": "src/i18n/localized-runtime.ts",
+      "sha256": "40912c48c4902b3c7bea9fdfd058ae5b22d5789892ee9f2f2cc7b5b46d3ac971",
+      "destination": "src/event-archives/worlds-2026/original/src/i18n/localized-runtime.js",
+      "adapted": true
+    },
+    {
+      "source": "src/i18n/jsx-runtime.ts",
+      "sha256": "696e61344c45450f0e697e4a386f9a5552de94bf56ca616c3f7fc7742b21e1b0",
+      "destination": "src/event-archives/worlds-2026/original/src/i18n/jsx-runtime.js",
+      "adapted": true
+    },
+    {
+      "source": "src/features/renaiss/football-competition-toolbar.css",
+      "sha256": "6ec96a81461b54753747e65740ad4229e2f88f8840b70a68ae090a76a93f7e6a",
+      "destination": "src/event-archives/worlds-2026/original/src/features/renaiss/football-competition-toolbar.css",
+      "adapted": false
+    }
+  ]
+}

@@ -543,7 +543,7 @@ async function assertConfiguration() {
 
   const drawCatalog = JSON.parse(await readFile(resolve(projectRoot, 'media/surf-draw-motion-release.json'), 'utf8'));
   if (drawCatalog.release === 'unpublished') throw new Error('Publish the Surf draw motion release before a production build.');
-  for (const name of ['hub-event-asset-release.json', 'event-experience-asset-release.json']) {
+  for (const name of ['hub-event-asset-release.json', 'event-experience-asset-release.json', 'community-event-archive-asset-release.json']) {
     const archive = JSON.parse(await readFile(resolve(projectRoot, 'media', name), 'utf8'));
     if (!/^r[a-f0-9]{20}$/.test(archive.release) || !archive.contentHash || !archive.fileCount) {
       throw new Error('Publish and verify the archive media release before production: ' + name);

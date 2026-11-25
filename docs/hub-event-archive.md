@@ -18,12 +18,72 @@ availability retain the current main implementation.
 - Football: `http://127.0.0.1:5173/events/football/?lang=zh-TW#winners`
 
 The Hub retains its own colorful layout and collapsed-by-default navigation.
-Its two archive cards link to separate full-page event documents. These use
+Its football and Pokémon archive cards link to separate full-page event documents. These use
 independent Vite HTML entries, with the original event CSS, images and presentation
 components. They are not iframes or preview cards. Legacy Hub event hashes forward
 to these documents. Each document has a Back to Hub link. Explicit lang query parameters are respected
 and kept in sync when changing languages, including when returning to Hub. Git publication includes the completed Hub surfaces and their release catalogs.
 Only previously published winners are mirrored; original event services are retained.
+
+## Surf and Worlds independent archives (local update, 2026-11-20)
+
+The four archive cards open independent event documents under this Merch site.
+Surf and Worlds follow the Pokémon/football import pattern: preserve the original
+prize/winner presentation and published results without retaining the full retired
+activity application. The original activity sites can be retired independently.
+
+- Surf: `/events/surf/?lang=zh-TW`; winner CTA adds `#winners`. The original prize
+  component and original draw-card faces show seven Mystery Boxes and twenty
+  one-month Pro memberships. The cards use actual frozen winner names/tickets.
+  There are no task verification, account, signer, operator or draw mutations in
+  this document. A static prize artwork slot avoids loading the operator's full
+  animation atlases for a completed result.
+- Worlds: `/events/worlds-2026/?lang=zh-TW`; winner CTA adds `#winners`. The imported
+  original WinnerPrizeDisplay, WinnerMatch and WinnersShowcase retain their
+  presentation, product crops, team logos, counts and original translations.
+  The stage query selects quarter/semi/final (4/2/1 primary winners). No original
+  service/bootstrap/result API is used at runtime.
+- Both independent headers use the same prominent rainbow `HubReturnButton`
+  used by Pokémon and football. The target is always the Hub archive collection,
+  with language preserved. This is independent of the general Hub header.
+- Hub subpages (Store, Partner Quest, Binder and archive index) no longer render
+  a generic back arrow. The sidebar switches pages; the brand returns to overview.
+- Legacy `#events/{event}` and `/winners` hashes forward to the matching event
+  document. The normal Partner Quest task page remains its existing feature.
+
+Static results live in `src/event-archives/data/{surf,worlds-2026}.json`. Surf was
+captured from the completed chain/locked-ledger result with a field allowlist of
+slot, ticketNumber and sanitized display name. Its read-only capture command is
+`node --env-file=.env.local scripts/capture-surf-archive.mjs`. The anonymous public
+API added during the earlier attempt was removed; viewing these archives requires
+no draw database, RPC, contact snapshots or old activity backend.
+
+`node scripts/import-community-event-archives.mjs` imports Worlds's presentation
+subset, public display data, three original canonical ECVRF bundles and required
+media. All seven displayed tickets are compared with the verified bundle results;
+SHA-256 pins every raw bundle and image. Only the presentation's required message
+catalog entries are copied. Source hashes and the source checkout's actual dirty
+state are recorded in `docs/community-event-archive-provenance.json`. Source
+projects are read only. No AI media generation is involved.
+
+Seventeen new retained media/proof objects total 2,104,441 bytes under
+`work/assets/community-event-archives/`. Their catalog is
+`media/community-event-archive-asset-release.json`. Local Vite development and the
+normal local server have explicit development-only media paths. Production uses
+versioned R2/CDN URLs and the production configuration check rejects an unpublished
+catalog; there is no production local-file or application-server media fallback.
+No new media was uploaded. Existing Surf artwork stays on its published Merch CDN.
+
+The current normal local preview uses `http://127.0.0.1:5173/` because that origin
+is already allowed by the public media bucket CORS policy. Port 5198 was not
+allowed; its anonymous Store reveal preloads correctly failed CORS rather than
+being proxied or hidden. Product verification uses the existing normal entrance,
+Hub sidebar, archive cards and return controls. The temporary mobile viewport is
+reset after checks. Review evidence: `work/reviews/self-contained-events-2026-11-20/`.
+
+The update remains local, on `codex/surf-campaign-recap`, without Git push,
+PR, CDN publication or production deployment. The original activity services have
+not been shut down. Local checks do not imply user visual acceptance.
 
 ## Original presentations
 
@@ -136,3 +196,36 @@ in that skill's references/source-provenance.md.
 The archive cover also disables the guest hero's unused sticky positioning, which
 otherwise allowed its bottom scroll prompt to overlap the fixed header when
 entering the winners anchor. Original imported presentation source is unchanged.
+# BBW Bangkok archive — 2026-11-23
+
+The fifth collection entry is `/events/bbw/`, with a direct `#winners` link and
+the shared prominent return-to-Hub control. It retains the original Four.meme
+travel-card renderer, venue photograph and brand marks as a small independent
+archive, without its private draw room, submission workflow or live result API.
+
+The read-only capture includes official rounds 5 and 6: five released, revealed
+records each, with **nine distinct accounts across ten records**. `deitycat2002`
+appears in both rounds. The public presentation now lists nine people once,
+without round labels or round-switching controls; all original tickets and both
+immutable proofs remain retained. Card numbers are presentation sequence numbers,
+not substituted source draw ranks. This does not infer combined payout terms.
+The index says the community draw has been revealed; it does not mark the
+28–29 November venue event as already ended.
+
+Each retained result was checked against its complete ECVRF bundle and actual
+finalized BSC commitment/request evidence. Original canonical bundles are kept
+with the archive media; a copied, independently replayable protocol verifies
+the snapshot without requiring the Four.meme repository to remain available.
+Run `scripts/import-bbw-event-archive.mjs` explicitly from the source checkout
+with `BBW_ARCHIVE_CURRENT_ROUND=6` and that checkout's private environment to
+repeat the capture. The SQL transaction is read only, and the capture requires
+all five winners in each selected round to have been released and revealed.
+Provenance is in `docs/bbw-event-archive-provenance.json`.
+
+BBW's seven retained media/proof files join the existing unpublished community
+archive catalog. Local preview uses its explicit local-only asset route;
+production still requires an authorized R2/CDN release before deployment.
+
+The BBW header uses the original transparent `public/assets/partners/renaiss-protocol.webp`
+from the source project. The earlier opaque copy remains outside the runtime catalog
+for provenance; no generated logo or CSS background-blending workaround is used.

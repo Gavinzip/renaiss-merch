@@ -1,0 +1,198 @@
+{
+  "release": "unpublished",
+  "prefix": "community-event-archives",
+  "assets": {
+    "worlds-2026/proofs/semi.json": {
+      "path": "worlds-2026/proofs/semi.json",
+      "source": "work/assets/community-event-archives/worlds-2026/proofs/semi.json",
+      "type": "binary",
+      "bytes": 38931,
+      "sha256": "5f047369c54bcdf9b076e0ee0eedd91d7ee3a26fd9d9babb6d16abf6003c0366",
+      "contentType": "application/json"
+    },
+    "worlds-2026/proofs/final.json": {
+      "path": "worlds-2026/proofs/final.json",
+      "source": "work/assets/community-event-archives/worlds-2026/proofs/final.json",
+      "type": "binary",
+      "bytes": 55972,
+      "sha256": "e91487bff4cdcf21ecd5a88d4eab84cd5e420b41d63d5346b7a24c42f3dbb955",
+      "contentType": "application/json"
+    },
+    "worlds-2026/proofs/quarter.json": {
+      "path": "worlds-2026/proofs/quarter.json",
+      "source": "work/assets/community-event-archives/worlds-2026/proofs/quarter.json",
+      "type": "binary",
+      "bytes": 128137,
+      "sha256": "95ee62615929f3feb288a175470e7ac9b7d5d276a8c2b5c6b9121a644b901b91",
+      "contentType": "application/json"
+    },
+    "worlds-2026/teams/GEN.png": {
+      "path": "worlds-2026/teams/GEN.png",
+      "source": "work/assets/community-event-archives/worlds-2026/teams/GEN.png",
+      "type": "binary",
+      "bytes": 12484,
+      "sha256": "dc6a7b357062a26f8215f020b6e3140477493600c8e4806011445cc55722ddc9",
+      "contentType": "image/png"
+    },
+    "worlds-2026/teams/T1.png": {
+      "path": "worlds-2026/teams/T1.png",
+      "source": "work/assets/community-event-archives/worlds-2026/teams/T1.png",
+      "type": "binary",
+      "bytes": 16197,
+      "sha256": "f8c8ec8a6a7c351d768425f411170a940a64aaf33f534101b94bbcbb50e4a009",
+      "contentType": "image/png"
+    },
+    "worlds-2026/teams/BLG.png": {
+      "path": "worlds-2026/teams/BLG.png",
+      "source": "work/assets/community-event-archives/worlds-2026/teams/BLG.png",
+      "type": "binary",
+      "bytes": 22151,
+      "sha256": "86bec7c42ffac90feac3555e2e15741660d734f1168715e88cbc8cbd2404dfe1",
+      "contentType": "image/png"
+    },
+    "worlds-2026/teams/TES.png": {
+      "path": "worlds-2026/teams/TES.png",
+      "source": "work/assets/community-event-archives/worlds-2026/teams/TES.png",
+      "type": "binary",
+      "bytes": 7996,
+      "sha256": "b45234426fcce4afb03007f0e32517e98d5d9fd57e8a8743bda4d54ab2017a21",
+      "contentType": "image/png"
+    },
+    "worlds-2026/teams/DK.png": {
+      "path": "worlds-2026/teams/DK.png",
+      "source": "work/assets/community-event-archives/worlds-2026/teams/DK.png",
+      "type": "binary",
+      "bytes": 7480,
+      "sha256": "78858b2ab64fe8538a5ce68312f044576512817d64a03d22d3fdf2147e5040ab",
+      "contentType": "image/png"
+    },
+    "worlds-2026/teams/IG.png": {
+      "path": "worlds-2026/teams/IG.png",
+      "source": "work/assets/community-event-archives/worlds-2026/teams/IG.png",
+      "type": "binary",
+      "bytes": 36335,
+      "sha256": "c749d8f59af9e4c8464e976e5f49372af83b277abfc34cc5e671bba5bb30082b",
+      "contentType": "image/png"
+    },
+    "worlds-2026/teams/KC.png": {
+      "path": "worlds-2026/teams/KC.png",
+      "source": "work/assets/community-event-archives/worlds-2026/teams/KC.png",
+      "type": "binary",
+      "bytes": 65413,
+      "sha256": "0de457d7762ca0d3376b6a29ba13cd890c26c750e140bd1ca63a5227cd322ad2",
+      "contentType": "image/png"
+    },
+    "worlds-2026/teams/LYON.png": {
+      "path": "worlds-2026/teams/LYON.png",
+      "source": "work/assets/community-event-archives/worlds-2026/teams/LYON.png",
+      "type": "binary",
+      "bytes": 376725,
+      "sha256": "a73744c47e6e23e25f6237f55a4afe55455cc7680fd0eee08ebdc44c743c63e6",
+      "contentType": "image/png"
+    },
+    "worlds-2026/cup.webp": {
+      "path": "worlds-2026/cup.webp",
+      "source": "work/assets/community-event-archives/worlds-2026/cup.webp",
+      "type": "binary",
+      "bytes": 119280,
+      "sha256": "cce74e3925422196d230f43bf4d2645c3f4cdbcfb45fcbe334ac6aafcb68a652",
+      "contentType": "image/webp"
+    },
+    "worlds-2026/wordmark.webp": {
+      "path": "worlds-2026/wordmark.webp",
+      "source": "work/assets/community-event-archives/worlds-2026/wordmark.webp",
+      "type": "binary",
+      "bytes": 70088,
+      "sha256": "6fd6d192fdfaaf9e4667ccb73f6f93a973ff49999e4083e5fd3dc919058b55f1",
+      "contentType": "image/webp"
+    },
+    "worlds-2026/origins-tc.jpg": {
+      "path": "worlds-2026/origins-tc.jpg",
+      "source": "work/assets/community-event-archives/worlds-2026/origins-tc.jpg",
+      "type": "binary",
+      "bytes": 91972,
+      "sha256": "0e09e051bded890fb48d44d10ce8b22d0b33dee6ead6d253730513c2f89555a1",
+      "contentType": "image/jpeg"
+    },
+    "worlds-2026/background.webp": {
+      "path": "worlds-2026/background.webp",
+      "source": "work/assets/community-event-archives/worlds-2026/background.webp",
+      "type": "binary",
+      "bytes": 414386,
+      "sha256": "9bd4326a4c14ae2c5a7aea2c5e3f5643d96407c125ec8ec227d4407ea8203f96",
+      "contentType": "image/webp"
+    },
+    "worlds-2026/unleashed-cn.webp": {
+      "path": "worlds-2026/unleashed-cn.webp",
+      "source": "work/assets/community-event-archives/worlds-2026/unleashed-cn.webp",
+      "type": "binary",
+      "bytes": 99738,
+      "sha256": "bf7b568b699aa6611ae42f85dabcf432d521c958f67e5bd4651164ac06411496",
+      "contentType": "image/webp"
+    },
+    "worlds-2026/origins-en.webp": {
+      "path": "worlds-2026/origins-en.webp",
+      "source": "work/assets/community-event-archives/worlds-2026/origins-en.webp",
+      "type": "binary",
+      "bytes": 541156,
+      "sha256": "dd4823975611ac0195028630da006f3545a4c13fa8e75e101c72279299ac5888",
+      "contentType": "image/webp"
+    },
+    "bbw/proofs/round-5.json": {
+      "path": "bbw/proofs/round-5.json",
+      "source": "work/assets/community-event-archives/bbw/proofs/round-5.json",
+      "type": "binary",
+      "bytes": 62704,
+      "sha256": "8f2d28801b77d4775004c926990dd8708a5c67f8ae6b56db5a27844329cd24e6",
+      "contentType": "application/json"
+    },
+    "bbw/proofs/round-6.json": {
+      "path": "bbw/proofs/round-6.json",
+      "source": "work/assets/community-event-archives/bbw/proofs/round-6.json",
+      "type": "binary",
+      "bytes": 62624,
+      "sha256": "fcf6407ce9ab015bc0890def2e8c31bbc7c59e730c347fda2674d9bc0b4401e1",
+      "contentType": "application/json"
+    },
+    "bbw/venue.webp": {
+      "path": "bbw/venue.webp",
+      "source": "work/assets/community-event-archives/bbw/venue.webp",
+      "type": "binary",
+      "bytes": 645232,
+      "sha256": "938f8ce88d9bd99cdbcd2f9136bb38d57fb5d4661ffc8644b02fa72d99237802",
+      "contentType": "image/webp"
+    },
+    "bbw/renaiss.webp": {
+      "path": "bbw/renaiss.webp",
+      "source": "work/assets/community-event-archives/bbw/renaiss.webp",
+      "type": "binary",
+      "bytes": 52382,
+      "sha256": "5361b9ff603adf89f00641b7ae0935041daef1f955166131b4b6ba65ca1701f5",
+      "contentType": "image/webp"
+    },
+    "bbw/fourmeme.webp": {
+      "path": "bbw/fourmeme.webp",
+      "source": "work/assets/community-event-archives/bbw/fourmeme.webp",
+      "type": "binary",
+      "bytes": 11484,
+      "sha256": "d18598c37a8d7a9687971f5e44e32d0917ab9e025810d1f452b5f79cc759ca70",
+      "contentType": "image/webp"
+    },
+    "bbw/fourmeme-dark.svg": {
+      "path": "bbw/fourmeme-dark.svg",
+      "source": "work/assets/community-event-archives/bbw/fourmeme-dark.svg",
+      "type": "binary",
+      "bytes": 8917,
+      "sha256": "fea17b7589f1dbdc76a3e107733863bae0c0f1aa2aaea38cccfef665014d0c4c",
+      "contentType": "image/svg+xml"
+    },
+    "bbw/renaiss-transparent.webp": {
+      "path": "bbw/renaiss-transparent.webp",
+      "source": "work/assets/community-event-archives/bbw/renaiss-transparent.webp",
+      "type": "binary",
+      "bytes": 38718,
+      "sha256": "088e6f800a02cd645921eae90c49b8a49a0cdce4e680c82dfef1f187afbe745e",
+      "contentType": "image/webp"
+    }
+  }
+}

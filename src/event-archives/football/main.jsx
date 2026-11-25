@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { ArrowRight, Ticket } from 'lucide-react';
 import { HubReturnButton } from '../../components/HubReturn/HubReturnButton';
 import { archiveAssetUrl, hubArchiveUrl } from '../shared/archiveAssets';
+import { useArchiveEntrance } from '../shared/useArchiveEntrance';
 import { I18nProvider } from './original/src/app/i18n/I18nProvider';
 import { useCampaignCopy } from './original/src/app/i18n/useCampaignCopy';
 import { ViewMenu, LanguageSwitch } from './original/src/app/components/control-room/ControlRoom';
@@ -23,26 +24,28 @@ const labels = {
   ko: { back:'Hub로 돌아가기', ended:'이벤트 종료', home:'이벤트 홈', winners:'경품 및 당첨자', records:'경품 및 당첨 기록 보기', loading:'이벤트 전시 로딩 중…', unavailable:'이벤트 영상을 로드하지 못했습니다. 새로고침해 주세요.' },
 };
 function FootballHome({copy, onWinners}) {
+  const entrance = useArchiveEntrance('.hero-copy > *');
   const video = useRef(null);
   const [ready,setReady] = useState(false);
   const [issue,setIssue] = useState(false);
   const heroImage = archiveAssetUrl('football/src/app/assets/hero-world-cup-clean.webp');
   const background = archiveAssetUrl('football/src/app/assets/' + (matchMedia('(max-width: 760px)').matches ? 'Background.mobile.mp4' : 'Background.web.mp4'));
   useEffect(() => { const element=video.current; return () => {element.pause(); element.removeAttribute('src'); element.load();}; }, []);
-  return <section className={'home-room is-media-ready ' + (ready ? 'is-video-ready' : 'is-video-poster')} aria-label={copy.home}>
+  return <section ref={entrance} className={'home-room is-media-ready ' + (ready ? 'is-video-ready' : 'is-video-poster')} aria-label={copy.home}>
     <div className="home-video-backdrop" aria-hidden="true"><img className="home-video-backdrop__poster" src={heroImage} alt=""/><video className="home-video-backdrop__video" ref={video} src={background} poster={heroImage} autoPlay muted playsInline loop preload="auto" onLoadedData={() => setReady(true)} onError={() => setIssue(true)}/></div>
     <figure className="hero-stage"><figcaption className="hero-stage__content"><section className="hero-copy"><h1>Renaiss<br/>{copy.title}</h1><p>{copy.body.split('\n').map((line,index) => <span key={line}>{index>0 && <br/>}{line}</span>)}</p><menu className="hero-actions" aria-label={copy.records}><li><button className="hero-action hero-action--primary renaiss-metal-button is-light" type="button" onClick={onWinners}><Ticket size={18}/>{copy.records}<ArrowRight size={17}/></button></li><li><span className="football-archive-status">{copy.ended}</span></li></menu></section></figcaption></figure>
     {issue && <p className="football-archive-media-error" role="alert">{copy.unavailable}</p>}
   </section>;
 }
 function FootballArchive() {
+  const entrance = useArchiveEntrance('.control-header > *');
   const {locale, t} = useCampaignCopy();
   const copy = labels[locale];
   const [view,setView] = useState(window.location.hash==='#winners' ? 'winners' : 'home');
   const [activeRound,setActiveRound] = useState('final');
   useEffect(() => {const sync=()=>{setView(window.location.hash==='#winners'?'winners':'home');window.scrollTo(0,0);};window.addEventListener('hashchange',sync);return()=>window.removeEventListener('hashchange',sync);},[]);
   function navigate(next) { window.location.hash = next==='winners' ? 'winners' : 'top'; }
-  return <main className="control-room football-archive" data-view={view}>
+  return <main ref={entrance} className="control-room football-archive" data-view={view}>
     <header className="control-header" aria-label={t('nav.aria')}>
       <button type="button" className="brand-lockup" onClick={()=>navigate('home')} aria-label={t('brand.homeAria')}><img src={archiveAssetUrl('football/src/app/assets/renaiss-logo-mark.webp')} alt=""/><span><strong>Renaiss</strong><small>WORLD CUP</small></span></button>
       <ViewMenu activeViewId={view} onSelectView={navigate} t={t} views={[{id:'home'},{id:'winners'}]}/>

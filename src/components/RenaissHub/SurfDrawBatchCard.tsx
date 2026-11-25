@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { AppLocale } from '../../i18n/LocaleContext';
 import { surfWinnerDisplayName } from '../../../shared/surf-draw-identity.js';
 import type { Prize, Winner } from './useSurfDraw';
@@ -7,12 +8,12 @@ import { HubWordmark } from './HubWordmark';
 import { SurfLogo } from './SurfLogo';
 import { SurfWinnerContacts } from './SurfWinnerContacts';
 
-export function SurfDrawBatchCard({ locale, kind, slot, column, winner, phase, shown, turning, disabled, onFlip, allowIndividualFlip = true }: {
-  locale: AppLocale; kind: Prize['kind']; slot: number; column: number; winner?: Winner; phase: RevealPhase;
-  shown: boolean; turning: boolean; disabled: boolean; onFlip: () => void; allowIndividualFlip?: boolean;
+export function SurfDrawBatchCard({ locale, kind, slot, column, winner, phase, shown, turning, disabled, onFlip, allowIndividualFlip = true, showContacts = true, prizeArtwork }: {
+  locale: AppLocale; kind: Prize['kind']; slot: number; column: number; winner?: Pick<Winner, 'slot' | 'ticketNumber'> & { participant: Pick<Winner['participant'], 'name'> & Partial<Winner['participant']> }; phase: RevealPhase;
+  shown: boolean; turning: boolean; disabled: boolean; onFlip?: () => void; allowIndividualFlip?: boolean; showContacts?: boolean; prizeArtwork?: ReactNode;
 }) {
   const name = surfWinnerDisplayName(winner?.participant.name) || (locale === 'zh-TW' ? '未提供姓名' : 'Name unavailable');
-  const revealable = phase === 'identity' && !shown;
+  const revealable = phase === 'identity' && !shown && Boolean(onFlip);
   return <li className="surf-batch-card" style={{ gridColumn: `${column} / span 2` }}
     data-revealable={revealable || undefined} data-turning={turning || undefined} data-revealed={shown}
     aria-hidden={phase === 'idle' || phase === 'spinning'}>
@@ -21,14 +22,14 @@ export function SurfDrawBatchCard({ locale, kind, slot, column, winner, phase, s
         className={`surf-batch-card__face surf-batch-card__face--${face}`} aria-hidden={face === 'winner' ? !shown : shown}>
         <div className="surf-batch-card__metal" />
         <div className="surf-batch-card__top"><HubWordmark /><b>×</b><SurfLogo /><span>{String(slot + 1).padStart(2, '0')}</span></div>
-        <div className="surf-batch-card__body"><SurfBatchPrizeThumb kind={kind} locale={locale} />
+        <div className="surf-batch-card__body">{prizeArtwork === undefined ? <SurfBatchPrizeThumb kind={kind} locale={locale} /> : <div className="surf-batch-card__prize" aria-hidden="true">{prizeArtwork}</div>}
           <div className="surf-batch-card__identity">
             <span>{face === 'winner' ? locale === 'zh-TW' ? '得獎者' : 'THE WINNER' : 'WINNING TICKET'}</span>
             {face === 'winner' ? <strong className="surf-batch-card__name" data-long={name.length > 20}>{name}</strong> : null}
             <strong className="surf-batch-card__ticket">{winner ? String(winner.ticketNumber).padStart(6, '0') : '—'}</strong>
           </div>
         </div>
-        {face === 'winner' ? <SurfWinnerContacts participant={winner?.participant} /> : null}
+        {face === 'winner' && showContacts ? <SurfWinnerContacts participant={winner?.participant} /> : null}
         <div className="surf-batch-card__bottom"><span>{kind === 'mystery-box' ? 'MYSTERY BOX' : 'SURF PRO · 1 MONTH'}</span><i /></div>
       </div>)}
     </div>

@@ -1,6 +1,6 @@
 import './HubReturnMotion.css';
 
-const archivePieces = '.pokemon-header, .pokemon-scroll-story__copy, .pokemon-scroll-story__prizes, .pokemon-winners__intro, .pokemon-winners-ledger, .pokemon-winners__standard, .pokemon-winners__bonus, .pokemon-extra-winners, .pokemon-rules, .pokemon-archive-footer, .control-header, .hero-copy, .winner-stage-primary, .winner-stage-actions, .winner-round-simulator';
+const archivePieces = '.bbw-archive-hero, .bbw-archive-summary, .bbw-archive-prizes, .bbw-archive-winners__heading, .bbw-archive-rounds, .bbw-archive-ticket, .pokemon-header, .pokemon-scroll-story__copy, .pokemon-scroll-story__prizes, .pokemon-winners__intro, .pokemon-winners-ledger, .pokemon-winners__standard, .pokemon-winners__bonus, .pokemon-extra-winners, .pokemon-rules, .pokemon-archive-footer, .control-header, .event-archive-intro, .surf-archive .surf-page__reward-grid > article, .surf-archive-winners > h2, .surf-archive .surf-batch-gallery, .worlds-archive .worlds-competition-toolbar, .winners-showcase__product, .winners-showcase__board, .event-archive-proof, .hero-copy, .winner-stage-primary, .winner-stage-actions, .winner-round-simulator';
 const hubPieces = '.hub-site-header, .hub-event-archive__intro, .hub-event-archive__collection-label, .hub-event-archive__card, .hub-event-archive__collection-footer';
 let navigationPending: Promise<void> | null = null;
 const activeAnimations = new Set<Animation>();
@@ -45,7 +45,7 @@ function animatePieces(root: HTMLElement, selector: string, entering: boolean) {
       return rect.width > 0 && rect.height > 0 && rect.top < innerHeight && rect.bottom > 0;
     }).map(element => {
       const rest = {opacity: 1, translate: '0 0', filter: 'blur(0px)'};
-      const offset = {opacity: 0, translate: `${entering ? -distance : distance}px 0`, filter: `blur(${blur}px)`};
+      const offset = {opacity: .08, translate: `${entering ? -distance : distance}px 0`, filter: `blur(${blur}px)`};
       const animation = element.animate(entering ? [offset, rest] : [rest, offset], {duration, easing, fill: 'both'});
       activeAnimations.add(animation);
       return animation;

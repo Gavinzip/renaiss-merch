@@ -27,7 +27,7 @@ const copy = {
     revealNote: '等待已確認的中獎票號', preparing: '正在準備開獎動畫…',
     results: '開獎結果', empty: '尚無中獎紀錄。', verify: '查看開獎證明',
     rule: '一張票中一個獎，不同票可以再次中獎。', prize: '獎位', tickets: '我的票號',
-    boxCount: '7 個 Mystery Box', proCount: '20 個月會員', phase: ['準備開獎', '名單已上鏈', '等待 VRF', '準備揭曉', '全部揭曉'],
+    boxCount: '7 個 Mystery Box', proCount: '20 份 Pro 月會員', phase: ['準備開獎', '名單已上鏈', '等待 VRF', '準備揭曉', '全部揭曉'],
   },
   ko: {
     title: 'Surf 추첨실', subtitle: 'Mystery Box 7개 · Pro 멤버십 20개', live: '온체인 추첨',

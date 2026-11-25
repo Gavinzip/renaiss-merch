@@ -1,7 +1,7 @@
 import type { Winner } from './useSurfDraw';
 import './SurfWinnerContacts.css';
 
-export function SurfWinnerContacts({ participant }: { participant?: Winner['participant'] }) {
+export function SurfWinnerContacts({ participant }: { participant?: Partial<Winner['participant']> }) {
   if (!participant) return null;
   const rows = [
     ['Email', participant.email], ['X', participant.xUsername], ['Discord', participant.discordUsername],

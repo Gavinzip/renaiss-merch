@@ -54,7 +54,7 @@
 }
 .hub-return-button .hub-return-button__arrow svg { width: 16px; height: 16px; transition: transform 250ms cubic-bezier(.22,1,.36,1); }
 .hub-return-button .hub-return-button__label { display: block; color: #292533; font: inherit; letter-spacing: inherit; }
-.hub-return-button:focus-visible { outline: 2px solid #7562a0; outline-offset: 4px; }
+.hub-return-button:focus-visible { outline: none; text-decoration: underline; text-underline-offset: 4px; }
 .hub-return-button:active { transform: translateY(0) scale(.98); }
 .hub-return-button[data-returning="true"] { cursor: progress; }
 .hub-return-button[data-returning="true"] .hub-return-button__arrow svg { transform: translateX(-3px); }

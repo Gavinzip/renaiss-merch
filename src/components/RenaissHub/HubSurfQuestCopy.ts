@@ -1,6 +1,6 @@
 export const surfQuestCopy = {
   "zh-TW": {
-    eyebrow: "常駐活動", stage: "活動預覽", title: "Renaiss × Surf",
+    eyebrow: "活動", stage: "活動預覽", title: "Renaiss × Surf",
     description: "探索 Surf，也認識新的社群。",
     completeTasks: "完成任務", taskSummary: "帳號 · X · Discord",
     viewCampaign: "查看活動與獎品", prizeSummary: "Mystery Box · Pro 體驗",
@@ -11,7 +11,7 @@ export const surfQuestCopy = {
     notOpen: "在活動內連接與驗證", notice: "登入 Renaiss，驗證 Surf 與社群任務。",
   },
   ko: {
-    eyebrow: "커뮤니티 활동", stage: "활동 미리보기", title: "Renaiss × Surf",
+    eyebrow: "활동", stage: "활동 미리보기", title: "Renaiss × Surf",
     description: "Surf와 새로운 커뮤니티를 만나보세요.",
     completeTasks: "미션 완료하기", taskSummary: "계정 · X · Discord",
     viewCampaign: "활동 둘러보기", prizeSummary: "Mystery Box · Pro 체험",
@@ -22,7 +22,7 @@ export const surfQuestCopy = {
     notOpen: "활동 페이지에서 연결 및 인증", notice: "Renaiss에 로그인하고 Surf 계정과 소셜 미션을 인증하세요.",
   },
   en: {
-    eyebrow: "Community activities", stage: "Campaign preview", title: "Renaiss × Surf",
+    eyebrow: "Activities", stage: "Campaign preview", title: "Renaiss × Surf",
     description: "Discover Surf. Meet a new community.",
     completeTasks: "Complete quests", taskSummary: "Accounts · X · Discord",
     viewCampaign: "Explore the campaign", prizeSummary: "Mystery Box · Pro trials",

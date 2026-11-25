@@ -11,7 +11,10 @@ export default defineConfig(({ mode }) => ({
         v1_2: 'v1.2/index.html',
         draw: 'draw/index.html',
         archivePokemon: 'events/pokemon-30/index.html',
-        archiveFootball: 'events/football/index.html'
+        archiveFootball: 'events/football/index.html',
+        archiveSurf: 'events/surf/index.html',
+        archiveWorlds: 'events/worlds-2026/index.html',
+        archiveBbw: 'events/bbw/index.html'
       }
     }
   },

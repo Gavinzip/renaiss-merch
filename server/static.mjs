@@ -99,7 +99,7 @@ async function resolveFilePath(pathname, distDir, storefrontMode) {
   if (isDrawSitePath(safePathname) || isFieldDrawSitePath(safePathname)) return path.join(resolvedDistDir, 'draw', 'index.html');
   if (safePathname.startsWith('/draw/') || safePathname.startsWith('/field-draw/')) throw new HttpError(404, 'not_found');
 
-  const archiveEvent = /^\/events\/(pokemon-30|football)\/?$/.exec(safePathname);
+  const archiveEvent = /^\/events\/(pokemon-30|football|surf|worlds-2026|bbw)\/?$/.exec(safePathname);
   if (archiveEvent) return path.join(resolvedDistDir, 'events', archiveEvent[1], 'index.html');
 
   if (isHiddenHubPath(safePathname)) {

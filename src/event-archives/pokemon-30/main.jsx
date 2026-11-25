@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { ArrowDownRight, Sparkles, Trophy } from 'lucide-react';
 import { HubReturnButton } from '../../components/HubReturn/HubReturnButton';
 import { archiveAssetUrl, hubArchiveUrl, installPokemonFonts } from '../shared/archiveAssets';
+import { useArchiveEntrance } from '../shared/useArchiveEntrance';
 import { Pokemon30I18nProvider, usePokemon30I18n } from './original/src/i18n/Pokemon30I18n';
 import { LanguageSelector } from './original/src/components/LanguageSelector';
 import { PokemonPrizeStage } from './original/src/components/PokemonPrizeStage';
@@ -24,13 +25,14 @@ const labels = {
 function PokemonArchive() {
   const { locale, t } = usePokemon30I18n();
   const copy = labels[locale];
+  const entrance = useArchiveEntrance('.pokemon-header > *, .pokemon-scroll-story__copy > *, .pokemon-scroll-story__prize > *, .pokemon-winners__intro > *, .pokemon-winners-ledger, .pokemon-winners__product, .pokemon-winners__roster-heading, .pokemon-winners__row, .pokemon-winners__bonus-product, .pokemon-winners__bonus-copy > *, .pokemon-extra-winners > *, .pokemon-rules__intro > *, .pokemon-ticket-grid > *, .pokemon-archive-footer > *');
   const [scrolled, setScrolled] = useState(window.scrollY > 28);
   useEffect(() => {
     const sync = () => setScrolled(window.scrollY > 28);
     window.addEventListener('scroll', sync, { passive: true });
     return () => window.removeEventListener('scroll', sync);
   }, []);
-  return <main className={'pokemon30-page pokemon30-page--locale-' + locale}>
+  return <main ref={entrance} className={'pokemon30-page pokemon30-page--locale-' + locale}>
     <header className={'pokemon-header' + (scrolled ? ' pokemon-header--solid' : '')}>
       <a className="pokemon-header__brand pokemon-header__brand--wordmark" href="#top" aria-label={t('header.homeAria')}><img src={archiveAssetUrl('pokemon-30/src/assets/renaiss-logo-black.png')} alt="Renaiss" /></a>
       <nav aria-label={t('header.navigationAria')}><a href="#rules">{t('header.rules')}</a><a href="#winners">{winnerAnnouncementMessages[locale].navigation}</a></nav>

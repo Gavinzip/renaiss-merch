@@ -1,0 +1,110 @@
+{
+  "source": "/Users/gavin/.codex/worktrees/bbw-travel-ticket-frontend/fourmeme",
+  "sourceCommit": "1aa4a5b11d9a48cf38544083e62268a508b13118",
+  "capturedAt": "2026-11-23T02:32:06.717Z",
+  "rounds": [
+    {
+      "number": 5,
+      "bundleHash": "0x8f2d28801b77d4775004c926990dd8708a5c67f8ae6b56db5a27844329cd24e6",
+      "requestTx": "0xf175c731b22a1713cc66fb6e895a95a57d76acd60fb7421082ea62853eef670c"
+    },
+    {
+      "number": 6,
+      "bundleHash": "0xfcf6407ce9ab015bc0890def2e8c31bbc7c59e730c347fda2674d9bc0b4401e1",
+      "requestTx": "0x14002df096a1b55f3f7b5f0a283eb3dd2558c3f452c7c6e7d50c89527dcdad39"
+    }
+  ],
+  "sources": [
+    {
+      "path": "src/flagship/thailand/draw/presentation/artwork/canvasPrint.ts",
+      "sha256": "8dcfca55b5e623565f674b6b8f9105b14ad66cbe5879f9603daab71e5a05ffd3"
+    },
+    {
+      "path": "src/flagship/thailand/draw/presentation/artwork/foilSurface.ts",
+      "sha256": "2cc327e61278d3063cc92b5e97beb7f94facc13b6aac29b0717e7fbb23cf6350"
+    },
+    {
+      "path": "src/flagship/thailand/draw/presentation/artwork/foilLettering.ts",
+      "sha256": "ed21492074438a431817bfc47aa5c90f1106f5178a5393644c46359394afa6ec"
+    },
+    {
+      "path": "src/flagship/thailand/draw/presentation/artwork/travelCardArtwork.ts",
+      "sha256": "8e46f19ef1710ce9904220fe38681fdac5a421896097f2c56f5b96fcd555ce86"
+    },
+    {
+      "path": "src/flagship/thailand/draw/presentation/drawCopy.ts",
+      "sha256": "ae0eef4268c2ad0439b2924fc115efbb3071ae235001d32fcda713db1f7d13c1"
+    },
+    {
+      "path": "src/flagship/thailand/draw/protocol/encoding.ts",
+      "sha256": "f2939d32818aa63dbe06172f3baffd77ac40de5a95362e6e55fabfd5af7c3a1a"
+    },
+    {
+      "path": "src/flagship/thailand/draw/protocol/identityCommitment.ts",
+      "sha256": "5adb6dab20c094a2ba52dbfeb125d020ca64257578b8fec96f9443a695869797"
+    },
+    {
+      "path": "src/flagship/thailand/draw/protocol/identity.ts",
+      "sha256": "5080f07a447ab18cb89ca8c2f1acd5e4153eadf4c8160785334525455d269901"
+    },
+    {
+      "path": "src/flagship/thailand/draw/protocol/vendor/ciphersuite.ts",
+      "sha256": "4e3b04814b9958c96524009a070618727cde1c2d83f091bdab8499ad871d639c"
+    },
+    {
+      "path": "src/flagship/thailand/draw/protocol/vendor/data-conversions.ts",
+      "sha256": "016f65feda7a2c7017c2187980a035599f61baf4cca46dfe225dcbbf635e1ace"
+    },
+    {
+      "path": "src/flagship/thailand/draw/protocol/vendor/auxiliary.ts",
+      "sha256": "1f06c87dcc53fef189e00c3fba80f43fb6cc1f26e05b9eb476242bec77cfcebc"
+    },
+    {
+      "path": "src/flagship/thailand/draw/protocol/vendor/proof-to-hash.ts",
+      "sha256": "631bf2f4eaaa00becfcc567ac2a714fe7c5b2d9297e5b7a77f58f941f6adf953"
+    },
+    {
+      "path": "src/flagship/thailand/draw/protocol/vendor/verify.ts",
+      "sha256": "838ff45d3a4982dbc9fe613be80bc4deac4c010344f9475f47443a6594c3cdcc"
+    },
+    {
+      "path": "src/flagship/thailand/data/submissionWindow.ts",
+      "sha256": "7c81f895ccc9e06c00d7ed13b7d120c669914076e90fc1de826214e3eedae69c"
+    },
+    {
+      "path": "src/flagship/thailand/data/campaignRewards.ts",
+      "sha256": "902f343d0cc87c177ef0c15bc6517d4bfc4bbff391f12929359aca267965108c"
+    },
+    {
+      "path": "src/flagship/thailand/draw/protocol/manifest.ts",
+      "sha256": "0043e17b7eaf9308d2a38c4499a6459aefc521870289984773b5bb046d0f2bb9"
+    },
+    {
+      "path": "src/flagship/thailand/draw/protocol/ticketTree.ts",
+      "sha256": "a9018b344c1e84a7500cc8bb5627ebb1043b59a5fba08cb242919126d076ca49"
+    },
+    {
+      "path": "src/flagship/thailand/draw/protocol/selection.ts",
+      "sha256": "b8d54e5cb46c0974650c626d04dda52caf22a2ce08dd7120b33c126a61c4cc63"
+    },
+    {
+      "path": "src/flagship/thailand/draw/protocol/bundle.ts",
+      "sha256": "bea607704999e73e9e9b2fe1cf19b47fba4cb7392cfe316a0fb350b96ab062a7"
+    }
+  ],
+  "assets": [
+    "bbw/proofs/round-5.json",
+    "bbw/proofs/round-6.json",
+    "bbw/venue.webp",
+    "bbw/renaiss.webp",
+    "bbw/fourmeme.webp",
+    "bbw/renaiss-transparent.webp",
+    "bbw/fourmeme-dark.svg"
+  ],
+  "readOnly": true,
+  "headerLogo": {
+    "source": "/Users/gavin/.codex/worktrees/bbw-travel-ticket-frontend/fourmeme/public/assets/partners/renaiss-protocol.webp",
+    "sha256": "088e6f800a02cd645921eae90c49b8a49a0cdce4e680c82dfef1f187afbe745e",
+    "transparentOriginal": true
+  }
+}

@@ -24,6 +24,10 @@ src/assets/merch/*.glb
 .media-assets/
 work/member-binder-release/
 
+# Local verification captures and superseded authoring artwork.
+work/reviews/
+work/assets/community-event-archives/bbw/renaiss-dark.webp
+
 /server/vendor/backup/
 .vercel/
 

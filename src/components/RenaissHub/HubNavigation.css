@@ -40,7 +40,7 @@
 .hub-navigation__trigger:hover,
 .hub-sidebar__close:hover { background: #3f34460a; color: #29232e; }
 .hub-navigation :focus-visible,
-.hub-sidebar :focus-visible { outline: none; box-shadow: none; color: #78649d; text-decoration: underline; text-underline-offset: .24em; }
+.hub-sidebar :focus-visible { outline: none; box-shadow: none; color: #78649d; text-decoration: underline; text-underline-offset: 4px; background-color: #ffffff94; }
 .hub-navigation button:disabled { opacity: .45; cursor: default; }
 
 .hub-sidebar {
@@ -132,16 +132,16 @@
 /* The header owns the control; the fixed sidebar never sits inside the card grid. */
 @media (min-width: 1024px) {
   .renaiss-hub:has(.hub-navigation[data-desktop="true"]) .hub-home-intro__utility { padding-top: 0; }
-  :is(.renaiss-hub, .merch-store--hub, .surf-page--hub, .hub-event-archive):has(.hub-navigation[data-desktop="true"]) .hub-site-header {
+  :is(.renaiss-hub, .merch-store--hub, .surf-page--hub, .hub-event-archive, .hub-activities):has(.hub-navigation[data-desktop="true"]) .hub-site-header {
     min-height: var(--hub-header-height);
     margin-top: 0;
     padding-block: 0;
   }
-  :is(.renaiss-hub, .merch-store--hub, .surf-page--hub, .hub-event-archive):has(.hub-navigation[data-desktop="true"]) {
+  :is(.renaiss-hub, .merch-store--hub, .surf-page--hub, .hub-event-archive, .hub-activities):has(.hub-navigation[data-desktop="true"]) {
     padding-left: 216px;
     transition: padding-left var(--resize-dur) var(--resize-ease);
   }
-  :is(.renaiss-hub, .merch-store--hub, .surf-page--hub, .hub-event-archive):has(.hub-navigation[data-desktop="true"][data-expanded="false"]) { padding-left: 72px; }
+  :is(.renaiss-hub, .merch-store--hub, .surf-page--hub, .hub-event-archive, .hub-activities):has(.hub-navigation[data-desktop="true"][data-expanded="false"]) { padding-left: 72px; }
   .hub-site-header:has(.hub-navigation[data-desktop="true"]) .hub-site-header__identity > .renaiss-hub__brand { display: none; }
   .hub-site-header:has(.hub-navigation[data-desktop="true"]) .hub-site-header__back { display: none; }
 }
@@ -168,6 +168,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hub-sidebar.t-resize { transition: none !important; }
-  :is(.renaiss-hub, .merch-store--hub, .surf-page--hub, .hub-event-archive):has(.hub-navigation) { transition: none; }
+  :is(.renaiss-hub, .merch-store--hub, .surf-page--hub, .hub-event-archive, .hub-activities):has(.hub-navigation) { transition: none; }
   .hub-navigation__dialog[open] .hub-sidebar--drawer { animation: none; }
 }

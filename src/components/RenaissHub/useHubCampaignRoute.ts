@@ -1,26 +1,40 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { isDrawRoomHash } from '../RosterDraw/drawRoomRoute';
+import { activitiesHash } from '../../config/hubCampaigns';
 
 export const surfCampaignHash = '#campaign/surf';
 export const surfDrawHash = '#draw/surf';
 const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
-const campaignPieces = '.surf-page__header, .surf-page__brand-pair, .surf-page__eyebrow, .surf-page h1 > span, .surf-page__hero-description, .surf-page__hero-actions, .surf-page__hero-footnote, .surf-page__hero-art, .surf-page__section-heading, .surf-page__reward-grid > article, .surf-page__participation-intro, .surf-page__task-list > ol > li, .surf-page__details, .surf-page__footer';
+const campaignPieces = '.hub-activities [data-surf-reveal], .surf-page__header, .surf-page__brand-pair, .surf-page__eyebrow, .surf-page h1 > span, .surf-page__hero-description, .surf-page__hero-actions, .surf-page__hero-footnote, .surf-page__hero-art, .surf-page__section-heading, .surf-page__reward-grid > article, .surf-page__participation-intro, .surf-page__task-list > ol > li, .surf-page__details, .surf-page__footer';
 const overviewPieces = '.renaiss-hub__introduction, .hub-widget__surface, .renaiss-hub__footer';
 
-function isCampaignLocation() {
+type CampaignRoute = 'activities' | 'surf' | 'draw' | null;
+function readCampaignLocation(): CampaignRoute {
   const url = new URL(location.href);
-  return url.hash === surfCampaignHash || isDrawRoomHash(url.hash) || ['x', 'discord', 'resume'].includes(url.searchParams.get('mission') || '');
+  if (url.hash === activitiesHash) return 'activities';
+  if (isDrawRoomHash(url.hash)) return 'draw';
+  if (url.hash === surfCampaignHash || ['x', 'discord', 'resume'].includes(url.searchParams.get('mission') || '')) return 'surf';
+  return null;
+}
+
+function clearArchiveTarget() {
+  const url = new URL(location.href);
+  if (url.searchParams.get('from') !== 'events') return;
+  url.searchParams.delete('from');
+  if (url.searchParams.get('section') === 'surf-campaign-winners') url.searchParams.delete('section');
+  history.replaceState(history.state, '', `${url.pathname}${url.search}${url.hash}`);
 }
 
 // One motion owner for history, mounted content, focus and scroll. The outgoing
 // page stays mounted until its real animations finish; no guessed delay or clone.
 export function useHubCampaignRoute() {
-  const [active, setActive] = useState(isCampaignLocation);
+  const [route, setRoute] = useState(readCampaignLocation);
+  const active = route !== null;
   const [revision, setRevision] = useState(0);
   const [busy, setBusy] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const current = useRef(active);
-  const requested = useRef(active);
+  const current = useRef(route);
+  const requested = useRef(route);
   const generation = useRef(0);
   const direction = useRef(1);
   const animations = useRef(new Set<Animation>());
@@ -49,7 +63,7 @@ export function useHubCampaignRoute() {
 
   useEffect(() => {
     const sync = async () => {
-      const target = isCampaignLocation();
+      const target = readCampaignLocation();
       if (target === requested.current) return;
       requested.current = target;
       const ticket = ++generation.current;
@@ -66,7 +80,7 @@ export function useHubCampaignRoute() {
       }
       setBusy(true);
       if (!document.hidden && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        const exiting = pieces(current.current).map((element, index) => run(element, [
+        const exiting = pieces(current.current !== null).map((element, index) => run(element, [
           { opacity: 1, transform: 'none', filter: 'blur(0px)' },
           { opacity: .08, transform: current.current ? `translate3d(${direction.current * -32}px, -8px, 0) scale(.97)` : 'translateY(-6px)', filter: `blur(${current.current ? 7 : 3}px)` },
         ], { duration: 250, delay: Math.min(index * 18, 72), easing: ease }));
@@ -76,7 +90,7 @@ export function useHubCampaignRoute() {
       }
       if (ticket !== generation.current) return;
       current.current = target;
-      setActive(target);
+      setRoute(target);
       setRevision(value => value + 1);
       setBusy(false);
     };
@@ -102,14 +116,18 @@ export function useHubCampaignRoute() {
     cancelMotion();
     if (active) {
       const url = new URL(location.href);
-      if (url.hash !== surfCampaignHash && !isDrawRoomHash(url.hash)) history.replaceState(history.state, '', `${url.pathname}${url.search}${surfCampaignHash}`);
-      if (isDrawRoomHash(url.hash)) {
+      if (route === 'activities') {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        ref.current?.querySelector<HTMLElement>('#hub-activities-title')?.focus({ preventScroll: true });
+      } else if (route === 'draw') {
         window.scrollTo({ top: 0, behavior: 'instant' });
         ref.current?.querySelector<HTMLElement>('#surf-draw-title')?.focus({ preventScroll: true });
       } else if (landingTarget.current === 'tasks') {
+        if (url.hash !== surfCampaignHash) history.replaceState(history.state, '', `${url.pathname}${url.search}${surfCampaignHash}`);
         ref.current?.querySelector<HTMLElement>('#surf-campaign-tasks')?.scrollIntoView({ behavior: 'instant', block: 'start' });
         ref.current?.querySelector<HTMLElement>('#surf-tasks-title')?.focus({ preventScroll: true });
       } else {
+        if (url.hash !== surfCampaignHash) history.replaceState(history.state, '', `${url.pathname}${url.search}${surfCampaignHash}`);
         window.scrollTo({ top: 0, behavior: 'instant' });
         ref.current?.querySelector<HTMLElement>('#surf-campaign-title')?.focus({ preventScroll: true });
       }
@@ -132,13 +150,20 @@ export function useHubCampaignRoute() {
       });
     }
     return cancelMotion;
-  }, [active, revision]);
+  }, [route, revision]);
 
   function open(target: 'top' | 'tasks' = 'top') {
+    clearArchiveTarget();
     triggerKey.current = document.activeElement?.getAttribute('data-campaign-entry') ?? null;
     landingTarget.current = target;
     location.hash = surfCampaignHash;
   }
-  function back() { location.hash = '#portal-top'; }
-  return { active, busy, revision, hasTransitioned: revision > 0, ref, open, back };
+  function back() { clearArchiveTarget(); location.hash = '#portal-top'; }
+  function openActivities() {
+    clearArchiveTarget();
+    triggerKey.current = document.activeElement?.getAttribute('data-campaign-entry') ?? null;
+    landingTarget.current = 'top';
+    location.hash = activitiesHash;
+  }
+  return { active, route, busy, revision, hasTransitioned: revision > 0, ref, open, openActivities, back };
 }

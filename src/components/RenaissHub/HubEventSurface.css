@@ -1,0 +1,10 @@
+.surf-page.surf-page--hub,
+.hub-event-archive,
+.hub-activities {
+  background: #f6f5f8;
+}
+
+/* The navigation is portaled outside the active route. */
+body:has(.surf-page--hub, .hub-event-archive, .hub-activities) .hub-sidebar {
+  background: #f2f0f5;
+}

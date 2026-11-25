@@ -13,6 +13,8 @@ export type FeaturedCampaign = { id: string; kind: 'surf' } | {
   copy: Record<AppLocale, CampaignCopy>;
 };
 
+export const activitiesHash = '#activities';
+
 // Editorial selection for the permanent activity slot. Change this ID to switch
 // both the homepage and navigation; the internal Surf route remains available.
 export const activeCampaignId: keyof typeof hubCampaigns = 'fourmeme-bbw-2026';
@@ -59,7 +61,7 @@ export function campaignUrl(campaign: FeaturedCampaign, locale: AppLocale) {
 }
 
 export const featuredCampaignCopy = {
-  'zh-TW': { label: '常駐活動', details: '活動詳情', enter: '前往活動', notice: '參與資格、投稿與結果，請至正式活動網站查看。' },
-  en: { label: 'Community activities', details: 'Details', enter: 'Explore the campaign', notice: 'Visit the official campaign site for eligibility, entries and results.' },
-  ko: { label: '커뮤니티 활동', details: '활동 안내', enter: '활동 참여하기', notice: '참가 자격, 응모 및 결과는 공식 활동 사이트에서 확인하세요.' },
+  'zh-TW': { label: '活動', details: '活動詳情', enter: '前往活動', notice: '參與資格、投稿與結果，請至正式活動網站查看。' },
+  en: { label: 'Activities', details: 'Details', enter: 'Explore the campaign', notice: 'Visit the official campaign site for eligibility, entries and results.' },
+  ko: { label: '활동', details: '활동 안내', enter: '활동 참여하기', notice: '참가 자격, 응모 및 결과는 공식 활동 사이트에서 확인하세요.' },
 } satisfies Record<AppLocale, object>;

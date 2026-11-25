@@ -68,6 +68,30 @@
       "destination": "/events/pokemon-30/index.html"
     },
     {
+      "source": "/events/surf",
+      "destination": "/events/surf/index.html"
+    },
+    {
+      "source": "/events/surf/",
+      "destination": "/events/surf/index.html"
+    },
+    {
+      "source": "/events/worlds-2026",
+      "destination": "/events/worlds-2026/index.html"
+    },
+    {
+      "source": "/events/worlds-2026/",
+      "destination": "/events/worlds-2026/index.html"
+    },
+    {
+      "source": "/events/bbw",
+      "destination": "/events/bbw/index.html"
+    },
+    {
+      "source": "/events/bbw/",
+      "destination": "/events/bbw/index.html"
+    },
+    {
       "source": "/events/football",
       "destination": "/events/football/index.html"
     },
@@ -266,6 +290,19 @@
         {
           "key": "Content-Type",
           "value": "application/json; charset=utf-8"
+        }
+      ]
+    },
+    {
+      "source": "/events/bbw/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
         }
       ]
     }
