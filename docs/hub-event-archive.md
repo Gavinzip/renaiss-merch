@@ -229,3 +229,16 @@ production still requires an authorized R2/CDN release before deployment.
 The BBW header uses the original transparent `public/assets/partners/renaiss-protocol.webp`
 from the source project. The earlier opaque copy remains outside the runtime catalog
 for provenance; no generated logo or CSS background-blending workaround is used.
+
+
+## Published community archives — 2026-11-25
+
+Surf, Worlds 2026 and BBW archives are included in the normal Merch build. The
+24 new public media and proof objects are published to the existing
+`renaiss-merch-pilot-20261018` bucket, under
+`community-event-archives/rf8300cbc043a57f87208/`. Six JSON/SVG files use gzip;
+source bytes and source hashes remain unchanged. The encoded release totals
+2,738,377 bytes. All files use content-versioned URLs and immutable
+caching. Local review captures and the superseded opaque logo remain excluded
+from Git and deployment output. Both pre-build configuration and final artifact
+checks now require this published archive release.

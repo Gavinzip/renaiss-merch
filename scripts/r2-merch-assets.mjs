@@ -597,7 +597,7 @@ async function assertBuild() {
     const binder = JSON.parse(await readFile(resolve(projectRoot, 'media', name), 'utf8'));
     if (!combinedText.includes(binder.release)) throw new Error('Binder build is missing the published CDN release: ' + name);
   }
-  for (const name of ['hub-event-asset-release.json', 'event-experience-asset-release.json']) {
+  for (const name of ['hub-event-asset-release.json', 'event-experience-asset-release.json', 'community-event-archive-asset-release.json']) {
     const archive = JSON.parse(await readFile(resolve(projectRoot, 'media', name), 'utf8'));
     if (!combinedText.includes(archive.prefix + '/' + archive.release) && !combinedText.includes(archive.release)) {
       throw new Error('Archive build is missing the published CDN release: ' + name);
