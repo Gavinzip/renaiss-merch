@@ -1,0 +1,37 @@
+.hub-activities {
+  --hub-ink: #302b38;
+  --hub-muted: #7c6c86;
+  --hub-line: #76678024;
+  --hub-ease: cubic-bezier(.22,1,.36,1);
+  min-height: 100svh;
+  color: var(--hub-ink);
+}
+.hub-activities__content { width: min(calc(100% - 5rem), 1040px); margin-inline: auto; }
+.hub-activities__intro { padding: 42px 0 30px; }
+.hub-activities__eyebrow { margin: 0 0 14px; color: #8f7c98; font-size: 10px; letter-spacing: .15em; }
+.hub-activities h1 { margin: 0; font-size: clamp(30px, 3vw, 42px); font-weight: 550; letter-spacing: -.045em; line-height: 1.3; }
+.hub-activities h1:focus { outline: none; box-shadow: none; }
+.hub-activities__lede { margin: 14px 0 0; color: var(--hub-muted); font-size: 13px; line-height: 1.9; }
+.hub-activities__campaign { max-width: 760px; }
+.hub-activities .hub-featured-campaign { min-height: 0; padding: clamp(22px, 4vw, 38px); border: 1px solid #ffffffb8; border-radius: 22px; box-shadow: 0 14px 30px #52405c06; }
+.hub-activities .hub-featured-campaign__brand { margin-top: 0; }
+.hub-activities .hub-featured-campaign h2 { font-size: clamp(21px, 4.4vw, 30px); font-weight: 500; letter-spacing: -.035em; }
+.hub-activities .hub-featured-campaign__description { font-size: 13px; margin-top: 18px; }
+.hub-activities .hub-featured-campaign__steps { margin: 25px 0; }
+.hub-activities .hub-featured-campaign__steps li { gap: 16px; padding: 17px 0; }
+.hub-activities .hub-featured-campaign h3 { font-size: 13px; }
+.hub-activities .hub-featured-campaign__action { width: fit-content; min-width: 180px; font-size: 13px; gap: 40px; }
+.hub-activities .hub-featured-campaign__footer { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--hub-line); }
+.hub-activities .hub-featured-campaign__footer :is(p,small) { font-size: 11px; line-height: 1.8; }
+.hub-activities__footer { display: flex; justify-content: space-between; gap: 20px; margin-top: 42px; padding: 24px 0; border-top: 1px solid var(--hub-line); color: #9a87a3; font-size: 9px; letter-spacing: .07em; }
+@media(max-width:760px) {
+  .hub-activities__content { width: calc(100% - 2rem); }
+  .hub-activities__intro { padding-top: 30px; }
+}
+@media(max-width:460px) {
+  .hub-activities .hub-featured-campaign__brand { gap: 10px; }
+  .hub-activities .hub-featured-campaign__emblem { flex-basis: 25px; }
+  .hub-activities .hub-featured-campaign__emblem .hub-brand-logo { width: 25px; height: 30px; }
+  .hub-activities .hub-featured-campaign h2 { font-size: 21px; }
+  .hub-activities__footer { flex-direction: column; gap: 10px; }
+}

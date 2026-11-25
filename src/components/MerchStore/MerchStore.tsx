@@ -118,7 +118,6 @@ type MerchStoreProps = {
   onExitStore?: () => void;
   onOpenCampaign?: () => void;
   onOpenArchive: () => void;
-  onOpenBinder: () => void;
   onLogin: () => void;
   revealMediaController: StoreRevealMediaController;
 };
@@ -130,7 +129,6 @@ export function MerchStore({
   onExitStore,
   onOpenCampaign,
   onOpenArchive,
-  onOpenBinder,
   onLogin,
   revealMediaController
 }: MerchStoreProps) {
@@ -290,6 +288,7 @@ export function MerchStore({
           !cancelled &&
           !(error instanceof StoreRevealMediaCancelledError)
         ) {
+          console.error('Background reveal media preparation failed', error);
           setBackgroundMediaError(true);
         }
       });
@@ -747,7 +746,7 @@ export function MerchStore({
           }
         >
       {integratedHub ? <HubSiteHeader locale={locale} setLocale={setLocale} location={copy.storeName} onBack={handleExitStore}
-        navigation={<HubNavigation locale={locale} setLocale={setLocale} current="store" onGoHome={handleExitStore} onOpenCampaign={onOpenCampaign || handleExitStore} onOpenArchive={onOpenArchive} onOpenBinder={onOpenBinder} onEnterMerch={() => {}} preparing={false} disabled={false} />}
+        navigation={<HubNavigation locale={locale} setLocale={setLocale} current="store" onGoHome={handleExitStore} onOpenCampaign={onOpenCampaign || handleExitStore} onOpenArchive={onOpenArchive} onEnterMerch={() => {}} preparing={false} disabled={false} />}
         actions={session.authenticated ? <div className="hub-site-header__actions">
           {session.user.canManageFulfillment ? <button className="hub-site-header__action" type="button" onClick={openFulfillment}>{copy.fulfillment}</button> : null}
           <button className={`hub-site-header__action${showAddressWarning ? ' is-alert' : ''}`} type="button" onClick={() => setShowSettings(true)} aria-label={addressNeedsUpdate ? copy.addressUpdateRequired : addressReviewUnavailable ? copy.addressStatusUnavailable : copy.address}>{copy.address}{showAddressWarning ? ' !' : ''}</button>

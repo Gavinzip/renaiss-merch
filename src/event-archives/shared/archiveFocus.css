@@ -1,0 +1,15 @@
+/* The copied event themes predate the Hub's no-surrounding-focus-frame rule. */
+#root :is(.pokemon30-page, .football-archive, .surf-archive, .worlds-archive, .bbw-archive) :is(a, button, select, [tabindex]):focus {
+  outline: none;
+}
+#root :is(.pokemon30-page, .football-archive, .surf-archive, .worlds-archive, .bbw-archive) :is(a, button, select, [tabindex]):focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+#root .football-archive { --metal-focus-ring: none; }
+#root .football-archive .control-header .brand-lockup:focus-visible img { opacity: .6; }
+#root .pokemon30-page .pokemon-language-selector button:focus-visible {
+  box-shadow: none;
+}
+#root .pokemon30-page .pokemon-header__brand:focus-visible { opacity: .65; }
+#root .pokemon30-page .pokemon-winners__model-view:focus-visible { background: #eef0f5; }

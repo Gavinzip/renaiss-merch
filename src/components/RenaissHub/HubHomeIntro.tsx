@@ -14,8 +14,6 @@ export function HubHomeIntro({
   showPreviewNote,
   editing,
   saving,
-  canCustomize,
-  onCustomize,
   onCancel,
   onSave,
 }: {
@@ -28,8 +26,6 @@ export function HubHomeIntro({
   showPreviewNote: boolean;
   editing: boolean;
   saving: boolean;
-  canCustomize: boolean;
-  onCustomize: () => void;
   onCancel: () => void;
   onSave: () => void;
 }) {
@@ -62,20 +58,7 @@ export function HubHomeIntro({
                 </svg>
               </button>
             </>
-          ) : (
-            <button
-              className="hub-home__customize"
-              aria-label={widgetsCopy.customize}
-              disabled={!canCustomize}
-              onClick={onCustomize}
-              type="button"
-            >
-              <svg viewBox="0 0 20 20" aria-hidden="true">
-                <path d="M3 6h14M3 14h14M7 3v6M13 11v6" />
-              </svg>
-              <span className="hub-home__customize-label">{widgetsCopy.customize}</span>
-            </button>
-          )} />
+          ) : undefined} />
       </div>
       {showPreviewNote ? <span className="hub-home-intro__preview-note">{copy.preview}</span> : null}
     </div>

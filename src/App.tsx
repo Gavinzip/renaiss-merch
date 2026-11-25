@@ -1,6 +1,7 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { useStorePageTransition } from './components/StorePageTransition/useStorePageTransition';
 import { staticMerchAssetCssUrl } from './lib/staticAssets';
+import { activitiesHash } from './config/hubCampaigns';
 import './components/StorePageTransition/StorePageTransition.css';
 import { MerchLanding } from './components/MerchLanding/MerchLanding';
 import { MerchStore } from './components/MerchStore/MerchStore';
@@ -73,7 +74,7 @@ export default function App() {
     (import.meta.env.DEV && preview === 'community-entry');
   const isHubExperience = isCommunityEntry || isHiddenHubPath(window.location.pathname) ||
     (import.meta.env.DEV && preview === 'hub');
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.title = isHubExperience ? 'Renaiss Community' : 'RENAISS MERCH';
   }, [isHubExperience]);
   const [communityEntered, setCommunityEntered] = useState(() =>
@@ -265,9 +266,8 @@ export default function App() {
     integratedHub={isHubExperience}
     initialAuthFailed={storeAuthFailed}
     onExitStore={invalidateStoreAdmission}
-    onOpenCampaign={() => { invalidateStoreAdmission(); window.location.hash = '#campaign/surf'; }}
+    onOpenCampaign={() => { invalidateStoreAdmission(); window.location.hash = activitiesHash; }}
     onOpenArchive={() => { invalidateStoreAdmission(); window.location.hash = '#events'; }}
-    onOpenBinder={() => { invalidateStoreAdmission(); window.location.hash = '#binder'; }}
     onLogin={() => startRenaissLogin(buildStoreAdmissionReturnTo())}
     revealMediaController={revealMediaController}
   />;

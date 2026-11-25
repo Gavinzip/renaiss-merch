@@ -11,10 +11,6 @@
   -webkit-font-smoothing: antialiased;
 }
 .surf-page * { box-sizing: border-box; }
-.surf-page--hub {
-  background: linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .03)),
-    var(--store-page-background) center / cover fixed no-repeat;
-}
 .surf-page--hub .surf-page__shell { width: min(1320px, calc(100% - 5rem)); }
 .surf-page__hub-actions { display: flex; align-items: center; gap: 18px; }
 .surf-page__hub-actions button { min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--surf-muted); font-size: 11px; }
@@ -26,7 +22,7 @@
 .surf-page button, .surf-page a { -webkit-tap-highlight-color: transparent; }
 .surf-page button { font: inherit; cursor: pointer; }
 .surf-page button:disabled { cursor: wait; }
-.surf-page :is(a,button):focus-visible { outline: 2px solid var(--surf-pink); outline-offset: 5px; }
+.surf-page :is(a,button):focus-visible { outline: none; text-decoration: underline; text-underline-offset: 4px; }
 .surf-page :is(h1,h2):focus { outline: none; }
 .surf-page__shell { width: min(1240px, calc(100% - 96px)); margin-inline: auto; }
 .surf-page__header { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 94px; border-bottom: 1px solid var(--surf-line); }
@@ -53,16 +49,16 @@
 .surf-page__eyebrow { display: flex; align-items: center; gap: 16px; margin-bottom: 21px; font-size: 9px; letter-spacing: .18em; color: #8a7e85; }
 .surf-page__preview { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #e9cedb; padding: 5px 8px; border-radius: 3px; color: #aa6585; font-size: 10px; letter-spacing: .02em; }
 .surf-page__preview::before { content: ''; width: 4px; height: 4px; background: #d673a2; border-radius: 50%; }
-.surf-page h1 { margin: 0; font-size: clamp(46px,5.35vw,73px); letter-spacing: -.065em; font-weight: 560; line-height: 1.14; }
+.surf-page h1 { margin: 0; font-size: clamp(38px,4.4vw,62px); letter-spacing: -.055em; font-weight: 560; line-height: 1.14; }
 .surf-page h1 span { display: block; }
 .surf-page h1 span:last-child { color: #ba5f88; }
 .surf-page__hero-description { max-width: 350px; font-size: 14px; line-height: 1.9; color: var(--surf-muted); margin: 24px 0 30px; }
-.surf-page__hero-actions { display: flex; align-items: center; gap: 27px; }
+.surf-page__hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 27px; }
 .surf-page__primary { position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: space-between; gap: 40px; min-height: 49px; padding: 13px 23px; border: 1px solid var(--surf-ink); border-radius: 99px; background: var(--surf-ink); color: #fff; font-size: 12px !important; transition: transform 220ms var(--surf-ease),background 160ms ease; }
 .surf-page__primary:hover { background: #393036; transform: translateY(-2px); }
 .surf-page__primary::before { content: ''; position: absolute; inset: -2px; z-index: -1; border-radius: inherit; padding: 1px; background: conic-gradient(from var(--surf-beam-angle),transparent 0deg 290deg,#f59ac4 320deg,#c9b4ff 340deg,transparent 360deg); mask: linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0); mask-composite: exclude; visibility: hidden; }
 @property --surf-beam-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
-.surf-page__primary:is(:hover,:focus-visible)::before { visibility: visible; animation: surf-border-beam 2s linear infinite; }
+.surf-page__primary:hover::before { visibility: visible; animation: surf-border-beam 2s linear infinite; }
 @keyframes surf-border-beam { to { --surf-beam-angle: 360deg; } }
 .surf-page__primary span { font-size: 19px; font-weight: 350; transition: transform 220ms var(--surf-ease); }
 .surf-page__primary:hover span { transform: translate(2px,-2px); }

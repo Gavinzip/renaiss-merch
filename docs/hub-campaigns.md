@@ -1,7 +1,7 @@
 # The permanent community activity slot
 
 The existing `partner` widget ID is retained so saved homepage layouts continue
-to work. Its public label is 常駐活動 / Community activities / 커뮤니티 활동.
+to work. Its public label is 活動 / Activities / 활동.
 The slot stays on the homepage while its selected campaign changes.
 
 ## Manual editorial updates
@@ -12,6 +12,13 @@ campaign. The selected entry owns the title, public destination, localized
 description, three participation steps and deadline. The homepage, widget
 collection and sidebar use this same selection. Rebuild and restart the normal
 application after changing the file.
+
+The sidebar flag always opens the Hub's own `#activities` page. It shows the
+selected campaign's description, participation steps and deadline in the normal
+Hub shell; its explicit "前往活動" action opens the official site. The shared
+navigation follows this same internal route from the homepage, archives, Store
+and public verifier. `#campaign/surf` remains the original Surf mission route.
+The existing route motion owns page changes, focus and browser Back/Forward.
 
 `fourmeme-bbw-2026` links to the official
 `https://renaiss-fourmeme-bbw.vercel.app/thailand/` page, with the selected Hub

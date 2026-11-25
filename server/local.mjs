@@ -3,6 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {spawn} from 'node:child_process';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {loadLocalEnv} from './env-loader.mjs';
+import {handleLocalEventArchiveAsset} from './local-event-archive-assets.mjs';
 
 // The pilot's local entry point uses the same asynchronous PostgreSQL handler
 // as Vercel. The archived SQLite server is not a selectable runtime fallback.
@@ -17,6 +18,7 @@ export async function createLocalServer() {
   return http.createServer(async(req,res)=>{
     try{
       const url=new URL(req.url,'http://localhost');
+      if(await handleLocalEventArchiveAsset(req,res,url))return;
       if(process.env.MERCH_LOCAL_OPERATOR_BRIDGE==='true'&&await bridge(req,res,url))return;
       if(url.pathname==='/healthz'||url.pathname==='/local-draw-operator'||/^\/(api|auth)\//.test(url.pathname))return await api(req,res);
       if(url.pathname==='/v1.2'||url.pathname.startsWith('/v1.2/')){res.writeHead(308,{Location:'/'+url.search+url.hash,'Cache-Control':'no-store'});res.end();return;}

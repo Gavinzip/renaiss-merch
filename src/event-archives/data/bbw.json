@@ -1,0 +1,145 @@
+{
+  "id": "bbw",
+  "capturedAt": "2026-11-23T02:32:06.717Z",
+  "sourceCommit": "1aa4a5b11d9a48cf38544083e62268a508b13118",
+  "currentRound": 6,
+  "uniqueWinnerCount": 9,
+  "recordCount": 10,
+  "authority": {
+    "chainId": 56,
+    "contract": "0x502aE1361207df515A68F0Beffef28D59be3f4D9",
+    "publicKey": "0x4acd5476bf12b964e61a906878972e4b5ea656a54e5976e8903ee794942776ba",
+    "runtimeHash": "0x51d2ae9c45d66a149e5ece28547e3a9c0cbdbbe8b594cd8f3e4b4478d9e458b4"
+  },
+  "rounds": [
+    {
+      "number": 5,
+      "roundId": "0xd18790eb76389022ab025735a4739583767e9e830241aa0193513e5b905d6f52",
+      "bundleHash": "0x8f2d28801b77d4775004c926990dd8708a5c67f8ae6b56db5a27844329cd24e6",
+      "root": "0xb6202ca465c11a7d48064d7e80affa9b5018111808dc06c5c3efd0cb7326247d",
+      "ticketCount": 22023,
+      "cutoffAt": "2026-11-22T09:59:00.000Z",
+      "proofAsset": "bbw/proofs/round-5.json",
+      "commitmentTx": "0x4fc6df326969a1b6e8babca5d779666dde0576203b9fb5cca5f93746d40e7e1f",
+      "requestTx": "0xf175c731b22a1713cc66fb6e895a95a57d76acd60fb7421082ea62853eef670c",
+      "winners": [
+        {
+          "name": "yourpassword_is",
+          "xUsername": "yourpassword_is",
+          "participantId": "0xe066596f1bd43cabaec5120293c1096b5f9523049588714a056cfbda3ea66346",
+          "rank": 1,
+          "ticketNumber": 19242,
+          "id": "community-1",
+          "remotePrizeUsdt": 300,
+          "travelLimitUsdt": 1000
+        },
+        {
+          "name": "totomal090202",
+          "xUsername": "totomal090202",
+          "participantId": "0x5b74493468084a1f56c74166faae0e47c23c379b172e1428dd72609bd40858a6",
+          "rank": 2,
+          "ticketNumber": 6497,
+          "id": "community-2",
+          "remotePrizeUsdt": 300,
+          "travelLimitUsdt": 1000
+        },
+        {
+          "name": "Konno",
+          "xUsername": "konn0x39",
+          "participantId": "0x8e6ae322d74f1ca414c394e125cb132b3656cfa031aa5233ee9f58edf349feef",
+          "rank": 3,
+          "ticketNumber": 11185,
+          "id": "community-3",
+          "remotePrizeUsdt": 300,
+          "travelLimitUsdt": 1000
+        },
+        {
+          "name": "jochef1995",
+          "xUsername": "jochef1995",
+          "participantId": "0x31956212da97b3b5a4f6dd70bd6f259cd250cc6f7df03165a63677d0232cc433",
+          "rank": 4,
+          "ticketNumber": 2933,
+          "id": "community-4",
+          "remotePrizeUsdt": 300,
+          "travelLimitUsdt": 1000
+        },
+        {
+          "name": "deitycat2002",
+          "xUsername": "deitycat2002",
+          "participantId": "0x3c2723cdf88641ff27a8bb90b6bc26139608fa2001584d7835490a0823898c0e",
+          "rank": 5,
+          "ticketNumber": 3588,
+          "id": "community-5",
+          "remotePrizeUsdt": 300,
+          "travelLimitUsdt": 1000
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "roundId": "0x5a32d24a92f90e72104e1fb32374048e87903eba4a4a97a1de4ab734416253be",
+      "bundleHash": "0xfcf6407ce9ab015bc0890def2e8c31bbc7c59e730c347fda2674d9bc0b4401e1",
+      "root": "0xf37668882d2da6e3f9d528d1e7b0e82276eddfc38b13f0fa1e4d9ae1f00cce7f",
+      "ticketCount": 22023,
+      "cutoffAt": "2026-11-22T09:59:00.000Z",
+      "proofAsset": "bbw/proofs/round-6.json",
+      "commitmentTx": "0xfd6453963c52e8e040a38bbf4904838ac4b4fd00b131b2179b3d7950dd037b1a",
+      "requestTx": "0x14002df096a1b55f3f7b5f0a283eb3dd2558c3f452c7c6e7d50c89527dcdad39",
+      "winners": [
+        {
+          "name": "PawsPlay2630",
+          "xUsername": "helloakideisi",
+          "participantId": "0x96f738392605636bcc939e21a20ea46d85629aecce3418dd33a5806b770cd516",
+          "rank": 1,
+          "ticketNumber": 11932,
+          "id": "community-1",
+          "remotePrizeUsdt": 300,
+          "travelLimitUsdt": 1000
+        },
+        {
+          "name": "Daen36",
+          "xUsername": "daen97",
+          "participantId": "0x4b35223acd6bf99d745d6e5c428c80d4820ef14b090099e76d62eb5d2fe256fc",
+          "rank": 2,
+          "ticketNumber": 5121,
+          "id": "community-2",
+          "remotePrizeUsdt": 300,
+          "travelLimitUsdt": 1000
+        },
+        {
+          "name": "myao86",
+          "xUsername": "myao86",
+          "participantId": "0xac471ff5cf1aacf52b09608784dcc39899922b59a878a5f3e17ab6077bba6f4a",
+          "rank": 3,
+          "ticketNumber": 15049,
+          "id": "community-3",
+          "remotePrizeUsdt": 300,
+          "travelLimitUsdt": 1000
+        },
+        {
+          "name": "LawsTravel2705",
+          "xUsername": "erikbear1667061",
+          "participantId": "0x6c8cb298fb6c825d845615817c6ff1202ab2f1ad426d23d5b529c1fea0c42b13",
+          "rank": 4,
+          "ticketNumber": 8453,
+          "id": "community-4",
+          "remotePrizeUsdt": 300,
+          "travelLimitUsdt": 1000
+        },
+        {
+          "name": "deitycat2002",
+          "xUsername": "deitycat2002",
+          "participantId": "0x3c2723cdf88641ff27a8bb90b6bc26139608fa2001584d7835490a0823898c0e",
+          "rank": 5,
+          "ticketNumber": 3371,
+          "id": "community-5",
+          "remotePrizeUsdt": 300,
+          "travelLimitUsdt": 1000
+        }
+      ]
+    }
+  ],
+  "venueDates": "2026.11.28 — 11.29",
+  "cutoffAt": "2026-11-22T09:59:00.000Z",
+  "source": "https://renaiss-fourmeme-bbw.vercel.app"
+}

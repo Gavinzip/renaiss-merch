@@ -1,0 +1,31 @@
+.surf-archive-cover { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1.05fr; align-items: center; padding: 26px; background: #f1f4f2; }
+.surf-archive-cover__copy { position: relative; z-index: 1; align-self: stretch; display: flex; flex-direction: column; justify-content: center; gap: 30px; }
+.surf-archive-cover__brands { display: flex; align-items: center; gap: 12px; color: #29312f; }
+.surf-archive-cover__brands .hub-brand-wordmark { width: 100px; height: auto; }
+.surf-archive-cover__brands i { color: #a2aaa5; font-size: 15px; font-style: normal; }
+.surf-archive-cover__brands > span { display: flex; align-items: center; gap: 6px; font-size: 21px; font-weight: 600; letter-spacing: -.05em; }
+.surf-archive-cover__brands .hub-surf-logo { width: 24px; height: 24px; border-radius: 5px; }
+.surf-archive-cover__prizes { display: flex; gap: 28px; }
+.surf-archive-cover__prizes > div { display: grid; gap: 6px; }
+.surf-archive-cover__prizes strong { color: #3b4b43; font-size: 32px; line-height: 1; font-weight: 450; letter-spacing: -.05em; }
+.surf-archive-cover__prizes span { max-width: 90px; color: #7d8b83; font-size: 9px; line-height: 1.5; }
+.hub-event-archive__media .surf-archive-cover__box { width: 100%; height: 100%; object-fit: contain; padding: 0; transform: translateX(12px); }
+.hub-event-archive__card .hub-event-archive__media:hover .surf-archive-cover__box { transform: translateX(12px) scale(1.035); }
+.hub-event-archive__card .hub-event-archive__media:hover .surf-archive-cover__brands img { transform: none; }
+@container (max-width: 440px) {
+  .surf-archive-cover { padding: 18px; grid-template-columns: 1fr 1fr; }
+  .surf-archive-cover__copy { gap: 23px; }
+  .surf-archive-cover__brands { gap: 8px; }
+  .surf-archive-cover__brands .hub-brand-wordmark { width: 76px; }
+  .surf-archive-cover__brands > span { font-size: 17px; }
+  .surf-archive-cover__brands .hub-surf-logo { width: 21px; height: 21px; }
+  .surf-archive-cover__prizes { gap: 22px; }
+  .surf-archive-cover__prizes strong { font-size: 27px; }
+}
+@container (max-width: 320px) {
+  .surf-archive-cover__brands { gap: 5px; }
+  .surf-archive-cover__brands .hub-brand-wordmark { width: 58px; }
+  .surf-archive-cover__brands > span { gap: 4px; font-size: 15px; }
+  .surf-archive-cover__brands .hub-surf-logo { width: 17px; height: 17px; }
+}
+.hub-event-archive__card--surf { container-type: inline-size; }

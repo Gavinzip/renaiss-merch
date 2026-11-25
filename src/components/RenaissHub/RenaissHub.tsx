@@ -1,5 +1,5 @@
 import "./RenaissHubStyles";
-import { useBinderRoute } from "../MemberBinder/useBinderRoute";
+import { useRetiredHubRoutes } from './useRetiredHubRoutes';
 import { lazy, useEffect, useRef, useState, type CSSProperties } from "react";
 import { useLocale } from "../../i18n/LocaleContext";
 import { readRenaissSession, signOutRenaiss, startRenaissLogin } from "../../lib/renaissAuth";
@@ -27,13 +27,13 @@ import { HubEventArchive } from "./HubEventArchive";
 import { useHubArchiveRoute } from "./useHubArchiveRoute";
 import { HubAccountAction } from "./HubAccountAction";
 import { SurfCampaignPage } from "./SurfCampaignPage";
+import { HubActivitiesPage } from "./HubActivitiesPage";
 import { useHubCampaignRoute } from "./useHubCampaignRoute";
 import { isDrawRoomHash } from '../RosterDraw/drawRoomRoute';
 import { useHubInitialReadiness } from './useHubInitialReadiness';
 import { HubPageLoading } from './HubPageLoading';
 import { editableHubLayout, visibleHubLayout } from "./hubLayout";
 
-const MemberBinderPage = lazy(() => import('../MemberBinder/MemberBinderPage').then(module => ({ default: module.MemberBinderPage })));
 const DrawSiteRedirect = lazy(() => import('../DrawRoom/DrawSiteRedirect').then(module => ({ default: module.DrawSiteRedirect })));
 
 type RenaissHubProps = {
@@ -53,7 +53,7 @@ export function RenaissHub({
 }: RenaissHubProps) {
   const { locale, setLocale } = useLocale();
   const copy = renaissHubCopy[locale];
-  const binderRoute = useBinderRoute({ "zh-TW": "有尚未儲存的收藏冊變更。確定離開並放棄變更？", en: "Leave without saving your binder changes?", ko: "바인더 변경 사항을 저장하지 않고 나갈까요?" }[locale]);
+  useRetiredHubRoutes();
   const campaignRoute = useHubCampaignRoute();
   const archiveRoute = useHubArchiveRoute();
   const [drawActive, setDrawActive] = useState(() => isDrawRoomHash(window.location.hash));
@@ -85,7 +85,7 @@ export function RenaissHub({
   useHubWidgetEntrance(
     widgetMotion.gridRef,
     initialReadiness === 'ready' && settings.status !== 'error',
-    !campaignRoute.active && !archiveRoute.route && !drawActive && !binderRoute.active,
+    !campaignRoute.active && !archiveRoute.route && !drawActive,
     editing,
   );
 
@@ -194,20 +194,22 @@ export function RenaissHub({
 
   const accountAction = editing ? undefined : <>
     <HubAccountAction account={account} locale={locale} onRetry={retryAccount}
-      onLogout={() => binderRoute.guard(() => void logout())} loggingOut={loggingOut} disabled={settings.saving} />
+      onLogout={() => void logout()} loggingOut={loggingOut} disabled={settings.saving} />
     {logoutError ? <span className="hub-site-header__error" role="alert">{inlineCopy[locale].signOutFailedTryAgain}</span> : null}
   </>;
-  const navigation = <HubNavigation drawerOnly={binderRoute.active} locale={locale} setLocale={setLocale}
-    current={binderRoute.active ? "binder" : campaignRoute.active ? "campaign" : archiveRoute.route ? "events" : "home"}
-    onGoHome={campaignRoute.back} onOpenCampaign={campaignRoute.open} onOpenArchive={archiveRoute.open}
-    onOpenBinder={binderRoute.open} onEnterMerch={() => binderRoute.guard(enterMerch)} preparing={enterRequested && loadState === "loading"}
+  const navigation = <HubNavigation locale={locale} setLocale={setLocale}
+    current={campaignRoute.active ? "campaign" : archiveRoute.route ? "events" : "home"}
+    onGoHome={campaignRoute.back} onOpenCampaign={campaignRoute.openActivities} onOpenArchive={archiveRoute.open}
+    onEnterMerch={enterMerch} preparing={enterRequested && loadState === "loading"}
     disabled={editing || settings.saving || campaignRoute.busy} />;
 
   return (
     <div className="hub-route-motion" ref={campaignRoute.ref} data-route-motion="true" data-route-transitioned={campaignRoute.hasTransitioned} data-route-busy={campaignRoute.busy} inert={campaignRoute.busy}>
-    {binderRoute.active ? <MemberBinderPage key={account.status === "ready" && account.session.authenticated ? account.session.user.sub : "guest"} locale={locale} setLocale={setLocale} account={account} navigation={navigation} accountAction={accountAction} onBack={campaignRoute.back} onDirtyChange={binderRoute.onDirtyChange} onRetryAccount={retryAccount} /> : campaignRoute.active ? drawActive
+    {campaignRoute.active ? campaignRoute.route === 'draw'
       ? <DrawSiteRedirect />
-      : <SurfCampaignPage locale={locale} setLocale={setLocale} account={account} navigation={navigation} motionRevision={campaignRoute.revision} onBack={campaignRoute.back} onLogin={() => startRenaissLogin()} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} /> : archiveRoute.route
+      : campaignRoute.route === 'activities'
+        ? <HubActivitiesPage locale={locale} setLocale={setLocale} navigation={navigation} accountAction={accountAction} account={account} motionRevision={campaignRoute.revision} onGoHome={campaignRoute.back} onOpenSurf={campaignRoute.open} />
+        : <SurfCampaignPage locale={locale} setLocale={setLocale} account={account} navigation={navigation} motionRevision={campaignRoute.revision} onBack={campaignRoute.back} onLogin={() => startRenaissLogin()} onRetry={retryAccount} onLogout={() => void logout()} loggingOut={loggingOut} /> : archiveRoute.route
       ? <HubEventArchive route={archiveRoute.route} locale={locale} setLocale={setLocale} navigation={navigation} accountAction={accountAction} onBack={archiveRoute.route === 'index' ? campaignRoute.back : archiveRoute.open} /> : <main
       ref={overviewRef}
       className="renaiss-hub"
@@ -235,12 +237,6 @@ export function RenaissHub({
           showPreviewNote={showPreviewNote}
           editing={editing}
           saving={settings.saving}
-          canCustomize={settings.status === "ready"}
-          onCustomize={() => {
-            widgetMotion.captureLayout();
-            setRestoreSelection(null);
-            setDraft(editableHubLayout(settings.preferences));
-          }}
           onCancel={() => {
             widgetMotion.captureLayout();
             setDraft(null);

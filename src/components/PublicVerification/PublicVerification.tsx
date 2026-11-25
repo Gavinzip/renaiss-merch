@@ -3,6 +3,7 @@ import { ArrowDown, ArrowRight, Fingerprint, Menu, Search, ShieldCheck } from 'l
 import { publicProofMediaAsset } from 'virtual:public-proof-assets';
 import { useLocale, type AppLocale } from '../../i18n/LocaleContext';
 import { HubNavigation } from '../RenaissHub/HubNavigation';
+import { activitiesHash } from '../../config/hubCampaigns';
 import { HubNavigationProvider } from '../RenaissHub/HubNavigationState';
 import { HubLanguageMenu } from '../RenaissHub/HubLanguageMenu';
 import type { LoadedProof, ProofOverview, ResolvedProofRecord } from '../../../shared/public-proof/types';
@@ -98,8 +99,8 @@ function PublicProofPage() {
     <header className="vf-header">
       <div style={{display:'flex',alignItems:'center',gap:12}}>
         <HubNavigation drawerOnly locale={locale} setLocale={setLocale} current="verify" preparing={false} disabled={false}
-          onGoHome={()=>go('#portal-top')} onOpenCampaign={()=>go('#campaign/surf')} onOpenArchive={()=>go('#events')}
-          onOpenBinder={()=>go('#binder')} onEnterMerch={()=>go('#store')}/>
+          onGoHome={()=>go('#portal-top')} onOpenCampaign={()=>go(activitiesHash)} onOpenArchive={()=>go('#events')}
+          onEnterMerch={()=>go('#store')}/>
         <a className="vf-brand" href="/" aria-label={t("Renaiss Community")}><img src={publicProofMediaAsset('fair-die.webp')} alt=""/><span><img src={publicProofMediaAsset('fair-logo.svg')} alt="renaiss fair"/><small>{t("PUBLIC VERIFIER")}</small></span></a>
       </div>
       <nav className="vf-nav" aria-label={copy.title}><a className="is-current" href="#verify">{t("Verify a draw")}</a><a href="#commitment">{t("The record")}</a><a href="#method">{t("How it works")}</a></nav>

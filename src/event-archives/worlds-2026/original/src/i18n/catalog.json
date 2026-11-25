@@ -1,0 +1,326 @@
+{
+  "{count} 場": [
+    "{count} matches",
+    "{count} 경기"
+  ],
+  "{pool} / {count} 場": [
+    "{pool} / {count} matches",
+    "{pool} / {count} 경기"
+  ],
+  "{votes} 票": [
+    "{votes} votes",
+    "{votes} 표"
+  ],
+  "中獎名單": [
+    "Winners",
+    "당첨자"
+  ],
+  "對": [
+    "versus",
+    "대"
+  ],
+  "待開": [
+    "Pending",
+    "대기"
+  ],
+  "抽獎": [
+    "Draw",
+    "추첨"
+  ],
+  "本場 {amount}": [
+    "{amount} match pool",
+    "{amount} 경기 풀"
+  ],
+  "本輪": [
+    "Round",
+    "라운드"
+  ],
+  "每場": [
+    "Per match",
+    "경기당"
+  ],
+  "票": [
+    "tickets",
+    "티켓"
+  ],
+  "結果": [
+    "Result",
+    "결과"
+  ],
+  "驗證": [
+    "Verify",
+    "인증"
+  ],
+  "{0} · {1} 場": [
+    "{0} · {1} matches",
+    "{0} · {1}경기"
+  ],
+  "{0} {1} 盒{2}": [
+    "{0} {1} boxes{2}",
+    "{0} {1}박스{2}"
+  ],
+  "{0} 中獎名單": [
+    "{0} winners",
+    "{0} 당첨자"
+  ],
+  "{0} 張": [
+    "{0} tickets",
+    "{0}장"
+  ],
+  "{0} 張票券": [
+    "{0} tickets",
+    "티켓 {0}장"
+  ],
+  "{0} 票": [
+    "{0} votes",
+    "{0}표"
+  ],
+  "{0} 隊": [
+    "{0} teams",
+    "{0}팀"
+  ],
+  "{0}中獎名單": [
+    "{0}Winners",
+    "{0}당첨자"
+  ],
+  "{0}本輪正取獎品": [
+    "{0}This round’s main prize",
+    "{0}이 라운드의 당첨 경품"
+  ],
+  "中文": [
+    "Chinese",
+    "중국어"
+  ],
+  "中獎名單缺少本輪獎品：{0}": [
+    "Missing prize details for this round: {0}",
+    "이 라운드의 경품 정보가 없습니다: {0}"
+  ],
+  "你": [
+    "You",
+    "나"
+  ],
+  "八強賽": [
+    "Quarterfinals",
+    "8강"
+  ],
+  "名": [
+    "recipients",
+    "명"
+  ],
+  "四強賽": [
+    "Semifinals",
+    "4강"
+  ],
+  "場": [
+    "matches",
+    "경기"
+  ],
+  "場已揭曉": [
+    "draws revealed",
+    "경기 공개 완료"
+  ],
+  "對戰待公布": [
+    "Pairing to be announced",
+    "대진 발표 예정"
+  ],
+  "張": [
+    "tickets",
+    "장"
+  ],
+  "張票券": [
+    "tickets",
+    "장"
+  ],
+  "待公布": [
+    "To be announced",
+    "발표 예정"
+  ],
+  "戰隊": [
+    "Team",
+    "팀"
+  ],
+  "戰隊待公布": [
+    "Team to be announced",
+    "팀 발표 예정"
+  ],
+  "本場": [
+    "This match",
+    "이 경기"
+  ],
+  "本場 {0} {1}": [
+    "This match: {0} {1}",
+    "이 경기: {0} {1}"
+  ],
+  "本場沒有中獎名單": [
+    "No winners list for this match",
+    "이 경기의 당첨자 명단 없음"
+  ],
+  "本機示範抽獎": [
+    "Local demo draw",
+    "로컬 데모 추첨"
+  ],
+  "本輪共": [
+    "Round total",
+    "이번 라운드 총"
+  ],
+  "本輪共 {0} {1}": [
+    "Round total: {0} {1}",
+    "이번 라운드 총 {0} {1}"
+  ],
+  "本輪正取獎品": [
+    "This round’s main prize",
+    "이번 라운드 당첨 경품"
+  ],
+  "本輪獎品": [
+    "Round prizes",
+    "라운드 경품"
+  ],
+  "本輪獎品：{0}": [
+    "This round’s prize: {0}",
+    "이번 라운드 경품: {0}"
+  ],
+  "本輪還沒公布中獎名單，開獎後會顯示在這裡。": [
+    "Winners for this round have not been announced. They will appear here after the draw.",
+    "이번 라운드 당첨자는 아직 발표되지 않았습니다. 추첨 후 여기에 표시됩니다."
+  ],
+  "查驗結果": [
+    "Verification result",
+    "검증 결과"
+  ],
+  "查驗結果 {0}": [
+    "Verification result {0}",
+    "검증 결과 {0}"
+  ],
+  "正取": [
+    "Winner",
+    "당첨자"
+  ],
+  "正取 1 名 · 每名": [
+    "1 winner · Each receives",
+    "당첨자 1명 · 1인당"
+  ],
+  "正取 1 名 · 每名 {0} {1}": [
+    "1 winner · Each receives {0} {1}",
+    "당첨자 1명 · 1인당 {0} {1}"
+  ],
+  "每名正取": [
+    "Per main winner",
+    "당첨자 1인당"
+  ],
+  "每名正取 {0} {1}": [
+    "Per main winner: {0} {1}",
+    "당첨자 1인당 {0} {1}"
+  ],
+  "比賽": [
+    "Match",
+    "경기"
+  ],
+  "盒": [
+    "boxes",
+    "박스"
+  ],
+  "等待開獎": [
+    "Awaiting draw",
+    "추첨 대기"
+  ],
+  "總決賽": [
+    "Final",
+    "결승"
+  ],
+  "鏈上已驗證": [
+    "Verified on-chain",
+    "온체인 검증 완료"
+  ],
+  "隊": [
+    "teams",
+    "팀"
+  ],
+  "領獎資訊": [
+    "Claim details",
+    "수령 정보"
+  ],
+  "領獎資訊 {0}": [
+    "Claim details {0}",
+    "수령 정보 {0}"
+  ],
+  "繁中《起源》補充盒": [
+    "Origins Booster Box · Traditional Chinese",
+    "오리진 부스터 박스 · 중국어 번체판"
+  ],
+  "繁體中文": [
+    "Traditional Chinese",
+    "중국어 번체판"
+  ],
+  "起源": [
+    "Origins",
+    "오리진"
+  ],
+  "八強 4 場比賽，每場各抽 1 名正取，送出 1 盒繁中《起源》。這一輪總共送 4 盒。": [
+    "Each of the four quarterfinal matches awards one Traditional Chinese Origins box to one winner: 4 boxes in total.",
+    "8강 4경기에서 경기당 1명을 추첨해 중국어 번체판 오리진 1박스씩, 총 4박스를 드립니다."
+  ],
+  "每盒 12 包 · 每包 14 張": [
+    "12 packs per box · 14 cards per pack",
+    "박스당 12팩 · 팩당 14장"
+  ],
+  "簡中《破限》進階盒 Jumbo": [
+    "Unleashed Jumbo Booster Box · Simplified Chinese",
+    "언리쉬드 점보 부스터 박스 · 중국어 간체판"
+  ],
+  "簡體中文": [
+    "Simplified Chinese",
+    "중국어 간체판"
+  ],
+  "破限": [
+    "Unleashed",
+    "언리쉬드"
+  ],
+  "四強的獎品是簡中《破限》進階盒 Jumbo，一盒有 12 包，每包 14 張。兩場比賽各抽 1 名正取，每人拿 1 盒，總共送 2 盒。": [
+    "Semifinal prizes are Simplified Chinese Unleashed Jumbo boxes, each with 12 packs of 14 cards. One winner per match receives one box: 2 boxes in total.",
+    "4강 경품은 중국어 간체판 언리쉬드 점보 박스입니다. 박스당 12팩, 팩당 14장이 들어 있습니다. 두 경기에서 각 1명을 추첨해 1박스씩, 총 2박스를 드립니다."
+  ],
+  "英文《起源》24 包裝補充盒": [
+    "Origins Booster Display · English · 24 packs",
+    "오리진 부스터 디스플레이 · 영어판 · 24팩"
+  ],
+  "英文": [
+    "English",
+    "영어판"
+  ],
+  "決賽會抽出 1 名正取，拿到英文《起源》補充盒 1 盒，裡面有 24 包。": [
+    "The final awards one English Origins booster box, containing 24 packs, to one winner.",
+    "결승에서는 1명을 추첨해 24팩이 들어 있는 영어판 오리진 부스터 박스 1개를 드립니다."
+  ],
+  "每盒 24 包 · 每包 14 張": [
+    "24 packs per box · 14 cards per pack",
+    "박스당 24팩 · 팩당 14장"
+  ],
+  "八支戰隊爭取四強資格。": [
+    "Eight teams compete for four semifinal spots.",
+    "8개 팀이 4강 진출권을 놓고 겨룹니다."
+  ],
+  "四支戰隊爭取決賽資格。": [
+    "Four teams compete for a place in the final.",
+    "4개 팀이 결승 진출권을 놓고 겨룹니다."
+  ],
+  "決賽在紐約布魯克林舉行。": [
+    "The final takes place in Brooklyn, New York.",
+    "결승은 뉴욕 브루클린에서 열립니다."
+  ],
+  "ECVRF 證明已核對": [
+    "ECVRF proof checked",
+    "ECVRF 증명 확인 완료"
+  ],
+  "ECVRF 證明": [
+    "ECVRF proof",
+    "ECVRF 증명"
+  ],
+  "已核對": [
+    "Checked",
+    "확인 완료"
+  ],
+  "主網演練 · 測試名冊 · 不發放獎品": [
+    "Mainnet rehearsal · QA roster · No real prizes",
+    "메인넷 리허설 · 테스트 명단 · 실제 경품 없음"
+  ]
+}

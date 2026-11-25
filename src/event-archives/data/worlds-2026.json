@@ -1,0 +1,332 @@
+{
+  "capturedAt": "2026-11-20T03:35:21.656Z",
+  "sourceUrl": "https://renaiss-lol.vercel.app",
+  "stages": [
+    {
+      "id": "quarter",
+      "matchCount": 4,
+      "name": "八強賽",
+      "en": "QUARTERFINALS",
+      "dates": "NOV 04—07",
+      "format": "BO5",
+      "description": "八支戰隊爭取四強資格。"
+    },
+    {
+      "id": "semi",
+      "matchCount": 2,
+      "name": "四強賽",
+      "en": "SEMIFINALS",
+      "dates": "NOV 08—09",
+      "format": "BO5",
+      "description": "四支戰隊爭取決賽資格。"
+    },
+    {
+      "id": "final",
+      "matchCount": 1,
+      "name": "總決賽",
+      "en": "THE FINAL",
+      "dates": "NOV 15",
+      "format": "BO5",
+      "description": "決賽在紐約布魯克林舉行。"
+    }
+  ],
+  "prizes": [
+    {
+      "id": "rare",
+      "productId": "origins-tc",
+      "stage": "quarter",
+      "type": "BOOSTER BOX",
+      "name": "繁中《起源》補充盒",
+      "language": "繁體中文",
+      "contents": "每盒 12 包 · 每包 14 張",
+      "slots": 4,
+      "unitsPerWinner": 1,
+      "unit": "盒",
+      "color": "#b09275"
+    },
+    {
+      "id": "epic",
+      "productId": "unleashed-cn",
+      "stage": "semi",
+      "type": "JUMBO BOOSTER BOX",
+      "name": "簡中《破限》進階盒 Jumbo",
+      "language": "簡體中文",
+      "contents": "每盒 12 包 · 每包 14 張",
+      "slots": 2,
+      "unitsPerWinner": 1,
+      "unit": "盒",
+      "color": "#bda0c6"
+    },
+    {
+      "id": "legend",
+      "productId": "origins-en",
+      "stage": "final",
+      "type": "ORIGINS BOOSTER DISPLAY",
+      "name": "英文《起源》24 包裝補充盒",
+      "language": "英文",
+      "contents": "每盒 24 包 · 每包 14 張",
+      "slots": 1,
+      "unitsPerWinner": 1,
+      "unit": "盒",
+      "color": "#c9a05a"
+    }
+  ],
+  "matches": [
+    {
+      "id": "gf-01",
+      "stage": "final",
+      "teamA": "GEN",
+      "teamB": "BLG",
+      "startsAt": "2026-11-14T19:00:00.000Z",
+      "prizeId": "legend"
+    },
+    {
+      "id": "qf-01",
+      "stage": "quarter",
+      "teamA": "DK",
+      "teamB": "BLG",
+      "startsAt": "2026-11-05T22:00:00.000Z",
+      "prizeId": "rare"
+    },
+    {
+      "id": "qf-02",
+      "stage": "quarter",
+      "teamA": "T1",
+      "teamB": "KC",
+      "startsAt": "2026-11-06T22:00:00.000Z",
+      "prizeId": "rare"
+    },
+    {
+      "id": "qf-03",
+      "stage": "quarter",
+      "teamA": "TES",
+      "teamB": "IG",
+      "startsAt": "2026-11-03T22:00:00.000Z",
+      "prizeId": "rare"
+    },
+    {
+      "id": "qf-04",
+      "stage": "quarter",
+      "teamA": "GEN",
+      "teamB": "LYON",
+      "startsAt": "2026-11-04T22:00:00.000Z",
+      "prizeId": "rare"
+    },
+    {
+      "id": "sf-01",
+      "stage": "semi",
+      "teamA": "T1",
+      "teamB": "BLG",
+      "startsAt": "2026-11-08T22:00:00.000Z",
+      "prizeId": "epic"
+    },
+    {
+      "id": "sf-02",
+      "stage": "semi",
+      "teamA": "GEN",
+      "teamB": "IG",
+      "startsAt": "2026-11-07T22:00:00.000Z",
+      "prizeId": "epic"
+    }
+  ],
+  "teams": [
+    {
+      "id": "GEN",
+      "name": "Gen.G Esports",
+      "color": "#d7bd75",
+      "logoAsset": "worlds-2026/teams/GEN.png"
+    },
+    {
+      "id": "T1",
+      "name": "T1",
+      "color": "#f95365",
+      "logoAsset": "worlds-2026/teams/T1.png"
+    },
+    {
+      "id": "DK",
+      "name": "Dplus KIA",
+      "color": "#a1e9d1",
+      "logoAsset": "worlds-2026/teams/DK.png"
+    },
+    {
+      "id": "BLG",
+      "name": "BILIBILI GAMING",
+      "color": "#8eadeb",
+      "logoAsset": "worlds-2026/teams/BLG.png"
+    },
+    {
+      "id": "TES",
+      "name": "TOP ESPORTS",
+      "color": "#df5e48",
+      "logoAsset": "worlds-2026/teams/TES.png"
+    },
+    {
+      "id": "IG",
+      "name": "Invictus Gaming",
+      "color": "#ededed",
+      "logoAsset": "worlds-2026/teams/IG.png"
+    },
+    {
+      "id": "KC",
+      "name": "Karmine Corp",
+      "color": "#639ef5",
+      "logoAsset": "worlds-2026/teams/KC.png"
+    },
+    {
+      "id": "LYON",
+      "name": "LYON",
+      "color": "#de8bd0",
+      "logoAsset": "worlds-2026/teams/LYON.png"
+    }
+  ],
+  "draws": [
+    {
+      "id": "75617854-fd49-4219-8959-fdab13fb0247",
+      "matchId": "gf-01",
+      "source": "ecvrf",
+      "ledgerHash": "0xc155f91eec8ca5ff58c42af71c77e243ea378373ec005856afe750ffc5fe6ca5",
+      "totalTickets": 1213,
+      "createdAt": "2026-11-15T12:32:14.305Z",
+      "winners": [
+        {
+          "ticketNumber": 672,
+          "position": "winner",
+          "rank": 0,
+          "name": "@daen97",
+          "xUsername": "daen97"
+        }
+      ]
+    },
+    {
+      "id": "31023f6b-87ed-4fcc-b496-0933ddfe371f",
+      "matchId": "sf-02",
+      "source": "ecvrf",
+      "ledgerHash": "0x9257c41bbb5dd68ad8da78b4d3b6aa5bd07184f8ebc6b7697c5df009b9c56892",
+      "totalTickets": 2030,
+      "createdAt": "2026-11-09T06:58:03.144Z",
+      "winners": [
+        {
+          "ticketNumber": 1230,
+          "position": "winner",
+          "rank": 0,
+          "name": "@yunhyun30531",
+          "xUsername": "yunhyun30531"
+        }
+      ]
+    },
+    {
+      "id": "30db9bc2-053c-4258-88b4-7976972d9bb1",
+      "matchId": "sf-01",
+      "source": "ecvrf",
+      "ledgerHash": "0x14fcfc390bcc8ff54f1814607f83f7538907377f9b4e1c0edbd5a820c4fda6e9",
+      "totalTickets": 122,
+      "createdAt": "2026-11-09T06:58:03.083Z",
+      "winners": [
+        {
+          "ticketNumber": 84,
+          "position": "winner",
+          "rank": 0,
+          "name": "@nopzty",
+          "xUsername": "nopzty"
+        }
+      ]
+    },
+    {
+      "id": "44070ea8-8530-4e30-937d-d4ddd931cb5a",
+      "matchId": "qf-04",
+      "source": "ecvrf",
+      "ledgerHash": "0xab8e86f58403457573742dadfddbaf729e5c347cc0bfb65023d6a94455270c54",
+      "totalTickets": 118,
+      "createdAt": "2026-11-07T04:07:39.750Z",
+      "winners": [
+        {
+          "ticketNumber": 32,
+          "position": "winner",
+          "rank": 0,
+          "name": "@crypto_fallout",
+          "xUsername": "crypto_fallout"
+        }
+      ]
+    },
+    {
+      "id": "287d1ddb-dba0-40ef-b2ab-c7f93b0d0cc6",
+      "matchId": "qf-03",
+      "source": "ecvrf",
+      "ledgerHash": "0x5217ef1054489194752440fa4b3ce27cf184f65632f3a8a8381094622af2204c",
+      "totalTickets": 66,
+      "createdAt": "2026-11-07T04:07:39.699Z",
+      "winners": [
+        {
+          "ticketNumber": 66,
+          "position": "winner",
+          "rank": 0,
+          "name": "@rarayofsunshine",
+          "xUsername": "rarayofsunshine"
+        }
+      ]
+    },
+    {
+      "id": "9235f6be-efb3-4b7e-a961-18b44ca7c9cd",
+      "matchId": "qf-02",
+      "source": "ecvrf",
+      "ledgerHash": "0xa77de19cb689aa99cb2bb82b1bf5f6716114e06087bd89beef6e8f52976c680f",
+      "totalTickets": 238,
+      "createdAt": "2026-11-07T04:07:39.639Z",
+      "winners": [
+        {
+          "ticketNumber": 84,
+          "position": "winner",
+          "rank": 0,
+          "name": "@augaaugust",
+          "xUsername": "augaaugust"
+        }
+      ]
+    },
+    {
+      "id": "fabeafc2-3105-4e1b-af4a-b30e1137722e",
+      "matchId": "qf-01",
+      "source": "ecvrf",
+      "ledgerHash": "0x3d93ac5712e16f197faaa9a91f355eb835686b8706b91df1e8af1d60e557c8e8",
+      "totalTickets": 77,
+      "createdAt": "2026-11-07T04:07:39.569Z",
+      "winners": [
+        {
+          "ticketNumber": 20,
+          "position": "winner",
+          "rank": 0,
+          "name": "@fish875276",
+          "xUsername": "fish875276"
+        }
+      ]
+    }
+  ],
+  "rounds": [
+    {
+      "stage": "quarter",
+      "roundId": "0xbdc616916b755a7b1e452aa116302599bbc04f78f3b30f721ba13cc4fe9ff07d",
+      "bundleHash": "0x95ee62615929f3feb288a175470e7ac9b7d5d276a8c2b5c6b9121a644b901b91",
+      "requestTx": "0x71080fae412fa1548edadd974fe797f9763db2190cbfe9fb5a196b8f32f3f672",
+      "publishedAt": "2026-11-07T04:07:39.387Z",
+      "proofAsset": "worlds-2026/proofs/quarter.json",
+      "winnerCount": 4
+    },
+    {
+      "stage": "semi",
+      "roundId": "0x3346598778234c7a367be3aafb9f23e9c6b3ff54439575ca8049a2e56362ce05",
+      "bundleHash": "0x5f047369c54bcdf9b076e0ee0eedd91d7ee3a26fd9d9babb6d16abf6003c0366",
+      "requestTx": "0x47598da990e1d80f1e5793c0a88ab4f0259552ef8ae9d5bcbbb497c59fc32096",
+      "publishedAt": "2026-11-09T06:58:02.650Z",
+      "proofAsset": "worlds-2026/proofs/semi.json",
+      "winnerCount": 2
+    },
+    {
+      "stage": "final",
+      "roundId": "0x7ab56d6c37a37b1c11902d6b6289131cd952c7eda534eadb87c8ce89c9b34e51",
+      "bundleHash": "0xe91487bff4cdcf21ecd5a88d4eab84cd5e420b41d63d5346b7a24c42f3dbb955",
+      "requestTx": "0xac7166683f8d2844711cc3cb64e10f12b94c6c5c90e3796f43c27c099bebf315",
+      "publishedAt": "2026-11-15T12:32:14.149Z",
+      "proofAsset": "worlds-2026/proofs/final.json",
+      "winnerCount": 1
+    }
+  ]
+}

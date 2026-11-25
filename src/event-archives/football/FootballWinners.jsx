@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Award, CirclePlay, Gift, RotateCcw } from 'lucide-react';
 import { archiveAssetUrl } from '../shared/archiveAssets';
+import { useArchiveEntrance } from '../shared/useArchiveEntrance';
 import { useCampaignCopy } from './original/src/app/i18n/useCampaignCopy';
 import { buildWinnerRoundGroups, buildWinnerRoundOptions, WinnerOnChainProof, WinnerRevealRow } from './original/src/app/components/control-room/WinnersRoom';
 import { getMatchPrizeImageByMatchId } from './original/src/app/data/matchPrizeImages';
@@ -10,6 +11,7 @@ import SideRays from './original/src/app/components/SideRays/SideRays';
 const revealVideo = 'https://pub-7230fa99c50e44e9b241e47cac526165.r2.dev/draw/winner-reveal-2026-06-17-hq.mp4';
 const backdrop = archiveAssetUrl('football/src/app/assets/championship-trophy-renaiss-mark.webp');
 export default function FootballWinners({ activeRoundId, onSelectRound, data, rounds, matches }) {
+  const entrance = useArchiveEntrance('.winner-round-simulator, .winner-stage-intro > *, .winner-stage-actions');
   const { t, roundLabel } = useCampaignCopy();
   const video = useRef(null);
   const [revealed, setRevealed] = useState(false);
@@ -39,7 +41,7 @@ export default function FootballWinners({ activeRoundId, onSelectRound, data, ro
     return () => { if (element) { element.pause(); element.removeAttribute('src'); element.load(); } };
   }, []);
   function replay() { setRevealed(false); setVisibleCount(0); setSelectedId(''); video.current.currentTime = 0; video.current.play().catch(() => setIssue(t('winnerReveal.videoIssue'))); }
-  return <section className={'winners-room has-winners ' + (revealed ? 'is-reveal' : 'is-intro')} aria-label={t('winnerReveal.roomAria')}>
+  return <section ref={entrance} className={'winners-room has-winners ' + (revealed ? 'is-reveal' : 'is-intro')} aria-label={t('winnerReveal.roomAria')}>
     <div className="winner-stage-presentation">
       <section className="round-simulator is-rail-only winner-round-simulator" aria-label={t('common.round')}>
         <ol className="round-switch round-switch--read-only" aria-label={t('common.round')}>

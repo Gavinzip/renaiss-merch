@@ -1,0 +1,286 @@
+{
+  "checkedAt": "2026-11-20T02:54:23.987Z",
+  "drawId": "0xdf8f568720f1e1b6f892269003d4889031b505511d1765ed136b18b135709fc9",
+  "status": "complete",
+  "prizes": [
+    {
+      "slot": 0,
+      "kind": "mystery-box",
+      "number": 1
+    },
+    {
+      "slot": 1,
+      "kind": "mystery-box",
+      "number": 2
+    },
+    {
+      "slot": 2,
+      "kind": "mystery-box",
+      "number": 3
+    },
+    {
+      "slot": 3,
+      "kind": "mystery-box",
+      "number": 4
+    },
+    {
+      "slot": 4,
+      "kind": "mystery-box",
+      "number": 5
+    },
+    {
+      "slot": 5,
+      "kind": "mystery-box",
+      "number": 6
+    },
+    {
+      "slot": 6,
+      "kind": "mystery-box",
+      "number": 7
+    },
+    {
+      "slot": 7,
+      "kind": "surf-pro-month",
+      "number": 1
+    },
+    {
+      "slot": 8,
+      "kind": "surf-pro-month",
+      "number": 2
+    },
+    {
+      "slot": 9,
+      "kind": "surf-pro-month",
+      "number": 3
+    },
+    {
+      "slot": 10,
+      "kind": "surf-pro-month",
+      "number": 4
+    },
+    {
+      "slot": 11,
+      "kind": "surf-pro-month",
+      "number": 5
+    },
+    {
+      "slot": 12,
+      "kind": "surf-pro-month",
+      "number": 6
+    },
+    {
+      "slot": 13,
+      "kind": "surf-pro-month",
+      "number": 7
+    },
+    {
+      "slot": 14,
+      "kind": "surf-pro-month",
+      "number": 8
+    },
+    {
+      "slot": 15,
+      "kind": "surf-pro-month",
+      "number": 9
+    },
+    {
+      "slot": 16,
+      "kind": "surf-pro-month",
+      "number": 10
+    },
+    {
+      "slot": 17,
+      "kind": "surf-pro-month",
+      "number": 11
+    },
+    {
+      "slot": 18,
+      "kind": "surf-pro-month",
+      "number": 12
+    },
+    {
+      "slot": 19,
+      "kind": "surf-pro-month",
+      "number": 13
+    },
+    {
+      "slot": 20,
+      "kind": "surf-pro-month",
+      "number": 14
+    },
+    {
+      "slot": 21,
+      "kind": "surf-pro-month",
+      "number": 15
+    },
+    {
+      "slot": 22,
+      "kind": "surf-pro-month",
+      "number": 16
+    },
+    {
+      "slot": 23,
+      "kind": "surf-pro-month",
+      "number": 17
+    },
+    {
+      "slot": 24,
+      "kind": "surf-pro-month",
+      "number": 18
+    },
+    {
+      "slot": 25,
+      "kind": "surf-pro-month",
+      "number": 19
+    },
+    {
+      "slot": 26,
+      "kind": "surf-pro-month",
+      "number": 20
+    }
+  ],
+  "winners": [
+    {
+      "slot": 0,
+      "ticketNumber": 877,
+      "name": "RocketsDeny8665"
+    },
+    {
+      "slot": 1,
+      "ticketNumber": 3321,
+      "name": "crazytta"
+    },
+    {
+      "slot": 2,
+      "ticketNumber": 2280,
+      "name": "MammalsDig1166"
+    },
+    {
+      "slot": 3,
+      "ticketNumber": 1262,
+      "name": "DrinksSmash1838"
+    },
+    {
+      "slot": 4,
+      "ticketNumber": 2831,
+      "name": "ComicsHide7111"
+    },
+    {
+      "slot": 5,
+      "ticketNumber": 353,
+      "name": "ParrotsLick7915"
+    },
+    {
+      "slot": 6,
+      "ticketNumber": 5958,
+      "name": "PearsAllow7434"
+    },
+    {
+      "slot": 7,
+      "ticketNumber": 719,
+      "name": "CatsRemain4941"
+    },
+    {
+      "slot": 8,
+      "ticketNumber": 899,
+      "name": "ShrimpsWave4386"
+    },
+    {
+      "slot": 9,
+      "ticketNumber": 4468,
+      "name": "CobrasRelax5040"
+    },
+    {
+      "slot": 10,
+      "ticketNumber": 6246,
+      "name": "PoemsFix2673"
+    },
+    {
+      "slot": 11,
+      "ticketNumber": 5433,
+      "name": "BirdsJog4692"
+    },
+    {
+      "slot": 12,
+      "ticketNumber": 2457,
+      "name": "RocketsRelax563"
+    },
+    {
+      "slot": 13,
+      "ticketNumber": 6318,
+      "name": "CrewsDance4261"
+    },
+    {
+      "slot": 14,
+      "ticketNumber": 10,
+      "name": "CarrotsFry3624"
+    },
+    {
+      "slot": 15,
+      "ticketNumber": 4602,
+      "name": "lgelato96344"
+    },
+    {
+      "slot": 16,
+      "ticketNumber": 2333,
+      "name": "ShowersFetch892"
+    },
+    {
+      "slot": 17,
+      "ticketNumber": 1909,
+      "name": "NailsHappen2482"
+    },
+    {
+      "slot": 18,
+      "ticketNumber": 5039,
+      "name": "BeesHammer2090"
+    },
+    {
+      "slot": 19,
+      "ticketNumber": 1438,
+      "name": "BadgersShine709"
+    },
+    {
+      "slot": 20,
+      "ticketNumber": 5928,
+      "name": "DogsAdmire4687"
+    },
+    {
+      "slot": 21,
+      "ticketNumber": 6405,
+      "name": "LiliesGrow7964"
+    },
+    {
+      "slot": 22,
+      "ticketNumber": 402,
+      "name": "ameotoko"
+    },
+    {
+      "slot": 23,
+      "ticketNumber": 2585,
+      "name": "AliensSin5827"
+    },
+    {
+      "slot": 24,
+      "ticketNumber": 4111,
+      "name": "TownsNotice7361"
+    },
+    {
+      "slot": 25,
+      "ticketNumber": 1278,
+      "name": "HoopsCall6632"
+    },
+    {
+      "slot": 26,
+      "ticketNumber": 244,
+      "name": "ClubsHear8948"
+    }
+  ],
+  "proof": {
+    "chainId": 56,
+    "source": "0xA9e9ED6B86Fecf2625c162f6F1aE67b83429E338",
+    "block": 134618732,
+    "ledgerHash": "0x0261f9130808716398c7352f727d050534e9d6c2e755a5772addec606e410e20",
+    "requestId": "62877587192802556616037220340905005883481292112821884211533129560179740588584"
+  }
+}

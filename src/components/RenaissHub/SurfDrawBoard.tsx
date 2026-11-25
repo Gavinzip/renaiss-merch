@@ -4,7 +4,7 @@ import { actionName, surfDrawCopy } from './SurfDrawCopy';
 import { surfDrawSceneCopy } from './SurfDrawSceneCopy';
 import type { Chain, DrawAction, DrawStatus, Prize, Winner } from './useSurfDraw';
 import { isSurfRevealRunning, type RevealPhase } from './useSurfDrawPresentation';
-import { surfWinnerDisplayName } from '../../../shared/surf-draw-identity.js';
+import { SurfWinnerList } from './SurfWinnerList';
 
 type BoardProps = {
   locale: AppLocale; status: DrawStatus | null; chain: Chain | null | undefined; prizes: Prize[];
@@ -68,27 +68,11 @@ export function SurfDrawBoard(props: BoardProps) {
       <div className="surf-draw-results__heading"><div><span>{simulation ? 'DEMO MODE' : 'THE REVEALS'}</span><h2 id="surf-draw-results-title">{simulation ? scene.simulationResults : scene.results}</h2></div>
         {status?.myTickets ? <p>{scene.tickets} <strong>#{status.myTickets.start}{status.myTickets.end > status.myTickets.start ? `–#${status.myTickets.end}` : ''}</strong></p> : null}
       </div>
-      <div className="surf-draw-results__groups" aria-label={copy.prizeBoard}>
-        {(['mystery-box', 'surf-pro-month'] as const).map(kind => {
-          const winners = visibleWinners.filter(winner => prizes[winner.slot]?.kind === kind).sort((a, b) => a.slot - b.slot);
-          const total = kind === 'mystery-box' ? 7 : 20;
-          return <section className="surf-draw-results__group" key={kind} aria-label={kind === 'mystery-box' ? scene.boxCount : scene.proCount}>
-            <div className="surf-draw-results__group-heading">
-              <h3>{kind === 'mystery-box' ? scene.boxCount : scene.proCount} <small>{String(winners.length).padStart(2, '0')} / {String(total).padStart(2, '0')}</small></h3>
-              {winners.length ? <button type="button" disabled={moving || batchActive || Boolean(busy)} onClick={() => {
-                onSelectKind(kind);
-                document.querySelector('.surf-reveal-stage-slot')?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
-              }}>{locale === 'zh-TW' ? '查看卡片' : locale === 'ko' ? '카드 보기' : 'View cards'} ↗</button> : null}
-            </div>
-            {winners.length ? <ol className="surf-draw-results__list">{winners.map(winner => {
-              const mine = status?.myTickets && winner.ticketNumber >= status.myTickets.start && winner.ticketNumber <= status.myTickets.end;
-              return <li key={winner.slot} data-mine={Boolean(mine)}><span>{String(winner.slot + 1).padStart(2, '0')}</span>
-                <strong>{mine ? copy.youWon : surfWinnerDisplayName(winner.participant.name) || scene.nameUnavailable}</strong>
-                <small>{copy.ticket} #{winner.ticketNumber}</small></li>;
-            })}</ol> : null}
-          </section>;
-        })}
-      </div>
+      <SurfWinnerList locale={locale} prizes={prizes} winners={visibleWinners} myTickets={status?.myTickets}
+        controlsDisabled={moving || batchActive || Boolean(busy)} onViewCards={kind => {
+          onSelectKind(kind);
+          document.querySelector('.surf-reveal-stage-slot')?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
+        }} />
     </section>
 
     {!simulation ? <details className="surf-draw-proof">

@@ -1,0 +1,98 @@
+/* The football campaign's compact RoundSimulatorPanel rail.
+   Values come from src/app/styles.css:17458–17548 in renaiss_bnb_football.
+   Shared by the standalone schedule and vote pages; the homepage stays unchanged. */
+.worlds-schedule-heading {
+  position:absolute;width:1px;height:1px;margin:-1px;padding:0;
+  overflow:hidden;clip-path:inset(50%);white-space:nowrap;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] {
+  width:min(calc(100% - 96px),1320px);min-height:56px;
+  margin:10px auto 0;gap:24px;align-items:center;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-simulator {
+  flex:0 0 330px;width:330px;max-width:330px;min-width:0;margin:0;padding:0;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-switch.round-switch--read-only {
+  display:grid!important;grid-template-columns:repeat(3,minmax(72px,96px))!important;
+  justify-content:center;align-items:start;gap:12px!important;
+  width:100%;margin:0;padding:0 0 3px!important;
+  border-bottom:1px solid #f5f6f114;background:none;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-switch__stage {
+  display:flex!important;flex-direction:column;align-items:center;justify-content:center;
+  grid-template-areas:none;min-height:44px;height:auto;width:100%;gap:1px;
+  padding:0!important;border:0!important;border-radius:0;background:none!important;
+  box-shadow:none!important;color:#f5f6f147;cursor:pointer;text-align:center;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-switch__label {
+  grid-area:auto;align-self:center!important;font-size:.58rem!important;font-weight:680!important;
+  line-height:1.1;color:inherit;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-switch__metric {
+  grid-area:auto;order:-1;display:flex;align-items:center;align-self:center;
+  position:static!important;inset:auto!important;transform:none!important;
+  gap:3px;width:fit-content;height:auto;min-height:13px;margin:0;
+  border:1px solid #f5f6f117!important;border-radius:999px!important;
+  padding:1px 4px!important;background:#f5f6f106!important;color:#f5f6f16b;line-height:1;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-switch__metric>span {
+  color:currentColor;font-size:.54rem!important;font-weight:700!important;line-height:1;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-switch__metric>small {
+  color:inherit;font-size:.48rem!important;font-weight:620;line-height:1;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-switch__detail {
+  display:none!important;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-switch__track {
+  grid-area:auto;align-self:center!important;box-sizing:border-box;border:0!important;display:block;width:20px!important;height:1px!important;
+  min-height:1px;margin-top:2px;background:#f5f6f11a;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-switch__item.is-active .round-switch__stage {
+  color:#ffefc8f0!important;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-switch__item.is-active .round-switch__metric {
+  border-color:#f0d18b52!important;background:#f0d18b0e!important;color:#f0d18bdb;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-switch__item.is-active .round-switch__track {
+  background:#f0d18b9e;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-switch__stage:hover {
+  color:#f5f6f1c2;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-switch__stage:focus-visible {
+  outline:1px solid #d7c393;outline-offset:2px;border-radius:5px;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .worlds-competition-source {
+  display:grid;justify-items:end;gap:4px;min-width:0;font-size:10px;color:#a5aa9b;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .worlds-competition-source>span {
+  display:flex;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .worlds-competition-source nav {
+  gap:15px;font-size:10px;
+}
+#root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .worlds-competition-source__pending {
+  color:#8b9286;font-size:9px;line-height:1.5;
+}
+@media(max-width:760px) {
+  #root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] {
+    width:calc(100% - 36px);flex-wrap:wrap;gap:8px;margin-block:8px 0;
+  }
+  #root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .round-simulator {
+    flex:0 1 330px;max-width:330px;width:330px;
+  }
+  #root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .worlds-competition-source {
+    width:100%;justify-items:start;grid-template-columns:minmax(0,1fr) auto;
+    gap:4px 12px;align-items:center;
+  }
+  #root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .worlds-competition-source>span {
+    font-size:9px;
+  }
+  #root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .worlds-competition-source nav {
+    grid-column:2;grid-row:1;gap:10px;font-size:9px;
+  }
+  #root .worlds-control-room .worlds-competition-toolbar[data-presentation="football"] .worlds-competition-source__pending {
+    grid-column:1/-1;
+  }
+}
